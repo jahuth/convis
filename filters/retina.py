@@ -1,0 +1,512 @@
+import litus
+import theano
+import theano.tensor as T
+import numpy as np
+import matplotlib.pylab as plt
+from theano.tensor.nnet.conv3d2d import conv3d
+from theano.tensor.signal.conv import conv2d
+import uuid
+from exceptions import NotImplementedError
+
+from ..base import *
+from ..theano_utils import make_nd, dtensor5
+from .. import retina_base
+from ..retina_base import conv, minimize_filter, m_t_filter, m_e_filter, m_en_filter, m_g_filter, m_g_filter_2d, fake_filter, fake_filter_shape, find_nonconflict
+
+class OPLLayerNode(N):
+    """
+    The OPL current is a filtered version of the luminance input with spatial and temporal kernels.
+
+    $$I_{OLP}(x,y,t) = \lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$
+
+    with:
+
+    :math:`C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)`
+
+    :math:`S(x,y,t) = G * E * C(x,y,t)`
+
+    In the case of leaky heat equation:
+
+    :math:`C(x,y,t) = T(wu,Tu) * K(sigma_C,Tau_C) * L (x,y,t)`
+
+    :math:`S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)`
+    p.275
+
+    To keep all dimensions similar, a *fake kernel* has to be used on the center output that contains a single 1 but has the shape of the filters used on the surround, such that the surround can be subtracted from the center.
+
+    The inputs of the function are: 
+
+     * :py:obj:`L` (the luminance input), 
+     * :py:obj:`E_n_C`, :py:obj:`TwuTu_C`, :py:obj:`G_C` (the center filters), 
+     * :py:obj:`E_S`, :py:obj:`G_S` (the surround filters), 
+     * :py:obj:`Reshape_C_S` (the fake filter), 
+     * :py:obj:`lambda_OPL`, :py:obj:`w_OPL` (scaling and weight parameters)
+
+    Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don't have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: <a href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">theano.tensor.nnet.conv</a>), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.
+    """
+    def __init__(self,model=None,config={},name=None,input_variable=None):
+        
+        self.retina = model
+        self.model = model
+        self.config = config
+        if name is None:
+            name = str(uuid.uuid4())
+        self.name = self.config.get('name',name)
+        self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
+        self._E_n_C = self.shared_parameter(
+            lambda x: m_en_filter(int(x.get_config('center-n__uint', 0)),
+                        float(x.get_config('center-tau__sec',0.01)),normalize=True,retina=x.node.model,epsilon=x.model.config.get('epsilon', 0.001)),
+                        name='E_n_C',
+                        doc="The n-fold cascaded exponential creates a low-pass characteristic. A filter can be created with `retina_base.m_en_filter`")
+        self._TwuTu_C = self.shared_parameter(
+            lambda x: m_t_filter(float(x.get_config('undershoot',{}).get('tau__sec',0.01)),
+                        float(x.get_config('undershoot',{}).get('relative-weight', 0.8)),
+                        normalize=True,retina=x.node.model,epsilon=x.get_config('undershoot',{}).get('epsilon', 0.005)),name='TwuTu_C')
+        self._G_C = self.shared_parameter(
+            lambda x: m_g_filter(float(x.get_config('center-sigma__deg',0.05)),
+                        float(x.get_config('center-sigma__deg',0.05)),
+                        retina=x.node.model,normalize=True,even=False),name='G_C')
+        self._E_S = self.shared_parameter(
+            lambda x: m_e_filter(float(x.get_config('surround-tau__sec',0.004)),
+                        retina=x.node.model,normalize=True,epsilon=x.model.config.get('epsilon', 0.001)),name='E_S')
+        self._G_S = self.shared_parameter(
+            lambda x: m_g_filter(float(x.get_config('surround-sigma__deg',0.15)),
+                       float(x.get_config('surround-sigma__deg',0.15)),
+                       retina=x.node.model,normalize=True,even=False),name='G_S')
+        self._lambda_OPL = self.shared_parameter(
+            lambda x: x.get_config('opl-amplification',10.0) / x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0)),name='lambda_OPL')
+        self._w_OPL = self.shared_parameter(
+            lambda x: x.get_config('opl-relative-weight',1.0),name='w_OPL')
+
+        # this parameter has to be initialized last :/
+        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(x.node._G_S.get_value(),
+                                                                        x.node._E_S.get_value()),name='Reshape_C_S')
+
+        self._input_init = as_state(dtensor5('input_init'),
+                                    init=lambda x: np.zeros((1, x.node._E_n_C.get_value().shape[1]-1+x.node._TwuTu_C.get_value().shape[1]-1+x.node._Reshape_C_S.get_value().shape[1]-1,
+                                    1, x.input.shape[1], x.input.shape[2])))
+        input_padded_in_time = T.concatenate([
+                        self._input_init,
+                        self.input_variable],axis=1)
+        Nx = self._G_C.shape[3]-1 + self._G_S.shape[3]-1
+        Ny = self._G_C.shape[4]-1 + self._G_S.shape[4]-1
+        self._L = pad5(pad5(input_padded_in_time,Nx,3),Ny,4)
+        self._C = conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C)
+        self._S = conv3d(conv3d(self._C,self._E_S),self._G_S)
+        I_OPL = self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S)
+
+        length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 
+        as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
+                                    input_padded_in_time[:,-(length_of_filters):,:,:,:]), self._input_init)
+        super(OPLLayerNode,self).__init__(make_nd(I_OPL,3),name=name)
+
+class OPLLayerLeakyHeatNode(N):
+    """
+    The OPL current is a filtered version of the luminance input with spatial and temporal kernels.
+
+    $$I_{OLP}(x,y,t) = \lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$
+
+    with:
+
+    :math:`C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)`
+
+    :math:`S(x,y,t) = G * E * C(x,y,t)`
+
+    In the case of leaky heat equation:
+
+    :math:`C(x,y,t) = T(wu,Tu) * K(sigma_C,Tau_C) * L (x,y,t)`
+
+    :math:`S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)`
+    p.275
+
+    To keep all dimensions similar, a *fake kernel* has to be used on the center output that contains a single 1 but has the shape of the filters used on the surround, such that the surround can be subtracted from the center.
+
+    The inputs of the function are: 
+
+     * :py:obj:`L` (the luminance input), 
+     * :py:obj:`E_n_C`, :py:obj:`TwuTu_C`, :py:obj:`G_C` (the center filters), 
+     * :py:obj:`E_S`, :py:obj:`G_S` (the surround filters), 
+     * :py:obj:`Reshape_C_S` (the fake filter), 
+     * :py:obj:`lambda_OPL`, :py:obj:`w_OPL` (scaling and weight parameters)
+
+    Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don't have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: <a href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">theano.tensor.nnet.conv</a>), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.
+    """
+    def __init__(self,model=None,config={},name=None,input_variable=None):
+        
+        self.retina = model
+        self.model = model
+        self.config = config
+        if name is None:
+            name = str(uuid.uuid4())
+        self.name = self.config.get('name',name)
+        self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
+        self._E_n_C = self.shared_parameter(
+            lambda x: m_en_filter(int(x.get_config('center-n__uint', 0)),
+                        float(x.get_config('center-tau__sec',0.01)),normalize=True,retina=x.node.model),name='E_n_C')
+        self._TwuTu_C = self.shared_parameter(
+            lambda x: m_t_filter(float(x.get_config('undershoot',{}).get('tau__sec',0.01)),
+                        float(x.get_config('undershoot',{}).get('relative-weight', 0.8)),
+                        normalize=True,retina=x.node.model,epsilon=0.005),name='TwuTu_C')
+        self._G_C = self.shared_parameter(
+            lambda x: m_g_filter(float(x.get_config('center-sigma__deg',0.05)),
+                        float(x.get_config('center-sigma__deg',0.05)),
+                        retina=x.node.model,normalize=True,even=False),name='G_C')
+        self._E_S = self.shared_parameter(
+            lambda x: m_e_filter(float(x.get_config('surround-tau__sec',0.004)),
+                        retina=x.node.model,normalize=True),name='E_S')
+        self._G_S = self.shared_parameter(
+            lambda x: m_g_filter(float(x.get_config('surround-sigma__deg',0.15)),
+                       float(x.get_config('surround-sigma__deg',0.15)),
+                       retina=x.node.model,normalize=True,even=False),name='G_S')
+        self._lambda_OPL = self.shared_parameter(
+            lambda x: x.get_config('opl-amplification',10.0) / x.model.config.get('input-luminosity-range',255.0),name='lambda_OPL')
+        self._w_OPL = self.shared_parameter(
+            lambda x: x.get_config('opl-relative-weight',1.0),name='w_OPL')
+
+        # this parameter has to be initialized last :/
+        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(x.node._G_S.get_value(),
+                                                                        x.node._E_S.get_value()),name='Reshape_C_S')
+
+        self._input_init = as_state(dtensor5('input_init'),
+                                    init=lambda x: np.zeros((1, x.node._E_n_C.get_value().shape[1]-1+x.node._TwuTu_C.get_value().shape[1]-1+x.node._Reshape_C_S.get_value().shape[1]-1,
+                                    1, x.input.shape[1], x.input.shape[2])))
+        input_padded_in_time = T.concatenate([
+                        self._input_init,
+                        self.input_variable],axis=1)
+        Nx = self._G_C.shape[3]-1 + self._G_S.shape[3]-1
+        Ny = self._G_C.shape[4]-1 + self._G_S.shape[4]-1
+        self._L = pad5(pad5(input_padded_in_time,Nx,3),Ny,4)
+        self._C = conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C)
+        self._S = conv3d(conv3d(self._C,self._E_S),self._G_S)
+        I_OPL = self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S)
+
+        length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 
+        as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
+                                    input_padded_in_time[:,-(length_of_filters):,:,:,:]), self._input_init)
+        super(OPLLayerLeakyHeatNode,self).__init__(make_nd(I_OPL,3),name=name)
+ 
+class BipolarLayerNode(N):
+    """
+
+    Example Configuration::
+
+        'contrast-gain-control': {
+            'opl-amplification__Hz': 50, # for linear OPL: ampOPL = relative_ampOPL / fatherRetina->input_luminosity_range ;
+                                                       # `ampInputCurrent` in virtual retina
+            'bipolar-inert-leaks__Hz': 50,             # `gLeak` in virtual retina
+            'adaptation-sigma__deg': 0.2,              # `sigmaSurround` in virtual retina
+            'adaptation-tau__sec': 0.005,              # `tauSurround` in virtual retina
+            'adaptation-feedback-amplification__Hz': 0 # `ampFeedback` in virtual retina
+        },
+    """
+    def __init__(self,model=None,config=None,name=None,input_variable=None):
+        
+        self.retina = model
+        self.model = model
+        self.config = config
+        self.state = None
+        if name is None:
+            name = str(uuid.uuid4())
+        self.name = self.config.get('name',name)
+        # Rewrite with the following assumptions:
+        ## controlCond_a is always two elements: a_0, a_1
+        ## controlCond_b is always one element: b_0
+        # we only need to remember one slice of last input to the inhibitory controlCond
+        # we only need to remember one slice of values from the previous timestep
+        self._lambda_amp = as_parameter(T.dscalar("lambda_amp"),
+                                        init=lambda x: float(x.node.config.get('adaptation-feedback-amplification__Hz',50)))
+        self._g_leak = as_parameter(T.dscalar("g_leak"),
+                                    init = lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)))
+        self._input_amp = as_parameter(T.dscalar("input_amp"),
+                                       init = lambda x: float(x.node.config.get('opl-amplification__Hz',100)))
+        self._inputNernst_inhibition = as_parameter(T.dscalar("inputNernst_inhibition"),
+                                                    init = lambda x: float(x.node.config.get('inhibition_nernst',0.0)))
+        tau = self.shared_parameter(lambda x: x.model.seconds_to_steps(float(x.get_config('adaptation-tau__sec',0.00001))),
+                           name = 'tau')
+        steps = self.shared_parameter(lambda x: x.model.steps_to_seconds(1.0),name = 'step')
+        a_0 = 1.0
+        a_1 = -T.exp(-steps/tau)
+        b_0 = 1.0 - a_1
+        # definition of sequences / initial condition for sequences
+        self._I_OPL = as_input(T.dtensor3("input")) #sequence
+        self._preceding_V_bip = as_state(T.dmatrix("preceding_V_bip"),
+            init=lambda x: np.zeros_like(x.input[0,:,:])) # initial condition for sequence
+        self._preceding_inhibition = as_state(T.dmatrix("preceding_inhibition"),
+            init=lambda x: np.zeros_like(x.input[0,:,:])) # initial condition for sequence
+        self._inhibition_smoothing_kernel = self.shared_parameter(
+            lambda x: m_g_filter_2d(float(x.get_config('adaptation-sigma__deg',0.2)),
+                 float(x.get_config('adaptation-sigma__deg',0.2)),
+                 retina=x.node.model,normalize=True,even=False),
+            name='inhibition_smoothing_kernel')
+                #T.dmatrix(self.name+"_inhibition_smoothing_kernel") # initial condition for sequence
+        self._k_bip = as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0]) # number of iteration steps
+
+        # Definition of bipolar computations in an iterative loop
+        #    compare with the implementation in python for a version
+        #    that is closer to virtual retina.
+        #
+        # The simulation has two populations of neurons, each being the size of the input image.
+        # `V_bip` is the output of this stage and the excitatory population (called `daValues` in VR)
+        #   `V_bip` recieves current input through `input_image` and conductance input through `preceding_inhibition`
+        # `inhibition` is the inhibitory population (`controlCond` in VR)
+        #   it gets a E and G filtered version of the rectified V_bip
+        #
+        # The `attenuation_map` provides a different conductance for each pixel 
+        #    it is calculated from the previous time steps `inhibition` value
+        #    which in turn is a filtered version of the rectified `V_bip`.
+        # The shape of the rectification is controlled by `g_leak` and `lambda_amp`
+        def bipolar_step(input_image,
+                        preceding_V_bip, preceding_attenuationMap, preceding_inhibition, 
+                        lambda_amp, g_leak, input_amp,inputNernst_inhibition,inhibition_smoothing_kernel):
+            total_conductance = g_leak + preceding_inhibition
+            attenuation_map = T.exp(-steps*total_conductance)
+            attenuation_map.name = 'attenuation map'
+            E_infinity = (input_amp * input_image + inputNernst_inhibition * preceding_inhibition)/total_conductance
+            V_bip = ((preceding_V_bip - E_infinity) * attenuation_map) + E_infinity # V_bip converges to E_infinity
+            
+            s0 = (inhibition_smoothing_kernel.shape[0]-1)/2
+            s0end = preceding_V_bip.shape[0] + s0
+            s1 = (inhibition_smoothing_kernel.shape[1]-1)/2
+            s1end = preceding_V_bip.shape[1] + s1
+            inhibition = theano.tensor.signal.conv.conv2d((lambda_amp*(preceding_V_bip)**2 * b_0 
+                                       - preceding_inhibition * a_1) / a_0, inhibition_smoothing_kernel, border_mode='full')[s0:s0end,s1:s1end]
+            inhibition.name = 'smoothed inhibition'
+            # // # missing feature from Virtual Retina:
+            # // ##if(gCoupling!=0)
+            # // ##  leakyHeatFilter.radiallyVariantBlur( *targets ); //last_values...
+
+            return [V_bip,attenuation_map,inhibition]
+
+        # The order in theano.scan has to match the order of arguments in the function bipolar_step
+        self._result, self._updates = theano.scan(fn=bipolar_step,
+                                      outputs_info=[self._preceding_V_bip,T.zeros_like(self._preceding_V_bip),self._preceding_inhibition],
+                                      sequences = [self._I_OPL],
+                                      non_sequences=[self._lambda_amp, self._g_leak, self._input_amp,
+                                                     self._inputNernst_inhibition, self._inhibition_smoothing_kernel],
+                                      n_steps=self._k_bip)
+        as_out_state(self._result[0][-1],self._preceding_V_bip)
+        # attenuation is not part of the state, but can be used as an output sequence
+        as_out_state(self._result[2][-1],self._preceding_inhibition)
+        ## The order of arguments presented here is arbitrary (will be inferred by the symbols provided),
+        ##  but function calls to compute_V_bip have to match this order!
+        #self.compute_V_bip = theano.function(inputs=[self._I_OPL,self._preceding_V_bip,self._preceding_inhibition,
+        #                                              self._lambda_amp, self._g_leak, self._step_size, self._input_amp,
+        #                                              self._inputNernst_inhibition, self._inhibition_smoothing_kernel, self._b_0, self._a_0, self._a_1,
+        #                                              self._k_bip], 
+        #                                      outputs=self._result, 
+        #                                      updates=self._updates)
+        super(BipolarLayerNode,self).__init__(make_nd(self._result[0],3),name=name)
+
+
+class GanglionInputLayerNode(N):
+    """
+    The input current to the ganglion cells is filtered through a gain function.
+
+    :math:`I_{Gang}(x,y,t) = G * N(eT * V_{Bip})`
+
+
+    :math:`N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
+
+    
+    :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
+
+        Example configuration:
+
+            {
+                'name': 'Parvocellular Off',
+                'enabled': True,
+                'sign': -1,
+                'transient-tau__sec':0.02,
+                'transient-relative-weight':0.7,
+                'bipolar-linear-threshold':0,
+                'value-at-linear-threshold__Hz':37,
+                'bipolar-amplification__Hz':100,
+                'sigma-pool__deg': 0.0,
+                'spiking-channel': {
+                    ...
+                }
+            },
+            {
+                'name': 'Magnocellular On',
+                'enabled': False,
+                'sign': 1,
+                'transient-tau__sec':0.03,
+                'transient-relative-weight':1.0,
+                'bipolar-linear-threshold':0,
+                'value-at-linear-threshold__Hz':80,
+                'bipolar-amplification__Hz':400,
+                'sigma-pool__deg': 0.1,
+                'spiking-channel': {
+                    ...
+                }
+            },
+
+    """
+    def __init__(self,model=None,config=None,name=None,input_variable=None):
+        
+        self.retina = model
+        self.model = model
+        self.config = config
+        self.state = None
+        if name is None:
+            name = str(uuid.uuid4())
+        self.name = self.config.get('name',name)
+        self._V_bip = make_nd(as_input(T.dtensor3("input")),5)
+        # TODO: state? what about previous episode? concatenate?
+        #num_V_bip = input.reshape((1,input.shape[0],1,input.shape[1],input.shape[2]))
+        self._T_G = self.shared_parameter(lambda x: float(x.get_config('sign',1)) * 
+                                                        m_t_filter(float(x.get_config('transient-tau__sec',0.04)),
+                                                            float(x.get_config('transient-relative-weight',0.75)),
+                                                            normalize=True,
+                                                            #epsilon=0.1,
+                                                            retina=x.model),
+                                     name = 'T_G')
+        self._input_init = as_state(dtensor5('input_init'),
+                                    init=lambda x: np.zeros((1, x.node._T_G.get_value().shape[1]-1,1, x.input.shape[1], x.input.shape[2])))
+
+        #self._V_bip_padded = T.concatenate([T.zeros((1,self._T_G.shape[1]-1,1,self._V_bip.shape[3],self._V_bip.shape[4])),self._V_bip],axis=1)
+        self._V_bip_padded = T.concatenate([self._input_init,self._V_bip],axis=1)
+
+        length_of_filters = self._T_G.shape[1]-1
+        as_out_state(T.set_subtensor(self._input_init[:,-(self._V_bip_padded[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
+                                    self._V_bip_padded[:,-(length_of_filters):,:,:,:]), self._input_init)
+
+        self._V_bip_E = conv3d(self._V_bip_padded,self._T_G)
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',70.0)),
+                                          name="i_0_G")
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+                                          name="v_0_G")
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',100.0)),
+                                          name="lambda_G")
+        self._G_gang = self.shared_parameter(lambda x: m_g_filter(float(x.get_config('sigma-pool__deg',0.0)),
+                                                 float(x.get_config('sigma-pool__deg',0.0)),
+                                                 retina=x.model,even=False,normalize=True),
+                                        name = 'G_gang')
+        self._N = theano.tensor.switch(self._V_bip_E < self._v_0_G, 
+                                 self._i_0_G/(1-self._lambda_G*(self._V_bip_E-self._v_0_G)/self._i_0_G),
+                                 self._i_0_G + self._lambda_G*(self._V_bip_E-self._v_0_G))
+
+        #self.compute_N = theano.function([self._V_bip, self._T_G, self._i_0_G, self._v_0_G, self._lambda_G], self._N)
+
+        self._I_Gang = conv3d(self._N,self._G_gang)
+        self.output_variable = self._I_Gang
+        #self.compute_I_Gang = theano.function([self._V_bip, self._T_G, self._i_0_G, self._v_0_G, self._lambda_G, self._G_gang], theano.Out(self.output_variable, borrow=True))
+        super(GanglionInputLayerNode,self).__init__(make_nd(self._I_Gang,3),name=name)
+    def __repr__(self):
+        return '[Ganglion Input Node] Shape: '+str(fake_filter_shape(self._G_gang.get_value(),self._T_G.get_value()))
+
+class GanglionSpikingLayerNode(N):
+    """
+    **TODO:DONE** ~~The refractory time now working!~~
+
+    The ganglion cells recieve the gain controlled input and produce spikes. 
+
+    When the cell is not refractory, :math:`V` moves as:
+
+    $$ \\\\dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + \eta_v(t)$$
+
+    Otherwise it is set to 0.
+    """
+    def __init__(self,model=None,config=None,name=None,input_variable=None):
+        self.retina = model
+        self.model = model
+        self.config = config
+        self.state = None
+        self.last_noise_slice = None
+        if name is None:
+            name = str(uuid.uuid4())
+        self.name = self.config.get('name',name)
+        self._k_gang = as_parameter(T.iscalar("k_gang_spike"),init=lambda x: x.input.shape[0], doc='Length of the input sequence (set automatically).')
+        
+        #obsolete? self._refrac = T.dscalar(name+"refrac")
+        
+        self.input_variable = as_input(T.dtensor3("input"))
+        self.input_padding = as_state(T.dtensor3("initial_I"), init=lambda x: x.input[:1,:,:])
+        self._I_gang = T.concatenate([self.input_padding, self.input_variable]) # input
+        
+        self._initial_refr = as_state(
+                T.dmatrix("initial_refr"),
+                init=lambda x: np.zeros_like(x.input[0,:,:]) 
+                        if x.node.config.get('random-init',True) is False
+                        else (x.node.model.seconds_to_steps(x.node.config.get('refr-mean__sec',0.0005))*np.random.rand(*x.input[0,:,:].shape)),
+                doc="Initialization of the refractory times. If `random-init` is `True`, each cell gets a random value between `[0..refr-mean__sec]`"
+                )
+        self._V_initial = as_state(
+                T.dmatrix("V_initial"),
+                doc='The initial state of the membrane potential (can be randomized with `random-init`).',
+                init=lambda x: np.zeros_like(x.input[0,:,:])
+                                if x.node.config.get('random-init',True) is False
+                                else np.random.rand(*x.input[0,:,:].shape))
+
+        self._refr_sigma = self.shared_parameter(
+                lambda x: float(x.model.seconds_to_steps(float(x.value_from_config()))),
+                save = lambda x: x.value_to_config(x.model.steps_to_seconds(float(x.var.get_value()))),
+                get = lambda x: float(x.model.steps_to_seconds(float(x.var.get_value()))),
+                config_key = 'refr-stdev__sec',
+                config_default = 0.001,
+                name='refr_sigma',
+                doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')
+
+        self._refr_mu = self.shared_parameter(
+                lambda x: float(x.model.seconds_to_steps(float(x.value_from_config()))),
+                save = lambda x: x.value_to_config(x.model.steps_to_seconds(float(x.var.get_value()))),
+                get = lambda x: float(x.model.steps_to_seconds(float(x.var.get_value()))),
+                config_key = 'refr-mean__sec',
+                config_default = 0.000523,
+                name='refr_mu',
+                doc="The mean of the distribution of random refractory times (in seconds).")
+
+        self._g_L = self.shared_parameter(
+                lambda x: float(x.value_from_config()),
+                config_key = 'g-leak__Hz',
+                config_default = 10,
+                doc='Leak current (in Hz or dimensionless firing rate).',
+                name = 'g_L')
+
+        self._raw_noise_gang = as_parameter(
+                T.dtensor3("noise_gang"),
+                init=lambda x: np.random.randn(*x.input.shape),
+                doc ='Random input (will be scaled by sigma-V and refr_stdev). Since the membrane potential already crossed the threshold when we want to draw a refractory period, we can safely use the next sample from this random input without introducing any codependency.')
+
+        self._noise_state = as_state(T.dtensor3("initial_noise"), init=lambda x: np.random.randn(*x.input[:1,:,:].shape))
+        self._noise_gang = T.concatenate([self._noise_state,self._raw_noise_gang]) # we need to remember one noise state
+        self._noise_sigma = self.shared_parameter(
+                lambda x: float(x.value_from_config()*np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
+                save = lambda x: x.value_to_config((x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
+                get = lambda x: (x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
+                config_key = 'sigma-V',
+                config_default = 0.1,
+                doc='Amount of noise added to the membrane potential.',
+                name = "noise_sigma")
+
+        #self.random_init = self.config.get('random-init',None)
+        
+        self._tau = shared_parameter(lambda x: x.model.steps_to_seconds(1.0),
+                O()(node=self,model=self.model),
+                doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.',
+                name = 'tau')
+        def spikeStep(I_gang, noise_gang,noise_gang_prev,
+                      prior_V, prior_refr,  
+                      noise_sigma, refr_mu, refr_sigma, g_L,tau_gang):
+            V = prior_V + (I_gang - g_L * prior_V + noise_sigma*(noise_gang))*tau_gang
+            V = theano.tensor.switch(T.gt(prior_refr, 0.5), 0.0, V)
+            spikes = T.gt(V, 1.0)
+            refr = theano.tensor.switch(spikes,
+                    prior_refr + refr_mu + refr_sigma * noise_gang,
+                    prior_refr - 1.0
+                    )
+            next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
+            return [V,next_refr]
+
+        self._result, updates = theano.scan(fn=spikeStep,
+                                      outputs_info=[self._V_initial,T.zeros_like(self._initial_refr)],
+                                      sequences = [self._I_gang,dict(input=self._noise_gang, taps=[-0,-1])],
+                                      non_sequences=[self._noise_sigma, self._refr_mu, self._refr_sigma, self._g_L, self._tau],
+                                      n_steps=self._k_gang)
+        as_out_state(self._I_gang[-1:,:,:],self.input_padding) #self.input_variable
+        as_out_state(self._noise_gang[-1:,:,:],self._noise_state)
+        as_out_state(self._result[0][-1],self._V_initial)
+        as_out_state(self._result[1][-1],self._initial_refr)
+        super(GanglionSpikingLayerNode,self).__init__(self._result[0],name=name)
+    def __repr__(self):
+        return '[Ganglion Spike Node] Differential Equation'
