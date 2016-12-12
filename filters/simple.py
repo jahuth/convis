@@ -92,7 +92,7 @@ class G_2d_recursive_filter(N):
         update_variables = updates_forward_x + updates_backward_x + updates_forward_y + updates_backward_y
         output_variable = (result_backward_y[0].dimshuffle((2,1,0))[:,::-1,::-1]).reshape((result_backward_y[0].shape[2],result_backward_y[0].shape[1],result_backward_y[0].shape[0]))
         output_variable.name = 'output'
-        super(G_2d_filter,self).__init__(output_variable,name=name)
+        super(G_2d_recursive_filter,self).__init__(output_variable,name=name)
         self.node_type = '2d Gauss Filter Node'
         self.node_description = lambda: 'Recursive Filtering'
     def compute_config(self,c):
@@ -221,7 +221,7 @@ class MinFilter(N):
         #raise NotImplementedError('Filter is not defined yet')
         super(MinFilter,self).__init__(output_variable,name=name)
 
-class SelectFilter(N):        
+class SelectPixelFilter(N):        
     def __init__(self,config={},name=None,model=None):
         """
             This gives the (spatial) maximum of the input for each time step.
@@ -243,8 +243,28 @@ class SelectFilter(N):
         output_variable = as_input(T.dtensor3(),name='input')[:,self._x,self._y]
         output_variable.name = 'output'
         #raise NotImplementedError('Filter is not defined yet')
-        super(SelectFilter,self).__init__(output_variable,name=name)
+        super(SelectPixelFilter,self).__init__(output_variable,name=name)
         self.node_type = 'Spatial Selection Filter'
+        self.node_description = lambda: ''
+
+class SoftSelectFilter(N):        
+    def __init__(self,config={},name=None,model=None):
+        """
+            This gives the (spatial) maximum of the input for each time step.
+        """
+        self.config = config
+        self.model = model
+        self.a = self.shared_parameter(
+                lambda x: x.value_from_config(),
+                config_key = 'a',
+                config_default = 0.5*np.ones((1,1)),
+                doc='Ratio of input a in the output. Input b will have ratio (1-`a`)',
+                name = "a")
+        output_variable = self.a.dimshuffle(('x',0,1)) * as_input(T.dtensor3(),name='input_a') + (1.0-self.a.dimshuffle(('x',0,1))) * as_input(T.dtensor3(),name='input_b')
+        output_variable.name = 'output'
+        #raise NotImplementedError('Filter is not defined yet')
+        super(SoftSelectFilter,self).__init__(output_variable,name=name)
+        self.node_type = 'Soft Select Filter'
         self.node_description = lambda: ''
 
 class RF_2d_kernel_filter(N):

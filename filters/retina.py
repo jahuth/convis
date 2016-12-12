@@ -471,8 +471,8 @@ class GanglionSpikingLayerNode(N):
         self._noise_state = as_state(T.dtensor3("initial_noise"), init=lambda x: np.random.randn(*x.input[:1,:,:].shape))
         self._noise_gang = T.concatenate([self._noise_state,self._raw_noise_gang]) # we need to remember one noise state
         self._noise_sigma = self.shared_parameter(
-                lambda x: float(x.value_from_config()*np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
-                save = lambda x: x.value_to_config((x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
+                lambda x: float(x.value_from_config())*np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
+                save = lambda x: x.value_to_config(float(x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
                 get = lambda x: (x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
                 config_key = 'sigma-V',
                 config_default = 0.1,

@@ -157,6 +157,108 @@ def test_text_client(text):
         print >>sys.stderr, 'closing socket'
         sock.close()
 
+class ImageRecieverServer():
+    def __init__(self, port = 10000, size=(0,0)):
+        from PIL import Image, ImageTk
+        self.port = port
+        self.size = size
+        self.buffer = cStringIO.StringIO()
+        self.image = Image.fromarray(np.zeros((200,200))).convert('RGB')
+        self.closed = False
+        self.dirty = False
+        self.refresh_rate = 10
+        self.last_buffer = []
+        self.debug = False
+        thread.start_new_thread(self.wait_for_connection,tuple())
+    def __del__(self):
+        self.closed = True
+        self.sock.close()
+        del self.sock
+    def wait_for_connection(self):
+        import socket
+        import sys
+        # Create a TCP/IP socket
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_address = ('localhost', self.port)
+        #print >>sys.stderr, 'starting up on %s port %s' % self.server_address
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.sock.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
+        self.sock.bind(self.server_address)
+        self.sock.listen(10)
+        #self.sock.setblocking(0)
+        while self.closed is False:
+            try:
+                connection, client_address = self.sock.accept()
+                if self.debug:
+                    print "Accepted connection."
+                thread.start_new_thread(self.serve,(connection, client_address))
+            except Exception as e:
+                print e
+                raise
+        self.sock.close()
+        self.closed = True
+    def serve(self,connection, client_address):
+        try:
+            if self.debug:
+                print "Recieving Data."
+            dirty = False
+            all_data = cStringIO.StringIO()
+            last_data = b""
+            while True:
+                data = connection.recv(16)
+                dirty = True
+                all_data.write(data)
+                if b"IEND" in last_data+data:
+                    if self.debug:
+                        print "Recieved End of Image."
+                    #print (last_data+data)
+                    #print 'found IEND!'
+                    self.last_buffer.append(all_data)
+                    all_data = cStringIO.StringIO()
+                    all_data.write((last_data+data)[(last_data+data).find(b"IEND")+8:])
+                    dirty = False
+                    last_data = (last_data+data)[(last_data+data).find(b"IEND")+8:]
+                else:
+                    last_data = data
+                #self.buffer.write(data)
+                #all_data += data
+                if not data:
+                    break
+            if dirty:
+                #print 'Cleaning up unclosed image...'
+                self.last_buffer.append(all_data)
+            #self.dirty = True # redraw the image
+        finally:
+            if self.debug:
+                print "Closing connection."
+            connection.close()            
+    def available(self):
+        return len(self.last_buffer) > 0
+    def __len__(self):
+        return len(self.last_buffer)
+    def get(self,n=1):
+        if n > len(self.last_buffer):
+            raise Exception('Not ready yet.')
+        images = []
+        for i in range(n):
+            images.append(self.get_image())
+        return np.array(images)
+    def get_image(self):
+        from PIL import Image, ImageTk
+        refresh = self.refresh_rate
+        if len(self.last_buffer) > 0:
+            try:
+                image_buffer = self.last_buffer.pop()
+                self.image = Image.open(image_buffer)
+                self.image.load()
+                return np.array(self.image).mean(2)
+            except Exception as e:
+                return np.zeros(self.size)
+                #if self.available():
+                #    # maybe only this image was bad?
+                #    return self.get_image()
+                #pass
+
 
 def png_display():
     import Tkinter as tk

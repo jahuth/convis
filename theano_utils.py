@@ -9,6 +9,11 @@ import uuid
 from . import retina_base
 from exceptions import NotImplementedError
 
+def f7(seq):
+    """ This function is removing duplicates from a list while keeping the order """
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
 dtensor5 = T.TensorType('float64', (False,)*5)
 

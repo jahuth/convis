@@ -5,7 +5,8 @@ class Stream(object):
         self.size = list(size)
         self.pixel_per_degree = pixel_per_degree
     def __iter__(self):
-        return np.zeros(self.size)
+        while True:
+            yield np.zeros(self.size)
     def available(self):
         return -1
     def get(self,i):
@@ -17,7 +18,8 @@ class RandomStream(Stream):
         self.size = list(size)
         self.pixel_per_degree = pixel_per_degree
     def __iter__(self):
-        return self.level * np.random.rand(*self.size)
+        while True:
+            yield self.level * np.random.rand(*self.size)
     def available(self):
         return -1
     def get(self,i):
@@ -30,10 +32,9 @@ class SequenceStream(Stream):
         self.sequence = sequence
         self.i = 0
     def __iter__(self):
-        self.i += 1
-        if len(self.sequence) < self.i:
-            raise Exception('End of Sequence reached!')
-        return self.sequence[i-1]
+        while len(self.sequence) < self.i:
+            self.i += 1
+            yield self.sequence[i-1]
     def available(self):
         return len(self.sequence) - self.i
     def get(self,i):
@@ -47,10 +48,11 @@ class RepeatingStream(Stream):
         self.sequence = sequence
         self.i = 0
     def __iter__(self):
-        self.i += 1
-        if len(self.sequence) < self.i:
-            self.i=0
-        return self.sequence[i-1]
+        while True:
+            self.i += 1
+            while len(self.sequence) < self.i:
+                self.i=0
+            yield self.sequence[i-1]
     def available(self):
         return -1
     def get(self,i):
