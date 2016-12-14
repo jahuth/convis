@@ -529,9 +529,17 @@ class M(object):
         if issubclass(b.__class__, N):
             if hasattr(b.var('input'),'variable_type') and b.var('input').variable_type == 'input':
                 b.var('input').variable_type = 'replaced_input'
+            if not hasattr(a.output, 'connects'):
+                a.output.connects = []
+            a.output.connects.append([b,a])
             theano_utils._replace(b.output,b.var('input'),a.var('output'))
-        else:
+        elif hasattr(b,'node'):
+            if not hasattr(a.output, 'connects'):
+                a.output.connects = []
+            a.output.connects.append([b.node,a])
             theano_utils._replace(b.node.output,b,a.output)
+        else:
+            raise Exception('This is not a node and not a variable with a node. Maybe the variable was not named?')
         #self.module_graph.append([a,b]) # no longer used??
         #b.replace(b.var('input'),a.var('output'))
     def _in_out(self,a,b):

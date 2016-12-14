@@ -294,18 +294,27 @@ def png_display():
             import sys
             # Create a TCP/IP socket
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_address = ('localhost', 10000)
+            port = 10000
+            for i in range(200):
+                try:
+                    self.server_address = ('localhost', port)
+                    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    #self.sock.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
+                    self.sock.bind(self.server_address)
+                except:
+                    #print 'port taken. starting up on %s port %s' % self.server_address
+                    port = 10000 + np.random.randint(1000)
+            self.root.title('%s:%s' % self.server_address)
             print >>sys.stderr, 'starting up on %s port %s' % self.server_address
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            #self.sock.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
-            self.sock.bind(self.server_address)
+            #self.sock.setblocking(0)
             self.sock.listen(10)
-            self.sock.setblocking(0)
             while self.closed is False:
                 try:
+                    print 'waiting...'
                     connection, client_address = self.sock.accept()
                     thread.start_new_thread(self.serve,(connection, client_address))
                 except:
+                    raise
                     pass
             self.sock.close()
         def serve(self,connection, client_address):
