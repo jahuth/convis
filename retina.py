@@ -5,8 +5,6 @@ This module implements a spiking retina model in python and theano.
 It is based on the VirutalRetina Simualtor [Wohrer 2008].
 
 
-OLD CODE! Will be replaced.
-
 General Overview
 -----------------
 
@@ -27,7 +25,7 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 """
 from .retina_virtualretina import RetinaConfiguration
 from . import retina_virtualretina
-from .base import M
+from .base import M, GraphWrapper
 
 from .filters.retina import *
 
@@ -51,13 +49,13 @@ class Retina(M):
             if ganglion_config.get('enabled',True):
                 gl_name = ganglion_config.get('name','')
                 if gl_name != '':
-                    gl_name = ': '+gl_name
+                    gl_name = '_'+gl_name
                 if kwargs.get('ganglion_input',True):
-                    gang_in = GanglionInputLayerNode(name='Ganglion Input Layer'+gl_name,model=self,config=ganglion_config)
+                    gang_in = GanglionInputLayerNode(name='GanglionInputLayer'+gl_name,model=self,config=ganglion_config)
                     self.ganglion_input_layers.append(gang_in)
                 if kwargs.get('ganglion_spikes',True):
                     if 'spiking-channel' in ganglion_config and ganglion_config['spiking-channel'].get('enabled',True) != False:
-                        gang_spikes = GanglionSpikingLayerNode(name='Ganglion Spikes',model=self,config=ganglion_config['spiking-channel'])
+                        gang_spikes = GanglionSpikingLayerNode(name='GanglionSpikes',model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
                         if kwargs.get('ganglion_input',True) and kwargs.get('ganglion_spikes',True):
                             self.in_out(gang_in,gang_spikes)
@@ -66,3 +64,4 @@ class Retina(M):
                     self.in_out(self.bipol,gang_in)
         if kwargs.get('opl',True) and kwargs.get('bipolar',True):
             self.in_out(self.opl,self.bipol)
+        #self.all = GraphWrapper([self.opl.output, self.bipol.output,self.ganglion_input_layers[0].output,self.ganglion_spiking_layers[0].output],'all',m=self)

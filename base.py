@@ -249,8 +249,8 @@ class GraphWrapper(object):
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
         self.node_description = ''
-        if self.m is not None:
-            self.m.add(self)
+        #if self.m is not None:
+        #    self.m.add(self)
     def get_parents(self):
         p = []
         if self.parent is not None:
@@ -423,7 +423,17 @@ class N(GraphWrapper):
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
-
+    def shape(self,input_shape):
+        # unless this node does something special, the shape of the output should be identical to the input
+        return input_shape
+    def __add__(self,other):
+        raise Exception('Not implemented!')
+        ##
+        # to get this working, I need to have a sure way to clone nodes with all the associated info in the graph.
+        # after that this function should merge two nodes and return a new one
+        # this means that it's not really for connecting two nodes that we already have in a model, but rather replacing them
+        # with a new one.
+        return N()
 
 
 class _Vars(O):
@@ -472,6 +482,18 @@ class M(object):
     @property
     def v(self):
         return _Vars(self)
+    @property
+    def _parameters(self):
+        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
+    @property
+    def _params(self):
+        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
+    @property
+    def _states(self):
+        return create_hierarchical_O(filter(is_state,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
+    @property
+    def _variables(self):
+        return create_hierarchical_O(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
     def degree_to_pixel(self,degree):
         return float(degree) * self.pixel_per_degree
     def pixel_to_degree(self,pixel):
@@ -517,9 +539,11 @@ class M(object):
         if issubclass(b.__class__, N):
             if hasattr(b.var('input'),'variable_type') and b.var('input').variable_type == 'input':
                 b.var('input').variable_type = 'replaced_input'
-        self.module_graph.append([a,b])
+            theano_utils._replace(b.output,b.var('input'),a.var('output'))
+        else:
+            theano_utils._replace(b.node.output,b,a.output)
+        #self.module_graph.append([a,b]) # no longer used??
         #b.replace(b.var('input'),a.var('output'))
-        theano_utils._replace(b.output,b.var('input'),a.var('output'))
     def _in_out(self,a,b):
         #self.map(b.var('input'),a.var('output'))
         aa = a
@@ -583,7 +607,9 @@ class M(object):
                 #print "No substitution!"
                 inputs.append(o)
         return inputs 
-    def create_function(self,updates=theano.updates.OrderedUpdates(),additional_inputs=[]):
+    def create_function(self,updates=None,additional_inputs=[]):
+        if updates is None:
+            updates = theano.updates.OrderedUpdates()
         for a,b in  self.mappings.items():
             for n in self.nodes:
                 if a.variable_type == 'input':
@@ -621,7 +647,7 @@ class M(object):
                                         givens=givens,on_unused_input='ignore')
     def clear_states(self):
         self.compute_state_dict = {}
-    def run(self,the_input,additional_inputs=[],**kwargs):
+    def run(self,the_input,additional_inputs=[],inputs={},**kwargs):
         c = O()
         c.input = the_input
         c.model = self
@@ -637,7 +663,10 @@ class M(object):
             else:
                 if is_input(k):
                     if k not in self.additional_inputs:
-                        input_dict[k] = the_input
+                        if k in inputs:
+                            input_dict[k] = inputs[k]
+                        else:
+                            input_dict[k] = the_input
                 if is_input_parameter(k):
                     input_dict[k] = k.param_init(c(node=k.node,var=k,model=self))
                 if is_state(k):
