@@ -9,6 +9,7 @@ import uuid
 from . import retina_base
 from . import theano_utils
 from exceptions import NotImplementedError
+from variable_describe import describe, describe_dict, describe_html
 
 
 def f7(seq):
@@ -19,197 +20,7 @@ def f7(seq):
 
 
 
-## Describing Variables 
-#
-# as dict, str or HTML
-#
 
-def describe(v,**kwargs):
-    return _Descriptor(v,**kwargs)
-
-class _Descriptor(object):
-    def __init__(self,v,**kwargs):
-        self.v = v
-        self.kwargs = kwargs
-    def __repr__(self):
-        return repr(describe_dict(self.v))
-    def __str__(self):
-        return str(describe_dict(self.v))
-    def _repr_html_(self):
-        return describe_html(self.v,wrap_in_html=False,**self.kwargs)
-
-def describe_dict(v):
-    if type(v) in [list, tuple] or hasattr(v,'__iter__'):
-        try:
-            return [describe_text(vv) for vv in v]
-        except:
-            # Tensor Variables love to raise TypeErrors when iterated over
-            pass
-    d = {}
-    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set']:
-        if hasattr(v,k):
-            d[k] = getattr(v,k)
-    try:
-        d['value'] = v.get_value()
-    except:
-        pass
-    try:
-        d['got'] = v.get(tu.create_context_O(v))
-    except:
-        pass
-    return d
-
-def _plot_to_string():
-    import StringIO, urllib
-    import base64
-    import matplotlib.pylab as plt
-    imgdata = StringIO.StringIO()
-    plt.savefig(imgdata)
-    plt.close()
-    imgdata.seek(0) 
-    image = base64.encodestring(imgdata.buf)  
-    return str(urllib.quote(image))
-
-def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={},imshow_kwargs={},preamble=True,**other_kwargs):
-    """
-        This function plots/prints numerical objects of 0,1,2,3 and 5 dimensions such that it can be displayed as html.
-    """
-    kwargs = {'title':title,'figsize':figsize,'line_figsize':line_figsize,'line_kwargs':line_kwargs,'imshow_kwargs':imshow_kwargs}
-    imshow_kwargs['interpolation'] = imshow_kwargs.get('interpolation','nearest')
-    if type(t) == int or type(t) == float:
-        return str(t)
-    elif type(t) == np.ndarray:
-        import matplotlib.pylab as plt
-        if len(t.shape) == 0:
-            return str(t)
-        if len(t.shape) == 1:
-            if t.shape[0] == 1:
-                if preamble is False:
-                    return str(t[0])
-                return str(t[0]) + ' (1,)'
-            else:
-                plt.figure(figsize=line_figsize)
-                if title != '':
-                    plt.title(title)
-                plt.plot(t,**line_kwargs)
-                if preamble is False:
-                    return "<img src='data:image/png;base64," + _plot_to_string() + "'>"
-                return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
-        elif len(t.shape) == 2:
-            if t.shape[0] == 1 and t.shape[1] == 1:
-                if preamble is False:
-                    return str(t[0])
-                return str(t[0]) + ' (1,1)'
-            else:
-                if np.abs(float(t.shape[0] - t.shape[1]))/(t.shape[0]+t.shape[1]) < 0.143:
-                    # for roughly square 2d objects
-                    plt.figure(figsize=figsize)
-                    if title != '':
-                        plt.title(title)
-                    plt.imshow(t,**imshow_kwargs)
-                    plt.colorbar()
-                else:
-                    plt.figure(figsize=line_figsize)
-                    # for 2d objects with one long side:
-                    if t.shape[0] > t.shape[1]:
-                        plt.plot(t,**line_kwargs)
-                    else:
-                        plt.plot(t.transpose(),**line_kwargs)
-                if preamble is False:
-                    return "<img src='data:image/png;base64," + _plot_to_string() + "'>"
-                return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
-        elif len(t.shape) == 3:
-            if t.shape[0] == 1 and t.shape[1] == 1 and t.shape[2] == 1:
-                return str(t[0]) + ' (1,1,1)'
-            else:
-                if t.shape[0] == 1:
-                    img = _tensor_to_html(t[0,:,:],preamble=False,**kwargs)
-                elif t.shape[1] == 1 and t.shape[2] == 1:
-                    img = _tensor_to_html(t[:,0,0],preamble=False,**kwargs)
-                else:
-                    plt.figure(figsize=figsize)
-                    if title != '':
-                        plt.suptitle(title)
-                    plt.subplot(221)
-                    plt.title('mean over time')
-                    plt.imshow(t.mean(0),**imshow_kwargs)
-                    plt.subplot(222)
-                    plt.title('mean over x')
-                    plt.plot(t.mean((0,2)),range(t.shape[1]),**line_kwargs)
-                    plt.ylabel('y')
-                    plt.subplot(223)
-                    plt.title('mean over y')
-                    plt.plot(t.mean((0,1)),**line_kwargs)
-                    plt.xlabel('x')
-                    plt.subplot(224)
-                    plt.title('mean over x and y')
-                    plt.plot(t.mean((1,2)),**line_kwargs)  
-                    plt.xlabel('time')
-                    plt.tight_layout()
-                    img = "<img src='data:image/png;base64," + _plot_to_string() + "'>"
-                if preamble is False:
-                    return img
-                return "Numpy array "+str(t.shape)+"<br/>"+img                  
-        elif len(t.shape) == 5:
-            # we assume its actually 3d with extra dimensions
-            if t.shape[0] == 1 and t.shape[2] == 1:
-                return "Numpy array "+str(t.shape)+"<br/>"+_tensor_to_html(t[0,:,0,:,:],preamble=False,**kwargs)
-            else:
-                return '5D tensor with too large first or third dimensions!'
-        else:
-            return 'Numpy Array ('+str(t.shape)+')'
-    else:
-        if preamble is False:
-            return str(t[0])
-        return str(type(t))+': '+str(t)
-
-def describe_html(v,wrap_in_html=True,**kwargs):
-    from IPython.display import HTML
-    import html
-    if type(v) in [list, tuple] or hasattr(v,'__iter__'):
-        try:
-            s = "<div class='convis_description list'><h3>List ("+str(len(v))+"):</h3>"
-            s += "<div style='border-left: 4px solid #ddd; padding-left: 5px;'>"
-            s += '\n'.join([describe_html(vv,wrap_in_html=False,**kwargs) for vv in v])
-            s += "</div>"
-            s += "</div>"
-            if not wrap_in_html:
-                return s
-            return HTML(s)
-        except:
-            # Tensor Variables love to raise TypeErrors when iterated over
-            pass
-    d = {}
-    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type']:
-        if hasattr(v,k):
-            d[k] = getattr(v,k)
-    name = str(d.get('name','')) # optional: None handling
-    simple_name = str(d.get('simple_name',''))
-    s = """<div class='convis_description variable'><h3 onclick='$(this).parent().find(".description_content").toggle();$(this).parent().find(".description_content_replacer").toggle();'>"""+d.get('variable_type','')+""": """+simple_name+""" ("""+name+""")</h3>"""
-    # default: show everything, hide on click;
-    s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; display: none;'>(&#8230;)</div>"
-    s += "<div class='description_content' style='border-left: 2px solid #eee; padding-left: 5px;'>"
-    if hasattr(v,'doc'):
-        s += '<p class="doc" style="padding:2px;">'+getattr(v,'doc')+'</p>'
-    for k in ['config_key','optimizable','node','save','init','get','set']:
-        if hasattr(v,k):
-            s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(getattr(v,k)))+'</tt></div>'
-    try:
-        if hasattr(v,'get_value'):
-            s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),**kwargs))
-    except Exception as e:
-        s+= '<b>value</b>: ' + str(e)
-        pass
-    try:
-        s+= '<b>got</b>: ' + _tensor_to_html(v.get(tu.create_context_O(v)),**kwargs)
-    except:
-        pass
-    s += """</div>"""
-    s += """</div>"""
-    if not wrap_in_html:
-        return s
-    return HTML(s)
-### Helper functions to deal with annotated variables
 
 def unindent(text):
     from textwrap import dedent
@@ -289,6 +100,10 @@ class O(object):
         return self
     def __iter__(self):
         return iter(self.__dict__.values())
+    def __repr__(self):
+        return 'Choices: '+(', '.join(self.__dict__.keys()))
+    def _repr_html_(self):
+        return repr(self)
 
 def create_context_O(var):
     """
@@ -322,7 +137,10 @@ def create_context_O(var):
 
 def create_hierarchical_O(vs,pi=0):
     """
+        Creates an object that hierarchically represents the supplied items.
+        The object is an interactively usable dictionary (see `O` objects) which provides tab completion for all entries.
 
+        Each item is required to have a 'path' attribute which is a list of strings.
     """
     o = O()
     paths = f7([v.path[pi].name for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
@@ -688,7 +506,14 @@ class N(GraphWrapper):
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
 
 
-
+class _Search(O):
+    def __init__(self,**kwargs):
+        self._things = kwargs
+    def __getattr__(self,search_string):
+        return O(**dict([(k,v) for (k,v) in self._things.items() if search_string in k]))
+    def __repr__(self):
+        return 'Choices: enter a search term, enter with a dot and use autocomplete to see matching items.'
+   
 class _Vars(O):
     def __init__(self,model,**kwargs):
         self.model = model
@@ -697,6 +522,8 @@ class _Vars(O):
         nodes = f7([v.node for v in vars if hasattr(v,'node')])
         for n in nodes:
             self.__dict__[n.name] = O(**dict([(str(k.simple_name),k) for k in vars if hasattr(k,'node') and k.node == n]))
+        self.__dict__['_all'] = O(**dict([(str('_'.join([p.name for p in k.path])),k) for k in vars if hasattr(k,'path')]))
+        self.__dict__['_search'] = _Search(**dict([(str('_'.join([p.name for p in k.path])),k) for k in vars if hasattr(k,'path')]))
 
 class _Configuration(O):
     def __init__(self,model,**kwargs):
