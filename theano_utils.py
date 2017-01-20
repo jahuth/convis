@@ -117,7 +117,7 @@ def get_all_variables(apply_node):
         parent_inputs += get_all_variables(i)
     return parent_inputs
 
-def get_variables_iter(apply_node,depth=None):
+def get_variables_iter(apply_node,depth=None,ignore=[]):
     """ get variables that have a name """
     if type(apply_node) in [list,tuple]:
         return f7([b for a in apply_node for b in get_variables_iter(a,depth=depth)])
@@ -128,12 +128,12 @@ def get_variables_iter(apply_node,depth=None):
             node = nodes_to_explore.pop()
             nodes_explored.append(node)
             if hasattr(node,'owner') and node.owner is not None:
-                nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored])
+                nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored and not i in ignore])
             if depth is not None and len(nodes_explored) > depth:
                 break
         return nodes_explored
 
-def get_input_variables_iter(apply_node,depth=None):
+def get_input_variables_iter(apply_node,depth=None,ignore=[]):
     """ get variables that have a name """
     nodes_to_explore = [apply_node]
     input_nodes = []
@@ -142,19 +142,19 @@ def get_input_variables_iter(apply_node,depth=None):
         node = nodes_to_explore.pop()
         nodes_explored.append(node)
         if hasattr(node,'owner') and node.owner is not None and len(node.owner.inputs) > 0:
-            nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored])
+            nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored and not i in ignore])
         else:
             input_nodes.append(node)
         if depth is not None and len(nodes_explored) > depth:
             break
     return input_nodes
 
-def get_named_variables_iter(apply_node,depth=None):
+def get_named_variables_iter(apply_node,depth=None,ignore=[]):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None, get_variables_iter(apply_node,depth=depth))
-def get_named_input_variables_iter(apply_node,depth=None):
+    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_variables_iter(apply_node,depth=depth,ignore=ignore))
+def get_named_input_variables_iter(apply_node,depth=None,ignore=[]):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None, get_input_variables_iter(apply_node,depth=depth))
+    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_input_variables_iter(apply_node,depth=depth,ignore=ignore))
 
 #def replace(apply_node,old,new):
 #    apply_node.replace(old,new)

@@ -18,10 +18,30 @@ def f7(seq):
     return [x for x in seq if not (x in seen or seen_add(x))]
 
 
-def describe(v):
+
+## Describing Variables 
+#
+# as dict, str or HTML
+#
+
+def describe(v,**kwargs):
+    return _Descriptor(v,**kwargs)
+
+class _Descriptor(object):
+    def __init__(self,v,**kwargs):
+        self.v = v
+        self.kwargs = kwargs
+    def __repr__(self):
+        return repr(describe_dict(self.v))
+    def __str__(self):
+        return str(describe_dict(self.v))
+    def _repr_html_(self):
+        return describe_html(self.v,wrap_in_html=False,**self.kwargs)
+
+def describe_dict(v):
     if type(v) in [list, tuple] or hasattr(v,'__iter__'):
         try:
-            return [describe(vv) for vv in v]
+            return [describe_text(vv) for vv in v]
         except:
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
@@ -39,6 +59,156 @@ def describe(v):
         pass
     return d
 
+def _plot_to_string():
+    import StringIO, urllib
+    import base64
+    import matplotlib.pylab as plt
+    imgdata = StringIO.StringIO()
+    plt.savefig(imgdata)
+    plt.close()
+    imgdata.seek(0) 
+    image = base64.encodestring(imgdata.buf)  
+    return str(urllib.quote(image))
+
+def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={},imshow_kwargs={},preamble=True,**other_kwargs):
+    """
+        This function plots/prints numerical objects of 0,1,2,3 and 5 dimensions such that it can be displayed as html.
+    """
+    kwargs = {'title':title,'figsize':figsize,'line_figsize':line_figsize,'line_kwargs':line_kwargs,'imshow_kwargs':imshow_kwargs}
+    imshow_kwargs['interpolation'] = imshow_kwargs.get('interpolation','nearest')
+    if type(t) == int or type(t) == float:
+        return str(t)
+    elif type(t) == np.ndarray:
+        import matplotlib.pylab as plt
+        if len(t.shape) == 0:
+            return str(t)
+        if len(t.shape) == 1:
+            if t.shape[0] == 1:
+                if preamble is False:
+                    return str(t[0])
+                return str(t[0]) + ' (1,)'
+            else:
+                plt.figure(figsize=line_figsize)
+                if title != '':
+                    plt.title(title)
+                plt.plot(t,**line_kwargs)
+                if preamble is False:
+                    return "<img src='data:image/png;base64," + _plot_to_string() + "'>"
+                return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
+        elif len(t.shape) == 2:
+            if t.shape[0] == 1 and t.shape[1] == 1:
+                if preamble is False:
+                    return str(t[0])
+                return str(t[0]) + ' (1,1)'
+            else:
+                if np.abs(float(t.shape[0] - t.shape[1]))/(t.shape[0]+t.shape[1]) < 0.143:
+                    # for roughly square 2d objects
+                    plt.figure(figsize=figsize)
+                    if title != '':
+                        plt.title(title)
+                    plt.imshow(t,**imshow_kwargs)
+                    plt.colorbar()
+                else:
+                    plt.figure(figsize=line_figsize)
+                    # for 2d objects with one long side:
+                    if t.shape[0] > t.shape[1]:
+                        plt.plot(t,**line_kwargs)
+                    else:
+                        plt.plot(t.transpose(),**line_kwargs)
+                if preamble is False:
+                    return "<img src='data:image/png;base64," + _plot_to_string() + "'>"
+                return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
+        elif len(t.shape) == 3:
+            if t.shape[0] == 1 and t.shape[1] == 1 and t.shape[2] == 1:
+                return str(t[0]) + ' (1,1,1)'
+            else:
+                if t.shape[0] == 1:
+                    img = _tensor_to_html(t[0,:,:],preamble=False,**kwargs)
+                elif t.shape[1] == 1 and t.shape[2] == 1:
+                    img = _tensor_to_html(t[:,0,0],preamble=False,**kwargs)
+                else:
+                    plt.figure(figsize=figsize)
+                    if title != '':
+                        plt.suptitle(title)
+                    plt.subplot(221)
+                    plt.title('mean over time')
+                    plt.imshow(t.mean(0),**imshow_kwargs)
+                    plt.subplot(222)
+                    plt.title('mean over x')
+                    plt.plot(t.mean((0,2)),range(t.shape[1]),**line_kwargs)
+                    plt.ylabel('y')
+                    plt.subplot(223)
+                    plt.title('mean over y')
+                    plt.plot(t.mean((0,1)),**line_kwargs)
+                    plt.xlabel('x')
+                    plt.subplot(224)
+                    plt.title('mean over x and y')
+                    plt.plot(t.mean((1,2)),**line_kwargs)  
+                    plt.xlabel('time')
+                    plt.tight_layout()
+                    img = "<img src='data:image/png;base64," + _plot_to_string() + "'>"
+                if preamble is False:
+                    return img
+                return "Numpy array "+str(t.shape)+"<br/>"+img                  
+        elif len(t.shape) == 5:
+            # we assume its actually 3d with extra dimensions
+            if t.shape[0] == 1 and t.shape[2] == 1:
+                return "Numpy array "+str(t.shape)+"<br/>"+_tensor_to_html(t[0,:,0,:,:],preamble=False,**kwargs)
+            else:
+                return '5D tensor with too large first or third dimensions!'
+        else:
+            return 'Numpy Array ('+str(t.shape)+')'
+    else:
+        if preamble is False:
+            return str(t[0])
+        return str(type(t))+': '+str(t)
+
+def describe_html(v,wrap_in_html=True,**kwargs):
+    from IPython.display import HTML
+    import html
+    if type(v) in [list, tuple] or hasattr(v,'__iter__'):
+        try:
+            s = "<div class='convis_description list'><h3>List ("+str(len(v))+"):</h3>"
+            s += "<div style='border-left: 4px solid #ddd; padding-left: 5px;'>"
+            s += '\n'.join([describe_html(vv,wrap_in_html=False,**kwargs) for vv in v])
+            s += "</div>"
+            s += "</div>"
+            if not wrap_in_html:
+                return s
+            return HTML(s)
+        except:
+            # Tensor Variables love to raise TypeErrors when iterated over
+            pass
+    d = {}
+    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type']:
+        if hasattr(v,k):
+            d[k] = getattr(v,k)
+    name = str(d.get('name','')) # optional: None handling
+    simple_name = str(d.get('simple_name',''))
+    s = """<div class='convis_description variable'><h3 onclick='$(this).parent().find(".description_content").toggle();$(this).parent().find(".description_content_replacer").toggle();'>"""+d.get('variable_type','')+""": """+simple_name+""" ("""+name+""")</h3>"""
+    # default: show everything, hide on click;
+    s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; display: none;'>(&#8230;)</div>"
+    s += "<div class='description_content' style='border-left: 2px solid #eee; padding-left: 5px;'>"
+    if hasattr(v,'doc'):
+        s += '<p class="doc" style="padding:2px;">'+getattr(v,'doc')+'</p>'
+    for k in ['config_key','optimizable','node','save','init','get','set']:
+        if hasattr(v,k):
+            s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(getattr(v,k)))+'</tt></div>'
+    try:
+        if hasattr(v,'get_value'):
+            s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),**kwargs))
+    except Exception as e:
+        s+= '<b>value</b>: ' + str(e)
+        pass
+    try:
+        s+= '<b>got</b>: ' + _tensor_to_html(v.get(tu.create_context_O(v)),**kwargs)
+    except:
+        pass
+    s += """</div>"""
+    s += """</div>"""
+    if not wrap_in_html:
+        return s
+    return HTML(s)
 ### Helper functions to deal with annotated variables
 
 def unindent(text):
@@ -59,6 +229,7 @@ def add_kwargs_to_v(v,**kwargs):
 
 # functions on theano variables
 def as_state(v,out_state=None,init=None,name=None,**kwargs):
+    v.__is_convis_var = True
     v.variable_type = 'state'
     if out_state is not None:
         v.state_out_state = out_state
@@ -68,6 +239,7 @@ def as_state(v,out_state=None,init=None,name=None,**kwargs):
         v.name = name
     return add_kwargs_to_v(v,**kwargs)
 def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
+    v.__is_convis_var = True
     v.variable_type = 'out_state'
     if in_state is not None:
         as_state(in_state,out_state=v,init=init)
@@ -78,6 +250,7 @@ def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
 S = as_state
 OS = as_out_state
 def as_input(v,name=None,**kwargs):
+    v.__is_convis_var = True
     v.variable_type = 'input'
     if name is not None:
         v.name = name
@@ -85,6 +258,7 @@ def as_input(v,name=None,**kwargs):
     return add_kwargs_to_v(v,**kwargs)
 I = as_input
 def as_parameter(v,init=None,name=None,**kwargs):
+    v.__is_convis_var = True
     v.variable_type = 'parameter'
     if init is not None:
         v.param_init = init
@@ -159,6 +333,19 @@ def create_hierarchical_O(vs,pi=0):
         o(**{l.name: l})
     return o
 
+def create_hierarchical_dict(vs,pi=0):
+    """
+
+    """
+    o = {}
+    paths = f7([v.path[pi].name for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
+    for p in paths:
+        o.update(**{p: create_hierarchical_dict([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi].name == p], pi+1)})
+    for l in leaves:
+        o.update(**{l.name: l})
+    return o
+
 def is_state(v):
     return hasattr(v,'variable_type') and v.variable_type == 'state'
 def is_out_state(v):
@@ -184,12 +371,39 @@ def shared_parameter(fun,init_object=O(),**kwargs):
     return as_parameter(theano.shared(fun(init_object)),
                         initialized = True,
                         init=fun,**kwargs)
+
 def pad5(ar,N,axis=3,mode='mirror',c=0.0):
     """
-        Padds a 5 dimensional tensor with N additional values.
+        Padds a 5 dimensional tensor with `N` additional values.
+        If the tensor has less than 5 dimensions, it will be extended.
+        Returns a 5 dimensional tensor.
 
-        Dimensions 0 and 2 are ignored.
+        Axis 0 and 2 are ignored.
+
+        Usage:
+
+            pad5 padds one axis at a time with one of the following modes:
+
+            mode = 'mirror' (default)
+                the image is mirrored at the edges, such that image statistics are similar
+
+            mode = 'border'
+                the border pixels are repeated 
+
+            mode = 'const'
+                the padded area is filled with a single value (default 0.0)
+                It can also be a theano varible such as the mean of the tensor that is to be padded.
+
+        For axis 1 (time), the padding happens exclusively at the front,
+        for axes 3 and 4 (x and y) the amount is split into `N/2` and `N-(N/2)` (this can be asymmetric!).
+        The total amount padded is always `N`.
+
+        For convenience, `pad5_txy` can pad time, x and y with the same mode simultaneously.
+        `pad3` and `pad2` return 3 tensors and matrices after padding.
     """
+    ar = theano_utils.make_nd(ar,5)
+    if N == 0:
+        return ar
     N1,N2 = (N/2),N-(N/2)
     if mode == 'mirror':
         if axis == 1:
@@ -220,9 +434,56 @@ def pad5_txy(ar,Nt,Nx,Ny,mode='mirror',c=0.0):
             Nt: number of steps added to the temporal dimension
             Nx,Ny: number of pixels added to the spatial dimensions
 
+        see `pad5` for mode and c
     """
-    return pad5(pad5(pad5(I,Nt,1,mode=mode),Nx,3,mode=mode),Ny,4,mode=mode)
+    return pad5(pad5(pad5(ar,Nt,1,mode=mode),Nx,3,mode=mode),Ny,4,mode=mode)
 
+def pad3(ar,N,axis=3,mode='mirror',c=0.0):
+    """
+        Padds a 3 dimensional tensor at axis `axis` with `N` bins.
+        If the tensor does not have 3 dimensions, it will be converted.
+        Returns a 3 dimensional tensor.
+
+        see `pad5`
+    """
+    if axis in [0,1,2]:
+        axis = {0:1, 1:3, 2:4}[axis]
+    else:
+        raise Exception('pad3 only accepts axis 0,1,2! Use pad5 for higer dimension tensors')
+    return pad5(theano_utils.make_nd(theano_utils.make_nd(ar,5),N=N,axis=axis,mode=mode,c=c),3)
+def pad3_txy(ar,Nt,Nx,Ny,mode='mirror',c=0.0):
+    """
+        Padds a 3 dimensional tensor with `Nt` bins in time and `Nx` and `Ny` bins in x and y direction.
+        If the tensor does not have 3 dimensions, it will be converted.
+        Returns a 3 dimensional tensor.
+
+        see `pad5_txy` and `pad5`
+    """
+    return theano_utils.make_nd(pad5_txy(theano_utils.make_nd(ar,5),Nt,Nx,Ny,mode=mode,c=c),3)
+
+def pad2(ar,N,axis=3,mode='mirror',c=0.0):
+    """
+        Padds a 2 dimensional tensor at axis `axis` with `N` bins.
+        If the tensor does not have 2 dimensions, it will be converted.
+        Returns a 2 dimensional tensor.
+
+        see `pad5`
+    """
+    if axis in [0,1]:
+        axis = {0:3, 1:4}[axis]
+    else:
+        raise Exception('pad2 only accepts axis 0 and 1! Use pad5 for higer dimension tensors')
+    return theano_utils.make_nd(pad5(theano_utils.make_nd(ar,5),N=N,axis=axis,mode=mode,c=c),2)
+
+def pad2_xy(ar,Nx,Ny,mode='mirror',c=0.0):
+    """
+        Padds a 2 dimensional tensor with `Nx` and `Ny` bins in x and y direction.
+        If the tensor does not have 2 dimensions, it will be converted.
+        Returns a 2 dimensional tensor.
+
+        see `pad5_txy` and `pad5`
+    """
+    return theano_utils.make_nd(pad5_txy(theano_utils.make_nd(ar,5),0,Nx,Ny,mode=mode,c=c),2)
 
 ### Node and Model classes
 
@@ -236,7 +497,7 @@ class GraphWrapper(object):
         
 
     """
-    def __init__(self,graph,name,m=None,parent=None,**kwargs):
+    def __init__(self,graph,name,m=None,parent=None,ignore=[],**kwargs):
         self.m = m
         self.parent = parent
         self.graph = T.as_tensor_variable(graph)
@@ -245,6 +506,7 @@ class GraphWrapper(object):
         #self.outputs = [self.graph]
         self.name = name
         self.variable_dict = {}
+        self.ignore = ignore
         self.label_variables(self.graph)
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
@@ -259,7 +521,7 @@ class GraphWrapper(object):
                 p.extend(self.parent.get_parents())
         return p
     def label_variables(self,g):
-        my_named_vars = theano_utils.get_named_variables_iter(g)
+        my_named_vars = theano_utils.get_named_variables_iter(g,ignore=self.ignore)
         # variables that don't have a name are not tracked.
         for v in my_named_vars:
             if hasattr(v,'path'):
@@ -383,7 +645,7 @@ class N(GraphWrapper):
     def get_input_variables(self):
         return dict([(v,self) for v in theano_utils.get_input_variables_iter(self.graph)])
     def get_output_variables(self):
-        return dict([(v,self) for v in self.outputs])
+        return {self.graph: self}
     def set_m(self,m):
         self.m = m
         return self
@@ -401,12 +663,13 @@ class N(GraphWrapper):
         self.states[in_state] = out_state
         as_state(in_state,out_state=out_state,**kwargsW)
     def replace(self,a,b):
-        for o in self.outputs:
-            theano_utils._replace(o,b,a)
+        theano_utils._replace(self.graph,b,a)
         # replace in out states
         for o in [v.state_out_state for v in filter(is_state,self.get_variables())]:
             theano_utils._replace(o,b,a)
-    def get_config(self,key,default=None):
+    def get_config(self,key,default=None,type_cast=None):
+        if type_cast is not None:
+            return type_cast(self.get_config(key,default))
         if not hasattr(self,'config'):
             return default
         return self.config.get(key,default)
@@ -645,6 +908,16 @@ class M(object):
                                         givens=givens,on_unused_input='ignore')
     def clear_states(self):
         self.compute_state_dict = {}
+    def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},**kwargs):
+        chuncked_output = []
+        t = 0
+        while t < the_input.shape[0]:
+            oo = self.run(the_input[t:(t+max_length)],
+                          additional_inputs=[ai[t:(t+max_length)] for ai in additional_inputs],
+                          inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]))
+            chuncked_output.append(oo)
+            t += max_length
+        return np.concatenate(chuncked_output,axis=1)
     def run(self,the_input,additional_inputs=[],inputs={},**kwargs):
         c = O()
         c.input = the_input
