@@ -104,6 +104,10 @@ class O(object):
         return 'Choices: '+(', '.join(self.__dict__.keys()))
     def _repr_html_(self):
         return repr(self)
+    def __len__(self):
+        return len(self.__dict__.keys())
+    def __iter__(self):
+        return iter(self.__dict__.values())
 
 def create_context_O(var):
     """
@@ -513,7 +517,7 @@ class _Search(O):
         return O(**dict([(k,v) for (k,v) in self._things.items() if search_string in k]))
     def __repr__(self):
         return 'Choices: enter a search term, enter with a dot and use autocomplete to see matching items.'
-   
+
 class _Vars(O):
     def __init__(self,model,**kwargs):
         self.model = model

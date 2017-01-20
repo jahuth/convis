@@ -89,6 +89,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                     if title != '':
                         plt.title(title)
                     plt.plot(t,**line_kwargs)
+                    plt.tight_layout()
                     if preamble is False:
                         return "<img src='data:image/png;base64," + _plot_to_string() + "'>"
                     return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
@@ -112,6 +113,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                             plt.plot(t,**line_kwargs)
                         else:
                             plt.plot(t.transpose(),**line_kwargs)
+                    plt.tight_layout()
                     if preamble is False:
                         return "<img src='data:image/png;base64," + _plot_to_string() + "'>"
                     return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
@@ -119,11 +121,17 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                 if t.shape[0] == 1 and t.shape[1] == 1 and t.shape[2] == 1:
                     return str(t[0]) + ' (1,1,1)'
                 else:
+                    legend = ""
                     if t.shape[0] == 1:
                         img = _tensor_to_html(t[0,:,:],preamble=False,**kwargs)
                     elif t.shape[1] == 1 and t.shape[2] == 1:
                         img = _tensor_to_html(t[:,0,0],preamble=False,**kwargs)
                     else:
+                        ## Todo: Plotting profiles of other dimensions iff they show interesting changes
+                        #
+                        # Right now the profile is plotted if the tensor is sufficiently small.
+                        # But a better way would be to determine if the profile is "interesting"
+                        # and then sampling a few lines from there.
                         plt.figure(figsize=figsize)
                         if title != '':
                             plt.suptitle(title)
@@ -132,21 +140,35 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                         plt.imshow(t.mean(0),**imshow_kwargs)
                         plt.subplot(222)
                         plt.title('mean over x')
+                        if t.shape[2] <= 30:
+                            plt.plot(t.mean(0),range(t.shape[1]),'k',alpha=0.2,**line_kwargs)
+                            legend += 'Grey lines show the profile of the x dimension. '
+                        if t.shape[0] <= 100:
+                            plt.plot(t.mean(2).transpose(),range(t.shape[1]),'g',alpha=0.2,**line_kwargs)
                         plt.plot(t.mean((0,2)),range(t.shape[1]),**line_kwargs)
                         plt.ylabel('y')
                         plt.subplot(223)
                         plt.title('mean over y')
+                        if t.shape[1] <= 30:
+                            plt.plot(t.mean(0).transpose(),'r',alpha=0.2,**line_kwargs)
+                            legend += 'Red lines show the profile of the y dimension. '
+                        if t.shape[0] <= 100:
+                            plt.plot(t.mean(1).transpose(),'g',alpha=0.2,**line_kwargs)
+                            legend += 'Green lines show different time points. '
                         plt.plot(t.mean((0,1)),**line_kwargs)
                         plt.xlabel('x')
                         plt.subplot(224)
                         plt.title('mean over x and y')
+                        if t.shape[1]+t.shape[2] <= 2*30:
+                            plt.plot(t.reshape((t.shape[0],-1)),color='orange',alpha=0.1,**line_kwargs)
+                            legend += 'Orange lines show the spatial profile over time. '
                         plt.plot(t.mean((1,2)),**line_kwargs)  
                         plt.xlabel('time')
                         plt.tight_layout()
                         img = "<img src='data:image/png;base64," + _plot_to_string() + "'>"
                     if preamble is False:
                         return img
-                    return "Numpy array "+str(t.shape)+"<br/>"+img                  
+                    return "Numpy array "+str(t.shape)+"<br/>"+img+legend            
             elif len(t.shape) == 5:
                 # we assume its actually 3d with extra dimensions
                 if t.shape[0] == 1 and t.shape[2] == 1:
@@ -162,6 +184,19 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
 def describe_html(v,wrap_in_html=True,**kwargs):
     from IPython.display import HTML
     import html
+    ##       
+    # Handeling other datatypes
+    #
+    if type(v) == int or type(v) == float:
+        s = str(v)
+        if not wrap_in_html:
+            return s
+        return HTML(s)
+    elif type(v) == np.ndarray:
+        s = _tensor_to_html(v,**kwargs)
+        if not wrap_in_html:
+            return s
+        return HTML(s)
     if type(v) in [list, tuple] or hasattr(v,'__iter__'):
         try:
             s = "<div class='convis_description list'><h3>List ("+str(len(v))+"):</h3>"
@@ -175,6 +210,9 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         except:
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
+    ##       
+    # Assuming its a annotated theano variable:
+    #
     d = {}
     for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type']:
         if hasattr(v,k):
@@ -185,19 +223,21 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     # default: show everything, hide on click;
     s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; display: none;'>(&#8230;)</div>"
     s += "<div class='description_content' style='border-left: 2px solid #eee; padding-left: 5px;'>"
-    if hasattr(v,'doc'):
+    if hasattr(v,'path'):
+        s += "<small>" + ('_'.join([p.name for p in v.path])) + "</small>"
+    if hasattr(v,'doc') and getattr(v,'doc') != '':
         s += '<p class="doc" style="padding:2px;">'+getattr(v,'doc')+'</p>'
     for k in ['config_key','optimizable','node','save','init','get','set']:
         if hasattr(v,k):
             s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(getattr(v,k)))+'</tt></div>'
     try:
         if hasattr(v,'get_value'):
-            s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),**kwargs))
+            s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),title=name,**kwargs))
     except Exception as e:
         s+= '<b>value</b>: ' + str(e)
         pass
     try:
-        s+= '<b>got</b>: ' + _tensor_to_html(v.get(tu.create_context_O(v)),**kwargs)
+        s+= '<b>got</b>: ' + _tensor_to_html(v.get(tu.create_context_O(v)),title=name,**kwargs)
     except:
         pass
     s += """</div>"""
