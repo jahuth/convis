@@ -428,6 +428,9 @@ class GraphWrapper(object):
         self.variable_dict = {}
         self.ignore = ignore
         self.scan_op = scan_op
+        self.follow_scan = False
+        if self.follow_scan and scan_op is None:
+            self.wrap_scans(self.graph)
         self.label_variables(self.graph)
         #self.label_variables(self.scan_outputs,follow_scan=False) # just labeling these to prevent infinite recursion
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
@@ -443,41 +446,25 @@ class GraphWrapper(object):
             if hasattr(self.parent,'get_parents'):
                 p.extend(self.parent.get_parents())
         return p
+    def wrap_scans(self,g):
+        my_scan_vars = filter(lambda x: theano_utils.is_scan_op(x), theano_utils.get_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False))
+        for i,ow in enumerate(f7([v.owner for v in my_scan_vars])):
+            op = ow.op
+            variables_leading_to_op = [v for v in my_scan_vars if v.owner.op is op]
+            print ow, variables_leading_to_op
+            GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),scan_op=op,name='Scan Loop '+str(i),ignore=[self.graph]+self.ignore+ow.inputs) # creating a sub node
+            #+ow.inputs
+            self.label_variables([o for o in op.outputs])
     def label_variables(self,g,follow_scan=True,max_depth=2):
         if max_depth <= 0:
             return
-        my_named_vars = theano_utils.get_named_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False)
+        my_named_vars = theano_utils.get_named_variables_iter(g,ignore=self.ignore,explore_scan=True,include_copies=True)
         # variables that don't have a name are not tracked.
         # exception: we name and claim all scan op variables, since they mess up plotting the graph!
         my_scan_vars = filter(lambda x: theano_utils.is_scan_op(x), theano_utils.get_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False))
-        if not follow_scan:
+        if not follow_scan or not self.follow_scan:
             my_scan_vars = []
         scan_ops = {}
-        for i,ow in enumerate(f7([v.owner for v in my_scan_vars])):
-            op = ow.op
-            if False:
-                if hasattr(op,'graph'):
-                    print op.graph
-                    if op.graph == 'being_created':
-                        op.graph = 'being_labeled'
-                        self.label_variables(op.outputs)
-                    elif type(op.graph) is not str:
-                        self.label_variables(op.graph)
-                    continue
-                variables_leading_to_op = [v for v in my_scan_vars if v.owner.op is op]
-                for j,v in enumerate(variables_leading_to_op):
-                    if v.name is None:
-                        v.name = 'scan_'+str(i)+'_output_'+str(j)
-                    as_output(v)
-                op.graph = 'being_created'
-                #op.outputs
-                #scan_ops[op] = GraphWrapper(as_output(T.as_tensor_variable(variables_leading_to_op),name='scan_group_'+str(i)),name='Scan Loop '+str(i),ignore=self.ignore+ow.inputs) # creating a sub node
-                scan_ops[op] = GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),name='Scan Loop '+str(i),ignore=self.ignore+ow.inputs) # creating a sub node
-                op.graph = scan_ops[op]
-                #op.outputs
-            if op != self.scan_op:
-                GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),scan_op=op,name='Scan Loop '+str(i),ignore=self.ignore+ow.inputs+op.inputs) # creating a sub node
-                self.label_variables([o for o in op.outputs],max_depth=max_depth-1,follow_scan=False)
         for i,v in enumerate(my_scan_vars):
             if v.name is None:
                 v.name = 'scan_output_'+str(i)

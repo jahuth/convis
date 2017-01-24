@@ -63,7 +63,9 @@ def format_node(v):
         return full_path(v)+" [label=\""+v.name+"\"];"
     return full_path(v)+";"
 
-def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[], ignored_ops=[convis.theano.compile.ops.Shape,convis.theano.compile.ops.Shape_i]):
+def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[], 
+                        ignored_ops=[convis.theano.compile.ops.Shape,convis.theano.compile.ops.Shape_i],
+                        do_scan_exploration=False):
     """ get variables that have a name """
     if my_node is None and hasattr(apply_node,'node'):
         my_node = apply_node.node
@@ -74,6 +76,8 @@ def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[], i
     final_nodes_explored = []
     while len(nodes_to_explore) > 0:
         node,path = nodes_to_explore.pop()
+        if node in nodes_explored:
+            continue
         nodes_explored.append([node,path])
         if hasattr(node,'__is_convis_var') or is_scan_op(node):
             final_nodes_explored.append([node,path])
@@ -83,35 +87,50 @@ def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[], i
             else:
                 new_path = path
                 #node_counter += 1
+            if node in scan_outputs.keys():
+                nodes_to_explore.append((scan_outputs[node],new_path))
+                del scan_outputs[node]
             if hasattr(node,'copied_from'):
                 nodes_to_explore.append((node.copied_from,new_path))
-            if not is_scan_op(node):
+            if do_scan_exploration:
+                if not is_scan_op(node):
+                    nodes_to_explore.extend([(i,new_path) for i in node.owner.inputs 
+                                                     if not i in nodes_explored 
+                                                 and 
+                                                     not i in ignore])
+                if is_scan_op(node):
+                    ##nodes_to_explore.append((node.owner.op.graph.graph,new_path))
+                    #print 'SCAN --- ',new_path, node.owner.op.outputs
+                    nodes_to_explore.extend([(i,new_path) for i in node.owner.op.outputs 
+                                                     if not i in nodes_explored 
+                                                 and 
+                                                     not i in ignore])
+                    
+                    scan_outputs.update(dict(zip(node.owner.op.inputs, node.owner.inputs[node.owner.op.n_seqs:])))
+                    #scan_outputs.update(dict(zip(node.owner.inputs[node.owner.op.n_seqs:], node.owner.op.inputs)))
+                    #print scan_outputs
+                    if False:
+                        nodes_to_explore.extend([(i,new_path) for i in node.owner.inputs 
+                                                     if not i in nodes_explored 
+                                                 and 
+                                                     not i in ignore
+                                                 and 
+                                                     not i in convis.theano_utils.get_input_variables_iter(node.owner.op.outputs,include_copies=True,ignore=node.owner.inputs)])
+                    #scan_outputs.update(dict([(i,i.copied_from) for i in node.owner.inputs 
+                    #                                 if not i in nodes_explored 
+                    #                             and 
+                    #                                 not i in ignore
+                    #                             and
+                    #                                 hasattr(i,'copied_from')]))
+                    #print scan_outputs
+            else:
                 nodes_to_explore.extend([(i,new_path) for i in node.owner.inputs 
-                                                 if not i in nodes_explored 
-                                             and 
-                                                 not i in ignore])
-            if is_scan_op(node):
-                ##nodes_to_explore.append((node.owner.op.graph.graph,new_path))
-                #print 'SCAN --- ',new_path, node.owner.op.outputs
-                nodes_to_explore.extend([(i,new_path) for i in node.owner.op.outputs 
-                                                 if not i in nodes_explored 
-                                             and 
-                                                 not i in ignore])
-                nodes_to_explore.extend([(i,new_path) for i in node.owner.inputs 
-                                                 if not i in nodes_explored 
-                                             and 
-                                                 not i in ignore
-                                             and 
-                                                 not i in convis.theano_utils.get_input_variables_iter(node.owner.op.outputs,include_copies=True,ignore=node.owner.inputs)])
-                #scan_outputs.update(dict([(i,i.copied_from) for i in node.owner.inputs 
-                #                                 if not i in nodes_explored 
-                #                             and 
-                #                                 not i in ignore
-                #                             and
-                #                                 hasattr(i,'copied_from')]))
-                #print scan_outputs
+                                                     if not i in nodes_explored 
+                                                 and 
+                                                     not i in ignore])
         if depth is not None and len(nodes_explored) > depth:
             break
+    #print 'remaining:',scan_outputs
     return final_nodes_explored
 
 def explore_to_all_nodes_iter(apply_node,depth=None,my_node=None,ignore=[], all_nodes=True, ignored_ops=[convis.theano.compile.ops.Shape,convis.theano.compile.ops.Shape_i]):
