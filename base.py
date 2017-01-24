@@ -9,7 +9,7 @@ import uuid
 from . import retina_base
 from . import theano_utils
 from exceptions import NotImplementedError
-from variable_describe import describe, describe_dict, describe_html
+from variable_describe import describe, describe_dict, describe_html, full_path, save_name
 
 
 def f7(seq):
@@ -37,6 +37,61 @@ def add_kwargs_to_v(v,**kwargs):
     v.__dict__['doc'] = unindent(kwargs.get('doc',''))
     return v    
 
+convis_attributes = ['name','node','path','__is_convis_var','variable_type','doc','root_of',
+                    'state_out_state','state_init','state_in_state',
+                    'param_init','initialized','optimizable','config_key','config_default','save','get']
+do_debug = False
+
+def override_copy(v):
+    import new
+    from copy import deepcopy
+    def new_copy(self, name=None):
+        """Return a symbolic copy and optionally assign a name.
+        Does not copy the tags.
+        Also copies convis specific attributes.
+        """
+        global convis_attributes
+        copied_variable = theano.tensor.basic.tensor_copy(self)
+        copied_variable.name = name
+        for a in convis_attributes:
+            if hasattr(self,a):
+                setattr(copied_variable,a,getattr(self,a))
+        copied_variable.copied_from = self.v
+        override_copy(copied_variable)
+        return copied_variable
+    def type_call(self,*args,**kwargs):
+        if do_debug:
+            print 'Called the injected function!!'
+        new_v = self.__old_call__(*args,**kwargs)
+        for a in convis_attributes:
+            if hasattr(self.v,a):
+                setattr(new_v,a,getattr(self.v,a))
+        new_v.copied_from = self.v
+        override_copy(new_v)
+        return new_v
+    def type_make_variable(self,name=None):
+        if do_debug:
+            print 'Called the injected function!!'
+        new_v = self.Variable(self,name=name)
+        for a in convis_attributes:
+            if hasattr(self.v,a):
+                setattr(new_v,a,getattr(self.v,a))
+        new_v.copied_from = self.v
+        override_copy(new_v)
+        return new_v
+    v.copy = new.instancemethod(new_copy, v, None)
+    v.type = deepcopy(v.type)
+    if not hasattr(v.type,'__old_call__'):
+        v.type.__old_call__ = v.type.__call__
+        v.type = deepcopy(v.type)
+        #if hasattr(v.type,'v'):
+        #    print v.type.v
+        #    raise Exception("type already has a v!!")
+        v.type.v = v
+        v.type.__call__ = new.instancemethod(type_call, v.type, None)
+        v.type.make_variable = new.instancemethod(type_make_variable, v.type, None)
+    v.type.v = v
+    return v
 
 # functions on theano variables
 def as_state(v,out_state=None,init=None,name=None,**kwargs):
@@ -48,6 +103,7 @@ def as_state(v,out_state=None,init=None,name=None,**kwargs):
         v.state_init = init
     if name is not None:
         v.name = name
+    override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
     v.__is_convis_var = True
@@ -57,6 +113,10 @@ def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
         v.state_in_state = in_state
     if name is not None:
         v.name = name
+    if v.name is None:
+        if in_state is not None and in_state.name is not None:
+            v.name = in_state.name+'_out_state' 
+    override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 S = as_state
 OS = as_out_state
@@ -66,6 +126,23 @@ def as_input(v,name=None,**kwargs):
     if name is not None:
         v.name = name
     v.__dict__.update(kwargs)
+    override_copy(v)
+    return add_kwargs_to_v(v,**kwargs)
+def as_variable(v,name=None,**kwargs):
+    v.__is_convis_var = True
+    v.variable_type = 'variable'
+    if name is not None:
+        v.name = name
+    v.__dict__.update(kwargs)
+    override_copy(v)
+    return add_kwargs_to_v(v,**kwargs)
+def as_output(v,name=None,**kwargs):
+    v.__is_convis_var = True
+    v.variable_type = 'output'
+    if name is not None:
+        v.name = name
+    v.__dict__.update(kwargs)
+    override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 I = as_input
 def as_parameter(v,init=None,name=None,**kwargs):
@@ -76,6 +153,7 @@ def as_parameter(v,init=None,name=None,**kwargs):
     if name is not None:
         v.name = name
     v.__dict__.update(kwargs)
+    override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 P = as_parameter
 
@@ -98,16 +176,16 @@ class O(object):
     def __call__(self,**kwargs):
         self.__dict__.update(kwargs)
         return self
-    def __iter__(self):
-        return iter(self.__dict__.values())
     def __repr__(self):
         return 'Choices: '+(', '.join(self.__dict__.keys()))
     def _repr_html_(self):
         return repr(self)
     def __len__(self):
-        return len(self.__dict__.keys())
+        return len([k for k in self.__dict__.keys() if not k.startswith('_')])
     def __iter__(self):
-        return iter(self.__dict__.values())
+        return iter([v for (k,v) in self.__dict__.items() if not k.startswith('_')])
+    def __iteritems__(self):
+        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
 
 def create_context_O(var):
     """
@@ -164,6 +242,19 @@ def create_hierarchical_dict(vs,pi=0):
     leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
     for p in paths:
         o.update(**{p: create_hierarchical_dict([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi].name == p], pi+1)})
+    for l in leaves:
+        o.update(**{l.name: l})
+    return o
+
+def create_hierarchical_dict_with_nodes(vs,pi=0):
+    """
+
+    """
+    o = {}
+    paths = f7([v.path[pi] for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
+    for p in paths:
+        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi] == p], pi+1)})
     for l in leaves:
         o.update(**{l.name: l})
     return o
@@ -319,20 +410,30 @@ class GraphWrapper(object):
         
 
     """
-    def __init__(self,graph,name,m=None,parent=None,ignore=[],**kwargs):
+    def __init__(self,graph,name,m=None,parent=None,ignore=[],scan_op=None,**kwargs):
         self.m = m
         self.parent = parent
-        self.graph = T.as_tensor_variable(graph)
+        self.graph = graph
+        if hasattr(self.graph,'root_of'):
+            return self.graph.root_of
+        if not hasattr(self.graph,'__is_convis_var'):
+            self.graph = as_output(T.as_tensor_variable(self.graph))
         if self.graph.name is None:
+            # we only replace the name if it is necessary
             self.graph.name = 'output'
+        self.graph.root_of = self
         #self.outputs = [self.graph]
         self.name = name
+        # Todo: variable_dict is obsolete!
         self.variable_dict = {}
         self.ignore = ignore
+        self.scan_op = scan_op
         self.label_variables(self.graph)
+        #self.label_variables(self.scan_outputs,follow_scan=False) # just labeling these to prevent infinite recursion
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
         self.node_description = ''
+        self.__dict__.update(kwargs)
         #if self.m is not None:
         #    self.m.add(self)
     def get_parents(self):
@@ -342,10 +443,46 @@ class GraphWrapper(object):
             if hasattr(self.parent,'get_parents'):
                 p.extend(self.parent.get_parents())
         return p
-    def label_variables(self,g):
-        my_named_vars = theano_utils.get_named_variables_iter(g,ignore=self.ignore)
+    def label_variables(self,g,follow_scan=True,max_depth=2):
+        if max_depth <= 0:
+            return
+        my_named_vars = theano_utils.get_named_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False)
         # variables that don't have a name are not tracked.
-        for v in my_named_vars:
+        # exception: we name and claim all scan op variables, since they mess up plotting the graph!
+        my_scan_vars = filter(lambda x: theano_utils.is_scan_op(x), theano_utils.get_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False))
+        if not follow_scan:
+            my_scan_vars = []
+        scan_ops = {}
+        for i,ow in enumerate(f7([v.owner for v in my_scan_vars])):
+            op = ow.op
+            if False:
+                if hasattr(op,'graph'):
+                    print op.graph
+                    if op.graph == 'being_created':
+                        op.graph = 'being_labeled'
+                        self.label_variables(op.outputs)
+                    elif type(op.graph) is not str:
+                        self.label_variables(op.graph)
+                    continue
+                variables_leading_to_op = [v for v in my_scan_vars if v.owner.op is op]
+                for j,v in enumerate(variables_leading_to_op):
+                    if v.name is None:
+                        v.name = 'scan_'+str(i)+'_output_'+str(j)
+                    as_output(v)
+                op.graph = 'being_created'
+                #op.outputs
+                #scan_ops[op] = GraphWrapper(as_output(T.as_tensor_variable(variables_leading_to_op),name='scan_group_'+str(i)),name='Scan Loop '+str(i),ignore=self.ignore+ow.inputs) # creating a sub node
+                scan_ops[op] = GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),name='Scan Loop '+str(i),ignore=self.ignore+ow.inputs) # creating a sub node
+                op.graph = scan_ops[op]
+                #op.outputs
+            if op != self.scan_op:
+                GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),scan_op=op,name='Scan Loop '+str(i),ignore=self.ignore+ow.inputs+op.inputs) # creating a sub node
+                self.label_variables([o for o in op.outputs],max_depth=max_depth-1,follow_scan=False)
+        for i,v in enumerate(my_scan_vars):
+            if v.name is None:
+                v.name = 'scan_output_'+str(i)
+            as_output(v)
+        for v in my_named_vars + [v for v in my_scan_vars if v.owner.op != self.scan_op]:
             if hasattr(v,'path'):
                 if v.path[0] == self:
                     continue # we already are the owner of this variable
@@ -363,6 +500,7 @@ class GraphWrapper(object):
             if not hasattr(v,'simple_name') or v.simple_name is None:
                 v.simple_name = v.name
             #v.node = self
+        # Todo: variable_dict is obsolete!
         self.variable_dict.update(dict([(v.full_name,v) for v in my_named_vars]))
     def _as_TensorVariable(self):
         """
@@ -472,6 +610,7 @@ class N(GraphWrapper):
         self.m = m
         return self
     def var(self,v):
+        # Todo: variable_dict is obsolete!
         if type(v) is str:
             if v in self.variable_dict.keys():
                 return self.variable_dict[v]
@@ -514,29 +653,29 @@ class _Search(O):
     def __init__(self,**kwargs):
         self._things = kwargs
     def __getattr__(self,search_string):
-        return O(**dict([(k,v) for (k,v) in self._things.items() if search_string in k]))
+        return O(**dict([(save_name(k),v) for (k,v) in self._things.items() if search_string in k]))
     def __repr__(self):
         return 'Choices: enter a search term, enter with a dot and use autocomplete to see matching items.'
 
 class _Vars(O):
     def __init__(self,model,**kwargs):
-        self.model = model
+        self._model = model
         super(_Vars,self).__init__(**kwargs)
-        vars = [v for v in self.model.get_variables()  if v.name is not None]
+        vars = [v for v in self._model.get_variables()  if v.name is not None]
         nodes = f7([v.node for v in vars if hasattr(v,'node')])
         for n in nodes:
-            self.__dict__[n.name] = O(**dict([(str(k.simple_name),k) for k in vars if hasattr(k,'node') and k.node == n]))
-        self.__dict__['_all'] = O(**dict([(str('_'.join([p.name for p in k.path])),k) for k in vars if hasattr(k,'path')]))
-        self.__dict__['_search'] = _Search(**dict([(str('_'.join([p.name for p in k.path])),k) for k in vars if hasattr(k,'path')]))
+            self.__dict__[save_name(n.name)] = O(**dict([(save_name(k.simple_name),k) for k in vars if hasattr(k,'node') and k.node == n]))
+        self.__dict__['_all'] = O(**dict([(full_path(k),k) for k in vars if hasattr(k,'path')]))
+        self.__dict__['_search'] = _Search(**dict([(full_path(k),k) for k in vars if hasattr(k,'path')]))
 
 class _Configuration(O):
     def __init__(self,model,**kwargs):
-        self.model = model
+        self._model = model
         super(_Configuration,self).__init__(**kwargs)
-        vars = [v for v in self.model.get_variables() if is_parameter(v)]
+        vars = [v for v in self._model.get_variables() if is_parameter(v)]
         nodes = f7([v.node for v in vars if hasattr(v,'node')])
         for n in nodes:
-            self.__dict__[n.name] = O(**dict([(str(k.simple_name),k) for k in vars  if hasattr(k,'node') and k.node == n]))
+            self.__dict__[save_name(n.name)] = O(**dict([(str(k.simple_name),k) for k in vars  if hasattr(k,'node') and k.node == n]))
 
 
 class M(object):
@@ -620,13 +759,18 @@ class M(object):
                 self.outputs.append(a.var('output'))
     def in_out(self,a,b):
         #self.map(b.var('input'),a.var('output'))
+        print 'Replacing:',a,b
         if issubclass(b.__class__, N):
             if hasattr(b.var('input'),'variable_type') and b.var('input').variable_type == 'input':
                 b.var('input').variable_type = 'replaced_input'
             if not hasattr(a.output, 'connects'):
                 a.output.connects = []
             a.output.connects.append([b,a])
-            theano_utils._replace(b.output,b.var('input'),a.var('output'))
+            #theano_utils._replace(b.output,b.var('input'),a.var('output'))
+            try:
+                theano_utils._replace(b.output,b.variables.input,a.graph)
+            except:
+                print 'Something not found! ',a.variables,b.variables
         elif hasattr(b,'node'):
             if not hasattr(a.output, 'connects'):
                 a.output.connects = []

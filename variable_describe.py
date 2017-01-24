@@ -181,9 +181,16 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
             return str(t[0])
         return str(type(t))+': '+str(t)
 
+on_click_toggle =  """onclick='$(this).parent().children(".description_content").toggle();$(this).parent().children(".description_content_replacer").toggle();'"""
+
+def save_name(n):
+    return n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('[', '').replace(']', '').replace('(', '').replace(')', '')
+def full_path(v):
+    return '_'.join([save_name(p.name) for p in v.path])
+
 def describe_html(v,wrap_in_html=True,**kwargs):
     from IPython.display import HTML
-    import html
+    import html, uuid
     ##       
     # Handeling other datatypes
     #
@@ -197,10 +204,33 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         if not wrap_in_html:
             return s
         return HTML(s)
+    if type(v) in [dict] or hasattr(v,'__iteritems__'):
+        uid = uuid.uuid4().hex
+        s = "<div class='convis_description list'>"
+        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
+        s += "<b id="+uid+" "+on_click_toggle+" >+</b> &nbsp; &nbsp; "
+        for (k,vv) in v.__iteritems__():
+            s += '<a href="#'+uid+save_name(k)+'">'+k+'</a>  '
+        s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; padding-left: 5px; display: none;'>(&#8230;)</div>"
+        s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; padding-left: 5px;'>"
+        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
+        for (k,vv) in v.__iteritems__():
+            s += "<div class='convis_description dict_item'><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b><a href='#"+uid+"''>&#8617;</a>"
+            s += "<div class='description_content_replacer' style='border-left: 0px solid #ddd; padding-left: 5px; display: none;'>(&#8230;)</div>"
+            s += "<div class='description_content' style='border-left: 0px solid #ddd; padding-left: 5px;'>"
+            s += describe_html(vv,wrap_in_html=False,**kwargs)
+            s += "</div>"
+            s += "</div>"
+        s += "</div>"
+        s += "</div>"
+        if not wrap_in_html:
+            return s
+        return HTML(s)
     if type(v) in [list, tuple] or hasattr(v,'__iter__'):
         try:
-            s = "<div class='convis_description list'><h3>List ("+str(len(v))+"):</h3>"
-            s += "<div style='border-left: 4px solid #ddd; padding-left: 5px;'>"
+            s = "<div class='convis_description list'><b "+on_click_toggle+">List ("+str(len(v))+"):</b>"
+            s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; padding-left: 5px; display: none;'>(&#8230;)</div>"
+            s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; padding-left: 5px;'>"
             s += '\n'.join([describe_html(vv,wrap_in_html=False,**kwargs) for vv in v])
             s += "</div>"
             s += "</div>"
@@ -219,12 +249,12 @@ def describe_html(v,wrap_in_html=True,**kwargs):
             d[k] = getattr(v,k)
     name = str(d.get('name','')) # optional: None handling
     simple_name = str(d.get('simple_name',''))
-    s = """<div class='convis_description variable'><h3 onclick='$(this).parent().find(".description_content").toggle();$(this).parent().find(".description_content_replacer").toggle();'>"""+d.get('variable_type','')+""": """+simple_name+""" ("""+name+""")</h3>"""
+    s = """<div class='convis_description variable'><b """+on_click_toggle+""">"""+d.get('variable_type','')+""": """+simple_name+""" ("""+name+""")</b>"""
     # default: show everything, hide on click;
     s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; display: none;'>(&#8230;)</div>"
     s += "<div class='description_content' style='border-left: 2px solid #eee; padding-left: 5px;'>"
     if hasattr(v,'path'):
-        s += "<small>" + ('_'.join([p.name for p in v.path])) + "</small>"
+        s += "<small>" + full_path(v) + "</small>"
     if hasattr(v,'doc') and getattr(v,'doc') != '':
         s += '<p class="doc" style="padding:2px;">'+getattr(v,'doc')+'</p>'
     for k in ['config_key','optimizable','node','save','init','get','set']:

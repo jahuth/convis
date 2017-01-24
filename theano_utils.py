@@ -117,7 +117,7 @@ def get_all_variables(apply_node):
         parent_inputs += get_all_variables(i)
     return parent_inputs
 
-def get_variables_iter(apply_node,depth=None,ignore=[]):
+def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
     """ get variables that have a name """
     if type(apply_node) in [list,tuple]:
         return f7([b for a in apply_node for b in get_variables_iter(a,depth=depth)])
@@ -126,35 +126,51 @@ def get_variables_iter(apply_node,depth=None,ignore=[]):
         nodes_explored = []
         while len(nodes_to_explore) > 0:
             node = nodes_to_explore.pop()
+            if node in nodes_explored or node in ignore:
+                # easier to comprehend than checking when adding
+                continue
             nodes_explored.append(node)
             if hasattr(node,'owner') and node.owner is not None:
                 nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored and not i in ignore])
+            if hasattr(node,'state_out_state') and node.state_out_state not in nodes_explored:
+                nodes_to_explore.append(node.state_out_state)
+            if hasattr(node,'copied_from') and node.copied_from not in nodes_explored:
+                nodes_to_explore.append(node.copied_from)
+            if explore_scan and is_scan_op(node):
+                nodes_to_explore.extend(node.owner.op.outputs)
             if depth is not None and len(nodes_explored) > depth:
                 break
         return nodes_explored
 
-def get_input_variables_iter(apply_node,depth=None,ignore=[]):
+def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
     """ get variables that have a name """
     nodes_to_explore = [apply_node]
     input_nodes = []
     nodes_explored = []
     while len(nodes_to_explore) > 0:
         node = nodes_to_explore.pop()
+        if node in nodes_explored or node in ignore:
+            # easier to comprehend than checking when adding
+            continue
         nodes_explored.append(node)
         if hasattr(node,'owner') and node.owner is not None and len(node.owner.inputs) > 0:
             nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored and not i in ignore])
+        elif explore_scan and is_scan_op(node):
+            nodes_to_explore.extend(node.owner.op.outputs)
+        elif hasattr(node,'copied_from'):
+            nodes_to_explore.append(node.copied_from)
         else:
             input_nodes.append(node)
         if depth is not None and len(nodes_explored) > depth:
             break
     return input_nodes
 
-def get_named_variables_iter(apply_node,depth=None,ignore=[]):
+def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_variables_iter(apply_node,depth=depth,ignore=ignore))
-def get_named_input_variables_iter(apply_node,depth=None,ignore=[]):
+    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_variables_iter(apply_node,depth=depth,ignore=ignore,explore_scan=explore_scan,include_copies=include_copies))
+def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_input_variables_iter(apply_node,depth=depth,ignore=ignore))
+    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_input_variables_iter(apply_node,depth=depth,ignore=ignore,explore_scan=explore_scan,include_copies=include_copies))
 
 #def replace(apply_node,old,new):
 #    apply_node.replace(old,new)
@@ -190,3 +206,7 @@ def _replace(apply_node,old,new,depth=300):
     return
 
 
+def is_scan_op(n):
+    if hasattr(n,'owner') and hasattr(n.owner,'op') and type(n.owner.op) == theano.scan_module.scan_op.Scan:
+        return True
+    return False

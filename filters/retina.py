@@ -90,10 +90,10 @@ class OPLLayerNode(N):
                         self.input_variable],axis=1)
         Nx = self._G_C.shape[3]-1 + self._G_S.shape[3]-1
         Ny = self._G_C.shape[4]-1 + self._G_S.shape[4]-1
-        self._L = pad5(pad5(input_padded_in_time,Nx,3),Ny,4)
-        self._C = conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C)
-        self._S = conv3d(conv3d(self._C,self._E_S),self._G_S)
-        I_OPL = self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S)
+        self._L = as_variable(pad5(pad5(input_padded_in_time,Nx,3),Ny,4),'L')
+        self._C = GraphWrapper(as_variable(conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C),'C'),name='center',ignore=[self._L]).graph
+        self._S = GraphWrapper(as_variable(conv3d(conv3d(self._C,self._E_S),self._G_S),'S'),name='surround',ignore=[self._C]).graph
+        I_OPL = as_variable(self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S),'I_OPL')
 
         length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
@@ -378,19 +378,17 @@ class BipolarLayerNode(N):
         def bipolar_step(input_image,
                         preceding_V_bip, preceding_attenuationMap, preceding_inhibition, 
                         lambda_amp, g_leak, input_amp,inputNernst_inhibition,inhibition_smoothing_kernel):
-            total_conductance = g_leak + preceding_inhibition
-            attenuation_map = T.exp(-steps*total_conductance)
-            attenuation_map.name = 'attenuation map'
-            E_infinity = (input_amp * input_image + inputNernst_inhibition * preceding_inhibition)/total_conductance
-            V_bip = ((preceding_V_bip - E_infinity) * attenuation_map) + E_infinity # V_bip converges to E_infinity
+            total_conductance = as_variable(g_leak + as_variable(preceding_inhibition,name='preceding_inhibition'),'total_conductance')
+            attenuation_map = as_variable(T.exp(-steps*total_conductance),'attenuation map')
+            E_infinity = as_variable((input_amp * as_variable(input_image,name='input_image') + as_variable(inputNernst_inhibition,name='inputNernst_inhibition') * preceding_inhibition)/total_conductance,'E_infinity')
+            V_bip = as_variable(((preceding_V_bip - E_infinity) * attenuation_map) + E_infinity,name='V_bip') # V_bip converges to E_infinity
             
             s0 = (inhibition_smoothing_kernel.shape[0]-1)/2
             s0end = preceding_V_bip.shape[0] + s0
             s1 = (inhibition_smoothing_kernel.shape[1]-1)/2
             s1end = preceding_V_bip.shape[1] + s1
-            inhibition = theano.tensor.signal.conv.conv2d((lambda_amp*(preceding_V_bip)**2 * b_0 
-                                       - preceding_inhibition * a_1) / a_0, inhibition_smoothing_kernel, border_mode='full')[s0:s0end,s1:s1end]
-            inhibition.name = 'smoothed inhibition'
+            inhibition = as_variable((theano.tensor.signal.conv.conv2d((lambda_amp*(preceding_V_bip)**2 * b_0 
+                                       - preceding_inhibition * a_1) / a_0, inhibition_smoothing_kernel, border_mode='full')[s0:s0end,s1:s1end]),'smoothed_inhibition')
             # // # missing feature from Virtual Retina:
             # // ##if(gCoupling!=0)
             # // ##  leakyHeatFilter.radiallyVariantBlur( *targets ); //last_values...
@@ -485,13 +483,13 @@ class GanglionInputLayerNode(N):
                                     init=lambda x: np.zeros((1, x.node._T_G.get_value().shape[1]-1,1, x.input.shape[1], x.input.shape[2])))
 
         #self._V_bip_padded = T.concatenate([T.zeros((1,self._T_G.shape[1]-1,1,self._V_bip.shape[3],self._V_bip.shape[4])),self._V_bip],axis=1)
-        self._V_bip_padded = T.concatenate([self._input_init,self._V_bip],axis=1)
+        self._V_bip_padded = as_variable(T.concatenate([self._input_init,self._V_bip],axis=1),'V_bip_padded')
 
         length_of_filters = self._T_G.shape[1]-1
         as_out_state(T.set_subtensor(self._input_init[:,-(self._V_bip_padded[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
                                     self._V_bip_padded[:,-(length_of_filters):,:,:,:]), self._input_init)
 
-        self._V_bip_E = conv3d(self._V_bip_padded,self._T_G)
+        self._V_bip_E = as_variable(conv3d(self._V_bip_padded,self._T_G),'V_bip_E')
         self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',70.0)),
                                           name="i_0_G")
         self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
@@ -502,9 +500,10 @@ class GanglionInputLayerNode(N):
                                                  float(x.get_config('sigma-pool__deg',0.0)),
                                                  retina=x.model,even=False,normalize=True),
                                         name = 'G_gang')
-        self._N = theano.tensor.switch(self._V_bip_E < self._v_0_G, 
+        self._N = GraphWrapper(as_variable(theano.tensor.switch(self._V_bip_E < self._v_0_G, 
                                  self._i_0_G/(1-self._lambda_G*(self._V_bip_E-self._v_0_G)/self._i_0_G),
-                                 self._i_0_G + self._lambda_G*(self._V_bip_E-self._v_0_G))
+                                 self._i_0_G + self._lambda_G*(self._V_bip_E-self._v_0_G)),'N_G_gang',
+                        requires=[self._lambda_G,self._i_0_G,self._v_0_G]),name='N',ignore=[self._V_bip_E]).graph
 
         #self.compute_N = theano.function([self._V_bip, self._T_G, self._i_0_G, self._v_0_G, self._lambda_G], self._N)
 
@@ -542,7 +541,7 @@ class GanglionSpikingLayerNode(N):
         
         self.input_variable = as_input(T.dtensor3("input"))
         self.input_padding = as_state(T.dtensor3("initial_I"), init=lambda x: x.input[:1,:,:])
-        self._I_gang = T.concatenate([self.input_padding, self.input_variable]) # input
+        self._I_gang = as_variable(T.concatenate([self.input_padding, self.input_variable]),'I_gang') # input
         
         self._initial_refr = as_state(
                 T.dmatrix("initial_refr"),
@@ -609,12 +608,12 @@ class GanglionSpikingLayerNode(N):
                       prior_V, prior_refr,  
                       noise_sigma, refr_mu, refr_sigma, g_L,tau_gang):
             V = prior_V + (I_gang - g_L * prior_V + noise_sigma*(noise_gang))*tau_gang
-            V = theano.tensor.switch(T.gt(prior_refr, 0.5), 0.0, V)
+            V = as_variable(theano.tensor.switch(T.gt(prior_refr, 0.5), 0.0, V),'V')
             spikes = T.gt(V, 1.0)
-            refr = theano.tensor.switch(spikes,
+            refr = as_variable(theano.tensor.switch(spikes,
                     prior_refr + refr_mu + refr_sigma * noise_gang,
                     prior_refr - 1.0
-                    )
+                    ),'refr')
             next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
             return [V,next_refr]
 

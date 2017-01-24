@@ -58,7 +58,7 @@ class Retina(M):
                     self.ganglion_input_layers.append(gang_in)
                 if kwargs.get('ganglion_spikes',True):
                     if 'spiking-channel' in ganglion_config and ganglion_config['spiking-channel'].get('enabled',True) != False:
-                        gang_spikes = GanglionSpikingLayerNode(name='GanglionSpikes',model=self,config=ganglion_config['spiking-channel'])
+                        gang_spikes = GanglionSpikingLayerNode(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
                         if kwargs.get('ganglion_input',True) and kwargs.get('ganglion_spikes',True):
                             self.in_out(gang_in,gang_spikes)
