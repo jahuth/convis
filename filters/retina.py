@@ -53,7 +53,7 @@ class OPLLayerNode(N):
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
-        self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
+        self.input_variable = make_nd(self.create_input(),5)
         self._E_n_C = self.shared_parameter(
             lambda x: m_en_filter(int(x.get_config('center-n__uint', 0, int)),
                         float(x.get_config('center-tau__sec',0.01,float)),normalize=True,retina=x.node.get_model(),epsilon=x.model.config.get('epsilon', 0.001)),
@@ -119,7 +119,7 @@ class OPLAllRecursive(N):
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
-        self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
+        self.input_variable = make_nd(self.create_input(),5)
         padding = (0,0,0)
         self._input_init = as_state(dtensor5('input_init'),
                                     init=lambda x: np.zeros((1, padding[0], 1, padding[1], padding[2])))
@@ -180,7 +180,7 @@ class OPLLayerLeakyHeatNode(N):
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
-        self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
+        self.input_variable = make_nd(self.create_input(),5)
         self._E_n_C = self.shared_parameter(
             lambda x: m_en_filter(int(x.get_config('center-n__uint', 0)),
                         float(x.get_config('center-tau__sec',0.01)),normalize=True,retina=x.node.get_model()),name='E_n_C')
@@ -349,7 +349,7 @@ class BipolarLayerNode(N):
         a_1 = -T.exp(-steps/tau)
         b_0 = 1.0 - a_1
         # definition of sequences / initial condition for sequences
-        self._I_OPL = as_input(T.dtensor3("input")) #sequence
+        self._I_OPL = self.create_input() #sequence
         self._preceding_V_bip = as_state(T.dmatrix("preceding_V_bip"),
             init=lambda x: np.zeros_like(x.input[0,:,:])) # initial condition for sequence
         self._preceding_inhibition = as_state(T.dmatrix("preceding_inhibition"),
@@ -470,7 +470,7 @@ class GanglionInputLayerNode(N):
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
-        self._V_bip = make_nd(as_input(T.dtensor3("input")),5)
+        self._V_bip = make_nd(self.create_input(),5)
         # TODO: state? what about previous episode? concatenate?
         #num_V_bip = input.reshape((1,input.shape[0],1,input.shape[1],input.shape[2]))
         self._T_G = self.shared_parameter(lambda x: float(x.get_config('sign',1)) * 
@@ -531,7 +531,6 @@ class GanglionSpikingLayerNode(N):
         self.retina = model
         self.model = model
         self.set_config(config)
-        print self.config
         self.state = None
         self.last_noise_slice = None
         if name is None:
@@ -541,7 +540,7 @@ class GanglionSpikingLayerNode(N):
         
         #obsolete? self._refrac = T.dscalar(name+"refrac")
         
-        self.input_variable = as_input(T.dtensor3("input"))
+        self.input_variable = self.create_input()
         self.input_padding = as_state(T.dtensor3("initial_I"), init=lambda x: x.input[:1,:,:])
         self._I_gang = as_variable(T.concatenate([self.input_padding, self.input_variable]),'I_gang') # input
         

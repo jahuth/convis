@@ -184,6 +184,11 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
 on_click_toggle =  """onclick='$(this).parent().children(".description_content").toggle();$(this).parent().children(".description_content_replacer").toggle();'"""
 
 def save_name(n):
+    if type(n) != str:
+        if hasattr(n,'name'):
+            n = n.name
+        else:
+            raise Exception('save_name got a '+str(type(n))+' instead of a string or object with name attribute.')
     return n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('[', '').replace(']', '').replace('(', '').replace(')', '')
 def full_path(v):
     return '_'.join([save_name(p.name) for p in v.path])

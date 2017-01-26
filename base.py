@@ -41,7 +41,7 @@ convis_attributes = ['name','node','path','__is_convis_var','variable_type','doc
                     'state_out_state','state_init','state_in_state',
                     'param_init','initialized','optimizable','config_key','config_default','save','get']
 do_debug = False
-replace_inputs = True
+do_replace_inputs = True
 
 
 def override_copy(v,actually_do_it=True):
@@ -275,8 +275,9 @@ class Ox(O):
     def __iteritems__(self):
         return iter([(k,Ox(**v) if type(v) is dict else v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
 
-
-def create_context_O(var):
+def raise_exception(e):
+    raise e
+def create_context_O(var, **kwargs):
     """
         This function creates the 'typical' context that annotated variables can expect when defining `init` functions.
 
@@ -303,8 +304,9 @@ def create_context_O(var):
         return O(var=var,node=var.node,model=var.node.get_model(),
                  get_config=var.node.get_config,
                  value_from_config=lambda: var.node.get_config(var.config_key,var.config_default),
-                 value_to_config=lambda v: var.node.set_config(var.config_key,v))
-    return O(var=var,node=var.node,model=var.node.get_model(),get_config=var.node.get_config)
+                 value_to_config=lambda v: var.node.set_config(var.config_key,v))(**kwargs)
+    return O(var=var,node=var.node,model=var.node.get_model(),get_config=var.node.get_config,
+             value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(var.name)+'\n'+str(var.__dict__))))(**kwargs)
 
 def create_hierarchical_O(vs,pi=0):
     """
@@ -322,17 +324,17 @@ def create_hierarchical_O(vs,pi=0):
         o(**{l.name: l})
     return o
 
-def create_hierarchical_dict(vs,pi=0):
+def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
     """
 
     """
     o = {}
-    paths = f7([v.path[pi].name for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    paths = f7([name_sanitizer(v.path[pi].name) for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
     leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
     for p in paths:
-        o.update(**{p: create_hierarchical_dict([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi].name == p], pi+1)})
+        o.update(**{p: create_hierarchical_dict([v for v in vs if hasattr(v,'path') and len(v.path) > pi and name_sanitizer(v.path[pi].name) == p], pi+1)})
     for l in leaves:
-        o.update(**{l.name: l})
+        o.update(**{name_sanitizer(l.name): l})
     return o
 
 def create_hierarchical_Ox(vs,pi=0):
@@ -343,10 +345,10 @@ def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
         name_sanitizer: eg. convis.base.save_name or str
     """
     o = {}
-    paths = f7([name_sanitizer(v.path[pi]) for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    paths = f7([v.path[pi] for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
     leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
     for p in paths:
-        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and name_sanitizer(v.path[pi]) == p], pi+1)})
+        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi] == p], pi+1)})
     for l in leaves:
         o.update(**{name_sanitizer(l.name): l})
     return o
@@ -506,6 +508,8 @@ class GraphWrapper(object):
     """
     parent = None
     config_dict = None
+    node_type = 'Node'
+    node_description = ''
     def __init__(self,graph,name,m=None,parent=None,ignore=[],scan_op=None,**kwargs):
         self.m = m
         self.parent = parent
@@ -524,9 +528,6 @@ class GraphWrapper(object):
         self.variable_dict = {}
         self.ignore = ignore
         self.scan_op = scan_op
-        self.node_type = 'Node'
-        self.node_description = ''
-        self.config_dict = None
         self.__dict__.update(kwargs)
         self.follow_scan = True
         if self.follow_scan and scan_op is None:
@@ -536,19 +537,30 @@ class GraphWrapper(object):
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         #if self.m is not None:
         #    self.m.add(self)
-    def set_config(self,c):
-        self.config_dict = c
     def get_model(self):
         if hasattr(self,'model'):
             return self.model
         if self.parent is not None:
             return self.parent.get_model()
+    def get_config(self,key=None,default=None,type_cast=None):
+        if key is None:
+            return self.config_dict
+        if type_cast is not None:
+            return type_cast(self.get_config(key,default))
+        if self.config_dict is None:
+            return default
+        return self.config_dict.get(key,default)
+    def set_config(self,key,v=None):
+        if v is None and hasattr(key,'get'):
+            self.config_dict = key
+        else:
+            self.config_dict[key] = v
     @property
     def config(self):
         if self.config_dict is None:
             if self.parent is not None:
                 return self.parent.config
-            raise Exception('GraphWrapper has no configuration! But also no parent!')
+            raise Exception('GraphWrapper '+str(self.name)+' has no configuration! But also no parent!')
         return self.config_dict
     def get_parents(self):
         p = []
@@ -660,7 +672,7 @@ class GraphWrapper(object):
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
-    def __iadd__(self,other):
+    def add_input(self,other,replace_inputs=do_replace_inputs):
         v = other
         if hasattr(other,'_as_TensorVariable'):
             v = other._as_TensorVariable()
@@ -684,7 +696,29 @@ class GraphWrapper(object):
                     theano_utils._replace(self.output,self.variables.input,v)
                 except:
                     print 'Something not found! ',other.variables,self.variables
+    def __iadd__(self,other):
+        self.add_input(other)
         return self
+    def __neg__(self):
+        return -self.graph
+    def __add__(self,other):
+        return self.graph + other
+    def __radd__(self,other):
+        return other + self.graph
+    def __mul__(self,other):
+        return self.graph * other
+    def __rmul__(self,other):
+        return other * self.graph
+    def __sub__(self,other):
+        return self.graph - other
+    def __rsub__(self,other):
+        return other - self.graph
+    def __div__(self,other):
+        return self.graph / other
+    def __rdiv__(self,other):
+        return other / self.graph
+    def __floordiv__(self,other):
+        return self.graph // other
 
 class N(GraphWrapper):
     #parameters = []
@@ -708,6 +742,10 @@ class N(GraphWrapper):
         self.config_dict = config
         if self.m is not None:
             self.m.add(self)
+        if self.config is None:
+            raise Exception('No config for node '+str(self.name)+'! Use .set_config({}) before calling super constructor!')
+        if not hasattr(self,'default_input'):
+            raise Exception('No input defined for node '+str(self.name)+'! Use .create_input(...) before calling super constructor!')
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
     def create_input(self,n=1,name='input',sep='_'):
         from collections import OrderedDict
@@ -844,28 +882,21 @@ def connect(list_of_lists):
     def connect_in_sequence(l,last_outputs = []):
         if not type(l) is list:
             return [[l,l]]
-        print '>>connect_in_sequence',str(l)
         last_outputs = []
         for e in l:
             new_outputs = connect_in_parallel(e,last_outputs=last_outputs)
-            print 'old:', j(last_outputs),'| new: ', j(new_outputs)
             if len(last_outputs) > 0 and len(new_outputs) > 0:
                 for e1 in last_outputs:
                     for e2 in new_outputs:
-                        print e1,'->',e2
                         e2[0]+=e1[1]
             last_outputs = new_outputs
-        print 'connected_in_sequence',l,'returning:',[l[-1]]
         return [l[0],l[-1]]
     def connect_in_parallel(l,last_outputs=[]):
         if not type(l) is list:
             return [[l,l]]
-        print '>>connect_in_parallel',str(l)
         last_elements = []
         for e in l:
             last_elements.append(connect_in_sequence(e,last_outputs))
-        print 'connected_in_parallel',l,'returning:',last_elements
-        print zip(*last_elements)
         return last_elements
     connect_in_sequence(list_of_lists)
     return list_of_lists
@@ -1086,15 +1117,15 @@ class M(object):
                         else:
                             input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = k.param_init(c(node=k.node,var=k,model=self))
+                    input_dict[k] = k.param_init(create_context_O(k,input=the_input))
                 if is_state(k):
                     if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(c(node=k.node,var=k,model=self))
+                        input_dict[k] = k.state_init(create_context_O(k,input=the_input))
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
         for shared_parameter in self.parameters._all:
             if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(c(node=shared_parameter.node,var=shared_parameter,model=self)))
+                shared_parameter.set_value(shared_parameter.param_init(create_context_O(k,input=the_input)))
                 shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
@@ -1177,15 +1208,15 @@ class Runner(object):
                     if k not in self.additional_inputs:
                         input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = k.param_init(c(node=k.node,var=k,model=self))
+                    input_dict[k] = k.param_init(create_context_O(k,model=self,input=the_input))
                 if is_state(k):
                     if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(c(node=k.node,var=k,model=self))
+                        input_dict[k] = k.state_init(create_context_O(k,model=self,input=the_input))
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
         for shared_parameter in self.parameters._all:
             if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(c(node=shared_parameter.node,var=shared_parameter,model=self)))
+                shared_parameter.set_value(shared_parameter.param_init(create_context_O(shared_parameter,model=self,input=the_input)))
                 shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
