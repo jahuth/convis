@@ -48,31 +48,32 @@ class OPLLayerNode(N):
         
         self.retina = model
         self.model = model
-        self.config = config
+        self.set_config(config)
+        print self.config
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
         self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
         self._E_n_C = self.shared_parameter(
             lambda x: m_en_filter(int(x.get_config('center-n__uint', 0, int)),
-                        float(x.get_config('center-tau__sec',0.01,float)),normalize=True,retina=x.node.model,epsilon=x.model.config.get('epsilon', 0.001)),
+                        float(x.get_config('center-tau__sec',0.01,float)),normalize=True,retina=x.node.get_model(),epsilon=x.model.config.get('epsilon', 0.001)),
                         name='E_n_C',
                         doc="The n-fold cascaded exponential creates a low-pass characteristic. A filter can be created with `retina_base.m_en_filter`")
         self._TwuTu_C = self.shared_parameter(
             lambda x: m_t_filter(float(x.get_config('undershoot',{}).get('tau__sec',0.01)),
                         float(x.get_config('undershoot',{}).get('relative-weight', 0.8)),
-                        normalize=True,retina=x.node.model,epsilon=x.get_config('undershoot',{}).get('epsilon', 0.005)),name='TwuTu_C')
+                        normalize=True,retina=x.node.get_model(),epsilon=x.get_config('undershoot',{}).get('epsilon', 0.005)),name='TwuTu_C')
         self._G_C = self.shared_parameter(
             lambda x: m_g_filter(float(x.get_config('center-sigma__deg',0.05)),
                         float(x.get_config('center-sigma__deg',0.05)),
-                        retina=x.node.model,normalize=True,even=False),name='G_C')
+                        retina=x.node.get_model(),normalize=True,even=False),name='G_C')
         self._E_S = self.shared_parameter(
             lambda x: m_e_filter(float(x.get_config('surround-tau__sec',0.004)),
-                        retina=x.node.model,normalize=True,epsilon=x.model.config.get('epsilon', 0.001)),name='E_S')
+                        retina=x.node.get_model(),normalize=True,epsilon=x.model.config.get('epsilon', 0.001)),name='E_S')
         self._G_S = self.shared_parameter(
             lambda x: m_g_filter(float(x.get_config('surround-sigma__deg',0.15)),
                        float(x.get_config('surround-sigma__deg',0.15)),
-                       retina=x.node.model,normalize=True,even=False),name='G_S')
+                       retina=x.node.get_model(),normalize=True,even=False),name='G_S')
         self._lambda_OPL = self.shared_parameter(
             lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0))),name='lambda_OPL')
         self._w_OPL = self.shared_parameter(
@@ -114,7 +115,7 @@ class OPLAllRecursive(N):
         
         self.retina = model
         self.model = model
-        self.config = config
+        self.set_config(config)
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
@@ -170,7 +171,7 @@ class OPLLayerLeakyHeatNode(N):
     Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don't have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: <a href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">theano.tensor.nnet.conv</a>), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.
     """
     def __init__(self,config={},name=None,model=None):
-        self.config = config
+        self.set_config(config)
         
         # center
         self.retina = model
@@ -182,19 +183,19 @@ class OPLLayerLeakyHeatNode(N):
         self.input_variable = make_nd(as_input(T.dtensor3('input')),5)
         self._E_n_C = self.shared_parameter(
             lambda x: m_en_filter(int(x.get_config('center-n__uint', 0)),
-                        float(x.get_config('center-tau__sec',0.01)),normalize=True,retina=x.node.model),name='E_n_C')
+                        float(x.get_config('center-tau__sec',0.01)),normalize=True,retina=x.node.get_model()),name='E_n_C')
         self._TwuTu_C = self.shared_parameter(
             lambda x: m_t_filter(float(x.get_config('undershoot',{}).get('tau__sec',0.1)),
                         float(x.get_config('undershoot',{}).get('relative-weight', 0.1)),
-                        normalize=True,retina=x.node.model,epsilon=0.001),name='TwuTu_C')
+                        normalize=True,retina=x.node.get_model(),epsilon=0.001),name='TwuTu_C')
         self._G_C = self.shared_parameter(
             lambda x: m_g_filter(float(x.get_config('center-sigma__deg',0.05)),
                         float(x.get_config('center-sigma__deg',0.05)),
-                        retina=x.node.model,normalize=True,even=False),name='G_C')
+                        retina=x.node.get_model(),normalize=True,even=False),name='G_C')
         self._G_S = self.shared_parameter(
             lambda x: m_g_filter_2d(float(x.get_config('surround-sigma__deg',0.15)),
                        float(x.get_config('surround-sigma__deg',0.15)),
-                       retina=x.node.model,normalize=True,even=False),name='G_S')
+                       retina=x.node.get_model(),normalize=True,even=False),name='G_S')
         #self._lambda_OPL = self.shared_parameter(
         #    lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',255.0)),name='lambda_OPL')
         self._lambda_OPL = self.shared_parameter(
@@ -239,7 +240,7 @@ class OPLLayerLeakyHeatNode(N):
                             name = 'step',
                             doc="""To convert the time constant in seconds into the appropriate length in bins or steps, this value will be automatically filled via the associatated model.""",
                             initialized = True, 
-                            init=lambda x: x.node.model.steps_to_seconds(1.0))
+                            init=lambda x: x.node.get_model().steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                doc="Since recursive filtering needs the result of the previous timestep, the last time step has to be remembered as a state inbetween computations.",
                                init=lambda x: x.input[0,:,:]) # initial condition for sequence
@@ -323,7 +324,7 @@ class BipolarLayerNode(N):
         
         self.retina = model
         self.model = model
-        self.config = config
+        self.set_config(config)
         self.state = None
         if name is None:
             name = str(uuid.uuid4())
@@ -356,7 +357,7 @@ class BipolarLayerNode(N):
         self._inhibition_smoothing_kernel = self.shared_parameter(
             lambda x: m_g_filter_2d(float(x.get_config('adaptation-sigma__deg',0.2)),
                  float(x.get_config('adaptation-sigma__deg',0.2)),
-                 retina=x.node.model,normalize=True,even=False),
+                 retina=x.node.get_model(),normalize=True,even=False),
             name='inhibition_smoothing_kernel')
                 #T.dmatrix(self.name+"_inhibition_smoothing_kernel") # initial condition for sequence
         self._k_bip = as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0]) # number of iteration steps
@@ -380,7 +381,7 @@ class BipolarLayerNode(N):
                         lambda_amp, g_leak, input_amp,inputNernst_inhibition,inhibition_smoothing_kernel):
             total_conductance = as_variable(g_leak + as_variable(preceding_inhibition,name='preceding_inhibition'),'total_conductance')
             attenuation_map = as_variable(T.exp(-steps*total_conductance),'attenuation map')
-            E_infinity = as_variable((input_amp * as_variable(input_image,name='input_image') + as_variable(inputNernst_inhibition,name='inputNernst_inhibition') * preceding_inhibition)/total_conductance,'E_infinity')
+            E_infinity = as_variable((input_amp * as_variable(input_image,name='input_image') + inputNernst_inhibition * preceding_inhibition)/total_conductance,name='E_infinity')
             V_bip = as_variable(((preceding_V_bip - E_infinity) * attenuation_map) + E_infinity,name='V_bip') # V_bip converges to E_infinity
             
             s0 = (inhibition_smoothing_kernel.shape[0]-1)/2
@@ -397,7 +398,7 @@ class BipolarLayerNode(N):
 
         # The order in theano.scan has to match the order of arguments in the function bipolar_step
         self._result, self._updates = theano.scan(fn=bipolar_step,
-                                      outputs_info=[self._preceding_V_bip,T.zeros_like(self._preceding_V_bip),self._preceding_inhibition],
+                                      outputs_info=[T.zeros_like(self._preceding_V_bip),T.zeros_like(self._preceding_V_bip),T.zeros_like(self._preceding_inhibition)],
                                       sequences = [self._I_OPL],
                                       non_sequences=[self._lambda_amp, self._g_leak, self._input_amp,
                                                      self._inputNernst_inhibition, self._inhibition_smoothing_kernel],
@@ -464,7 +465,7 @@ class GanglionInputLayerNode(N):
         
         self.retina = model
         self.model = model
-        self.config = config
+        self.set_config(config)
         self.state = None
         if name is None:
             name = str(uuid.uuid4())
@@ -529,7 +530,8 @@ class GanglionSpikingLayerNode(N):
     def __init__(self,model=None,config=None,name=None,input_variable=None):
         self.retina = model
         self.model = model
-        self.config = config
+        self.set_config(config)
+        print self.config
         self.state = None
         self.last_noise_slice = None
         if name is None:
@@ -547,7 +549,7 @@ class GanglionSpikingLayerNode(N):
                 T.dmatrix("initial_refr"),
                 init=lambda x: np.zeros_like(x.input[0,:,:]) 
                         if x.node.config.get('random-init',True) is False
-                        else (x.node.model.seconds_to_steps(x.node.config.get('refr-mean__sec',0.0005))*np.random.rand(*x.input[0,:,:].shape)),
+                        else (x.node.get_model().seconds_to_steps(x.node.config.get('refr-mean__sec',0.0005))*np.random.rand(*x.input[0,:,:].shape)),
                 doc="Initialization of the refractory times. If `random-init` is `True`, each cell gets a random value between `[0..refr-mean__sec]`"
                 )
         self._V_initial = as_state(
@@ -618,7 +620,7 @@ class GanglionSpikingLayerNode(N):
             return [V,next_refr]
 
         self._result, updates = theano.scan(fn=spikeStep,
-                                      outputs_info=[self._V_initial,T.zeros_like(self._initial_refr)],
+                                      outputs_info=[T.ones_like(self._V_initial),T.zeros_like(self._initial_refr)],
                                       sequences = [self._I_gang,dict(input=self._noise_gang, taps=[-0,-1])],
                                       non_sequences=[self._noise_sigma, self._refr_mu, self._refr_sigma, self._g_L, self._tau],
                                       n_steps=self._k_gang)

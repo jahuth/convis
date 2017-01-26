@@ -247,17 +247,23 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type']:
         if hasattr(v,k):
             d[k] = getattr(v,k)
-    name = str(d.get('name','')) # optional: None handling
-    simple_name = str(d.get('simple_name',''))
-    s = """<div class='convis_description variable'><b """+on_click_toggle+""">"""+d.get('variable_type','')+""": """+simple_name+""" ("""+name+""")</b>"""
+    name = d.get('name','') # optional: None handling
+    if not type(name) is str or name is '':
+        name= repr(v)
+    if hasattr(v,'html_name'):
+        name+=' '+str(v.html_name)
+    #simple_name = str(d.get('simple_name',''))
+    s = """<div class='convis_description variable'><b """+on_click_toggle+""">"""+name+"""</b> <small>"""+d.get('variable_type','')+"""</small>"""
     # default: show everything, hide on click;
     s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; display: none;'>(&#8230;)</div>"
     s += "<div class='description_content' style='border-left: 2px solid #eee; padding-left: 5px;'>"
     if hasattr(v,'path'):
-        s += "<small>" + full_path(v) + "</small>"
+        s += "<small>" + full_path(v) + "</small><br/>"
     if hasattr(v,'doc') and getattr(v,'doc') != '':
         s += '<p class="doc" style="padding:2px;">'+getattr(v,'doc')+'</p>'
-    for k in ['config_key','optimizable','node','save','init','get','set']:
+    if hasattr(v,'owner'):
+        s += "<tt style='color: gray;'><small>" + str(v.owner) + "</small></tt><br/>"
+    for k in ['config_key','optimizable','node','save','init','get','set','state_out_state','param_init','state_init','state_in_state','copied_from','config_key','config_default']:
         if hasattr(v,k):
             s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(getattr(v,k)))+'</tt></div>'
     try:

@@ -41,49 +41,59 @@ convis_attributes = ['name','node','path','__is_convis_var','variable_type','doc
                     'state_out_state','state_init','state_in_state',
                     'param_init','initialized','optimizable','config_key','config_default','save','get']
 do_debug = False
+replace_inputs = True
 
-def override_copy(v):
+
+def override_copy(v,actually_do_it=True):
     import new
+    #return v
     from copy import deepcopy
-    def new_copy(self, name=None):
-        """Return a symbolic copy and optionally assign a name.
-        Does not copy the tags.
-        Also copies convis specific attributes.
-        """
-        global convis_attributes
-        copied_variable = theano.tensor.basic.tensor_copy(self)
-        copied_variable.name = name
-        for a in convis_attributes:
-            if hasattr(self,a):
-                setattr(copied_variable,a,getattr(self,a))
-        copied_variable.copied_from = self.v
-        override_copy(copied_variable)
-        return copied_variable
+    import copy
+    # Hopefully we won't need this.
+    # If we inject functions into the variables, it is possible we get Pickle Errors on compile time!
+    #def new_copy(self, name=None):
+    #    """Return a symbolic copy and optionally assign a name.
+    #    Does not copy the tags.
+    #    Also copies convis specific attributes.
+    #    """
+    #    global convis_attributes
+    #    copied_variable = theano.tensor.basic.tensor_copy(self)
+    #    copied_variable.name = name
+    #    if hasattr(self,'preserve_labels_on_copy'):
+    #        for a in convis_attributes:
+    #            if hasattr(self,a):
+    #                setattr(copied_variable,a,getattr(self,a))
+    #        copied_variable.copied_from = self.v
+    #    override_copy(copied_variable)
+    #    return copied_variable
     def type_call(self,*args,**kwargs):
         if do_debug:
             print 'Called the injected function!!'
         new_v = self.__old_call__(*args,**kwargs)
-        for a in convis_attributes:
-            if hasattr(self.v,a):
-                setattr(new_v,a,getattr(self.v,a))
-        new_v.copied_from = self.v
+        if hasattr(self,'v') and hasattr(self.v,'preserve_labels_on_copy'):
+            for a in convis_attributes:
+                if hasattr(self.v,a):
+                    setattr(new_v,a,getattr(self.v,a))
+            new_v.copied_from = self.v
         override_copy(new_v)
         return new_v
     def type_make_variable(self,name=None):
         if do_debug:
             print 'Called the injected function!!'
         new_v = self.Variable(self,name=name)
-        for a in convis_attributes:
-            if hasattr(self.v,a):
-                setattr(new_v,a,getattr(self.v,a))
-        new_v.copied_from = self.v
+        if hasattr(self,'v') and hasattr(self.v,'preserve_labels_on_copy'):
+            for a in convis_attributes:
+                if hasattr(self.v,a):
+                    setattr(new_v,a,getattr(self.v,a))
+            new_v.copied_from = self.v
         override_copy(new_v)
         return new_v
-    v.copy = new.instancemethod(new_copy, v, None)
-    v.type = deepcopy(v.type)
+    #v.copy = new.instancemethod(new_copy, v, None)
+    v._old_type = v.type
+    v.type = copy.copy(v.type)
     if not hasattr(v.type,'__old_call__'):
         v.type.__old_call__ = v.type.__call__
-        v.type = deepcopy(v.type)
+        v.type = copy.copy(v.type)
         #if hasattr(v.type,'v'):
         #    print v.type.v
         #    raise Exception("type already has a v!!")
@@ -91,6 +101,8 @@ def override_copy(v):
         v.type.__call__ = new.instancemethod(type_call, v.type, None)
         v.type.make_variable = new.instancemethod(type_make_variable, v.type, None)
     v.type.v = v
+    if actually_do_it:
+        v.preserve_labels_on_copy = True
     return v
 
 # functions on theano variables
@@ -172,9 +184,9 @@ class O(object):
 
     """
     def __init__(self,**kwargs):
-        self.__dict__.update(kwargs)
+        self.__dict__.update(**dict([(save_name(k),v) for (k,v) in kwargs.items()]))
     def __call__(self,**kwargs):
-        self.__dict__.update(kwargs)
+        self.__dict__.update(**dict([(save_name(k),v) for (k,v) in kwargs.items()]))
         return self
     def __repr__(self):
         return 'Choices: '+(', '.join(self.__dict__.keys()))
@@ -186,6 +198,83 @@ class O(object):
         return iter([v for (k,v) in self.__dict__.items() if not k.startswith('_')])
     def __iteritems__(self):
         return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
+    def __setattr__(self, name, value):
+        if name in self.__dict__.keys() and hasattr(getattr(self, name),'set_value'):
+            getattr(self, name).set_value(value)
+        else:
+            object.__setattr__(self, name, value)
+
+class _Search(O):
+    def __init__(self,**kwargs):
+        self._things = kwargs
+    def __getattr__(self,search_string):
+        return O(**dict([(save_name(k),v) for (k,v) in self._things.items() if search_string in k]))
+    def __repr__(self):
+        return 'Choices: enter a search term, enter with a dot and use autocomplete to see matching items.'
+
+class Ox(O):
+    """
+        An `Ox` object is an extended  O object that allows easy access to its members
+        and automatically converts a hierarchical dictionary into a hierarchical `Ox`.
+
+        The special attributes `._all` and `._search` provide access to the flattend dictionary.
+
+        Names will be converted to save variable names. Spaces and special characters are replaced with '_'.
+
+        Example::
+
+            o1 = Ox(**{'Node a':{'Subnode b':{'Number c':23},'Number d':24},'Node e':{'Float Value f':0.0}})
+            
+            ## Hierarchical
+            # each level provides tab completion
+            print o1.Node_a.Subnode_b.Number_c
+            # prints 23
+    
+            ## Flattend
+            print o1._all
+            # prints: 'Choices: Node_a_Subnode_b_Number_c, Node_e_Float_Value_f, Node_a_Number_d'
+            print o1._search.Number
+            # prints: 'Choices: Node_a_Subnode_b_Number_c, Node_a_Number_d'
+
+        Searching:
+
+            Using the special attribute '._search', a search string can be entered as a fake attribute.
+            Entering a dot enables tab completion of all (flattend) entries that match the search string::
+
+                o1.Node_a._search.Number.<Tab>
+                # Will offer Subnode_b_Number_c and Number_d as completions
+
+
+    """
+    def __init__(self,**kwargs):
+        super(Ox,self).__init__(**kwargs)
+    def __getattribute__(self,key):
+        if key.startswith('_'):
+            return super(Ox,self).__getattribute__(key)
+        if type(self.__dict__[key]) is dict:
+            return Ox(**self.__dict__[key])
+            return Ox(**dict([(save_name(k),v) for (k,v) in self.__dict__[key].items()]))
+        return self.__dict__[key]
+    def _flatten(self,sep='_'):
+        def flatten_rec(d):
+            if type(d) is dict:
+                return [(save_name(k if k1 is None else k+sep+k1),v1) for (k,kv) in  d.items() for k1,v1 in flatten_rec(kv)]
+            return [(None, d)]
+        return dict(flatten_rec(self.__dict__))
+    @property
+    def _dict(self):
+        return self.__dict__
+    @property
+    def _all(self):
+        return O(**self._flatten())
+    @property
+    def _search(self):
+        return _Search(**self._flatten())
+    def __iter__(self):
+        return iter([Ox(**v) if type(v) is dict else v for (k,v) in self.__dict__.items() if not k.startswith('_')])
+    def __iteritems__(self):
+        return iter([(k,Ox(**v) if type(v) is dict else v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
+
 
 def create_context_O(var):
     """
@@ -211,11 +300,11 @@ def create_context_O(var):
             as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0])
     """
     if hasattr(var, 'config_key') and hasattr(var,'config_default'):
-        return O(var=var,node=var.node,model=var.node.model,
+        return O(var=var,node=var.node,model=var.node.get_model(),
                  get_config=var.node.get_config,
                  value_from_config=lambda: var.node.get_config(var.config_key,var.config_default),
                  value_to_config=lambda v: var.node.set_config(var.config_key,v))
-    return O(var=var,node=var.node,model=var.node.model,get_config=var.node.get_config)
+    return O(var=var,node=var.node,model=var.node.get_model(),get_config=var.node.get_config)
 
 def create_hierarchical_O(vs,pi=0):
     """
@@ -246,21 +335,26 @@ def create_hierarchical_dict(vs,pi=0):
         o.update(**{l.name: l})
     return o
 
-def create_hierarchical_dict_with_nodes(vs,pi=0):
-    """
+def create_hierarchical_Ox(vs,pi=0):
+    return Ox(**create_hierarchical_dict(vs,pi))
 
+def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
+    """
+        name_sanitizer: eg. convis.base.save_name or str
     """
     o = {}
-    paths = f7([v.path[pi] for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    paths = f7([name_sanitizer(v.path[pi]) for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
     leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
     for p in paths:
-        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi] == p], pi+1)})
+        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and name_sanitizer(v.path[pi]) == p], pi+1)})
     for l in leaves:
-        o.update(**{l.name: l})
+        o.update(**{name_sanitizer(l.name): l})
     return o
 
+def is_var(v):
+    return hasattr(v,'__is_convis_var')
 def is_state(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'state'
+    return hasattr(v,'variable_type') and v.variable_type == 'state' and hasattr(v,'state_out_state')
 def is_out_state(v):
     return hasattr(v,'variable_type') and v.variable_type == 'out_state'
 def is_input_parameter(v):
@@ -410,6 +504,8 @@ class GraphWrapper(object):
         
 
     """
+    parent = None
+    config_dict = None
     def __init__(self,graph,name,m=None,parent=None,ignore=[],scan_op=None,**kwargs):
         self.m = m
         self.parent = parent
@@ -428,17 +524,32 @@ class GraphWrapper(object):
         self.variable_dict = {}
         self.ignore = ignore
         self.scan_op = scan_op
-        self.follow_scan = False
+        self.node_type = 'Node'
+        self.node_description = ''
+        self.config_dict = None
+        self.__dict__.update(kwargs)
+        self.follow_scan = True
         if self.follow_scan and scan_op is None:
             self.wrap_scans(self.graph)
         self.label_variables(self.graph)
         #self.label_variables(self.scan_outputs,follow_scan=False) # just labeling these to prevent infinite recursion
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
-        self.node_type = 'Node'
-        self.node_description = ''
-        self.__dict__.update(kwargs)
         #if self.m is not None:
         #    self.m.add(self)
+    def set_config(self,c):
+        self.config_dict = c
+    def get_model(self):
+        if hasattr(self,'model'):
+            return self.model
+        if self.parent is not None:
+            return self.parent.get_model()
+    @property
+    def config(self):
+        if self.config_dict is None:
+            if self.parent is not None:
+                return self.parent.config
+            raise Exception('GraphWrapper has no configuration! But also no parent!')
+        return self.config_dict
     def get_parents(self):
         p = []
         if self.parent is not None:
@@ -479,6 +590,9 @@ class GraphWrapper(object):
             else:
                 v.full_name = self.name+'.'+v.name
                 v.path = [self,v]
+            global do_debug
+            if do_debug:
+                print 'labeled: ',v.path
             if hasattr(v,'node') and v.node != None and v.node != self:
                 if v.node.parent is None:
                     v.node.parent = self
@@ -497,30 +611,32 @@ class GraphWrapper(object):
             Note from theano source: # TODO: pass name and ndim arguments
         """
         return self.graph
-    @property
-    def inputs(self):
-        return create_hierarchical_O(filter(is_input,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+    #@property
+    #def inputs(self):
+    #    return create_hierarchical_Ox(filter(is_input,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     #@property
     #def outputs(self):
     #    return [self.graph]
+    def filter_variables(self,filter_func=is_input):
+        return create_hierarchical_Ox(filter(filter_func,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def output(self):
         return self.graph
         #return create_hierarchical_O(theano_utils.get_input_variables_iter(self.graph),pi=1)
     @property
     def parameters(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+        return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def params(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+        return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def states(self):
-        return create_hierarchical_O(filter(is_state,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+        return create_hierarchical_Ox(filter(is_state,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def variables(self):
-        return create_hierarchical_O(theano_utils.get_named_variables_iter(self.graph),pi=len_parents(self))
+        return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.graph),pi=len_parents(self))
     def __repr__(self):
-        if callable(self.node_description):
+        if hasattr(self, 'node_description') and callable(self.node_description):
             # we can provide a dynamic description
             return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description())
         return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description)
@@ -544,16 +660,42 @@ class GraphWrapper(object):
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
+    def __iadd__(self,other):
+        v = other
+        if hasattr(other,'_as_TensorVariable'):
+            v = other._as_TensorVariable()
+        if hasattr(self, 'default_input'):
+            if type(self.default_input.owner.op) == T.elemwise.Sum:
+                # assuming a 3d input/ output
+                if replace_inputs and hasattr(self.default_input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                    self.default_input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
+                else:
+                    self.default_input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
+                if not hasattr(v, 'connects'):
+                    v.connects = []
+                v.connects.append([self,other])
+        elif hasattr(self.variables, 'input'):
+                if hasattr(self.variables.input,'variable_type') and self.variables.input.variable_type == 'input':
+                    self.variables.input.variable_type = 'replaced_input'
+                if not hasattr(v, 'connects'):
+                    v.connects = []
+                v.connects.append([self,other])
+                try:
+                    theano_utils._replace(self.output,self.variables.input,v)
+                except:
+                    print 'Something not found! ',other.variables,self.variables
+        return self
 
 class N(GraphWrapper):
     #parameters = []
     states = {}
     state_initializers = {}
-    def __init__(self,graph,name=None,m=None,parent=None,**kwargs):
+    def __init__(self,graph,name=None,m=None,parent=None,config={},**kwargs):
         if name is None:
             name = str(uuid.uuid4())
         self.m = m
         self.parent = parent
+        # this input can be used in the graph or simply ignored. However, then automatic connections no longer work!
         #self.graph = T.as_tensor_variable(graph)
         #if self.graph.name is None:
         #    self.graph.name = 'output'
@@ -563,9 +705,29 @@ class N(GraphWrapper):
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
         self.node_description = ''
+        self.config_dict = config
         if self.m is not None:
             self.m.add(self)
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
+    def create_input(self,n=1,name='input',sep='_'):
+        from collections import OrderedDict
+        if n == 1:
+            self.input = T.sum([as_input(T.dtensor3(),name,replaceable_input=True)],axis=0)
+            self.default_input = self.input
+            self.inputs = OrderedDict([(name,self.input)])
+            return self.input
+        elif type(n) == int:
+            self.inputs = OrderedDict([(name+sep+str(i),T.sum([as_input(T.dtensor3(),name+sep+str(i),replaceable_input=True)],axis=0)) for i in range(n)])
+            self.default_input = self.inputs.values()[0]
+            self.input = T.join(*([0]+self.inputs))
+            return self.inputs
+        elif type(n) in [list,tuple]:
+            self.inputs = OrderedDict([(input_name,T.sum([as_input(T.dtensor3(),str(input_name),replaceable_input=True)],axis=0)) for input_name in n])
+            self.default_input = self.inputs[n[0]]
+            self.input = self.inputs[n[0]]
+            return self.inputs
+        else:
+            raise Exception('Argument not understood. Options are: an int (either 1 for a single input or >1 for more) or a list of names for the inputs.')
     def get_parents(self):
         p = []
         if self.parent is not None:
@@ -597,6 +759,7 @@ class N(GraphWrapper):
         self.m = m
         return self
     def var(self,v):
+        # lazy variable references -> are they still needed?
         # Todo: variable_dict is obsolete!
         if type(v) is str:
             if v in self.variable_dict.keys():
@@ -621,8 +784,11 @@ class N(GraphWrapper):
         if not hasattr(self,'config'):
             return default
         return self.config.get(key,default)
-    def set_config(self,key,v):
-        self.config[key] = v
+    def set_config(self,key,v=None):
+        if v is None and hasattr(key,'get'):
+            super(N, self).set_config(key)
+        else:
+            self.config[key] = v
         #notify model? self.model.set_config(self,key,v)
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         if 'config_key' in kwargs.keys() and 'config_default' in kwargs.keys():
@@ -664,12 +830,51 @@ class _Configuration(O):
         for n in nodes:
             self.__dict__[save_name(n.name)] = O(**dict([(str(k.simple_name),k) for k in vars  if hasattr(k,'node') and k.node == n]))
 
+def connect(list_of_lists):
+    """
+        Connects nodes alternatingly in sequence and parallel:
+
+        [A,B,[[C,D],[E,F],G] will results in two paths:
+
+            A -> B -> C -> D -> G
+            A -> B -> E -> F -> G
+
+
+    """
+    def connect_in_sequence(l,last_outputs = []):
+        if not type(l) is list:
+            return [[l,l]]
+        print '>>connect_in_sequence',str(l)
+        last_outputs = []
+        for e in l:
+            new_outputs = connect_in_parallel(e,last_outputs=last_outputs)
+            print 'old:', j(last_outputs),'| new: ', j(new_outputs)
+            if len(last_outputs) > 0 and len(new_outputs) > 0:
+                for e1 in last_outputs:
+                    for e2 in new_outputs:
+                        print e1,'->',e2
+                        e2[0]+=e1[1]
+            last_outputs = new_outputs
+        print 'connected_in_sequence',l,'returning:',[l[-1]]
+        return [l[0],l[-1]]
+    def connect_in_parallel(l,last_outputs=[]):
+        if not type(l) is list:
+            return [[l,l]]
+        print '>>connect_in_parallel',str(l)
+        last_elements = []
+        for e in l:
+            last_elements.append(connect_in_sequence(e,last_outputs))
+        print 'connected_in_parallel',l,'returning:',last_elements
+        print zip(*last_elements)
+        return last_elements
+    connect_in_sequence(list_of_lists)
+    return list_of_lists
+
 
 class M(object):
     def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, **kwargs):
         self.debug = False
         self.nodes = []
-        self.variables = {}
         self.var_outputs = {}
         self.mappings = {}
         self.givens = {}
@@ -693,17 +898,14 @@ class M(object):
     def v(self):
         return _Vars(self)
     @property
-    def _parameters(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
+    def parameters(self):
+        return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
     @property
-    def _params(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
+    def states(self):
+        return create_hierarchical_Ox(filter(is_state,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
     @property
-    def _states(self):
-        return create_hierarchical_O(filter(is_state,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
-    @property
-    def _variables(self):
-        return create_hierarchical_O(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
+    def variables(self):
+        return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
     def degree_to_pixel(self,degree):
         return float(degree) * self.pixel_per_degree
     def pixel_to_degree(self,pixel):
@@ -716,16 +918,11 @@ class M(object):
         if n.name in map(lambda x: x.name, self.nodes):
             pass#raise Exception('Node named %s already exists!'%n.name)
         self.nodes.append(n.set_m(self))
-        self.variables.update(n.get_variables())
         self.var_outputs.update(n.get_output_variables())
     def __contains__(self,item):
-        return item in self.nodes or item in self.variables.keys()
+        raise Exception('Will be reimplemented!')
     def map(self,a,b):
-        if not a in self.variables.keys():
-            self.add(a.node)
-        if not b in self.variables.keys():
-            self.add(b.node)    
-        self.mappings[a] = b
+        raise Exception('Will be reimplemented!')
     def out(self,a):
         """ 
             Will add a variable as an output.
@@ -787,19 +984,7 @@ class M(object):
         return f7(vs)
     def describe_variables(self):
         return [describe(v) for v in self.get_variables()]
-    def var(self,var_name=None,**kwargs):
-        for va in self.variables.keys():
-            if va == var_name or va.name == var_name:
-                return va
-        for va in self.variables.keys():
-            if va == var_name or va.simple_name == var_name:
-                return va
-    def vars(self,var_name=None,**kwargs):
-        vs = []
-        for va in self.variables.keys():
-            if va == var_name or va.name == var_name or va.simple_name == var_name:
-                vs.append(va)
-        return vs
+
     def _deprecated_get_inputs(self,outputs=None): 
         import copy
         if outputs is None:
@@ -907,7 +1092,7 @@ class M(object):
                         input_dict[k] = k.state_init(c(node=k.node,var=k,model=self))
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
-        for shared_parameter in filter(is_shared_parameter,self.variables.keys()):
+        for shared_parameter in self.parameters._all:
             if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
                 shared_parameter.set_value(shared_parameter.param_init(c(node=shared_parameter.node,var=shared_parameter,model=self)))
                 shared_parameter.initialized = True
@@ -998,7 +1183,7 @@ class Runner(object):
                         input_dict[k] = k.state_init(c(node=k.node,var=k,model=self))
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
-        for shared_parameter in filter(is_shared_parameter,self.variables.keys()):
+        for shared_parameter in self.parameters._all:
             if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
                 shared_parameter.set_value(shared_parameter.param_init(c(node=shared_parameter.node,var=shared_parameter,model=self)))
                 shared_parameter.initialized = True
