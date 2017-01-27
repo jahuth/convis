@@ -369,6 +369,8 @@ class RetinaConfiguration:
             conf.set("ganglion-layers.*.spiking-channel.sigma-V",None) # gets the value for all layers
             conf.set("ganglion-layers.0",{}) # gets the first layer
         """
+        if key == 'pixels-per-degree':
+            return self.retina_config.get('retina',{}).get('pixels-per-degree',default)
         def get(config,key,default):
             if key == '':
                 return config

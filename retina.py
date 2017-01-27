@@ -36,11 +36,14 @@ class Retina(M):
         self.config = config
         if self.config is None:
             self.config = RetinaConfiguration()
-        self.pixel_per_degree = self.config.get('pixels-per-degree',20.0)
-        self.steps_per_second = 1.0/self.config.get('temporal-step__sec',1.0/1000.0)
-        self.input_luminosity_range = self.config.get('input-luminosity-range',255.0)
-        if kwargs.get('opl',True):
-            self.opl = OPLLayerNode(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0])
+        self.pixel_per_degree = float(self.config.get('retina.pixels-per-degree',20.0))
+        self.steps_per_second = 1.0/float(self.config.get('retina.temporal-step__sec',1.0/1000.0))
+        self.input_luminosity_range = float(self.config.get('retina.input-luminosity-range',255.0))
+        if kwargs.get('opl',True) == True:
+            self.opl = OPLLayerNode(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
+        elif kwargs.get('opl',True) != False:
+            self.opl = kwargs.get('opl',OPLLayerNode)(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
+            # todo: accept all arguments for layers
         if kwargs.get('bipolar',True):
             self.bipol = BipolarLayerNode(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
         self.ganglion_input_layers = []
@@ -55,7 +58,7 @@ class Retina(M):
                     self.ganglion_input_layers.append(gang_in)
                 if kwargs.get('ganglion_spikes',True):
                     if 'spiking-channel' in ganglion_config and ganglion_config['spiking-channel'].get('enabled',True) != False:
-                        gang_spikes = GanglionSpikingLayerNode(name='GanglionSpikes',model=self,config=ganglion_config['spiking-channel'])
+                        gang_spikes = GanglionSpikingLayerNode(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
                         if kwargs.get('ganglion_input',True) and kwargs.get('ganglion_spikes',True):
                             self.in_out(gang_in,gang_spikes)
