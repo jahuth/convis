@@ -61,10 +61,13 @@ class Retina(M):
                         gang_spikes = GanglionSpikingLayerNode(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
                         if kwargs.get('ganglion_input',True) and kwargs.get('ganglion_spikes',True):
-                            self.in_out(gang_in,gang_spikes)
+                            #self.in_out(gang_in,gang_spikes)
+                            gang_spikes.add_input(gang_in)
                         self.ganglion_spiking_layers.append(gang_spikes)
                 if kwargs.get('bipolar',True) and kwargs.get('ganglion_input',True):
-                    self.in_out(self.bipol,gang_in)
+                    #self.in_out(self.bipol,gang_in)
+                    gang_in.add_input(self.bipol)
         if kwargs.get('opl',True) and kwargs.get('bipolar',True):
-            self.in_out(self.opl,self.bipol)
+            #self.in_out(self.opl,self.bipol)
+            self.bipol.add_input(self.opl)
         #self.all = GraphWrapper([self.opl.output, self.bipol.output,self.ganglion_input_layers[0].output,self.ganglion_spiking_layers[0].output],'all',m=self)

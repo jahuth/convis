@@ -217,14 +217,14 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         uid = uuid.uuid4().hex
         s = "<div class='convis_description list'>"
         iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
-        s += "<b id="+uid+" "+on_click_toggle+" >+</b> &nbsp; &nbsp; "
+        s += "<b id="+uid+" "+on_click_toggle+" >+</b>&nbsp;"
         for (k,vv) in v.__iteritems__():
-            s += '<a href="#'+uid+save_name(k)+'">'+k+'</a>  '
-        s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; padding-left: 5px; display: none;'>(&#8230;)</div>"
-        s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; padding-left: 5px;'>"
+            s += '| <a style="text-decoration: none; font-size: 8pt;" href="#'+uid+save_name(k)+'">'+k+'</a> '
+        s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+        s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;'>"
         iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
         for (k,vv) in v.__iteritems__():
-            s += "<div class='convis_description dict_item'><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b><a href='#"+uid+"''>&#8617;</a>"
+            s += "<div class='convis_description dict_item'><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b> <a style=\"text-decoration: none;\" href='#"+uid+"''>&#8617;</a>"
             s += "<div class='description_content_replacer' style='border-left: 0px solid #ddd; padding-left: 5px; display: none;'>(&#8230;)</div>"
             s += "<div class='description_content' style='border-left: 0px solid #ddd; padding-left: 5px;'>"
             s += describe_html(vv,wrap_in_html=False,**kwargs)
@@ -238,8 +238,8 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     if type(v) in [list, tuple] or hasattr(v,'__iter__'):
         try:
             s = "<div class='convis_description list'><b "+on_click_toggle+">List ("+str(len(v))+"):</b>"
-            s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; padding-left: 5px; display: none;'>(&#8230;)</div>"
-            s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; padding-left: 5px;'>"
+            s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+            s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;'>"
             s += '\n'.join([describe_html(vv,wrap_in_html=False,**kwargs) for vv in v])
             s += "</div>"
             s += "</div>"
@@ -264,8 +264,8 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     #simple_name = str(d.get('simple_name',''))
     s = """<div class='convis_description variable'><b """+on_click_toggle+""">"""+name+"""</b> <small>"""+d.get('variable_type','')+"""</small>"""
     # default: show everything, hide on click;
-    s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; display: none;'>(&#8230;)</div>"
-    s += "<div class='description_content' style='border-left: 2px solid #eee; padding-left: 5px;'>"
+    s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+    s += "<div class='description_content' style='border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;'>"
     if hasattr(v,'path'):
         s += "<small>" + full_path(v) + "</small><br/>"
     if hasattr(v,'doc') and getattr(v,'doc') != '':

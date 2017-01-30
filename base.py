@@ -10,7 +10,9 @@ from . import retina_base
 from . import theano_utils
 from exceptions import NotImplementedError
 from variable_describe import describe, describe_dict, describe_html, full_path, save_name
-
+import new
+import warnings
+import datetime
 
 def f7(seq):
     """ This function is removing duplicates from a list while keeping the order """
@@ -40,12 +42,34 @@ def add_kwargs_to_v(v,**kwargs):
 convis_attributes = ['name','node','path','__is_convis_var','variable_type','doc','root_of',
                     'state_out_state','state_init','state_in_state',
                     'param_init','initialized','optimizable','config_key','config_default','save','get']
+
+def get_convis_attributes(v):
+    return O(**dict([(a,getattr(v,a)) for a in convis_attributes if hasattr(v,a)]))
+
 do_debug = False
 do_replace_inputs = True
 
+debug_messages = []
+
+def send_dbg(channel,msg,log_level=0):
+    global debug_messages
+    debug_messages.append((channel,msg,log_level,datetime.datetime.now()))
+
+def _filter_dbg_txt(search,txt):
+    if search is None:
+        return True
+    if type(search) is list:
+        for s in search:
+            if not _filter_dbg_txt(s,txt):
+                return False    
+        return True
+    return search in txt
+
+def filter_dbg(channel=None,msg=None,log_level=0):
+    global debug_messages
+    return [d for d in debug_messages[::-1] if _filter_dbg_txt(channel,d[0]) and _filter_dbg_txt(msg,d[1]) and log_level <= d[2]]
 
 def override_copy(v,actually_do_it=True):
-    import new
     #return v
     from copy import deepcopy
     import copy
@@ -67,8 +91,6 @@ def override_copy(v,actually_do_it=True):
     #    override_copy(copied_variable)
     #    return copied_variable
     def type_call(self,*args,**kwargs):
-        if do_debug:
-            print 'Called the injected function!!'
         new_v = self.__old_call__(*args,**kwargs)
         if hasattr(self,'v') and hasattr(self.v,'preserve_labels_on_copy'):
             for a in convis_attributes:
@@ -78,8 +100,6 @@ def override_copy(v,actually_do_it=True):
         override_copy(new_v)
         return new_v
     def type_make_variable(self,name=None):
-        if do_debug:
-            print 'Called the injected function!!'
         new_v = self.Variable(self,name=name)
         if hasattr(self,'v') and hasattr(self.v,'preserve_labels_on_copy'):
             for a in convis_attributes:
@@ -164,6 +184,36 @@ def as_parameter(v,init=None,name=None,**kwargs):
         v.param_init = init
     if name is not None:
         v.name = name
+    if hasattr(v,'set_value'):
+        def update(self,x=O(),force=False):
+            """
+                When other variables depend on this variable to be up-to-date, they can call `update` to set it its value according to the current configuration.
+
+                If a variable already had its 'initialized' attribute set, it will not be computed again.
+                Also if the variable is flagged as 'optimizing', no changes will be made.
+
+                The function needs to be supplied with a context that holds information about who the model is and what the input looks like (see `create_context_O`).
+
+                Setting force=True will reinitialize the variable regardless of initialized and optimizing status.
+            """
+            if self in getattr(x,'update_trace',[]):
+                # The variable was already updated. To avoid cycles we do not update again.
+                warnings.warn("The variable was already updated. To avoid cycles we do not update again.", Warning)
+                send_dbg('param.update',str(self.name)+' was attempted to be updated twice!',4)
+                return self
+            if not force and (getattr(self, 'initialized', False) or hasattr(self,'optimizing')):
+                # The variable was already updated. To avoid cycles we do not update again.
+                send_dbg('param.update',str(self.name)+' was already initialized or is optimizing itself.',0)
+                return self
+            # this might entail recursion when param_init calls update of other variables:
+            new_val = self.param_init(create_context_O(self,update_trace=getattr(x,'update_trace',[])+[self]))
+            #if self.name is not None and 'lambda' in self.name:
+            #    print self.name, new_val
+            send_dbg('param.update',str(self.name)+' updated itself from '+str(self.get_value())[:10]+' to '+str(new_val)[:10]+'.',2)
+            self.set_value(new_val)
+            self.initialized = True
+            return self
+        v.update = new.instancemethod(update, v, None)
     v.__dict__.update(kwargs)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
@@ -360,7 +410,7 @@ def is_state(v):
 def is_out_state(v):
     return hasattr(v,'variable_type') and v.variable_type == 'out_state'
 def is_input_parameter(v):
-    return hasattr(v,'variable_type') and (not hasattr(v,'get_value')) and v.variable_type == 'parameter'
+    return hasattr(v,'variable_type') and (not hasattr(v,'get_value')) and v.variable_type == 'parameter'  and (not hasattr(v,'copied_from'))
 def is_shared_parameter(v):
     return hasattr(v,'variable_type') and hasattr(v,'get_value') and v.variable_type == 'parameter'
 def is_parameter(v):
@@ -552,8 +602,10 @@ class GraphWrapper(object):
         return self.config_dict.get(key,default)
     def set_config(self,key,v=None):
         if v is None and hasattr(key,'get'):
+            send_dbg('set_config',str(getattr(self,'name',''))+' replaced config: '+str(key)+'',1)
             self.config_dict = key
         else:
+            send_dbg('set_config',str(getattr(self,'name',''))+' set config: '+str(key)+': '+str(v),1)
             self.config_dict[key] = v
     @property
     def config(self):
@@ -574,7 +626,7 @@ class GraphWrapper(object):
         for i,ow in enumerate(f7([v.owner for v in my_scan_vars])):
             op = ow.op
             variables_leading_to_op = [v for v in my_scan_vars if v.owner.op is op]
-            print ow, variables_leading_to_op
+            #print ow, variables_leading_to_op
             GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),scan_op=op,name='Scan Loop '+str(i),ignore=[self.graph]+self.ignore+ow.inputs) # creating a sub node
             #+ow.inputs
             self.label_variables([o for o in op.outputs])
@@ -673,16 +725,22 @@ class GraphWrapper(object):
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
     def add_input(self,other,replace_inputs=do_replace_inputs):
+        if do_debug:
+            print 'connecting',other.name,'to',self.name,''
         v = other
         if hasattr(other,'_as_TensorVariable'):
             v = other._as_TensorVariable()
         if hasattr(self, 'default_input'):
             if type(self.default_input.owner.op) == T.elemwise.Sum:
+                if do_debug:
+                    print 'Adding to sum'
                 # assuming a 3d input/ output
                 if replace_inputs and hasattr(self.default_input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
                     self.default_input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
                 else:
                     self.default_input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
+                if do_debug:
+                    print 'inputs are now:',self.default_input.owner.inputs[0].owner.inputs
                 if not hasattr(v, 'connects'):
                     v.connects = []
                 v.connects.append([self,other])
@@ -724,7 +782,7 @@ class N(GraphWrapper):
     #parameters = []
     states = {}
     state_initializers = {}
-    def __init__(self,graph,name=None,m=None,parent=None,config={},**kwargs):
+    def __init__(self,graph,name=None,m=None,parent=None,config=None,**kwargs):
         if name is None:
             name = str(uuid.uuid4())
         self.m = m
@@ -739,7 +797,8 @@ class N(GraphWrapper):
         #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
         self.node_description = ''
-        self.config_dict = config
+        if config is not None:
+            self.set_config(config)
         if self.m is not None:
             self.m.add(self)
         if self.config is None:
@@ -822,11 +881,11 @@ class N(GraphWrapper):
         if not hasattr(self,'config'):
             return default
         return self.config.get(key,default)
-    def set_config(self,key,v=None):
-        if v is None and hasattr(key,'get'):
-            super(N, self).set_config(key)
-        else:
-            self.config[key] = v
+        #def set_config(self,key,v=None):
+        #if v is None and hasattr(key,'get'):
+        #    super(N, self).set_config(key)
+        #else:
+        #    self.config[key] = v
         #notify model? self.model.set_config(self,key,v)
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         if 'config_key' in kwargs.keys() and 'config_default' in kwargs.keys():
@@ -1090,16 +1149,23 @@ class M(object):
             print 'parameters:',filter(is_input_parameter,variables)
             print 'states:',state_variables
             print 'updates:',self.compute_updates_order
+        self.reset_parameters()
         self.compute = theano.function(inputs=self.compute_input_order, 
                                         outputs=self.compute_output_order, 
                                         updates=self.compute_updates_order,
                                         givens=givens,on_unused_input='ignore')
     def clear_states(self):
         self.compute_state_dict = {}
+    def reset_parameters(self):
+        for shared_parameter in self.parameters._all:
+            if is_shared_parameter(shared_parameter) and hasattr(shared_parameter,'initialized'):
+                shared_parameter.initialized = False
     def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},**kwargs):
         chuncked_output = []
         t = 0
         while t < the_input.shape[0]:
+            if self.debug:
+                print 'Chunk:', t, t+max_length
             oo = self.run(the_input[t:(t+max_length)],
                           additional_inputs=[ai[t:(t+max_length)] for ai in additional_inputs],
                           inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]))
@@ -1134,9 +1200,12 @@ class M(object):
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
         for shared_parameter in self.parameters._all:
-            if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(create_context_O(k,input=the_input)))
-                shared_parameter.initialized = True
+            if is_shared_parameter(shared_parameter):
+                #if (not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False) and not hasattr(shared_parameter,'optimized'):
+                # until we can track which config values where changed, we re-initialize everything
+                # all smart stuff is now in the injected .update method
+                shared_parameter.update(create_context_O(shared_parameter,input=the_input))
+                #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
         for (o,k) in zip(the_output, self.compute_output_order):

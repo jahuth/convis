@@ -74,17 +74,26 @@ class OPLLayerNode(N):
             lambda x: m_g_filter(float(x.get_config('surround-sigma__deg',0.15)),
                        float(x.get_config('surround-sigma__deg',0.15)),
                        retina=x.node.get_model(),normalize=True,even=False),name='G_S')
+        #self._lambda_OPL = self.shared_parameter(
+        #    lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0))),name='lambda_OPL')
         self._lambda_OPL = self.shared_parameter(
-            lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0))),name='lambda_OPL')
+                lambda x: float(x.value_from_config()) / float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))),
+                save = lambda x: x.value_to_config(float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))) * (float(x.var.get_value()))),
+                get = lambda x: float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))) * (float(x.var.get_value())),
+                config_key = 'opl-amplification',
+                config_default = 10.0,
+                name='lambda_OPL',
+                doc='Gain applied to the OPL signal.')
         self._w_OPL = self.shared_parameter(
             lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
 
         # this parameter has to be initialized last :/
-        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(x.node._G_S.get_value(),
-                                                                        x.node._E_S.get_value()),name='Reshape_C_S')
+        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(x.node._G_S.update(x).get_value(),
+                                                                        x.node._E_S.update(x).get_value()),name='Reshape_C_S',
+                                                  doc='This filter resizes C such that the output has the same size as S.')
 
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, x.node._E_n_C.get_value().shape[1]-1+x.node._TwuTu_C.get_value().shape[1]-1+x.node._Reshape_C_S.get_value().shape[1]-1,
+                                    init=lambda x: np.zeros((1, x.node._E_n_C.update(x).get_value().shape[1]-1+x.node._TwuTu_C.update(x).get_value().shape[1]-1+x.node._Reshape_C_S.update(x).get_value().shape[1]-1,
                                     1, x.input.shape[1], x.input.shape[2])))
         input_padded_in_time = T.concatenate([
                         self._input_init,
@@ -94,7 +103,7 @@ class OPLLayerNode(N):
         self._L = as_variable(pad5(pad5(input_padded_in_time,Nx,3),Ny,4),'L')
         self._C = GraphWrapper(as_variable(conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C),'C'),name='center',ignore=[self._L]).graph
         self._S = GraphWrapper(as_variable(conv3d(conv3d(self._C,self._E_S),self._G_S),'S'),name='surround',ignore=[self._C]).graph
-        I_OPL = as_variable(self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S),'I_OPL')
+        I_OPL = as_variable(self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S),'I_OPL',html_name="I<sub>OPL</sub> = &lambda;*(C-w*S)")
 
         length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
@@ -130,7 +139,13 @@ class OPLAllRecursive(N):
         Ny = 10#self._G_C.shape[4]-1 + self._G_S.shape[4]-1
         self._L = pad5(pad5(input_padded_in_time,Nx,3),Ny,4)
         self._lambda_OPL = self.shared_parameter(
-            lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0))),name='lambda_OPL')
+                lambda x: float(x.value_from_config()) / float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))),
+                save = lambda x: x.value_to_config(float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))) * (float(x.var.get_value()))),
+                get = lambda x: float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))) * (float(x.var.get_value())),
+                config_key = 'opl-amplification',
+                config_default = 10.0,
+                name='lambda_OPL',
+                doc='Gain applied to the OPL signal.')
         self._w_OPL = self.shared_parameter(
             lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
         I_OPL = self._lambda_OPL * (self._L - self._w_OPL * self._L)
@@ -212,8 +227,8 @@ class OPLLayerLeakyHeatNode(N):
                 doc="Weight applied to the surround signal.")
 
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, self._E_n_C.get_value().shape[1]-1
-                                                             + self._TwuTu_C.get_value().shape[1]-1,
+                                    init=lambda x: np.zeros((1, self._E_n_C.update(x).get_value().shape[1]-1
+                                                             + self._TwuTu_C.update(x).get_value().shape[1]-1,
                                     1, x.input.shape[1], x.input.shape[2])))
         input_padded_in_time = T.concatenate([
                         self._input_init,
@@ -243,9 +258,9 @@ class OPLLayerLeakyHeatNode(N):
                             init=lambda x: x.node.get_model().steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                doc="Since recursive filtering needs the result of the previous timestep, the last time step has to be remembered as a state inbetween computations.",
-                               init=lambda x: x.input[0,:,:]) # initial condition for sequence
+                               init=lambda x: float(x.node.config.get('initial_value',0.5))*np.ones_like(x.input[0,:,:])) # initial condition for sequence
         _preceding_input = as_state(T.dmatrix("preceding_input"),
-                               init=lambda x: x.input[0,:,:]) # initial condition for sequence
+                               init=lambda x: float(x.node.config.get('initial_value',0.5))*np.ones_like(x.input[0,:,:])) # initial condition for sequence
         a_0 = 1.0
         a_1 = -T.exp(-steps/tau)
         self.a_1 = a_1
@@ -351,9 +366,9 @@ class BipolarLayerNode(N):
         # definition of sequences / initial condition for sequences
         self._I_OPL = self.create_input() #sequence
         self._preceding_V_bip = as_state(T.dmatrix("preceding_V_bip"),
-            init=lambda x: np.zeros_like(x.input[0,:,:])) # initial condition for sequence
+            init=lambda x: float(x.node.config.get('initial_value',0.5))*np.ones_like(x.input[0,:,:])) # initial condition for sequence
         self._preceding_inhibition = as_state(T.dmatrix("preceding_inhibition"),
-            init=lambda x: np.zeros_like(x.input[0,:,:])) # initial condition for sequence
+            init=lambda x: float(x.node.config.get('initial_value',0.5))*np.ones_like(x.input[0,:,:])) # initial condition for sequence
         self._inhibition_smoothing_kernel = self.shared_parameter(
             lambda x: m_g_filter_2d(float(x.get_config('adaptation-sigma__deg',0.2)),
                  float(x.get_config('adaptation-sigma__deg',0.2)),
@@ -379,6 +394,7 @@ class BipolarLayerNode(N):
         def bipolar_step(input_image,
                         preceding_V_bip, preceding_attenuationMap, preceding_inhibition, 
                         lambda_amp, g_leak, input_amp,inputNernst_inhibition,inhibition_smoothing_kernel):
+                        # note: preceding_attenuationMap is not used: this is only an output
             total_conductance = as_variable(g_leak + as_variable(preceding_inhibition,name='preceding_inhibition'),'total_conductance')
             attenuation_map = as_variable(T.exp(-steps*total_conductance),'attenuation map')
             E_infinity = as_variable((input_amp * as_variable(input_image,name='input_image') + inputNernst_inhibition * preceding_inhibition)/total_conductance,name='E_infinity')
@@ -398,11 +414,11 @@ class BipolarLayerNode(N):
 
         # The order in theano.scan has to match the order of arguments in the function bipolar_step
         self._result, self._updates = theano.scan(fn=bipolar_step,
-                                      outputs_info=[T.zeros_like(self._preceding_V_bip),T.zeros_like(self._preceding_V_bip),T.zeros_like(self._preceding_inhibition)],
+                                      outputs_info=[(self._preceding_V_bip),T.zeros_like(self._preceding_V_bip),(self._preceding_inhibition)],
                                       sequences = [self._I_OPL],
                                       non_sequences=[self._lambda_amp, self._g_leak, self._input_amp,
                                                      self._inputNernst_inhibition, self._inhibition_smoothing_kernel],
-                                      n_steps=self._k_bip)
+                                      n_steps=self._I_OPL.shape[0])#self._k_bip)
         as_out_state(self._result[0][-1],self._preceding_V_bip)
         # attenuation is not part of the state, but can be used as an output sequence
         as_out_state(self._result[2][-1],self._preceding_inhibition)
@@ -481,7 +497,7 @@ class GanglionInputLayerNode(N):
                                                             retina=x.model),
                                      name = 'T_G')
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, x.node._T_G.get_value().shape[1]-1,1, x.input.shape[1], x.input.shape[2])))
+                                    init=lambda x: np.zeros((1, x.node._T_G.update(x).get_value().shape[1]-1,1, x.input.shape[1], x.input.shape[2])))
 
         #self._V_bip_padded = T.concatenate([T.zeros((1,self._T_G.shape[1]-1,1,self._V_bip.shape[3],self._V_bip.shape[4])),self._V_bip],axis=1)
         self._V_bip_padded = as_variable(T.concatenate([self._input_init,self._V_bip],axis=1),'V_bip_padded')
@@ -617,16 +633,17 @@ class GanglionSpikingLayerNode(N):
                     ),'refr')
             next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
             return [V,next_refr]
-
+        k = self.input_variable.shape[0]
         self._result, updates = theano.scan(fn=spikeStep,
-                                      outputs_info=[T.ones_like(self._V_initial),T.zeros_like(self._initial_refr)],
+                                      outputs_info=[(self._V_initial),(self._initial_refr)],
                                       sequences = [self._I_gang,dict(input=self._noise_gang, taps=[-0,-1])],
                                       non_sequences=[self._noise_sigma, self._refr_mu, self._refr_sigma, self._g_L, self._tau],
-                                      n_steps=self._k_gang)
+                                      n_steps=k)#self._k_gang)
         as_out_state(self._I_gang[-1:,:,:],self.input_padding) #self.input_variable
         as_out_state(self._noise_gang[-1:,:,:],self._noise_state)
         as_out_state(self._result[0][-1],self._V_initial)
         as_out_state(self._result[1][-1],self._initial_refr)
-        super(GanglionSpikingLayerNode,self).__init__(self._result[0],name=name)
+        #spikes = T.extra_ops.diff(T.gt(self._result[1],0.0),n=1,axis=0)
+        super(GanglionSpikingLayerNode,self).__init__(self._result[1],name=name)
     def __repr__(self):
         return '[Ganglion Spike Node] Differential Equation'
