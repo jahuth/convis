@@ -1,4 +1,5 @@
 import numpy as np
+import glob,litus
 
 """
 Test::
@@ -25,7 +26,173 @@ class GlobalClock(object):
         return lambda: self.t + d
 
 
+class InrImageStreamer(object):
+    """ Reads a large inr file and is an iterator over all images.
 
+        By default, the z dimension is ignored. Setting `z` to True changes this, such that each image is 3d instead of 2d.
+    """
+    def __init__(self,filename,z=False, slice_at = None):
+        self.filename = filename
+        self.file = open(filename,'r')
+        self.raw_header = self.file.read(256)
+        self.header = dict([h.split('=') for h in self.raw_header.split('\n') if '=' in h])
+        self.header = dict([(k,litus._make_an_int_if_possible(v)) for k,v in self.header.iteritems()])
+        self.z = z
+        self.start_at = 0
+        self.stop_at = None
+        self.step_at = None
+        if slice_at is not None:
+            self.start_at = slice_at.start
+            self.stop_at = slice_at.stop
+            self.step_at = slice_at.step
+        if self.start_at is None:
+            self.start_at = 0
+        if self.step_at is None:
+            self.step_at = 1
+        self.image_i = self.start_at
+    def reset(self):
+        self.image_i = self.start_at
+    def skip(self,i=1):
+        self.image_i += i
+        self.file.skip(self.header['VDIM']*self.header['XDIM']*self.header['YDIM']*8)
+    def seek(self,i):
+        self.image_i = i
+        if i >= self.header['ZDIM']:
+            raise StopIteration()
+        self.file.seek(256 + i * self.header['VDIM']*self.header['XDIM']*self.header['YDIM']*8)
+    def read(self,i):
+        self.seek(i)
+        if self.header['TYPE'] == 'float' and self.header['PIXSIZE'] == '64 bits':
+            if self.z:
+                return np.array([[np.frombuffer(self.file.read(self.header['VDIM']*8),'float') for y in range(self.header['YDIM'])] for x in range(self.header['XDIM'])])
+            else:
+                return np.array([np.concatenate([np.frombuffer(self.file.read(self.header['VDIM']*8),'float') for y in range(self.header['YDIM'])],0) for x in range(self.header['XDIM'])])
+        else:
+            raise Exception("Not Implemented. So far only 8 byte floats are supported")
+    def _read_one_image(self):
+        self.image_i += 1
+        if self.header['TYPE'] == 'float' and self.header['PIXSIZE'] == '64 bits':
+            return np.array([[np.frombuffer(self.file.read(self.header['VDIM']*8),'float') for y in range(self.header['YDIM'])] for x in range(self.header['XDIM'])])
+        else:
+            raise Exception("Not Implemented. So far only 8 byte floats are supported")
+    def __iter__(self):
+        def f():
+            image_i = self.start_at
+            max_image = self.header['ZDIM']
+            if self.stop_at is not None:
+                max_image = self.stop_at
+            while image_i < max_image:
+                yield self.read(image_i)
+                image_i += self.step_at
+            raise StopIteration()
+        return f()
+    def __getitem__(self,indx):
+        if type(indx) is int:
+            return self.read(indx)
+        if type(indx) is slice:
+            return ImageStreamer(self.filename,z=self.z, slice_at=indx)
+    def __len__(self):
+        image_i = self.start_at
+        max_image = self.header['ZDIM']
+        if self.stop_at is not None:
+            max_image = self.stop_at
+        return max_image - image_i
+    def __enter__(self):
+        return self
+    def __exit__(self,*args):
+        self.file.close()
+
+class InrImageStreamWriter(object):
+    def __init__(self,filename,v=0,x=0,y=0,z=0):
+        self.filename = filename
+        self.file = open(filename,'w')
+        self.image_i = 0
+        self.header = {'CPU': 'decm',
+                         'PIXSIZE': '64 bits',
+                         'TYPE': 'float',
+                         'VDIM': v,
+                         'XDIM': x,
+                         'YDIM': y,
+                         'ZDIM': z}
+        #self.write_header()
+    def write_header(self):
+        self.file.seek(0)
+        self.header['VDIM'] = self.image_i
+        header = "#INRIMAGE-4#{\n"+"\n".join([str(k) +'='+str(v) for k,v in self.header.iteritems()])
+        header = header + ('\n' * (252 - len(header))) + "##}"
+        self.file.write(header)
+    def __enter__(self):
+        return self
+    def __exit__(self,*args):
+        self.write_header()
+        self.file.close()
+    def seek(self,i):
+        self.file.seek(255 + i * self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8)
+    def write(self,img):
+        if self.header['TYPE'] == 'float' and self.header['PIXSIZE'] == '64 bits':
+            buff = np.array(img,dtype='float64').tobytes()
+            if len(buff) == self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8:
+                self.seek(self.image_i)
+                self.file.write(buff)
+                self.image_i += 1
+            else:
+                raise Exception("Image has incorrect size:"+str(len(buff))+" != "+str(self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8))
+        else:
+            raise Exception("Not Implemented. So far only 8 byte floats are supported")
+
+class InrImageFileStreamer(object):
+    def __init__(self,filenames):
+        if type(filenames) is str:
+            filenames = litus.natural_sorted(glob.glob(filenames))
+        self.filenames = filenames
+        self.lengths = []
+        self.file_i = 0
+        self.fileobject = None
+        self.fileobject_index = None
+        for i,f in enumerate(self.filenames):
+            with ImageStreamer(f) as ims:
+                self.lengths.append(len(ims))
+    def reset(self):
+        self.file_i = 0
+        self.image_i = 0
+    def __iter__(self):
+        def f():
+            file_i = 0
+            image_i = 0
+            while file_i < len(self.filenames):
+                ims = ImageStreamer(self.filenames[file_i])
+                image_i = 0
+                try:
+                    while True:
+                        yield ims.read(image_i)
+                        image_i += 1
+                except StopIteration:
+                    file_i+=1
+            raise StopIteration()
+        return f()
+    def skip(self,f=0,i=0):
+        self.file_i += f
+        self.image_i += i
+        self.seek(self.file_i, self.image_i)
+    def seek(self,f,i):
+        self.file_i = f
+        self.image_i = i
+        while self.image_i >= self.lengths[self.file_i]:
+            self.image_i -= self.lengths[self.file_i]
+            self.file_i += 1
+            if self.file_i >= len(self.filenames):
+                raise StopIteration()
+    def read(self):
+        if self.fileobject_index != self.file_i:
+            self.fileobject = ImageStreamer(self.filenames[self.file_i])
+            self.fileobject_index = self.file_i
+        return self.fileobject.read(self.image_i)
+    def __len__(self):
+        return np.sum(self.lengths)
+    def __getitem__(self,indx):
+        if type(indx) is int:
+            self.seek(f=0,i=indx)
+            return self.read()
 
 class Stream(object):
     """Basic stream that gives zeros"""
@@ -162,10 +329,22 @@ class TimedResampleStream(TimedSequenceStream):
         return self.stream.get_tsvs(t1,t2)
     def get(self,t1,t2):
         t,v = self.stream.get_tsvs(t1-2.0*self.dt,t2+2.0*self.dt)
-        return interp1d(t,
+        try:
+            return interp1d(t,
                         v.reshape(len(t),-1),
                         axis=0,
                         fill_value='extrapolate',
+                        bounds_error = False
+                       )(self.ts(t1,t2)).reshape(
+            [len(self.ts(t1,t2))]+list(v.shape[1:]))
+        except ValueError:
+            # old versions of scipy don't know extrapolate
+            # it also doesn't behave as numpy interpolate (extending the first and last values) as only one value is accepted
+            # this should not be a problem if we 2*dt before and after the time slice
+            return interp1d(t,
+                        v.reshape(len(t),-1),
+                        axis=0,
+                        fill_value=np.mean(v),
                         bounds_error = False
                        )(self.ts(t1,t2)).reshape(
             [len(self.ts(t1,t2))]+list(v.shape[1:]))

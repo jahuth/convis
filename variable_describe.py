@@ -195,7 +195,11 @@ def full_path(v):
 
 def describe_html(v,wrap_in_html=True,**kwargs):
     from IPython.display import HTML
-    import html, uuid
+    import uuid
+    try:
+        import html
+    except:
+        import cgi as html # fallback escape function
     ##       
     # Handeling other datatypes
     #
