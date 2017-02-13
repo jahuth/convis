@@ -67,6 +67,8 @@ def make_nd(inp,dim=3):
       
     When the input tensor already has the desired number of dimensions, it is returned.
     """
+    if hasattr(inp,'_as_TensorVariable'):
+        inp = inp._as_TensorVariable() 
     from_d = inp.ndim
     f = _nd_conversions.get(from_d,{}).get(dim,"No valid conversion found.")
     if type(f) is str:
@@ -119,6 +121,8 @@ def get_all_variables(apply_node):
 
 def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
     """ get variables that have a name """
+    if hasattr(apply_node,'_as_TensorVariable'):
+        apply_node = apply_node._as_TensorVariable() 
     if type(apply_node) in [list,tuple]:
         return f7([b for a in apply_node for b in get_variables_iter(a,depth=depth)])
     else:
@@ -144,6 +148,8 @@ def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include
 
 def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
     """ get variables that have a name """
+    if hasattr(apply_node,'_as_TensorVariable'):
+        apply_node = apply_node._as_TensorVariable() 
     nodes_to_explore = [apply_node]
     input_nodes = []
     nodes_explored = []

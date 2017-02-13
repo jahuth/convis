@@ -9,4 +9,4 @@ from theano.tensor import as_tensor_variable as as_var
 import retina
 
 # just to make sure that we don't use filters.simple version of everything
-from base import N, M, GraphWrapper, describe
+from base import N, M, GraphWrapper, describe, filter_dbg

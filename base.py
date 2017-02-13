@@ -13,6 +13,7 @@ from variable_describe import describe, describe_dict, describe_html, full_path,
 import new
 import warnings
 import datetime
+from collections import OrderedDict
 
 def f7(seq):
     """ This function is removing duplicates from a list while keeping the order """
@@ -36,8 +37,9 @@ def unindent(text):
 
 def add_kwargs_to_v(v,**kwargs):
     v.__dict__.update(kwargs)
-    v.__dict__['doc'] = unindent(kwargs.get('doc',''))
-    return v    
+    if 'doc' in kwargs.keys():
+        v.__dict__['doc'] = unindent(kwargs.get('doc',''))
+    return v
 
 convis_attributes = ['name','node','path','__is_convis_var','variable_type','doc','root_of',
                     'state_out_state','state_init','state_in_state',
@@ -150,8 +152,7 @@ def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
             v.name = in_state.name+'_out_state' 
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
-S = as_state
-OS = as_out_state
+
 def as_input(v,name=None,**kwargs):
     v.__is_convis_var = True
     v.variable_type = 'input'
@@ -176,7 +177,7 @@ def as_output(v,name=None,**kwargs):
     v.__dict__.update(kwargs)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
-I = as_input
+
 def as_parameter(v,init=None,name=None,**kwargs):
     v.__is_convis_var = True
     v.variable_type = 'parameter'
@@ -217,7 +218,7 @@ def as_parameter(v,init=None,name=None,**kwargs):
     v.__dict__.update(kwargs)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
-P = as_parameter
+
 
 
 class O(object):
@@ -260,7 +261,7 @@ class _Search(O):
     def __getattr__(self,search_string):
         return O(**dict([(save_name(k),v) for (k,v) in self._things.items() if search_string in k]))
     def __repr__(self):
-        return 'Choices: enter a search term, enter with a dot and use autocomplete to see matching items.'
+        return 'Choices: enter a search term, enter a dot and use autocomplete to see matching items.'
 
 class Ox(O):
     """
@@ -425,6 +426,15 @@ def are_parameters(vs):
     return filter(is_input_parameter,vs)
 def are_inputs(vs):
     return filter(is_input,vs)
+def is_scalar(v):
+    """Returns True if v is an int, a float or a 0 dimensional numpy array or theano variable"""
+    if type(v) in [int, float]:
+        return True
+    if type(v) is np.ndarray and hasattr(v,'shape') and len(v.shape) == 0:
+        return True
+    if hasattr(v,'type') and hasattr(v.type,'ndim') and v.type.ndim == 0:
+        return True
+    return False
 
 def shared_parameter(fun,init_object=O(),**kwargs):
     return as_parameter(theano.shared(fun(init_object)),
@@ -597,9 +607,7 @@ class GraphWrapper(object):
             return self.config_dict
         if type_cast is not None:
             return type_cast(self.get_config(key,default))
-        if self.config_dict is None:
-            return default
-        return self.config_dict.get(key,default)
+        return self.config.get(key,default)
     def set_config(self,key,v=None):
         if v is None and hasattr(key,'get'):
             send_dbg('set_config',str(getattr(self,'name',''))+' replaced config: '+str(key)+'',1)
@@ -724,36 +732,47 @@ class GraphWrapper(object):
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
-    def add_input(self,other,replace_inputs=do_replace_inputs):
+    def add_input(self,other,replace_inputs=do_replace_inputs,input=None):
+        if input is None:
+            if hasattr(self, 'default_input'):
+                input = self.default_input
+            elif hasattr(self.variables, 'input'):
+                input = self.variables.input
+            else:
+                raise Exception('No input found in '+getattr(self,'name','[unnamed node]')+'!')
+        if type(input) is str:
+            if input in self.inputs.keys():
+                input = self.inputs[input]
+            else:
+                raise Exception('Input "'+str(input)+'"" found in '+getattr(self,'name','[unnamed node]')+' inputs!')
         if do_debug:
             print 'connecting',other.name,'to',self.name,''
         v = other
         if hasattr(other,'_as_TensorVariable'):
             v = other._as_TensorVariable()
-        if hasattr(self, 'default_input'):
-            if type(self.default_input.owner.op) == T.elemwise.Sum:
-                if do_debug:
-                    print 'Adding to sum'
-                # assuming a 3d input/ output
-                if replace_inputs and hasattr(self.default_input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
-                    self.default_input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
-                else:
-                    self.default_input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
-                if do_debug:
-                    print 'inputs are now:',self.default_input.owner.inputs[0].owner.inputs
-                if not hasattr(v, 'connects'):
-                    v.connects = []
-                v.connects.append([self,other])
-        elif hasattr(self.variables, 'input'):
-                if hasattr(self.variables.input,'variable_type') and self.variables.input.variable_type == 'input':
-                    self.variables.input.variable_type = 'replaced_input'
-                if not hasattr(v, 'connects'):
-                    v.connects = []
-                v.connects.append([self,other])
-                try:
-                    theano_utils._replace(self.output,self.variables.input,v)
-                except:
-                    print 'Something not found! ',other.variables,self.variables
+        if type(input.owner.op) == T.elemwise.Sum:
+            if do_debug:
+                print 'Adding to sum'
+            # assuming a 3d input/ output
+            if replace_inputs and hasattr(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
+            else:
+                input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
+            if do_debug:
+                print 'inputs are now:',input.owner.inputs[0].owner.inputs
+            if not hasattr(v, 'connects'):
+                v.connects = []
+            v.connects.append([self,other])
+        else:
+            if hasattr(input,'variable_type') and input.variable_type == 'input':
+                input.variable_type = 'replaced_input'
+            if not hasattr(v, 'connects'):
+                v.connects = []
+            v.connects.append([self,other])
+            try:
+                theano_utils._replace(self.output,input,v)
+            except:
+                print 'Something not found! ',other.variables,self.variables
     def __iadd__(self,other):
         self.add_input(other)
         return self
@@ -782,6 +801,7 @@ class N(GraphWrapper):
     #parameters = []
     states = {}
     state_initializers = {}
+    inputs = OrderedDict()
     def __init__(self,graph,name=None,m=None,parent=None,config=None,**kwargs):
         if name is None:
             name = str(uuid.uuid4())
@@ -807,19 +827,18 @@ class N(GraphWrapper):
             raise Exception('No input defined for node '+str(self.name)+'! Use .create_input(...) before calling super constructor!')
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
     def create_input(self,n=1,name='input',sep='_'):
-        from collections import OrderedDict
         if n == 1:
             self.input = T.sum([as_input(T.dtensor3(),name,replaceable_input=True)],axis=0)
             self.default_input = self.input
-            self.inputs = OrderedDict([(name,self.input)])
+            self.inputs.update(OrderedDict([(name,self.input)]))
             return self.input
         elif type(n) == int:
-            self.inputs = OrderedDict([(name+sep+str(i),T.sum([as_input(T.dtensor3(),name+sep+str(i),replaceable_input=True)],axis=0)) for i in range(n)])
+            self.inputs.update(OrderedDict([(name+sep+str(i),T.sum([as_input(T.dtensor3(),name+sep+str(i),replaceable_input=True)],axis=0)) for i in range(n)]))
             self.default_input = self.inputs.values()[0]
-            self.input = T.join(*([0]+self.inputs))
-            return self.inputs
+            self.input = T.join(*([0]+self.inputs.values()))
+            return self.inputs.values()
         elif type(n) in [list,tuple]:
-            self.inputs = OrderedDict([(input_name,T.sum([as_input(T.dtensor3(),str(input_name),replaceable_input=True)],axis=0)) for input_name in n])
+            self.inputs.update(OrderedDict([(input_name,T.sum([as_input(T.dtensor3(),str(input_name),replaceable_input=True)],axis=0)) for input_name in n]))
             self.default_input = self.inputs[n[0]]
             self.input = self.inputs[n[0]]
             return self.inputs
@@ -970,6 +989,49 @@ def connect(list_of_lists):
     connect_in_sequence(list_of_lists)
     return list_of_lists
 
+class Output(object):
+    def __init__(self,outs,keys=None):
+        """
+            This object provides a container for output numpy arrays which are labeled with theano variables.
+
+            The outputs can be queried either by sorted order (like a simple list),
+            by the theano variable which represents this output, the name of this variable
+            or the full path of the variable.
+            To make this meaningfull, provide a name to your output variables.
+
+            In the case of name collisions, the behavior of OrderedDict will use the last variable added.
+
+            The full path names of all variables are also added to this objects __dict__,
+            allowing for tab completion.
+        """
+        self._out_dict = OrderedDict({})
+        self._out_dict_by_full_names = OrderedDict({})
+        self._out_dict_by_short_names = OrderedDict({})
+        self._outs = outs
+        self.keys = keys
+        if keys is not None:
+            self._out_dict = OrderedDict(zip(keys,outs))
+            self._out_dict_by_full_names = OrderedDict([(full_path(k),o) for (k,o) in zip(keys,outs)])
+            self._out_dict_by_short_names = OrderedDict([(save_name(k.name),o) for (k,o) in zip(keys,outs) if hasattr(k,'name') and type(k.name) is str])
+        self.__dict__.update(self._out_dict_by_full_names)
+    def __len__(self):
+        return len(self._outs)
+    def __iter__(self):
+        return iter(self._outs)
+    def __getitem__(self,k):
+        if type(k) is int:
+            return self._outs[k]
+        else:
+            if k in self._out_dict.keys():
+                return self._out_dict[k]
+            if save_name(k) in self._out_dict_by_short_names.keys():
+                return self._out_dict_by_short_names[save_name(k)]
+            if save_name(k) in self._out_dict_by_full_names.keys():
+                return self._out_dict_by_full_names[save_name(k)]
+        if str(k) != save_name(k):
+            raise IndexError('Key not found: '+str(k)+' / '+save_name(k))
+        raise IndexError('Key not found: '+str(k))
+
 
 class M(object):
     def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, **kwargs):
@@ -1043,23 +1105,25 @@ class M(object):
                 self.outputs.append(a.var('output'))
     def in_out(self,a,b):
         #self.map(b.var('input'),a.var('output'))
+        if hasattr(a,'graph'):
+            a = a.graph
         print 'Replacing:',a,b
         if issubclass(b.__class__, N):
             if hasattr(b.var('input'),'variable_type') and b.var('input').variable_type == 'input':
                 b.var('input').variable_type = 'replaced_input'
-            if not hasattr(a.output, 'connects'):
-                a.output.connects = []
-            a.output.connects.append([b,a])
             #theano_utils._replace(b.output,b.var('input'),a.var('output'))
+            if not hasattr(a, 'connects'):
+                a.connects = []
+            a.connects.append([b,getattr(a,'node',a)])
             try:
-                theano_utils._replace(b.output,b.variables.input,a.graph)
+                theano_utils._replace(b.output,b.variables.input,a)
             except:
-                print 'Something not found! ',a.variables,b.variables
+                print 'Something not found! ',a,b.variables
         elif hasattr(b,'node'):
-            if not hasattr(a.output, 'connects'):
-                a.output.connects = []
-            a.output.connects.append([b.node,a])
-            theano_utils._replace(b.node.output,b,a.output)
+            if not hasattr(a, 'connects'):
+                a.connects = []
+            a.connects.append([b.node,getattr(a,'node',a)])
+            theano_utils._replace(b.node.output,b,a)
         else:
             raise Exception('This is not a node and not a variable with a node. Maybe the variable was not named?')
         #self.module_graph.append([a,b]) # no longer used??
@@ -1116,6 +1180,11 @@ class M(object):
                 inputs.append(o)
         return inputs 
     def create_function(self,updates=None,additional_inputs=[]):
+        if self.debug is not True:
+            # we disable warnings from theano gof because of the unresolved cache leak
+            # TODO: fix the leak and re-enable warnings
+            import logging
+            logging.getLogger("theano.gof.cmodule").setLevel(logging.ERROR) 
         if updates is None:
             updates = theano.updates.OrderedUpdates()
         for a,b in  self.mappings.items():
@@ -1123,7 +1192,8 @@ class M(object):
                 if a.variable_type == 'input':
                     a.variable_type = 'replaced_input'
                 theano_utils.replace(n.graph,a,b)
-        variables = f7([v for o in self.outputs for v in theano_utils.get_variables_iter(o)])
+        outputs = [o._as_TensorVariable() if hasattr(o,'_as_TensorVariable') else o for o in self.outputs]
+        variables = f7([v for o in outputs for v in theano_utils.get_variables_iter(o)])
         for v in variables:
             if hasattr(v,'updates'):
                 updates[v] = np.sum([u for u in v.updates])
@@ -1131,7 +1201,7 @@ class M(object):
         self.additional_inputs = additional_inputs
         self.compute_state_inits = []
         state_variables = filter(is_state,variables)
-        self.compute_output_order = f7(self.outputs + [v.state_out_state for v in state_variables])
+        self.compute_output_order = f7(outputs + [v.state_out_state for v in state_variables])
         self.compute_updates_order = theano.updates.OrderedUpdates()
         self.compute_updates_order.update(updates)
         for state_var in state_variables:
@@ -1143,7 +1213,7 @@ class M(object):
         self.compute_input_dict = dict((v,None) for v in self.compute_input_order)
         self.compute_state_dict = dict((v,None) for v in self.compute_output_order if is_out_state(v))
         if self.debug:# hasattr(retina, 'debug') and retina.debug:
-            print 'solving for:',self.outputs
+            print 'solving for:',outputs
             print 'all variables:',len(variables)
             print 'input:',filter(is_input,variables)
             print 'parameters:',filter(is_input_parameter,variables)
@@ -1151,28 +1221,38 @@ class M(object):
             print 'updates:',self.compute_updates_order
         self.reset_parameters()
         self.compute = theano.function(inputs=self.compute_input_order, 
-                                        outputs=self.compute_output_order, 
-                                        updates=self.compute_updates_order,
-                                        givens=givens,on_unused_input='ignore')
+                                    outputs=self.compute_output_order, 
+                                    updates=self.compute_updates_order,
+                                    givens=givens,on_unused_input='ignore')
+        if self.debug is not True:
+            import logging
+            logging.getLogger("theano.gof.cmodule").setLevel(logging.WARNING) 
     def clear_states(self):
         self.compute_state_dict = {}
     def reset_parameters(self):
         for shared_parameter in self.parameters._all:
             if is_shared_parameter(shared_parameter) and hasattr(shared_parameter,'initialized'):
                 shared_parameter.initialized = False
-    def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},**kwargs):
-        chuncked_output = []
+    def run_in_chunks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        chunked_output = []
         t = 0
         while t < the_input.shape[0]:
             if self.debug:
                 print 'Chunk:', t, t+max_length
             oo = self.run(the_input[t:(t+max_length)],
                           additional_inputs=[ai[t:(t+max_length)] for ai in additional_inputs],
-                          inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]))
-            chuncked_output.append(oo)
+                          inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]),
+                          run_after=run_after)
+            chunked_output.append([o for o in oo])
             t += max_length
-        return np.concatenate(chuncked_output,axis=1)
-    def run(self,the_input,additional_inputs=[],inputs={},**kwargs):
+        return Output(np.concatenate(chunked_output,axis=1),keys=self.compute_output_order[:len(self.outputs)])
+    def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        """typo"""
+        return self.run_in_chunks(the_input,max_length,additional_inputs=additional_inputs,inputs=inputs,run_after=run_after,**kwargs)
+    def run(self,the_input,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        if not hasattr(self,'compute_input_dict'):
+            # todo: manage multiple functions
+            self.create_function()
         c = O()
         c.input = the_input
         c.model = self
@@ -1188,7 +1268,7 @@ class M(object):
             else:
                 if is_input(k):
                     if k not in self.additional_inputs:
-                        if k in inputs:
+                        if k in inputs.keys():
                             input_dict[k] = inputs[k]
                         else:
                             input_dict[k] = the_input
@@ -1208,10 +1288,12 @@ class M(object):
                 #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
+        if run_after is not None:
+            run_after(the_output,self)
         for (o,k) in zip(the_output, self.compute_output_order):
             if is_out_state(k):
                 self.compute_state_dict[k] = o
-        return the_output[:len(self.outputs)]
+        return Output(the_output[:len(self.outputs)],keys=self.compute_output_order[:len(self.outputs)])
     def add_target(self,variable,error_func=lambda x,y: T.mean((x-y)**2),name='target',bcast=(True,True,True)):
         tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
         v = as_input(tp(name),name=name)

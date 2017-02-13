@@ -8,6 +8,7 @@ import numpy as np
 
 plotting_possible = False
 plotting_exceptions = []
+do_3d_plot = True
 try:
     import matplotlib
     import matplotlib.pylab as plt
@@ -64,7 +65,7 @@ def _plot_to_string():
     plt.close()
     imgdata.seek(0) 
     image = base64.encodestring(imgdata.buf)  
-    return str(urllib.quote(image))
+    return str(urllib.quote(image))    
 
 def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={},imshow_kwargs={},preamble=True,**other_kwargs):
     """
@@ -146,6 +147,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                         if t.shape[0] <= 100:
                             plt.plot(t.mean(2).transpose(),range(t.shape[1]),'g',alpha=0.2,**line_kwargs)
                         plt.plot(t.mean((0,2)),range(t.shape[1]),**line_kwargs)
+                        plt.gca().invert_yaxis()
                         plt.ylabel('y')
                         plt.subplot(223)
                         plt.title('mean over y')
@@ -166,6 +168,13 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                         plt.xlabel('time')
                         plt.tight_layout()
                         img = "<img src='data:image/png;base64," + _plot_to_string() + "'>"
+
+                        if do_3d_plot and t.shape[0] <= 20:
+                            # TODO: create config for these cutoff values
+                            with OrthographicWrapper():
+                                ax = plot_3d_tensor_as_3d_plot(t)
+                                plt.tight_layout()
+                                img += "<img src='data:image/png;base64," + _plot_to_string() + "'>"
                     if preamble is False:
                         return img
                     return "Numpy array "+str(t.shape)+"<br/>"+img+legend            
@@ -290,3 +299,93 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     if not wrap_in_html:
         return s
     return HTML(s)
+
+class OrthographicWrapper():
+    def __init__(self):
+        """
+            This context manager overwrites the persp_transformation function of proj3d
+            to perform orthographic projections.
+            Plots that are show()n or save()d in this context will use the projection.
+
+            After the context closes, the old projection is restored.
+        """
+        pass
+    def __enter__(self):
+        from mpl_toolkits.mplot3d import proj3d
+        def orthogonal_proj(zfront, zback):
+            a = (zfront+zback)/(zfront-zback)
+            b = -2*(zfront*zback)/(zfront-zback)
+            # -0.0001 added for numerical stability as suggested in:
+            # http://stackoverflow.com/questions/23840756
+            return np.array([[1,0,0,0],
+                                [0,1,0,0],
+                                [0,0,a,b],
+                                [0,0,-0.0001,zback]])
+        if not hasattr(proj3d,'old_persp_transformation'):
+            proj3d.old_persp_transformation = proj3d.persp_transformation
+        proj3d.persp_transformation = orthogonal_proj
+    def __exit__(self, eType, eValue, eTrace):
+        from mpl_toolkits.mplot3d import proj3d
+        plt.show() # we have to show all the plots before restoring the transformation
+        if hasattr(proj3d,'old_persp_transformation'):
+            proj3d.persp_transformation = proj3d.old_persp_transformation
+
+def plot_3d_tensor_as_3d_plot(ar,ax=None,scale_ar=None,num_levels = 20, contour_cmap='coolwarm_r', contourf_cmap='gray', view=(25, 65)):
+    """
+        Until I come up with a 3d contour plot that shows the contours of a volume, 
+        this function visualizes a sequence of images as contour plots stacked on top of each other.
+        The sides of the plot show a projection onto the xz and yz planes (at index 0).
+
+            ar: the array to visualize
+
+            ax: (if available) the matplotlib axis (in projection='3d' mode) from eg. calling subplot
+                if none is provided, the current axis will be converted to 3d projection
+
+            scale_ar: the array that is used for scaling (usefull if comparing arrays or visualizing only a small section)
+
+            num_levels: number of levels of contours
+
+            contour_cmap='coolwarm_r': color map used for line contours
+
+            contourf_cmap='gray': color map used for surface contour
+
+            view: tuple of two floats that give the azimuth and angle of the projection
+
+
+        returns:
+
+            axis that was used for plotting
+
+
+    """
+    from mpl_toolkits.mplot3d import proj3d
+    if ax is None:
+        ax = plt.gca(projection='3d')
+    if scale_ar is None:
+        scale_ar = ar
+    k_range = 0.5*np.max(scale_ar)-np.min(scale_ar)
+    X, Y = np.meshgrid(np.arange(ar.shape[1]), np.arange(ar.shape[2]))
+    levels = np.linspace(np.min(scale_ar), np.max(scale_ar), num_levels)
+    for i,k in enumerate(ar):
+        alpha = 100.0*(np.std(k)+0.003)
+        if alpha > 1.0:
+            alpha = 1.0
+        if alpha < 0.0:
+            alpha = 0.0
+        k_scale = 1.0
+        ax.contourf(X, Y, i+k_scale*k, cmap=contourf_cmap, 
+                   levels=i+k_scale*levels,alpha=0.5*alpha)
+        ax.contour(X, Y,i-k_scale*k/k_range, cmap=contour_cmap, 
+                   levels=i-k_scale*levels/k_range,alpha=1.0,linewidths=3)
+        side_line_color = [plt.cm.get_cmap(contour_cmap)(1.0-(np.mean(k)-np.min(scale_ar))/k_range)]
+        cset = ax.contour(X, Y, i*np.ones_like(k), zdir='x', offset=0, cmap=None, colors='k',alpha=0.25)
+        cset = ax.contour(X, Y, i*np.ones_like(k), zdir='y', offset=0, cmap=None, colors='k',alpha=0.25)
+        cset = ax.contour(X, Y, i-k_scale*k/k_range, zdir='x', offset=0, cmap=None, colors=side_line_color,alpha=0.5*alpha)
+        cset = ax.contour(X, Y, i-k_scale*k/k_range, zdir='y', offset=0, cmap=None, colors=side_line_color,alpha=0.5*alpha)
+    ax.view_init(*view)
+    ax.set_zlabel('time')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zticks(range(ar.shape[0]),minor=False)
+    ax.invert_zaxis()
+    return ax

@@ -49,7 +49,7 @@ class OPLLayerNode(N):
         self.retina = model
         self.model = model
         self.set_config(config)
-        print self.config
+
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
@@ -349,14 +349,16 @@ class BipolarLayerNode(N):
         ## controlCond_b is always one element: b_0
         # we only need to remember one slice of last input to the inhibitory controlCond
         # we only need to remember one slice of values from the previous timestep
-        self._lambda_amp = as_parameter(T.dscalar("lambda_amp"),
-                                        init=lambda x: float(x.node.config.get('adaptation-feedback-amplification__Hz',50)))
-        self._g_leak = as_parameter(T.dscalar("g_leak"),
-                                    init = lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)))
-        self._input_amp = as_parameter(T.dscalar("input_amp"),
-                                       init = lambda x: float(x.node.config.get('opl-amplification__Hz',100)))
-        self._inputNernst_inhibition = as_parameter(T.dscalar("inputNernst_inhibition"),
-                                                    init = lambda x: float(x.node.config.get('inhibition_nernst',0.0)))
+
+        self._lambda_amp = self.shared_parameter(lambda x: float(x.node.config.get('adaptation-feedback-amplification__Hz',50)),
+                                                 name="lambda_amp")
+        self._g_leak = self.shared_parameter(lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)),
+                                    name="g_leak")
+        self._input_amp = self.shared_parameter(lambda x: float(x.node.config.get('opl-amplification__Hz',100)),
+                                       name="input_amp")
+        self._inputNernst_inhibition = self.shared_parameter(lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
+                                                    name="inputNernst_inhibition")
+
         tau = self.shared_parameter(lambda x: x.model.seconds_to_steps(float(x.get_config('adaptation-tau__sec',0.00001))),
                            name = 'tau')
         steps = self.shared_parameter(lambda x: x.model.steps_to_seconds(1.0),name = 'step')
@@ -632,10 +634,10 @@ class GanglionSpikingLayerNode(N):
                     prior_refr - 1.0
                     ),'refr')
             next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
-            return [V,next_refr]
+            return [V,next_refr,spikes]
         k = self.input_variable.shape[0]
         self._result, updates = theano.scan(fn=spikeStep,
-                                      outputs_info=[(self._V_initial),(self._initial_refr)],
+                                      outputs_info=[(self._V_initial),(self._initial_refr),None],
                                       sequences = [self._I_gang,dict(input=self._noise_gang, taps=[-0,-1])],
                                       non_sequences=[self._noise_sigma, self._refr_mu, self._refr_sigma, self._g_L, self._tau],
                                       n_steps=k)#self._k_gang)
@@ -643,7 +645,13 @@ class GanglionSpikingLayerNode(N):
         as_out_state(self._noise_gang[-1:,:,:],self._noise_state)
         as_out_state(self._result[0][-1],self._V_initial)
         as_out_state(self._result[1][-1],self._initial_refr)
+        self.output_V = as_variable(self._result[0],name='output_V',
+            doc='The membrane potential of each unit for each time step.')
+        self.output_refractory = as_variable(self._result[1],name='output_refractory',
+            doc='length of refractory period for each unit until it is allowed to spike again.')
+        self.output_spikes = as_variable(self._result[2],name='output_spikes',
+            doc='Binary count of spikes for each unit for each timestep. The maximal firing rate of this spike generation process is bounded by the size of time bins.')
         #spikes = T.extra_ops.diff(T.gt(self._result[1],0.0),n=1,axis=0)
-        super(GanglionSpikingLayerNode,self).__init__(self._result[1],name=name)
+        super(GanglionSpikingLayerNode,self).__init__(self._result[2],name=name)
     def __repr__(self):
         return '[Ganglion Spike Node] Differential Equation'

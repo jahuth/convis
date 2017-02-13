@@ -166,7 +166,7 @@ class G_2d_kernel_filter(N):
         kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10)))),name='kernel'),
                              initialized=True,
                              init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10)))))
-        output_variable = conv2d(self.create_input(),kernel)
+        output_variable = conv2d(pad3_txy(self.create_input(),0,kernel.shape[0]-1,kernel.shape[1]-1,mode='mirror'),kernel)
         output_variable.name = 'output'
         node_type = '2d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
@@ -190,8 +190,35 @@ class K_1d_kernel_filter(N):
         node_description = lambda: 'Convolutional Filtering'
         super(K_1d_kernel_filter,self).__init__(output_variable,name=name)
 
+class K_3d_kernel_filter(N):        
+    def __init__(self,config={},name=None,model=None):
+        """
+            This node implements 3d kernel filtering by convolution.
+        """
+        self.set_config(config)
+        self.model = model
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10,10)))),name='kernel'),
+                             initialized=True,
+                             init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10,10)))))
+        self.size = kernel.shape
+        output_variable = make_nd(
+                              conv3d(
+                                  pad5_txy(
+                                              make_nd(self.create_input(),5),
+                                              kernel.shape[0]-1,kernel.shape[1]-1,kernel.shape[2]-1,
+                                              mode='mirror'
+                                          ),
+                                  make_nd(kernel,5)
+                              )
+                          ,3)
+        output_variable.name = 'output'
+        node_type = '3d Kernel Filter Node'
+        node_description = lambda: 'Convolutional Filtering'
+        super(K_3d_kernel_filter,self).__init__(output_variable,name=name)
+
 ConvolutionFilter1d = K_1d_kernel_filter
 ConvolutionFilter2d = G_2d_kernel_filter
+ConvolutionFilter3d = K_3d_kernel_filter
 
 class MaxFilter(N):        
     def __init__(self,config={},name=None,model=None):
@@ -284,6 +311,34 @@ class RF_2d_kernel_filter(N):
         node_type = '2d Single RF Node'
         node_description = lambda: 'Multiplicative Mask'
         super(RF_2d_kernel_filter,self).__init__(output_variable,name=name)
+
+class RF_3d_kernel_filter(N):
+    def __init__(self,config={},name=None,model=None):
+        """
+            This node implements 3d kernel filtering by convolution.
+
+            The spatial dimensions are fixed to a reference frame, the temporal dimension is convolved.
+        """
+        self.set_config(config)
+        self.model = model
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10,10)))),name='kernel'),
+                             initialized=True,
+                             init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10,10)))))
+        self.size = kernel.shape
+        output_variable = make_nd(
+                              conv3d(
+                                  pad5_txy(
+                                              make_nd(self.create_input(),5),
+                                              kernel.shape[0]-1,0,0,
+                                              mode='mirror'
+                                          ),
+                                  make_nd(kernel,5)
+                              )
+                          ,3)
+        output_variable.name = 'output'
+        node_type = '3d Single RF Node'
+        node_description = lambda: 'Mask * Temporal Convolution'
+        super(RF_3d_kernel_filter,self).__init__(output_variable,name=name)
 
 class T_1d_filter_with_sigma_param(N):
     """
