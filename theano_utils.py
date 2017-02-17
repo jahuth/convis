@@ -75,6 +75,11 @@ def make_nd(inp,dim=3):
         raise Exception(f)
     return f(inp)
 
+def conv3(inp,kernel):
+    """
+        Convolves 3d sequence with kernel (which normally have to be cast to 5d tensors).
+    """
+    return make_nd(conv3d(make_nd(inp,5),make_nd(kernel,5)),3)
 
 ### helper functions on theano variable graphs
 

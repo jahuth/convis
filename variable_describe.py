@@ -192,15 +192,26 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
 
 on_click_toggle =  """onclick='$(this).parent().children(".description_content").toggle();$(this).parent().children(".description_content_replacer").toggle();'"""
 
+var_name_counter = 0
+
 def save_name(n):
     if type(n) != str:
         if hasattr(n,'name'):
             n = n.name
         else:
-            raise Exception('save_name got a '+str(type(n))+' instead of a string or object with name attribute.')
-    return n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('[', '').replace(']', '').replace('(', '').replace(')', '')
+            try:
+                global var_name_counter
+                n.name = 'unnamed_var_'+str(var_name_counter)
+                n = n.name
+                var_name_counter += 1
+            except:
+                raise Exception('save_name got a '+str(type(n))+' instead of a string or object with name attribute.')
+    n = n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('[', '').replace(']', '').replace('(', '').replace(')', '')
+    if n[0] in '0123456789':
+        n = 'n'+n
+    return n
 def full_path(v):
-    return '_'.join([save_name(p.name) for p in v.path])
+    return '_'.join([save_name(p) for p in getattr(v,'path',[v])])
 
 def describe_html(v,wrap_in_html=True,**kwargs):
     from IPython.display import HTML
