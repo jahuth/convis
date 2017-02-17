@@ -9,7 +9,7 @@ import uuid
 from exceptions import NotImplementedError
 
 from ..base import *
-from ..theano_utils import make_nd, dtensor5
+from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad2_xy
 from .. import retina_base
 from ..retina_base import conv, minimize_filter, m_t_filter, m_e_filter, m_en_filter, m_g_filter, m_g_filter_2d, fake_filter, fake_filter_shape, find_nonconflict
 

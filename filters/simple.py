@@ -9,7 +9,7 @@ import uuid
 from exceptions import NotImplementedError
 
 from ..base import *
-from ..theano_utils import make_nd, dtensor5
+from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad3_txy
 from .. import retina_base
 
 

@@ -196,7 +196,7 @@ var_name_counter = 0
 
 def save_name(n):
     if type(n) != str:
-        if hasattr(n,'name'):
+        if getattr(n,'name',None) is not None:
             n = n.name
         else:
             try:

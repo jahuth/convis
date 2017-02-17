@@ -221,3 +221,119 @@ def is_scan_op(n):
     if hasattr(n,'owner') and hasattr(n.owner,'op') and type(n.owner.op) == theano.scan_module.scan_op.Scan:
         return True
     return False
+
+
+## padding subgraphs
+
+def pad5(ar,N,axis=3,mode='mirror',c=0.0):
+    """
+        Padds a 5 dimensional tensor with `N` additional values.
+        If the tensor has less than 5 dimensions, it will be extended.
+        Returns a 5 dimensional tensor.
+
+        Axis 0 and 2 are ignored.
+
+        Usage:
+
+            pad5 padds one axis at a time with one of the following modes:
+
+            mode = 'mirror' (default)
+                the image is mirrored at the edges, such that image statistics are similar
+
+            mode = 'border'
+                the border pixels are repeated 
+
+            mode = 'const'
+                the padded area is filled with a single value (default 0.0)
+                It can also be a theano varible such as the mean of the tensor that is to be padded.
+
+        For axis 1 (time), the padding happens exclusively at the front,
+        for axes 3 and 4 (x and y) the amount is split into `N/2` and `N-(N/2)` (this can be asymmetric!).
+        The total amount padded is always `N`.
+
+        For convenience, `pad5_txy` can pad time, x and y with the same mode simultaneously.
+        `pad3` and `pad2` return 3 tensors and matrices after padding.
+    """
+    ar = make_nd(ar,5)
+    if N == 0:
+        return ar
+    N1,N2 = (N/2),N-(N/2)
+    if mode == 'mirror':
+        if axis == 1:
+            return T.concatenate([ar[:,N:0:-1,:,:,:],ar],axis=1)
+        if axis == 3:
+            return T.concatenate([ar[:,:,:,N1:0:-1,:],ar,ar[:,:,:,-1:-(N2+1):-1,:]],axis=3)
+        if axis ==4:
+            return T.concatenate([ar[:,:,:,:,N1:0:-1],ar,ar[:,:,:,:,-1:-(N2+1):-1]],axis=4)
+    if mode == 'border':
+        if axis == 1:
+            return T.concatenate([ar[:,:1,:,:,:]]*N+[ar],axis=1)
+        if axis == 3:
+            return T.concatenate([ar[:,:,:,:1,:]]*N1+[ar]+[ar[:,:,:,-1:,:]]*N2,axis=3)
+        if axis ==4:
+            return T.concatenate([ar[:,:,:,:,:1]]*N1+[ar]+[ar[:,:,:,:,-1:]]*N2,axis=4)
+    if mode == 'const':
+        if axis == 1:
+            return T.concatenate([c*T.ones_like(ar[:,N:0:-1,:,:,:]),ar],axis=1)
+        if axis == 3:
+            return T.concatenate([c*T.ones_like(ar[:,:,:,N1:0:-1,:]),ar,c*T.ones_like(ar[:,:,:,-1:-(N2+1):-1,:])],axis=3)
+        if axis ==4:
+            return T.concatenate([c*T.ones_like(ar[:,:,:,:,N1:0:-1]),ar,c*T.ones_like(ar[:,:,:,:,-1:-(N2+1):-1])],axis=4)
+        
+def pad5_txy(ar,Nt,Nx,Ny,mode='mirror',c=0.0):
+    """
+        padds a 5 dimensional tensor with additional values
+
+            Nt: number of steps added to the temporal dimension
+            Nx,Ny: number of pixels added to the spatial dimensions
+
+        see `pad5` for mode and c
+    """
+    return pad5(pad5(pad5(ar,Nt,1,mode=mode),Nx,3,mode=mode),Ny,4,mode=mode)
+
+def pad3(ar,N,axis=3,mode='mirror',c=0.0):
+    """
+        Padds a 3 dimensional tensor at axis `axis` with `N` bins.
+        If the tensor does not have 3 dimensions, it will be converted.
+        Returns a 3 dimensional tensor.
+
+        see `pad5`
+    """
+    if axis in [0,1,2]:
+        axis = {0:1, 1:3, 2:4}[axis]
+    else:
+        raise Exception('pad3 only accepts axis 0,1,2! Use pad5 for higer dimension tensors')
+    return pad5(theano_utils.make_nd(theano_utils.make_nd(ar,5),N=N,axis=axis,mode=mode,c=c),3)
+def pad3_txy(ar,Nt,Nx,Ny,mode='mirror',c=0.0):
+    """
+        Padds a 3 dimensional tensor with `Nt` bins in time and `Nx` and `Ny` bins in x and y direction.
+        If the tensor does not have 3 dimensions, it will be converted.
+        Returns a 3 dimensional tensor.
+
+        see `pad5_txy` and `pad5`
+    """
+    return make_nd(pad5_txy(make_nd(ar,5),Nt,Nx,Ny,mode=mode,c=c),3)
+
+def pad2(ar,N,axis=3,mode='mirror',c=0.0):
+    """
+        Padds a 2 dimensional tensor at axis `axis` with `N` bins.
+        If the tensor does not have 2 dimensions, it will be converted.
+        Returns a 2 dimensional tensor.
+
+        see `pad5`
+    """
+    if axis in [0,1]:
+        axis = {0:3, 1:4}[axis]
+    else:
+        raise Exception('pad2 only accepts axis 0 and 1! Use pad5 for higer dimension tensors')
+    return make_nd(pad5(make_nd(ar,5),N=N,axis=axis,mode=mode,c=c),2)
+
+def pad2_xy(ar,Nx,Ny,mode='mirror',c=0.0):
+    """
+        Padds a 2 dimensional tensor with `Nx` and `Ny` bins in x and y direction.
+        If the tensor does not have 2 dimensions, it will be converted.
+        Returns a 2 dimensional tensor.
+
+        see `pad5_txy` and `pad5`
+    """
+    return make_nd(pad5_txy(make_nd(ar,5),0,Nx,Ny,mode=mode,c=c),2)
