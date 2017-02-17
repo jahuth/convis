@@ -6,6 +6,12 @@
 
 from variable_describe import save_name
 
+def f7(seq):
+    """ This function is removing duplicates from a list while keeping the order """
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
 
 def find_a_class(class_name):
     class_path = class_name.split('.')
@@ -205,3 +211,34 @@ class Ox(O):
         return iter([self.__make_Ox(v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
     def __iteritems__(self):
         return iter([(k,self.__make_Ox(v)) for (k,v) in self.__dict__.items() if not k.startswith('_')])
+
+def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
+    """
+        pi: offset in the path
+
+            The path will only be used from element pi onwards
+    """
+    o = {}
+    paths = f7([name_sanitizer(v.path[pi].name) for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
+    for p in paths:
+        o.update(**{p: create_hierarchical_dict([v for v in vs if hasattr(v,'path') and len(v.path) > pi and name_sanitizer(v.path[pi].name) == p], pi+1)})
+    for l in leaves:
+        o.update(**{name_sanitizer(l.name): l})
+    return o
+
+def create_hierarchical_Ox(vs,pi=0):
+    return Ox(**create_hierarchical_dict(vs,pi))
+
+def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
+    """
+        name_sanitizer: eg. convis.base.save_name or str
+    """
+    o = {}
+    paths = f7([v.path[pi] for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
+    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
+    for p in paths:
+        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi] == p], pi+1)})
+    for l in leaves:
+        o.update(**{name_sanitizer(l.name): l})
+    return o

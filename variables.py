@@ -4,6 +4,32 @@ import new
 from debug import *
 from o import O
 
+
+class ResolutionInfo(object):
+    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0):
+        self.pixel_per_degree = pixel_per_degree
+        self.steps_per_second = steps_per_second
+        self.input_luminosity_range = input_luminosity_range
+    def degree_to_pixel(self,degree):
+        if self.pixel_per_degree is None:
+            return default_resolution.degree_to_pixel(degree)
+        return float(degree) * self.pixel_per_degree
+    def pixel_to_degree(self,pixel):
+        if self.pixel_per_degree is None:
+            return default_resolution.pixel_to_degree(pixel)
+        return float(pixel) / self.pixel_per_degree
+    def seconds_to_steps(self,t):
+        if self.steps_per_second is None:
+            return default_resolution.seconds_to_steps(t)
+        return float(t) * self.steps_per_second
+    def steps_to_seconds(self,steps):
+        if self.steps_per_second is None:
+            return default_resolution.steps_to_seconds(steps)
+        return float(steps) / self.steps_per_second
+
+default_resolution = ResolutionInfo(10.0,1000.0,1.0)
+
+
 def unindent(text):
     from textwrap import dedent
     if text == '':
@@ -213,7 +239,11 @@ def is_scalar(v):
         return True
     return False
 
-def shared_parameter(fun,init_object=O(),**kwargs):
+def shared_parameter(fun,init_object=None,**kwargs):
+    if init_object is None:
+        init_object = create_context_O()
+    if not hasattr(init_object,'resolution'):
+        init_object(resolution = default_resolution)
     return as_parameter(theano.shared(fun(init_object)),
                         initialized = True,
                         init=fun,**kwargs)
@@ -221,7 +251,7 @@ def shared_parameter(fun,init_object=O(),**kwargs):
 
 def raise_exception(e):
     raise e
-def create_context_O(var, **kwargs):
+def create_context_O(var=None, **kwargs):
     """
         This function creates the 'typical' context that annotated variables can expect when defining `init` functions.
 
@@ -244,10 +274,12 @@ def create_context_O(var, **kwargs):
 
             as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0])
     """
+    if var is None:
+        return O(resolution=default_resolution)(**kwargs)
     if hasattr(var, 'config_key') and hasattr(var,'config_default'):
-        return O(var=var,node=var.node,model=var.node.get_model(),
+        return O(var=var,node=var.node,model=var.node.get_model(),resolution=getattr(var.node.get_model(),'resolution',default_resolution),
                  get_config=var.node.get_config,
                  value_from_config=lambda: var.node.get_config(var.config_key,var.config_default),
                  value_to_config=lambda v: var.node.set_config(var.config_key,v))(**kwargs)
-    return O(var=var,node=var.node,model=var.node.get_model(),get_config=var.node.get_config,
+    return O(var=var,node=var.node,model=var.node.get_model(),get_config=var.node.get_config,resolution=default_resolution,
              value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(var.name)+'\n'+str(var.__dict__))))(**kwargs)

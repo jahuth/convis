@@ -77,9 +77,9 @@ class OPLLayerNode(N):
         #self._lambda_OPL = self.shared_parameter(
         #    lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0))),name='lambda_OPL')
         self._lambda_OPL = self.shared_parameter(
-                lambda x: float(x.value_from_config()) / float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))),
-                save = lambda x: x.value_to_config(float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))) * (float(x.var.get_value()))),
-                get = lambda x: float(self.model.config.get('retina.input-luminosity-range',self.model.config.get('input-luminosity-range',255.0))) * (float(x.var.get_value())),
+                lambda x: float(x.value_from_config()) / float(x.resolution.input_luminosity_range),
+                save = lambda x: x.value_to_config(float(x.resolution.input_luminosity_range) * (float(x.var.get_value()))),
+                get = lambda x: float(x.model.resolution.input_luminosity_range) * (float(x.var.get_value())),
                 config_key = 'opl-amplification',
                 config_default = 10.0,
                 name='lambda_OPL',
@@ -255,7 +255,7 @@ class OPLLayerLeakyHeatNode(N):
                             name = 'step',
                             doc="""To convert the time constant in seconds into the appropriate length in bins or steps, this value will be automatically filled via the associatated model.""",
                             initialized = True, 
-                            init=lambda x: x.node.get_model().steps_to_seconds(1.0))
+                            init=lambda x: x.resolution.steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                doc="Since recursive filtering needs the result of the previous timestep, the last time step has to be remembered as a state inbetween computations.",
                                init=lambda x: float(x.node.config.get('initial_value',0.5))*np.ones_like(x.input[0,:,:])) # initial condition for sequence
@@ -359,9 +359,9 @@ class BipolarLayerNode(N):
         self._inputNernst_inhibition = self.shared_parameter(lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
                                                     name="inputNernst_inhibition")
 
-        tau = self.shared_parameter(lambda x: x.model.seconds_to_steps(float(x.get_config('adaptation-tau__sec',0.00001))),
+        tau = self.shared_parameter(lambda x: x.resolution.seconds_to_steps(float(x.get_config('adaptation-tau__sec',0.00001))),
                            name = 'tau')
-        steps = self.shared_parameter(lambda x: x.model.steps_to_seconds(1.0),name = 'step')
+        steps = self.shared_parameter(lambda x: x.resolution.steps_to_seconds(1.0),name = 'step')
         a_0 = 1.0
         a_1 = -T.exp(-steps/tau)
         b_0 = 1.0 - a_1
@@ -566,7 +566,7 @@ class GanglionSpikingLayerNode(N):
                 T.dmatrix("initial_refr"),
                 init=lambda x: np.zeros_like(x.input[0,:,:]) 
                         if x.node.config.get('random-init',True) is False
-                        else (x.node.get_model().seconds_to_steps(x.node.config.get('refr-mean__sec',0.0005))*np.random.rand(*x.input[0,:,:].shape)),
+                        else (x.resolution.seconds_to_steps(x.node.config.get('refr-mean__sec',0.0005))*np.random.rand(*x.input[0,:,:].shape)),
                 doc="Initialization of the refractory times. If `random-init` is `True`, each cell gets a random value between `[0..refr-mean__sec]`"
                 )
         self._V_initial = as_state(
@@ -577,18 +577,18 @@ class GanglionSpikingLayerNode(N):
                                 else np.random.rand(*x.input[0,:,:].shape))
 
         self._refr_sigma = self.shared_parameter(
-                lambda x: float(x.model.seconds_to_steps(float(x.value_from_config()))),
-                save = lambda x: x.value_to_config(x.model.steps_to_seconds(float(x.var.get_value()))),
-                get = lambda x: float(x.model.steps_to_seconds(float(x.var.get_value()))),
+                lambda x: float(x.resolution.seconds_to_steps(float(x.value_from_config()))),
+                save = lambda x: x.value_to_config(x.resolution.steps_to_seconds(float(x.var.get_value()))),
+                get = lambda x: float(x.resolution.steps_to_seconds(float(x.var.get_value()))),
                 config_key = 'refr-stdev__sec',
                 config_default = 0.001,
                 name='refr_sigma',
                 doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')
 
         self._refr_mu = self.shared_parameter(
-                lambda x: float(x.model.seconds_to_steps(float(x.value_from_config()))),
-                save = lambda x: x.value_to_config(x.model.steps_to_seconds(float(x.var.get_value()))),
-                get = lambda x: float(x.model.steps_to_seconds(float(x.var.get_value()))),
+                lambda x: float(x.resolution.seconds_to_steps(float(x.value_from_config()))),
+                save = lambda x: x.value_to_config(x.resolution.steps_to_seconds(float(x.var.get_value()))),
+                get = lambda x: float(x.resolution.steps_to_seconds(float(x.var.get_value()))),
                 config_key = 'refr-mean__sec',
                 config_default = 0.000523,
                 name='refr_mu',
@@ -609,9 +609,9 @@ class GanglionSpikingLayerNode(N):
         self._noise_state = as_state(T.dtensor3("initial_noise"), init=lambda x: np.random.randn(*x.input[:1,:,:].shape))
         self._noise_gang = T.concatenate([self._noise_state,self._raw_noise_gang]) # we need to remember one noise state
         self._noise_sigma = self.shared_parameter(
-                lambda x: float(x.value_from_config())*np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
+                lambda x: float(x.value_from_config())*np.sqrt(2*x.resolution.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
                 save = lambda x: x.value_to_config(float(x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
-                get = lambda x: (x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
+                get = lambda x: (x.var.get_value())/np.sqrt(2*x.resolution.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
                 config_key = 'sigma-V',
                 config_default = 0.1,
                 doc='Amount of noise added to the membrane potential.',
@@ -619,7 +619,7 @@ class GanglionSpikingLayerNode(N):
 
         #self.random_init = self.config.get('random-init',None)
         
-        self._tau = shared_parameter(lambda x: x.model.steps_to_seconds(1.0),
+        self._tau = shared_parameter(lambda x: x.resolution.steps_to_seconds(1.0),
                 O()(node=self,model=self.model),
                 doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.',
                 name = 'tau')

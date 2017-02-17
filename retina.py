@@ -23,7 +23,7 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 
 
 """
-from .retina_virtualretina import RetinaConfiguration
+from .retina_virtualretina import RetinaConfiguration, default_config, random_config
 from . import retina_virtualretina
 from .base import M, GraphWrapper
 
@@ -32,12 +32,28 @@ from .filters.retina import *
 
 class Retina(M):
     def __init__(self,config=None,**kwargs):
-        super(Retina,self).__init__(**kwargs)
+        if hasattr(config,'_'):
+            # if the configuration is an Ox dictionary, only use the dictionary
+            config = config._
+        pixel_per_degree = None
+        steps_per_second = None
+        input_luminosity_range = None
+        try:
+            pixel_per_degree = float(config.get('retina',{}).get('pixels-per-degree',None))
+        except:
+            pass
+        try:
+            steps_per_second = 1.0/float(config.get('retina',{}).get('temporal-step__sec',None))
+        except:
+            pass
+        try:
+            input_luminosity_range = float(config.get('retina',{}).get('input-luminosity-range',None))
+        except:
+            pass
+        super(Retina,self).__init__(pixel_per_degree=pixel_per_degree,steps_per_second=steps_per_second,input_luminosity_range=input_luminosity_range,**kwargs)
         self.config = config
         if self.config is None:
             self.config = RetinaConfiguration()
-        self.pixel_per_degree = float(self.config.get('retina.pixels-per-degree',20.0))
-        self.steps_per_second = 1.0/float(self.config.get('retina.temporal-step__sec',1.0/1000.0))
         self.input_luminosity_range = float(self.config.get('retina.input-luminosity-range',255.0))
         if kwargs.get('opl',True) == True:
             self.opl = OPLLayerNode(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])

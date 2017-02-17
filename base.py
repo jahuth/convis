@@ -21,7 +21,7 @@ reload(variables)
 from variables import *
 import o
 reload(o)
-from o import O, Ox, _Search
+from o import O, Ox, create_hierarchical_dict, create_hierarchical_Ox, create_hierarchical_dict_with_nodes
 from collections import OrderedDict
 
 def f7(seq):
@@ -30,53 +30,29 @@ def f7(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
+class ResolutionInfo(object):
+    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0):
+        self.pixel_per_degree = pixel_per_degree
+        self.steps_per_second = steps_per_second
+        self.input_luminosity_range = input_luminosity_range
+    def degree_to_pixel(self,degree):
+        if self.pixel_per_degree is None:
+            return default_resolution.degree_to_pixel(degree)
+        return float(degree) * self.pixel_per_degree
+    def pixel_to_degree(self,pixel):
+        if self.pixel_per_degree is None:
+            return default_resolution.pixel_to_degree(pixel)
+        return float(pixel) / self.pixel_per_degree
+    def seconds_to_steps(self,t):
+        if self.steps_per_second is None:
+            return default_resolution.seconds_to_steps(t)
+        return float(t) * self.steps_per_second
+    def steps_to_seconds(self,steps):
+        if self.steps_per_second is None:
+            return default_resolution.steps_to_seconds(steps)
+        return float(steps) / self.steps_per_second
 
-
-def create_hierarchical_O(vs,pi=0):
-    """
-        Creates an object that hierarchically represents the supplied items.
-        The object is an interactively usable dictionary (see `O` objects) which provides tab completion for all entries.
-
-        Each item is required to have a 'path' attribute which is a list of strings.
-    """
-    o = O()
-    paths = f7([v.path[pi].name for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
-    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
-    for p in paths:
-        o(**{p: create_hierarchical_O([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi].name == p], pi+1)})
-    for l in leaves:
-        o(**{l.name: l})
-    return o
-
-def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
-    """
-
-    """
-    o = {}
-    paths = f7([name_sanitizer(v.path[pi].name) for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
-    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
-    for p in paths:
-        o.update(**{p: create_hierarchical_dict([v for v in vs if hasattr(v,'path') and len(v.path) > pi and name_sanitizer(v.path[pi].name) == p], pi+1)})
-    for l in leaves:
-        o.update(**{name_sanitizer(l.name): l})
-    return o
-
-def create_hierarchical_Ox(vs,pi=0):
-    return Ox(**create_hierarchical_dict(vs,pi))
-
-def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
-    """
-        name_sanitizer: eg. convis.base.save_name or str
-    """
-    o = {}
-    paths = f7([v.path[pi] for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
-    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
-    for p in paths:
-        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi] == p], pi+1)})
-    for l in leaves:
-        o.update(**{name_sanitizer(l.name): l})
-    return o
-
+default_resolution = ResolutionInfo(10.0,1000.0,1.0)
 
 ### Node and Model classes
 
@@ -214,7 +190,6 @@ class GraphWrapper(object):
     @property
     def output(self):
         return self.graph
-        #return create_hierarchical_O(theano_utils.get_input_variables_iter(self.graph),pi=1)
     @property
     def parameters(self):
         return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
@@ -438,14 +413,6 @@ class N(GraphWrapper):
         # with a new one.
         return N()
 
-class _Search(O):
-    def __init__(self,**kwargs):
-        self._things = kwargs
-    def __getattr__(self,search_string):
-        return O(**dict([(save_name(k),v) for (k,v) in self._things.items() if search_string in k]))
-    def __repr__(self):
-        return 'Choices: enter a search term, enter with a dot and use autocomplete to see matching items.'
-
 class _Vars(O):
     def __init__(self,model,**kwargs):
         self._model = model
@@ -553,8 +520,7 @@ class M(object):
         self.outputs = []
         self.config = {}
         self.module_graph = []
-        self.pixel_per_degree = pixel_per_degree
-        self.steps_per_second = steps_per_second
+        self.resolution = ResolutionInfo(pixel_per_degree,steps_per_second)
         self.size_in_degree = size
         self.__dict__.update(kwargs)
     @property
@@ -579,13 +545,13 @@ class M(object):
     def variables(self):
         return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
     def degree_to_pixel(self,degree):
-        return float(degree) * self.pixel_per_degree
+        return self.resolution.degree_to_pixel(degree)
     def pixel_to_degree(self,pixel):
-        return float(pixel) / self.pixel_per_degree
+        return self.resolution.pixel_to_degree(pixel)
     def seconds_to_steps(self,t):
-        return float(t) * self.steps_per_second
+        return self.resolution.seconds_to_steps(t)
     def steps_to_seconds(self,steps):
-        return float(steps) / self.steps_per_second
+        return self.resolution.steps_to_seconds(steps)
     def add(self,n):
         if n.name in map(lambda x: x.name, self.nodes):
             pass#raise Exception('Node named %s already exists!'%n.name)
@@ -665,37 +631,6 @@ class M(object):
         return f7(vs)
     def describe_variables(self):
         return [describe(v) for v in self.get_variables()]
-
-    def _deprecated_get_inputs(self,outputs=None): 
-        import copy
-        if outputs is None:
-            outputs = copy.copy(self.outputs)
-        seen = []
-        inputs = []
-        while True:
-            outputs = f7(outputs)
-            #print outputs,seen,inputs
-            if len(outputs) == 0:
-                break
-            o = output
-            outputs.remove(o)
-            if o in seen:
-                continue
-            seen.append(o)
-            inputs_to_o = theano_utils.get_input_variables_iter(o)
-            if o in self.mappings.keys():
-                #print 'mapping for ',o
-                outputs.append(self.mappings[o])
-            elif o in self.var_outputs.keys():
-                #print 'inout for ',o
-                outputs.extend(self.var_outputs[o].inputs)
-            elif inputs_to_o != [o]:
-                #print 'inputs: ',inputs_to_o
-                outputs.extend(theano_utils.get_input_variables_iter(o))
-            else:
-                #print "No substitution!"
-                inputs.append(o)
-        return inputs 
     def create_function(self,updates=None,additional_inputs=[]):
         if self.debug is not True:
             # we disable warnings from theano gof because of the unresolved cache leak
@@ -811,6 +746,8 @@ class M(object):
             if is_out_state(k):
                 self.compute_state_dict[k] = o
         return Output(the_output[:len(self.outputs)],keys=self.compute_output_order[:len(self.outputs)])
+
+    # methods for adding optimization methods easily
     def add_target(self,variable,error_func=lambda x,y: T.mean((x-y)**2),name='target',bcast=(True,True,True)):
         tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
         v = as_input(tp(name),name=name)
