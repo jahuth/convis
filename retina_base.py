@@ -61,7 +61,7 @@ def m_t_filter(steepness=2.0,relative_weight=1.0,normalize=True,minimize=True,re
     if retina is not None:
         steepness = retina.seconds_to_steps(steepness)
     length = 5.0*steepness
-    T_filter = -1*np.exp(-np.arange(0.0,length)/float(steepness))
+    T_filter = np.exp(-np.arange(0.0,length)/float(steepness))
     if normalize:
         T_filter = T_filter/np.sum(T_filter)
     if minimize:

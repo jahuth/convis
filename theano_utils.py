@@ -8,6 +8,7 @@ from theano.tensor.signal.conv import conv2d
 import uuid
 from . import retina_base
 from exceptions import NotImplementedError
+from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute
 
 def f7(seq):
     """ This function is removing duplicates from a list while keeping the order """
@@ -138,13 +139,14 @@ def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include
             if node in nodes_explored or node in ignore:
                 # easier to comprehend than checking when adding
                 continue
-            nodes_explored.append(node)
+            if node is not None:
+                nodes_explored.append(node)
             if hasattr(node,'owner') and node.owner is not None:
                 nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored and not i in ignore])
-            if hasattr(node,'state_out_state') and node.state_out_state not in nodes_explored:
-                nodes_to_explore.append(node.state_out_state)
-            if hasattr(node,'copied_from') and node.copied_from not in nodes_explored:
-                nodes_to_explore.append(node.copied_from)
+            if has_convis_attribute(node,'state_out_state') and get_convis_attribute(node,'state_out_state') not in nodes_explored:
+                nodes_to_explore.append(get_convis_attribute(node,'state_out_state'))
+            if has_convis_attribute(node,'copied_from') and get_convis_attribute(node,'copied_from') not in nodes_explored:
+                nodes_to_explore.append(get_convis_attribute(node,'copied_from'))
             if explore_scan and is_scan_op(node):
                 nodes_to_explore.extend(node.owner.op.outputs)
             if depth is not None and len(nodes_explored) > depth:
@@ -168,8 +170,8 @@ def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,i
             nodes_to_explore.extend([i for i in node.owner.inputs if not i in nodes_explored and not i in ignore])
         elif explore_scan and is_scan_op(node):
             nodes_to_explore.extend(node.owner.op.outputs)
-        elif hasattr(node,'copied_from'):
-            nodes_to_explore.append(node.copied_from)
+        elif has_convis_attribute(node,'copied_from'):
+            nodes_to_explore.append(get_convis_attribute(node,'copied_from'))
         else:
             input_nodes.append(node)
         if depth is not None and len(nodes_explored) > depth:

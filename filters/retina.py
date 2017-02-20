@@ -62,7 +62,7 @@ class OPLLayerNode(N):
         self._TwuTu_C = self.shared_parameter(
             lambda x: m_t_filter(float(x.get_config('undershoot',{}).get('tau__sec',0.01)),
                         float(x.get_config('undershoot',{}).get('relative-weight', 0.8)),
-                        normalize=True,retina=x.node.get_model(),epsilon=x.get_config('undershoot',{}).get('epsilon', 0.005)),name='TwuTu_C')
+                        normalize=True,retina=x.node.get_model(),epsilon=x.model.config.get('T_epsilon', 0.001)),name='TwuTu_C')
         self._G_C = self.shared_parameter(
             lambda x: m_g_filter(float(x.get_config('center-sigma__deg',0.05)),
                         float(x.get_config('center-sigma__deg',0.05)),
@@ -88,12 +88,14 @@ class OPLLayerNode(N):
             lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
 
         # this parameter has to be initialized last :/
-        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(x.node._G_S.update(x).get_value(),
-                                                                        x.node._E_S.update(x).get_value()),name='Reshape_C_S',
+        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(get_convis_attribute(x.node._G_S,'update')(x).get_value(),
+                                                                        get_convis_attribute(x.node._E_S,'update')(x).get_value()),name='Reshape_C_S',
                                                   doc='This filter resizes C such that the output has the same size as S.')
 
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, x.node._E_n_C.update(x).get_value().shape[1]-1+x.node._TwuTu_C.update(x).get_value().shape[1]-1+x.node._Reshape_C_S.update(x).get_value().shape[1]-1,
+                                    init=lambda x: np.zeros((1, get_convis_attribute(x.node._E_n_C,'update')(x).get_value().shape[1]-1+
+                                                    get_convis_attribute(x.node._TwuTu_C,'update')(x).get_value().shape[1]-1+
+                                                    get_convis_attribute(x.node._Reshape_C_S,'update')(x).get_value().shape[1]-1,
                                     1, x.input.shape[1], x.input.shape[2])))
         input_padded_in_time = T.concatenate([
                         self._input_init,
@@ -227,8 +229,8 @@ class OPLLayerLeakyHeatNode(N):
                 doc="Weight applied to the surround signal.")
 
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, self._E_n_C.update(x).get_value().shape[1]-1
-                                                             + self._TwuTu_C.update(x).get_value().shape[1]-1,
+                                    init=lambda x: np.zeros((1, get_convis_attribute(self._E_n_C,'update')(x).get_value().shape[1]-1
+                                                             + get_convis_attribute(self._TwuTu_C,'update')(x).get_value().shape[1]-1,
                                     1, x.input.shape[1], x.input.shape[2])))
         input_padded_in_time = T.concatenate([
                         self._input_init,
@@ -495,11 +497,11 @@ class GanglionInputLayerNode(N):
                                                         m_t_filter(float(x.get_config('transient-tau__sec',0.04)),
                                                             float(x.get_config('transient-relative-weight',0.75)),
                                                             normalize=True,
-                                                            #epsilon=0.1,
+                                                            epsilon=x.model.config.get('T_epsilon', 0.001),
                                                             retina=x.model),
                                      name = 'T_G')
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, x.node._T_G.update(x).get_value().shape[1]-1,1, x.input.shape[1], x.input.shape[2])))
+                                    init=lambda x: np.zeros((1, get_convis_attribute(x.node._T_G,'update')(x).get_value().shape[1]-1,1, x.input.shape[1], x.input.shape[2])))
 
         #self._V_bip_padded = T.concatenate([T.zeros((1,self._T_G.shape[1]-1,1,self._V_bip.shape[3],self._V_bip.shape[4])),self._V_bip],axis=1)
         self._V_bip_padded = as_variable(T.concatenate([self._input_init,self._V_bip],axis=1),'V_bip_padded')

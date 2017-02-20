@@ -5,6 +5,8 @@
 ### Helper functions to deal with annotated variables
 
 import numpy as np
+from o import save_name
+from variables import get_convis_attribute, has_convis_attribute, full_path
 
 plotting_possible = False
 plotting_exceptions = []
@@ -43,15 +45,15 @@ def describe_dict(v):
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
     d = {}
-    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set']:
-        if hasattr(v,k):
-            d[k] = getattr(v,k)
+    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','auto_name']:
+        if has_convis_attribute(v,k):
+            d[k] = get_convis_attribute(v,k)
     try:
         d['value'] = v.get_value()
     except:
         pass
     try:
-        d['got'] = v.get(tu.create_context_O(v))
+        d['got'] = get_convis_attribute(v,'get',(tu.create_context_O(v)))
     except:
         pass
     return d
@@ -194,24 +196,6 @@ on_click_toggle =  """onclick='$(this).parent().children(".description_content")
 
 var_name_counter = 0
 
-def save_name(n):
-    if type(n) != str:
-        if getattr(n,'name',None) is not None:
-            n = n.name
-        else:
-            try:
-                global var_name_counter
-                n.name = 'unnamed_var_'+str(var_name_counter)
-                n = n.name
-                var_name_counter += 1
-            except:
-                raise Exception('save_name got a '+str(type(n))+' instead of a string or object with name attribute.')
-    n = n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('[', '').replace(']', '').replace('(', '').replace(')', '')
-    if n[0] in '0123456789':
-        n = 'n'+n
-    return n
-def full_path(v):
-    return '_'.join([save_name(p) for p in getattr(v,'path',[v])])
 
 def describe_html(v,wrap_in_html=True,**kwargs):
     from IPython.display import HTML
@@ -273,28 +257,28 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     # Assuming its a annotated theano variable:
     #
     d = {}
-    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type']:
-        if hasattr(v,k):
-            d[k] = getattr(v,k)
+    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type','auto_name']:
+        if has_convis_attribute(v,k):
+            d[k] = get_convis_attribute(v,k)
     name = d.get('name','') # optional: None handling
     if not type(name) is str or name is '':
         name= repr(v)
-    if hasattr(v,'html_name'):
-        name+=' '+str(v.html_name)
+    if has_convis_attribute(v,'html_name'):
+        name+=' '+str(get_convis_attribute(v,'html_name'))
     #simple_name = str(d.get('simple_name',''))
     s = """<div class='convis_description variable'><b """+on_click_toggle+""">"""+name+"""</b> <small>"""+d.get('variable_type','')+"""</small>"""
     # default: show everything, hide on click;
     s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
     s += "<div class='description_content' style='border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;'>"
-    if hasattr(v,'path'):
+    if has_convis_attribute(v,'path'):
         s += "<small>" + full_path(v) + "</small><br/>"
-    if hasattr(v,'doc') and getattr(v,'doc') != '':
-        s += '<p class="doc" style="padding:2px;">'+getattr(v,'doc')+'</p>'
-    if hasattr(v,'owner'):
+    if has_convis_attribute(v,'doc') and get_convis_attribute(v,'doc') != '':
+        s += '<p class="doc" style="padding:2px;">'+get_convis_attribute(v,'doc')+'</p>'
+    if has_convis_attribute(v,'owner'):
         s += "<tt style='color: gray;'><small>" + str(v.owner) + "</small></tt><br/>"
-    for k in ['config_key','optimizable','node','save','init','get','set','state_out_state','param_init','state_init','state_in_state','copied_from','config_key','config_default']:
-        if hasattr(v,k):
-            s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(getattr(v,k)))+'</tt></div>'
+    for k in ['auto_name','config_key','optimizable','node','save','init','get','set','state_out_state','param_init','state_init','state_in_state','copied_from','config_key','config_default']:
+        if has_convis_attribute(v,k):
+            s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(get_convis_attribute(v,k)))+'</tt></div>'
     try:
         if hasattr(v,'get_value'):
             s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),title=name,**kwargs))
@@ -302,7 +286,7 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         s+= '<b>value</b>: ' + str(e)
         pass
     try:
-        s+= '<b>got</b>: ' + _tensor_to_html(v.get(tu.create_context_O(v)),title=name,**kwargs)
+        s+= '<b>got</b>: ' + _tensor_to_html(get_convis_attribute(v,'get')(tu.create_context_O(v)),title=name,**kwargs)
     except:
         pass
     s += """</div>"""

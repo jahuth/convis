@@ -2,8 +2,86 @@ import theano
 import theano.tensor as T
 import new
 from debug import *
-from o import O
+from o import f7, O, Ox, save_name
 
+global_lookup_table = {}
+only_use_lookup_table = True
+
+def full_path(v):
+    return '_'.join([save_name(p) for p in get_convis_attribute(v,'path',[v])])
+
+def has_convis_attribute(v,key,default=None):
+    if v is None:
+        return False
+    global global_lookup_table
+    if hasattr(v,'_convis_lookup'):
+        if v._convis_lookup in global_lookup_table and key in global_lookup_table[v._convis_lookup]:
+            return True
+    if hasattr(v,'name') and v.name is not None and '!' in v.name:
+        s = v.name.split('!')[0]
+        if s in global_lookup_table and key in global_lookup_table[s]:
+            return True
+    return hasattr(v,key)
+    
+def get_convis_attribute(v,key,default=None):
+    if v is None:
+        return default
+    global global_lookup_table
+    if hasattr(v,'_convis_lookup'):
+        if v._convis_lookup in global_lookup_table:
+            return global_lookup_table[v._convis_lookup].get(key,default)
+    if hasattr(v,'name') and v.name is not None and '!' in v.name:
+        s = v.name.split('!')[0]
+        if s in global_lookup_table:
+            return global_lookup_table[s].get(key,default)
+    return getattr(v,key,default)
+
+def set_convis_attribute(v,key,value):
+    if v is None:
+        return
+    global global_lookup_table
+    global only_use_lookup_table
+    if only_use_lookup_table and key not in ['__is_convis_var','name']:
+        old_key = None
+        if not hasattr(v,'_convis_lookup'):
+            if hasattr(v,'name') and v.name is not None and '!' in v.name:
+                old_key = v.name.split('!')[0]
+            new_key = len(global_lookup_table.keys())
+            while str(new_key) in global_lookup_table.keys():
+                new_key += 1
+            v.name = str(new_key)+'!'+str(v.name)
+            v._convis_lookup = str(new_key)
+        if not v._convis_lookup in global_lookup_table:
+            global_lookup_table[v._convis_lookup] = {}
+        if old_key in global_lookup_table:
+            global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
+        global_lookup_table[v._convis_lookup][key] = value
+    else:
+        setattr(v,key,value)
+
+def update_convis_attributes(v,d):
+    if v is None:
+        return
+    global global_lookup_table
+    global only_use_lookup_table
+    if only_use_lookup_table:
+        old_key = None
+        if not hasattr(v,'_convis_lookup'):
+            if hasattr(v,'name') and v.name is not None and '!' in v.name:
+                old_key = v.name.split('!')[0]
+            new_key = len(global_lookup_table.keys())
+            while new_key in global_lookup_table.keys():
+                new_key += 1
+            v.name = str(new_key)+'!'+str(v.name)
+            v._convis_lookup = new_key
+        if not v._convis_lookup in global_lookup_table:
+            global_lookup_table[v._convis_lookup] = {}
+        if old_key in global_lookup_table:
+            global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
+        global_lookup_table[v._convis_lookup].update(d)
+    else:
+        for (key,value) in d.items():
+            setattr(v,key,value)
 
 class ResolutionInfo(object):
     def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0):
@@ -30,6 +108,43 @@ class ResolutionInfo(object):
 default_resolution = ResolutionInfo(10.0,1000.0,1.0)
 
 
+def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
+    """
+        pi: offset in the path
+
+            The path will only be used from element pi onwards
+    """
+    o = {}
+    paths = f7([name_sanitizer(get_convis_attribute(v,'path')[pi].name) for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
+    leaves = f7([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
+    for p in paths:
+        o.update(**{p: create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path') 
+                                                                and len(get_convis_attribute(v,'path')) > pi 
+                                                                and name_sanitizer(get_convis_attribute(v,'path')[pi].name) == p], pi+1)})
+    for l in leaves:
+        o.update(**{name_sanitizer(l.name): l})
+    return o
+
+def create_hierarchical_Ox(vs,pi=0):
+    return Ox(**create_hierarchical_dict(vs,pi))
+
+def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
+    """
+        name_sanitizer: eg. convis.base.save_name or str
+    """
+    o = {}
+    paths = f7([get_convis_attribute(v,'path')[pi] for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
+    leaves = f7([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
+    for p in paths:
+        o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if 
+                                                        has_convis_attribute(v,'path') 
+                                                        and len(get_convis_attribute(v,'path')) > pi 
+                                                        and get_convis_attribute(v,'path')[pi] == p], pi+1)})
+    for l in leaves:
+        o.update(**{name_sanitizer(l.name): l})
+    return o
+
+
 def unindent(text):
     from textwrap import dedent
     if text == '':
@@ -41,63 +156,74 @@ def unindent(text):
         return dedent(text)
 
 def add_kwargs_to_v(v,**kwargs):
-    v.__dict__.update(kwargs)
+    update_convis_attributes(v, kwargs)
     if 'doc' in kwargs.keys():
-        v.__dict__['doc'] = unindent(kwargs.get('doc',''))
+        set_convis_attribute(v,'doc', unindent(kwargs.get('doc','')))
     return v
 
 convis_attributes = ['name','node','path','__is_convis_var','variable_type','doc','root_of',
-                    'state_out_state','state_init','state_in_state',
-                    'param_init','initialized','optimizable','config_key','config_default','save','get']
+                    'state_out_state','state_init','state_in_state','_old_type',
+                    'param_init','initialized','optimizable','config_key','config_default','save','get','_convis_lookup']
+
 
 def get_convis_attributes(v):
-    return O(**dict([(a,getattr(v,a)) for a in convis_attributes if hasattr(v,a)]))
+    return O(**dict([(a,get_convis_attribute(v,a)) for a in convis_attributes if has_convis_attribute(v,a)]))
+
+def get_convis_attributes_dict(v):
+    return dict([(a,get_convis_attribute(v,a)) for a in convis_attributes if has_convis_attribute(v,a)])
+
+def v(v):
+    return O(**v.__dict__)(**get_convis_attributes_dict(v))
+
 
 def override_copy(v,actually_do_it=True):
-    #return v
+    return v
     from copy import deepcopy
     import copy
     # Hopefully we won't need this.
     # If we inject functions into the variables, it is possible we get Pickle Errors on compile time!
-    #def new_copy(self, name=None):
-    #    """Return a symbolic copy and optionally assign a name.
-    #    Does not copy the tags.
-    #    Also copies convis specific attributes.
-    #    """
-    #    global convis_attributes
-    #    copied_variable = theano.tensor.basic.tensor_copy(self)
-    #    copied_variable.name = name
-    #    if hasattr(self,'preserve_labels_on_copy'):
-    #        for a in convis_attributes:
-    #            if hasattr(self,a):
-    #                setattr(copied_variable,a,getattr(self,a))
-    #        copied_variable.copied_from = self.v
-    #    override_copy(copied_variable)
-    #    return copied_variable
+    # def new_copy(self, name=None):
+    #     """Return a symbolic copy and optionally assign a name.
+    #     Does not copy the tags.
+    #     Also copies convis specific attributes.
+    #     """
+    #     global convis_attributes
+    #     copied_variable = theano.tensor.basic.tensor_copy(self)
+    #     copied_variable.name = name
+    #     if hasattr(self,'preserve_labels_on_copy'):
+    #         for a in convis_attributes:
+    #             if hasattr(self,a):
+    #                 setattr(copied_variable,a,getattr(self,a))
+    #         copied_variable.copied_from = self.v
+    #     override_copy(copied_variable)
+    #     return copied_variable
     def type_call(self,*args,**kwargs):
         new_v = self.__old_call__(*args,**kwargs)
-        if hasattr(self,'v') and hasattr(self.v,'preserve_labels_on_copy'):
+        if hasattr(self,'v') and has_convis_attribute(self.v,'preserve_labels_on_copy'):
             for a in convis_attributes:
-                if hasattr(self.v,a):
-                    setattr(new_v,a,getattr(self.v,a))
-            new_v.copied_from = self.v
+                if has_convis_attribute(self.v,a):
+                    set_convis_attribute(new_v,a,getattr(self.v,a))
+            set_convis_attribute(new_v,'copied_from',self.v)
         override_copy(new_v)
         return new_v
     def type_make_variable(self,name=None):
         new_v = self.Variable(self,name=name)
-        if hasattr(self,'v') and hasattr(self.v,'preserve_labels_on_copy'):
+        if hasattr(self,'v') and has_convis_attribute(self.v,'preserve_labels_on_copy'):
             for a in convis_attributes:
-                if hasattr(self.v,a):
-                    setattr(new_v,a,getattr(self.v,a))
-            new_v.copied_from = self.v
+                if has_convis_attribute(self.v,a):
+                    set_convis_attribute(new_v,a,get_convis_attribute(self.v,a))
+            set_convis_attribute(new_v,'copied_from',self.v)
         override_copy(new_v)
         return new_v
     #v.copy = new.instancemethod(new_copy, v, None)
-    v._old_type = v.type
+    if not has_convis_attribute(v,'_old_type'):
+        set_convis_attribute(v,'_old_type', v.type)
     v.type = copy.copy(v.type)
-    if not hasattr(v.type,'__old_call__'):
-        v.type.__old_call__ = v.type.__call__
+    if not hasattr(v.type,'__old_type__'):
+        old_type = get_convis_attribute(v,'_old_type',v.type)
         v.type = copy.copy(v.type)
+        v.type.__old_call__ = old_type.__call__
+        v.type.__old_type__ = get_convis_attribute(v,'_old_type')
         #if hasattr(v.type,'v'):
         #    print v.type.v
         #    raise Exception("type already has a v!!")
@@ -112,23 +238,23 @@ def override_copy(v,actually_do_it=True):
 # functions on theano variables
 def as_state(v,out_state=None,init=None,name=None,**kwargs):
     v.__is_convis_var = True
-    v.variable_type = 'state'
+    set_convis_attribute(v,'variable_type','state')
     if out_state is not None:
-        v.state_out_state = out_state
+        set_convis_attribute(v,'state_out_state',out_state)
     if init is not None:
-        v.state_init = init
+        set_convis_attribute(v,'state_init',init)
     if name is not None:
-        v.name = name
+        set_convis_attribute(v,'name',name)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
     v.__is_convis_var = True
-    v.variable_type = 'out_state'
+    set_convis_attribute(v,'variable_type','out_state')
     if in_state is not None:
         as_state(in_state,out_state=v,init=init)
-        v.state_in_state = in_state
+        set_convis_attribute(v,'state_in_state',in_state)
     if name is not None:
-        v.name = name
+        set_convis_attribute(v,'name',name)
     if v.name is None:
         if in_state is not None and in_state.name is not None:
             v.name = in_state.name+'_out_state' 
@@ -137,20 +263,18 @@ def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
 
 def as_input(v,name=None,**kwargs):
     v.__is_convis_var = True
-    v.variable_type = 'input'
+    set_convis_attribute(v,'variable_type','input')
     if name is not None:
         v.name = name
-    v.__dict__.update(kwargs)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_variable(v,name=None,**kwargs):
     v.__is_convis_var = True
     if not hasattr(v,'variable_type'):
         # don't overwrite the variable type!
-        v.variable_type = 'variable'
+        set_convis_attribute(v,'variable_type','variable')
     if name is not None:
         v.name = name
-    v.__dict__.update(kwargs)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_output(v,name=None,**kwargs):
@@ -158,18 +282,17 @@ def as_output(v,name=None,**kwargs):
     if not hasattr(v,'variable_type'):
         # is the output variable type even important?
         # in any case things can be eg. parameters and also outputs, so we don't want to overwrite this!
-        v.variable_type = 'output'
+        set_convis_attribute(v,'variable_type','output')
     if name is not None:
         v.name = name
-    v.__dict__.update(kwargs)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 
 def as_parameter(v,init=None,name=None,**kwargs):
     v.__is_convis_var = True
-    v.variable_type = 'parameter'
+    set_convis_attribute(v,'variable_type','parameter')
     if init is not None:
-        v.param_init = init
+        set_convis_attribute(v,'param_init',init)
     if name is not None:
         v.name = name
     if hasattr(v,'set_value'):
@@ -189,20 +312,19 @@ def as_parameter(v,init=None,name=None,**kwargs):
                 warnings.warn("The variable was already updated. To avoid cycles we do not update again.", Warning)
                 send_dbg('param.update',str(self.name)+' was attempted to be updated twice!',4)
                 return self
-            if not force and (getattr(self, 'initialized', False) or hasattr(self,'optimizing')):
+            if not force and (get_convis_attribute(self, 'initialized', False) or has_convis_attribute(self,'optimizing')):
                 # The variable was already updated. To avoid cycles we do not update again.
                 send_dbg('param.update',str(self.name)+' was already initialized or is optimizing itself.',0)
                 return self
             # this might entail recursion when param_init calls update of other variables:
-            new_val = self.param_init(create_context_O(self,update_trace=getattr(x,'update_trace',[])+[self]))
+            new_val = get_convis_attribute(self,'param_init')(create_context_O(self,update_trace=getattr(x,'update_trace',[])+[self]))
             #if self.name is not None and 'lambda' in self.name:
             #    print self.name, new_val
             send_dbg('param.update',str(self.name)+' updated itself from '+str(self.get_value())[:10]+' to '+str(new_val)[:10]+'.',2)
             self.set_value(new_val)
-            self.initialized = True
+            set_convis_attribute(self,'initialized',True)
             return self
-        v.update = new.instancemethod(update, v, None)
-    v.__dict__.update(kwargs)
+        set_convis_attribute(v,'update',new.instancemethod(update, v, None))
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 
@@ -210,17 +332,17 @@ def as_parameter(v,init=None,name=None,**kwargs):
 def is_var(v):
     return hasattr(v,'__is_convis_var')
 def is_state(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'state' and hasattr(v,'state_out_state')
+    return has_convis_attribute(v,'variable_type') and get_convis_attribute(v,'variable_type') == 'state' and has_convis_attribute(v,'state_out_state')
 def is_out_state(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'out_state'
+    return has_convis_attribute(v,'variable_type') and get_convis_attribute(v,'variable_type') == 'out_state'
 def is_input_parameter(v):
-    return hasattr(v,'variable_type') and (not hasattr(v,'get_value')) and v.variable_type == 'parameter'  and (not hasattr(v,'copied_from'))
+    return has_convis_attribute(v,'variable_type') and (not hasattr(v,'get_value')) and get_convis_attribute(v,'variable_type') == 'parameter'  and (not has_convis_attribute(v,'copied_from'))
 def is_shared_parameter(v):
-    return hasattr(v,'variable_type') and hasattr(v,'get_value') and v.variable_type == 'parameter'
+    return has_convis_attribute(v,'variable_type') and hasattr(v,'get_value') and get_convis_attribute(v,'variable_type') == 'parameter'
 def is_parameter(v):
     return is_input_parameter(v) or is_shared_parameter(v)
 def is_input(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'input'
+    return has_convis_attribute(v,'variable_type') and get_convis_attribute(v,'variable_type') == 'input'
 def are_states(vs):
     return filter(is_state,vs)
 def are_out_states(vs):
@@ -276,10 +398,12 @@ def create_context_O(var=None, **kwargs):
     """
     if var is None:
         return O(resolution=default_resolution)(**kwargs)
-    if hasattr(var, 'config_key') and hasattr(var,'config_default'):
-        return O(var=var,node=var.node,model=var.node.get_model(),resolution=getattr(var.node.get_model(),'resolution',default_resolution),
-                 get_config=var.node.get_config,
-                 value_from_config=lambda: var.node.get_config(var.config_key,var.config_default),
-                 value_to_config=lambda v: var.node.set_config(var.config_key,v))(**kwargs)
-    return O(var=var,node=var.node,model=var.node.get_model(),get_config=var.node.get_config,resolution=default_resolution,
-             value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(var.name)+'\n'+str(var.__dict__))))(**kwargs)
+    node = get_convis_attribute(var,'node')
+    config_key = get_convis_attribute(var,'config_key','')
+    if has_convis_attribute(var, 'config_key') and has_convis_attribute(var,'config_default'):
+        return O(var=var,node=node,model=node.get_model(),resolution=getattr(node.get_model(),'resolution',default_resolution),
+                 get_config=node.get_config,
+                 value_from_config=lambda: node.get_config(config_key,var.config_default),
+                 value_to_config=lambda v: node.set_config(config_key,v))(**kwargs)
+    return O(var=var,node=node,model=node.get_model(),get_config=node.get_config,resolution=default_resolution,
+             value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(var.name)+'\n')))(**kwargs)

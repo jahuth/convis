@@ -9,7 +9,7 @@ import uuid
 from . import retina_base
 from . import theano_utils
 from exceptions import NotImplementedError
-from variable_describe import describe, describe_dict, describe_html, full_path, save_name
+from variable_describe import describe, describe_dict, describe_html
 import warnings
 
 import debug
@@ -20,8 +20,7 @@ import variables
 reload(variables)
 from variables import *
 import o
-reload(o)
-from o import O, Ox, create_hierarchical_dict, create_hierarchical_Ox, create_hierarchical_dict_with_nodes
+from o import O, Ox, save_name
 from collections import OrderedDict
 
 def f7(seq):
@@ -30,29 +29,6 @@ def f7(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
-class ResolutionInfo(object):
-    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0):
-        self.pixel_per_degree = pixel_per_degree
-        self.steps_per_second = steps_per_second
-        self.input_luminosity_range = input_luminosity_range
-    def degree_to_pixel(self,degree):
-        if self.pixel_per_degree is None:
-            return default_resolution.degree_to_pixel(degree)
-        return float(degree) * self.pixel_per_degree
-    def pixel_to_degree(self,pixel):
-        if self.pixel_per_degree is None:
-            return default_resolution.pixel_to_degree(pixel)
-        return float(pixel) / self.pixel_per_degree
-    def seconds_to_steps(self,t):
-        if self.steps_per_second is None:
-            return default_resolution.seconds_to_steps(t)
-        return float(t) * self.steps_per_second
-    def steps_to_seconds(self,steps):
-        if self.steps_per_second is None:
-            return default_resolution.steps_to_seconds(steps)
-        return float(steps) / self.steps_per_second
-
-default_resolution = ResolutionInfo(10.0,1000.0,1.0)
 
 ### Node and Model classes
 
@@ -74,14 +50,14 @@ class GraphWrapper(object):
         self.m = m
         self.parent = parent
         self.graph = graph
-        if hasattr(self.graph,'root_of'):
-            return self.graph.root_of
+        if has_convis_attribute(self.graph,'root_of'):
+            return get_convis_attribute(self.graph,'root_of')
         if not hasattr(self.graph,'__is_convis_var'):
             self.graph = as_output(T.as_tensor_variable(self.graph))
         if self.graph.name is None:
             # we only replace the name if it is necessary
             self.graph.name = 'output'
-        self.graph.root_of = self
+        set_convis_attribute(self.graph,'root_of', self)
         #self.outputs = [self.graph]
         self.name = name
         self.ignore = ignore
@@ -151,25 +127,25 @@ class GraphWrapper(object):
                 v.name = 'scan_output_'+str(i)
             as_output(v)
         for v in my_named_vars + [v for v in my_scan_vars if v.owner.op != self.scan_op]:
-            if hasattr(v,'path'):
-                if v.path[0] == self:
+            if not get_convis_attribute(v,'path',None) is None:
+                if get_convis_attribute(v,'path')[0] == self:
                     continue # we already are the owner of this variable
-            if hasattr(v,'full_name'):
-                v.full_name = self.name+'.'+v.full_name
-                v.path = [self] + v.path
+            if has_convis_attribute(v,'full_name'):
+                set_convis_attribute(v,'full_name', self.name+'.'+get_convis_attribute(v,'full_name',''))
+                set_convis_attribute(v,'path', [self] + get_convis_attribute(v,'path',[v]))
             else:
-                v.full_name = self.name+'.'+v.name
-                v.path = [self,v]
+                set_convis_attribute(v,'full_name', self.name+'.'+get_convis_attribute(v,'name',''))
+                set_convis_attribute(v,'path', [self, v])
             global do_debug
             if do_debug:
-                print 'labeled: ',v.path
-            if hasattr(v,'node') and v.node != None and v.node != self:
-                if v.node.parent is None:
-                    v.node.parent = self
+                print 'labeled: ',get_convis_attribute(v,'path')
+            if get_convis_attribute(v,'node',None) != None and get_convis_attribute(v,'node') != self:
+                if get_convis_attribute(v,'node').parent is None:
+                    get_convis_attribute(v,'node').parent = self
             else:
-                v.node = self
-            if not hasattr(v,'simple_name') or v.simple_name is None:
-                v.simple_name = v.name
+                set_convis_attribute(v,'node', self)
+            if not get_convis_attribute(v,'simple_name', None) is None:
+                set_convis_attribute(v,'simple_name', v.name)
             #v.node = self
     def _as_TensorVariable(self):
         """
@@ -214,7 +190,7 @@ class GraphWrapper(object):
         for o in self.graph:
             theano_utils._replace(o,b,a)
         # replace in out states
-        for o in [v.state_out_state for v in filter(is_state,self.get_variables())]:
+        for o in [get_convis_attribute(v,'state_out_state') for v in filter(is_state,self.get_variables())]:
             theano_utils._replace(o,b,a)
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         # todo: where to save config?
@@ -249,21 +225,21 @@ class GraphWrapper(object):
             if do_debug:
                 print 'Adding to sum'
             # assuming a 3d input/ output
-            if replace_inputs and hasattr(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+            if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
                 input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
             else:
                 input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
             if do_debug:
                 print 'inputs are now:',input.owner.inputs[0].owner.inputs
-            if not hasattr(v, 'connects'):
-                v.connects = []
-            v.connects.append([self,other])
+            if get_convis_attribute(v, 'connects', None) is None:
+                set_convis_attribute(v, 'connects',[])
+            get_convis_attribute(v,'connects').append([self,other])
         else:
-            if hasattr(input,'variable_type') and input.variable_type == 'input':
-                input.variable_type = 'replaced_input'
-            if not hasattr(v, 'connects'):
-                v.connects = []
-            v.connects.append([self,other])
+            if has_convis_attribute(input,'variable_type') and get_convis_attribute(input,'variable_type') == 'input':
+                set_convis_attribute(input,'variable_type','replaced_input')
+            if get_convis_attribute(v, 'connects',None) is None:
+                set_convis_attribute(v, 'connects',[])
+            get_convis_attribute(v,'connects').append([self,other])
             try:
                 theano_utils._replace(self.output,input,v)
             except:
@@ -420,9 +396,9 @@ class _Vars(O):
         vars = [v for v in self._model.get_variables()  if v.name is not None]
         nodes = f7([v.node for v in vars if hasattr(v,'node')])
         for n in nodes:
-            self.__dict__[save_name(n.name)] = O(**dict([(save_name(k.simple_name),k) for k in vars if hasattr(k,'node') and k.node == n]))
-        self.__dict__['_all'] = O(**dict([(full_path(k),k) for k in vars if hasattr(k,'path')]))
-        self.__dict__['_search'] = _Search(**dict([(full_path(k),k) for k in vars if hasattr(k,'path')]))
+            self.__dict__[save_name(n.name)] = O(**dict([(save_name(k.simple_name),k) for k in vars if has_convis_attribute(k,'node') and get_convis_attribute(k,'node') == n]))
+        self.__dict__['_all'] = O(**dict([(full_path(k),k) for k in vars if has_convis_attribute(k,'path')]))
+        self.__dict__['_search'] = _Search(**dict([(full_path(k),k) for k in vars if has_convis_attribute(k,'path')]))
 
 class _Configuration(O):
     def __init__(self,model,**kwargs):
@@ -568,8 +544,8 @@ class M(object):
             If this function is provided with a node, it tries to add an attribute `output`,
             then add a list in the attribute `outputs`, then a variable named `output`.
         """
-        if hasattr(a,'node'):
-            self.add(a.node)
+        if has_convis_attribute(a,'node'):
+            self.add(get_convis_attribute(a,'node'))
             self.outputs.append(a)
         else:
             self.add(a)
@@ -592,21 +568,21 @@ class M(object):
             a = a.graph
         print 'Replacing:',a,b
         if issubclass(b.__class__, N):
-            if hasattr(b.var('input'),'variable_type') and b.var('input').variable_type == 'input':
-                b.var('input').variable_type = 'replaced_input'
+            if has_convis_attribute(b.var('input'),'variable_type') and get_convis_attribute(b.var('input'),'variable_type') == 'input':
+                set_convis_attribute(b.var('input'),'variable_type','replaced_input')
             #theano_utils._replace(b.output,b.var('input'),a.var('output'))
-            if not hasattr(a, 'connects'):
-                a.connects = []
-            a.connects.append([b,getattr(a,'node',a)])
+            if not has_convis_attribute(a, 'connects'):
+                set_convis_attribute(a,'connects',[])
+            get_convis_attribute(a,'connects').append([b,get_convis_attribute(a,'node',a)])
             try:
                 theano_utils._replace(b.output,b.variables.input,a)
             except:
                 print 'Something not found! ',a,b.variables
-        elif hasattr(b,'node'):
-            if not hasattr(a, 'connects'):
-                a.connects = []
-            a.connects.append([b.node,getattr(a,'node',a)])
-            theano_utils._replace(b.node.output,b,a)
+        elif has_convis_attribute(b,'node'):
+            if not has_convis_attribute(a, 'connects'):
+                set_convis_attribute(a,'connects',[])
+            get_convis_attribute(a,'connects').append([get_convis_attribute(b,'node'),get_convis_attribute(a,'node',a)])
+            theano_utils._replace(get_convis_attribute(b,'node').output,b,a)
         else:
             raise Exception('This is not a node and not a variable with a node. Maybe the variable was not named?')
         #self.module_graph.append([a,b]) # no longer used??
@@ -637,30 +613,34 @@ class M(object):
             # TODO: fix the leak and re-enable warnings
             import logging
             logging.getLogger("theano.gof.cmodule").setLevel(logging.ERROR) 
+            ##pass
         if updates is None:
             updates = theano.updates.OrderedUpdates()
         for a,b in  self.mappings.items():
             for n in self.nodes:
-                if a.variable_type == 'input':
-                    a.variable_type = 'replaced_input'
+                if get_convis_attribute(v,'variable_type') == 'input':
+                    set_convis_attribute(v,'variable_type', 'replaced_input')
                 theano_utils.replace(n.graph,a,b)
         outputs = [o._as_TensorVariable() if hasattr(o,'_as_TensorVariable') else o for o in self.outputs]
         variables = f7([v for o in outputs for v in theano_utils.get_variables_iter(o)])
         for v in variables:
-            if hasattr(v,'updates'):
-                updates[v] = np.sum([u for u in v.updates])
+            if has_convis_attribute(v,'updates'):
+                if v in updates:
+                    updates[v] = T.sum([updates[v]]+[u for u in get_convis_attribute(v,'updates')])
+                else:
+                    updates[v] = T.sum([u for u in get_convis_attribute(v,'updates')])
         self.compute_input_order = f7(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = additional_inputs
         self.compute_state_inits = []
         state_variables = filter(is_state,variables)
-        self.compute_output_order = f7(outputs + [v.state_out_state for v in state_variables])
+        self.compute_output_order = f7(outputs + [get_convis_attribute(v,'state_out_state') for v in state_variables])
         self.compute_updates_order = theano.updates.OrderedUpdates()
         self.compute_updates_order.update(updates)
         for state_var in state_variables:
             self.compute_input_order.append(state_var)
             #self.compute_updates_order[state_var] = state_var.state_out_state
             #print state_var.state_out_state
-            self.compute_state_inits.append(state_var.state_init)
+            self.compute_state_inits.append(get_convis_attribute(state_var,'state_init'))
         givens = [(a,b) for (a,b) in self.givens.items()]
         self.compute_input_dict = dict((v,None) for v in self.compute_input_order)
         self.compute_state_dict = dict((v,None) for v in self.compute_output_order if is_out_state(v))
@@ -725,18 +705,18 @@ class M(object):
                         else:
                             input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = k.param_init(create_context_O(k,input=the_input))
+                    input_dict[k] = get_convis_attribute(k,'param_init')(create_context_O(k,input=the_input))
                 if is_state(k):
-                    if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(create_context_O(k,input=the_input))
+                    if self.compute_state_dict.get(get_convis_attribute(k,'state_out_state'),None) is None:
+                        input_dict[k] = get_convis_attribute(k,'state_init')(create_context_O(k,input=the_input))
                     else:
-                        input_dict[k] = self.compute_state_dict[k.state_out_state]
+                        input_dict[k] = self.compute_state_dict[get_convis_attribute(k,'state_out_state')]
         for shared_parameter in self.parameters._all:
             if is_shared_parameter(shared_parameter):
                 #if (not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False) and not hasattr(shared_parameter,'optimized'):
                 # until we can track which config values where changed, we re-initialize everything
                 # all smart stuff is now in the injected .update method
-                shared_parameter.update(create_context_O(shared_parameter,input=the_input))
+                get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input))
                 #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
