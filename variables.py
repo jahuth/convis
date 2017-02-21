@@ -13,98 +13,149 @@ only_use_lookup_table = True
 def full_path(v):
     return '_'.join([save_name(p) for p in get_convis_attribute(v,'path',[v])])
 
+def is_convis_var(v):
+    if hasattr(v,'name') and type(v.name) is str:
+        if '!' in v.name:
+            return True
+    return hasattr(v,'_convis_lookup')
+
 def has_convis_attribute(v,key,default=None):
-    if v is None:
-        return False
+    if not is_convis_var(v):
+        return hasattr(v,key)
     global global_lookup_table
-    if hasattr(v,'_convis_lookup'):
-        if v._convis_lookup in global_lookup_table and key in global_lookup_table[v._convis_lookup]:
-            return True
-    if hasattr(v,'name') and v.name is not None and '!' in v.name:
-        s = v.name.split('!')[0]
-        if s in global_lookup_table and key in global_lookup_table[s]:
-            return True
+    if key in get_convis_attribute_dict(v):
+        return True
+    # if hasattr(v,'_convis_lookup'):
+    #     if v._convis_lookup in global_lookup_table and key in global_lookup_table[v._convis_lookup]:
+    #         return True
+    # if hasattr(v,'name') and v.name is not None and '!' in v.name:
+    #     s = v.name.split('!')[0]
+    #     if s in global_lookup_table and key in global_lookup_table[s]:
+    #         return True
     return hasattr(v,key)
     
 def get_convis_attribute(v,key,default=None):
-    if v is None:
-        return default
-    global global_lookup_table
-    if hasattr(v,'_convis_lookup'):
-        if v._convis_lookup in global_lookup_table:
-            return global_lookup_table[v._convis_lookup].get(key,default)
-    if hasattr(v,'name') and v.name is not None and '!' in v.name:
-        s = v.name.split('!')[0]
-        if s in global_lookup_table:
-            return global_lookup_table[s].get(key,default)
+    if not is_convis_var(v):
+        return getattr(v,key,default)
+    if key is 'name':
+        name = str(v.name).split('!')[-1]
+        if len(name) == 0:
+            return None
+        return name
+    d = get_convis_attribute_dict(v)
+    if key in d:
+        return d[key]
+    # if v is None:
+    #     return default
+    # global global_lookup_table
+    # if hasattr(v,'_convis_lookup'):
+    #     if v._convis_lookup in global_lookup_table:
+    #         return global_lookup_table[v._convis_lookup].get(key,default)
+    # if hasattr(v,'name') and v.name is not None and '!' in v.name:
+    #     s = v.name.split('!')[0]
+    #     if s in global_lookup_table:
+    #         return global_lookup_table[s].get(key,default)
     return getattr(v,key,default)
 
-def get_convis_attribute_dict(v):
-    if v is None:
-        return {}
-    global global_lookup_table
+def get_convis_key(v):
     if hasattr(v,'_convis_lookup'):
         if not v._convis_lookup in global_lookup_table:
             global_lookup_table[v._convis_lookup] = {}
-        return global_lookup_table[v._convis_lookup]
+        return v._convis_lookup
     if hasattr(v,'name') and v.name is not None and '!' in v.name:
         s = v.name.split('!')[0]
         if not s in global_lookup_table:
             global_lookup_table[s] = {}
-        return global_lookup_table[s]
+        return s
+    return create_convis_key(v)
+
+def create_convis_key(v):
+    global global_lookup_table
     new_key = len(global_lookup_table.keys())
     while str(new_key) in global_lookup_table.keys():
         new_key += 1
-    if v.name is None:
-        v.name = str(new_key)+'!'
-    else:
-        v.name = str(new_key)+'!'+str(v.name)
-    v._convis_lookup = str(new_key)
-    global_lookup_table[v._convis_lookup] = {}
-    return global_lookup_table[v._convis_lookup]
+    if hasattr(v,'name'):
+        if v.name is None:
+            v.name = str(new_key)+'!'
+        else:
+            v.name = str(new_key)+'!'+str(v.name)
+    try:
+        v.__is_convis_var = True
+        v._convis_lookup = str(new_key)
+    except:
+        pass
+    global_lookup_table[str(new_key)] = {'_id': str(new_key)}
+    return str(new_key)
+
+def get_convis_attribute_dict(v):
+    try:
+        return global_lookup_table[get_convis_key(v)]
+    except:
+        return None
+
 def set_convis_attribute(v,key,value):
     if v is None:
         return
     global global_lookup_table
     global only_use_lookup_table
-    if only_use_lookup_table and key not in ['__is_convis_var','name']:
-        old_key = None
-        if not hasattr(v,'_convis_lookup'):
-            if hasattr(v,'name') and v.name is not None and '!' in v.name:
-                old_key = v.name.split('!')[0]
-            new_key = len(global_lookup_table.keys())
-            while str(new_key) in global_lookup_table.keys():
-                new_key += 1
-            v.name = str(new_key)+'!'+str(v.name)
-            v._convis_lookup = str(new_key)
-        if not v._convis_lookup in global_lookup_table:
-            global_lookup_table[v._convis_lookup] = {}
-        if old_key in global_lookup_table:
-            global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
-        global_lookup_table[v._convis_lookup][key] = value
-    else:
-        setattr(v,key,value)
-
-def update_convis_attributes(v,d):
-    if v is None:
+    global convis_attributes
+    d = get_convis_attribute_dict(v)
+    if only_use_lookup_table and key in convis_attributes and key not in ['__is_convis_var', 'name']:
+        d[key] = value
         return
-    global global_lookup_table
-    global only_use_lookup_table
+    if key is 'name':
+        if '_id' in d:
+            v.name = str(d['_id'])+'!'+value
+        else:
+            v.name = value
+        return
+    # if only_use_lookup_table and key not in ['__is_convis_var']:
+    #     old_key = None
+    #     convis_key = None
+    #     if not hasattr(v,'_convis_lookup'):
+    #         if hasattr(v,'name') and v.name is not None and '!' in v.name:
+    #             old_key = v.name.split('!')[0]
+    #         convis_key = len(global_lookup_table.keys())
+    #         while str(convis_key) in global_lookup_table.keys():
+    #             convis_key += 1
+    #         v.name = str(convis_key)+'!'+str(v.name)
+    #         v._convis_lookup = str(convis_key)
+    #     else:
+    #         convis_key = v._convis_lookup
+    #     if not v._convis_lookup in global_lookup_table:
+    #         global_lookup_table[convis_key] = {}
+    #     if old_key in global_lookup_table:
+    #         global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
+    #     if key is 'name':
+    #         convis_key_and_name = str(v.name).split('!')
+    #         v.name = str(convis_key)+'!'+convis_key_and_name[-1]
+    #     else:
+    #         global_lookup_table[v._convis_lookup][key] = value
+    # else:
+    setattr(v,key,value)
+
+def update_convis_attributes(v,new_d):
+    #if v is None:
+    #    return
+    #global global_lookup_table
+    #global only_use_lookup_table
     if only_use_lookup_table:
-        old_key = None
-        if not hasattr(v,'_convis_lookup'):
-            if hasattr(v,'name') and v.name is not None and '!' in v.name:
-                old_key = v.name.split('!')[0]
-            new_key = len(global_lookup_table.keys())
-            while new_key in global_lookup_table.keys():
-                new_key += 1
-            v.name = str(new_key)+'!'+str(v.name)
-            v._convis_lookup = new_key
-        if not v._convis_lookup in global_lookup_table:
-            global_lookup_table[v._convis_lookup] = {}
-        if old_key in global_lookup_table:
-            global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
-        global_lookup_table[v._convis_lookup].update(d)
+        d = get_convis_attribute_dict(v)
+        d.update(new_d)
+        # old_key = None
+        # if not hasattr(v,'_convis_lookup'):
+        #     if hasattr(v,'name') and v.name is not None and '!' in v.name:
+        #         old_key = v.name.split('!')[0]
+        #     new_key = len(global_lookup_table.keys())
+        #     while new_key in global_lookup_table.keys():
+        #         new_key += 1
+        #     v.name = str(new_key)+'!'+str(v.name)
+        #     v._convis_lookup = new_key
+        # if not v._convis_lookup in global_lookup_table:
+        #     global_lookup_table[v._convis_lookup] = {}
+        # if old_key in global_lookup_table:
+        #     global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
+        # global_lookup_table[v._convis_lookup].update(new_d)
     else:
         for (key,value) in d.items():
             setattr(v,key,value)
@@ -122,6 +173,7 @@ class Variable(object):
     __slots__ = ["_var","_info", "__weakref__"]
     def __init__(self, obj):
         object.__setattr__(self, "_var", obj)
+        #print obj, str(obj.owner)
         object.__setattr__(self, "_info", get_convis_attribute_dict(obj))
     def _as_TensorVariable(self):
         return object.__getattribute__(self, "_var")
@@ -160,6 +212,12 @@ class Variable(object):
     def __dir__(self):
         my_convis_attributes = filter(lambda x: has_convis_attribute(self, x), convis_attributes)
         return my_convis_attributes + dir(object.__getattribute__(self, "_var"))
+    @classmethod
+    def __instancecheck__(self, instance):
+        try:
+            return isinstance(instance, type(object.__getattribute__(instance, "_var")))
+        except:
+            return isinstance(instance, self)
     _special_names = [
         '__abs__', '__add__', '__and__', '__call__', '__cmp__', '__coerce__', 
         '__contains__', '__delitem__', '__delslice__', '__div__', '__divmod__', 
@@ -183,8 +241,8 @@ class Variable(object):
         def make_method(name):
             def method(self, *args, **kw):
                 ret = getattr(object.__getattribute__(self, "_var"), name)(*args, **kw)
-                if type(ret) in replaceable_theano_vars:
-                    return cls(ret)
+                #if type(ret) in replaceable_theano_vars:
+                #    return cls(ret)
                 return ret
             return method
         namespace = {}
@@ -244,14 +302,14 @@ def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
             The path will only be used from element pi onwards
     """
     o = {}
-    paths = f7([name_sanitizer(get_convis_attribute(v,'path')[pi].name) for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
+    paths = f7([name_sanitizer(get_convis_attribute(get_convis_attribute(v,'path')[pi],'name')) for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
     leaves = f7([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
     for p in paths:
         o.update(**{p: create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path') 
                                                                 and len(get_convis_attribute(v,'path')) > pi 
-                                                                and name_sanitizer(get_convis_attribute(v,'path')[pi].name) == p], pi+1)})
+                                                                and name_sanitizer(get_convis_attribute(get_convis_attribute(v,'path')[pi],'name')) == p], pi+1)})
     for l in leaves:
-        o.update(**{name_sanitizer(l.name): l})
+        o.update(**{name_sanitizer(get_convis_attribute(l,'name')): l})
     return o
 
 def create_hierarchical_Ox(vs,pi=0):
@@ -270,7 +328,7 @@ def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
                                                         and len(get_convis_attribute(v,'path')) > pi 
                                                         and get_convis_attribute(v,'path')[pi] == p], pi+1)})
     for l in leaves:
-        o.update(**{name_sanitizer(l.name): l})
+        o.update(**{name_sanitizer(get_convis_attribute(l,'name')): l})
     return o
 
 
@@ -367,6 +425,7 @@ def override_copy(v,actually_do_it=True):
 
 # functions on theano variables
 def as_state(v,out_state=None,init=None,name=None,**kwargs):
+    get_convis_key(v)
     v.__is_convis_var = True
     set_convis_attribute(v,'variable_type','state')
     if out_state is not None:
@@ -378,6 +437,7 @@ def as_state(v,out_state=None,init=None,name=None,**kwargs):
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
+    get_convis_key(v)
     v.__is_convis_var = True
     set_convis_attribute(v,'variable_type','out_state')
     if in_state is not None:
@@ -385,46 +445,50 @@ def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
         set_convis_attribute(v,'state_in_state',in_state)
     if name is not None:
         set_convis_attribute(v,'name',name)
-    if v.name is None:
+    if get_convis_attribute(v,'name') is None:
         if in_state is not None and in_state.name is not None:
-            v.name = in_state.name+'_out_state' 
+            set_convis_attribute(v,'name',in_state.name+'_out_state')
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 
 def as_input(v,name=None,**kwargs):
+    get_convis_key(v)
     v.__is_convis_var = True
     set_convis_attribute(v,'variable_type','input')
     if name is not None:
-        v.name = name
+        set_convis_attribute(v,'name', name)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_variable(v,name=None,**kwargs):
+    get_convis_key(v)
     v.__is_convis_var = True
+    if name is not None:
+        set_convis_attribute(v,'name', name)
     if not hasattr(v,'variable_type'):
         # don't overwrite the variable type!
         set_convis_attribute(v,'variable_type','variable')
-    if name is not None:
-        v.name = name
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 def as_output(v,name=None,**kwargs):
+    get_convis_key(v)
     v.__is_convis_var = True
     if not hasattr(v,'variable_type'):
         # is the output variable type even important?
         # in any case things can be eg. parameters and also outputs, so we don't want to overwrite this!
         set_convis_attribute(v,'variable_type','output')
     if name is not None:
-        v.name = name
+        set_convis_attribute(v,'name', name)
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 
 def as_parameter(v,init=None,name=None,**kwargs):
+    get_convis_key(v)
     v.__is_convis_var = True
     set_convis_attribute(v,'variable_type','parameter')
     if init is not None:
         set_convis_attribute(v,'param_init',init)
     if name is not None:
-        v.name = name
+        set_convis_attribute(v,'name', name)
     if hasattr(v,'set_value'):
         def update(self,x=O(),force=False):
             """
@@ -447,7 +511,7 @@ def as_parameter(v,init=None,name=None,**kwargs):
                 send_dbg('param.update',str(self.name)+' was already initialized or is optimizing itself.',0)
                 return self
             # this might entail recursion when param_init calls update of other variables:
-            new_val = get_convis_attribute(self,'param_init')(create_context_O(self,update_trace=getattr(x,'update_trace',[])+[self]))
+            new_val = get_convis_attribute(self,'param_init',lambda x: x.old_value)(create_context_O(self,old_value=self.get_value(),update_trace=getattr(x,'update_trace',[])+[self]))
             #if self.name is not None and 'lambda' in self.name:
             #    print self.name, new_val
             send_dbg('param.update',str(self.name)+' updated itself from '+str(self.get_value())[:10]+' to '+str(new_val)[:10]+'.',2)
@@ -460,7 +524,9 @@ def as_parameter(v,init=None,name=None,**kwargs):
 
 
 def is_var(v):
-    return hasattr(v,'__is_convis_var')
+    return is_convis_var(v)
+def is_named_var(v):
+    return not get_convis_attribute(v,'name') is None
 def is_state(v):
     return has_convis_attribute(v,'variable_type') and get_convis_attribute(v,'variable_type') == 'state' and has_convis_attribute(v,'state_out_state')
 def is_out_state(v):
@@ -529,11 +595,16 @@ def create_context_O(var=None, **kwargs):
     if var is None:
         return O(resolution=default_resolution)(**kwargs)
     node = get_convis_attribute(var,'node')
+    model = None
+    get_config = None
+    if node is not None:
+        model = node.get_model()
+        get_config = node.get_config
     config_key = get_convis_attribute(var,'config_key','')
     if has_convis_attribute(var, 'config_key') and has_convis_attribute(var,'config_default'):
-        return O(var=var,node=node,model=node.get_model(),resolution=getattr(node.get_model(),'resolution',default_resolution),
-                 get_config=node.get_config,
-                 value_from_config=lambda: node.get_config(config_key,var.config_default),
+        return O(var=var,node=node,model=model,resolution=getattr(model,'resolution',default_resolution),
+                 get_config=get_config,
+                 value_from_config=lambda: node.get_config(config_key,get_convis_attribute(var,'config_default')),
                  value_to_config=lambda v: node.set_config(config_key,v))(**kwargs)
-    return O(var=var,node=node,model=node.get_model(),get_config=node.get_config,resolution=default_resolution,
-             value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(var.name)+'\n')))(**kwargs)
+    return O(var=var,node=node,model=model,get_config=get_config,resolution=default_resolution,
+             value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(get_convis_attribute(var,'name'))+'\n')))(**kwargs)

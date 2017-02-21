@@ -5,9 +5,27 @@
 """
 
 def save_name(n):
+    """
+        Makes a name save to be used as an attribute.
+
+        When the object supplied has a `name` attribute,
+        it is used instead. If this `name` attribute contains
+        an `!`, only the letters after the last `!` will be used.
+    """
     if type(n) != str:
         if getattr(n,'name',None) is not None:
             n = n.name
+            if '!' in n:
+                n = n.split('!')
+                if len(n[-1]) > 0:
+                    # something!name -> name
+                    n = n[-1]
+                elif len(n) > 1:
+                    # something! -> something
+                    n = n[-2]
+                else:
+                    # n.name == '!'?
+                    n = '_'
         else:
             try:
                 global var_name_counter
@@ -16,7 +34,7 @@ def save_name(n):
                 var_name_counter += 1
             except:
                 raise Exception('save_name got a '+str(type(n))+' instead of a string or object with name attribute.')
-    n = n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace('!', '_')
+    n = n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace(':', '_').replace('<','lt').replace('>','gt').replace('=','eq').replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace('!', '_')
     if n[0] in '0123456789':
         n = 'n'+n
     return n

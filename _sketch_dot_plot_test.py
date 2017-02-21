@@ -29,7 +29,7 @@ Also the original variable is referenced.
 """
 import convis
 from convis.o import save_name
-from convis.variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, full_path
+from convis.variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, full_path, is_var, is_named_var
 config = convis.retina.RetinaConfiguration()
 retina = convis.retina.Retina(config)
 retina.outputs.append(retina.opl.graph)
@@ -39,6 +39,47 @@ def is_scan_op(n):
     if hasattr(n,'owner') and hasattr(n.owner,'op') and type(n.owner.op) == convis.theano.scan_module.scan_op.Scan:
         return True
     return False
+
+ops_as_node ={
+    'Elemwise{switch,no_inplace}': 'if %s then %s else %s',
+    'Elemwise{lt,no_inplace}':'(%s < %s)',
+    'Elemwise{gt,no_inplace}':'(%s > %s)',    
+    'Elemwise{int_div,no_inplace}': '%s / %s',
+    'Elemwise{true_div,no_inplace}': '%s / %s',
+    'Elemwise{pow,no_inplace}':'%s**(%s)',
+    'Elemwise{sub,no_inplace}':'(%s - %s)',
+    'Elemwise{mul,no_inplace}':'%s * %s',
+    'Elemwise{add,no_inplace}':'(%s + %s)',
+    'Elemwise{exp,no_inplace}':'exp(%s)',
+    'DimShuffle': '%s',
+    'Subtensor': '%s',
+    'AbstractConv2d': 'conv2d(%s, %s)',
+    'ConvOp': 'conv3d(%s, %s)'
+}
+
+def build_formula(node,ignore_name=False,rec_counter=10):
+    if rec_counter < 0:
+        return '...'
+    try:
+        return str(node.value.tolist())
+    except:
+        pass
+    if is_named_var(node) and not ignore_name:
+        return get_convis_attribute(node,'html_name',get_convis_attribute(node,'name'))
+    op = ''
+    owner_op = node.owner.op
+    if hasattr(owner_op,'name') and owner_op.name in ops_as_node.keys():
+        op = ops_as_node[owner_op.name]
+    try:
+       op = ops_as_node[owner_op.__class__.__name__]
+    except:
+        pass
+    inputs = []
+    for i in node.owner.inputs:
+        inputs.append(build_formula(i,False,rec_counter-1))
+    if op == '':
+        return ','.join(inputs)
+    return op%tuple(inputs[:(len(op.split('%s'))-1)])
 
 var_counter = 1
 # def full_path(v):
@@ -58,10 +99,19 @@ var_counter = 1
 #     return '_'.join([save_name(p.name) for p in v.path])
 
 def format_node(v):
+    try:
+        form = build_formula(v,True,20)
+    except:
+        form = ''
+        pass
     if has_convis_attribute(v,'html_name') and get_convis_attribute(v,'html_name') is not None:
+        if len(form) < 60 and form != '':
+            return full_path(v)+" [label=<"+get_convis_attribute(v,'html_name')+" = "+form+">];"
         return full_path(v)+" [label=<"+get_convis_attribute(v,'html_name')+">];"
     if has_convis_attribute(v,'name') and get_convis_attribute(v,'name') is not None:
-        return full_path(v)+" [label=\""+get_convis_attribute(v,'name')+"\"];"
+        if len(form) < 60 and form != '':
+            return full_path(v)+" [label=\""+save_name(get_convis_attribute(v,'name'))+" = "+form+"\"];"
+        return full_path(v)+" [label=\""+save_name(get_convis_attribute(v,'name'))+"\"];"
     return full_path(v)+";"
 
 def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[], 
@@ -80,10 +130,10 @@ def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[],
         if node in nodes_explored:
             continue
         nodes_explored.append([node,path])
-        if hasattr(node,'__is_convis_var') or is_scan_op(node):
+        if is_named_var(node) or is_scan_op(node):
             final_nodes_explored.append([node,path])
         if hasattr(node,'owner') and node.owner is not None and len(node.owner.inputs) > 0 and type(node.owner.op) not in ignored_ops:
-            if hasattr(node,'__is_convis_var') or is_scan_op(node):
+            if is_named_var(node) or is_scan_op(node):
                 new_path = path+[node]
             else:
                 new_path = path
@@ -145,10 +195,10 @@ def explore_to_all_nodes_iter(apply_node,depth=None,my_node=None,ignore=[], all_
     while len(nodes_to_explore) > 0:
         node,path = nodes_to_explore.pop()
         nodes_explored.append([node,path])
-        if all_nodes or (hasattr(node,'__is_convis_var') or is_scan_op(node)):
+        if all_nodes or (is_var(node) or is_scan_op(node)):
             final_nodes_explored.append([node,path])
         if hasattr(node,'owner') and node.owner is not None and len(node.owner.inputs) > 0 and type(node.owner.op) not in ignored_ops:
-            if all_nodes or (hasattr(node,'__is_convis_var') or is_scan_op(node)):
+            if all_nodes or (is_var(node) or is_scan_op(node)):
                 new_path = path+[node]
             else:
                 new_path = path
@@ -169,7 +219,7 @@ def explore_to_all_nodes_iter(apply_node,depth=None,my_node=None,ignore=[], all_
     return final_nodes_explored
 
 options = {
-    'variable_style': 'shape=ellipse,style=filled,color=black,fillcolor=white',
+    'variable_style': 'shape=box,style=filled,color=black,fillcolor=white',
     'parameter_style': "shape=box,style=\"\",color=white",
     'state_style': "shape=rpromoter,style=filled,color=black,fillcolor=yellow",
     'out_state_style': "shape=lpromoter,color=black,fillcolor=yellow",
@@ -237,7 +287,7 @@ def recursive_subgraphing(d,depth=0):
                 dot += "        "+full_path(get_convis_attribute(v,'state_out_state'))+" ["+options['out_state_style']+"];\n"
         dot += "        }\n"
         dot += "        node ["+options['output_style']+"];\n" # outputs
-        dot += "        { rank = max; \n"
+        dot += "        { rank = same; \n"
         for v in boxes['output']:
             dot += "        "+format_node(v)+"\n"
         dot += "        }\n"            
@@ -319,8 +369,11 @@ for c in connections:
         fmt['penwidth'] = '4.0';
         fmt['minlen'] = '3.0';
     if convis.base.is_parameter(c[1]):
+        fmt['penwidth'] = '2.0';
         fmt['style'] = 'solid';
+        fmt['minlen'] = '1.0';
         fmt['color'] = 'blue';
+        fmt['constraint'] = 'false';
     if has_convis_attribute(c[0],'state_out_state') and convis.base.is_out_state(c[1]) and get_convis_attribute(c[0],'state_out_state') == c[1]:
         fmt['style'] = 'dashed';
         fmt['color'] = 'yellow';
@@ -386,7 +439,7 @@ with open('/home/jacob/Projects/convis/dot_test_'+str(i)+'.dot','w') as f:
     f.write(dot)
 import os
 os.system('dot /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'.png')
-os.system('neato /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_neato.png')
-os.system('patchwork /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_patchwork.png')
-os.system('osage /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_osage.png')
-os.system('twopi /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_twopi.png')
+#os.system('neato /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_neato.png')
+#os.system('patchwork /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_patchwork.png')
+#os.system('osage /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_osage.png')
+#os.system('twopi /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_twopi.png')

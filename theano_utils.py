@@ -8,7 +8,7 @@ from theano.tensor.signal.conv import conv2d
 import uuid
 from . import retina_base
 from exceptions import NotImplementedError
-from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, Variable
+from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, Variable, is_var
 
 def f7(seq):
     """ This function is removing duplicates from a list while keeping the order """
@@ -84,46 +84,46 @@ def conv3(inp,kernel):
 
 ### helper functions on theano variable graphs
 
+# recursive graph traversal is deprecated
+# def get_inputs(apply_node):
+#     """ get variables that have no owner """
+#     if apply_node is None or not hasattr(apply_node,'owner'):
+#         return []
+#     if apply_node.owner is None:
+#         return [apply_node]
+#     inputs = apply_node.owner.inputs
+#     parent_inputs = []
+#     for i in inputs:
+#         if hasattr(i,'owner'):
+#             parent_inputs += get_inputs(i)
+#     return parent_inputs
 
-def get_inputs(apply_node):
-    """ get variables that have no owner """
-    if apply_node is None or not hasattr(apply_node,'owner'):
-        return []
-    if apply_node.owner is None:
-        return [apply_node]
-    inputs = apply_node.owner.inputs
-    parent_inputs = []
-    for i in inputs:
-        if hasattr(i,'owner'):
-            parent_inputs += get_inputs(i)
-    return parent_inputs
+# def get_named_variables(apply_node):
+#     """ get variables that have a name """
+#     if apply_node is None or not hasattr(apply_node,'owner'):
+#         return []
+#     if apply_node.name is None:
+#         parent_inputs = []
+#     else:
+#         parent_inputs = [apply_node]
+#     if apply_node.owner is None:
+#         return parent_inputs
+#     inputs = apply_node.owner.inputs
+#     for i in inputs:
+#         parent_inputs += get_named_variables(i)
+#     return parent_inputs
 
-def get_named_variables(apply_node):
-    """ get variables that have a name """
-    if apply_node is None or not hasattr(apply_node,'owner'):
-        return []
-    if apply_node.name is None:
-        parent_inputs = []
-    else:
-        parent_inputs = [apply_node]
-    if apply_node.owner is None:
-        return parent_inputs
-    inputs = apply_node.owner.inputs
-    for i in inputs:
-        parent_inputs += get_named_variables(i)
-    return parent_inputs
-
-def get_all_variables(apply_node):
-    """ get all variables that are parents of the specific graph node """
-    if apply_node is None or not hasattr(apply_node,'owner'):
-        return []
-    parent_inputs = [apply_node]
-    if apply_node.owner is None:
-        return parent_inputs
-    inputs = apply_node.owner.inputs
-    for i in inputs:
-        parent_inputs += get_all_variables(i)
-    return parent_inputs
+# def get_all_variables(apply_node):
+#     """ get all variables that are parents of the specific graph node """
+#     if apply_node is None or not hasattr(apply_node,'owner'):
+#         return []
+#     parent_inputs = [apply_node]
+#     if apply_node.owner is None:
+#         return parent_inputs
+#     inputs = apply_node.owner.inputs
+#     for i in inputs:
+#         parent_inputs += get_all_variables(i)
+#     return parent_inputs
 
 def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=None):
     """ get variables that have a name """
@@ -184,7 +184,7 @@ def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,i
 
 def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=Variable):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), 
+    return filter(lambda x: get_convis_attribute(x,'name',None) is not None and is_var(x), 
                     get_variables_iter(apply_node,
                         depth=depth,
                         ignore=ignore,
@@ -193,7 +193,7 @@ def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,i
                         factory=factory))
 def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=Variable):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), 
+    return filter(lambda x: get_convis_attribute(x,'name',None) is not None and is_var(x), 
                     get_input_variables_iter(apply_node,
                         depth=depth,
                         ignore=ignore,

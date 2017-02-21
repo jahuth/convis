@@ -52,11 +52,11 @@ class GraphWrapper(object):
         self.graph = graph
         if has_convis_attribute(self.graph,'root_of'):
             return get_convis_attribute(self.graph,'root_of')
-        if not hasattr(self.graph,'__is_convis_var'):
+        if not is_var(self.graph):
             self.graph = as_output(T.as_tensor_variable(self.graph))
-        if self.graph.name is None:
+        if get_convis_attribute(self.graph,'name') is None:
             # we only replace the name if it is necessary
-            self.graph.name = 'output'
+            set_convis_attribute(self.graph,'name','output')
         set_convis_attribute(self.graph,'root_of', self)
         self.name = name
         self.ignore = ignore
@@ -118,8 +118,8 @@ class GraphWrapper(object):
             my_scan_vars = []
         scan_ops = {}
         for i,v in enumerate(my_scan_vars):
-            if v.name is None:
-                v.name = 'scan_output_'+str(i)
+            if get_convis_attribute(v,'name') is None:
+                set_convis_attribute(v,'name','scan_output_'+str(i))
             as_output(v)
         for v in my_named_vars + [v for v in my_scan_vars if v.owner.op != self.scan_op]:
             if not get_convis_attribute(v,'path',None) is None:
@@ -129,7 +129,7 @@ class GraphWrapper(object):
                 set_convis_attribute(v,'full_name', self.name+'.'+get_convis_attribute(v,'full_name',''))
                 set_convis_attribute(v,'path', [self] + get_convis_attribute(v,'path',[v]))
             else:
-                set_convis_attribute(v,'full_name', self.name+'.'+get_convis_attribute(v,'name',''))
+                set_convis_attribute(v,'full_name', self.name+'.'+str(get_convis_attribute(v,'name','')))
                 set_convis_attribute(v,'path', [self, v])
             global do_debug
             if do_debug:
@@ -140,7 +140,7 @@ class GraphWrapper(object):
             else:
                 set_convis_attribute(v,'node', self)
             if not get_convis_attribute(v,'simple_name', None) is None:
-                set_convis_attribute(v,'simple_name', v.name)
+                set_convis_attribute(v,'simple_name', get_convis_attribute(v,'name'))
             #v.node = self
     def _as_TensorVariable(self):
         """
@@ -170,8 +170,8 @@ class GraphWrapper(object):
     def __repr__(self):
         if hasattr(self, 'node_description') and callable(self.node_description):
             # we can provide a dynamic description
-            return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description())
-        return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description)
+            return '['+str(self.node_type)+'] ' + getattr(self,'name','??') + ': ' + str(self.node_description())
+        return '['+str(self.node_type)+'] ' + getattr(self,'name','??') + ': ' + str(self.node_description)
     def replace(self,a,b):
         for o in self.graph:
             theano_utils._replace(o,b,a)
@@ -203,7 +203,7 @@ class GraphWrapper(object):
             else:
                 raise Exception('Input "'+str(input)+'"" found in '+getattr(self,'name','[unnamed node]')+' inputs!')
         if do_debug:
-            print 'connecting',other.name,'to',self.name,''
+            print 'connecting',other.name,'to',getattr(self,'name','??'),''
         v = other
         if hasattr(other,'_as_TensorVariable'):
             v = other._as_TensorVariable()
@@ -268,9 +268,9 @@ class N(GraphWrapper):
         if config is not None:
             self.set_config(config)
         if self.config is None:
-            raise Exception('No config for node '+str(self.name)+'! Use .set_config({}) before calling super constructor!')
+            raise Exception('No config for node '+str(getattr(self,'name','??'))+'! Use .set_config({}) before calling super constructor!')
         if not hasattr(self,'default_input'):
-            raise Exception('No input defined for node '+str(self.name)+'! Use .create_input(...) before calling super constructor!')
+            raise Exception('No input defined for node '+str(getattr(self,'name','??'))+'! Use .create_input(...) before calling super constructor!')
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
     def create_input(self,n=1,name='input',sep='_'):
         if n == 1:
@@ -367,7 +367,7 @@ class Output(object):
         if keys is not None:
             self._out_dict = OrderedDict(zip(keys,outs))
             self._out_dict_by_full_names = OrderedDict([(full_path(k),o) for (k,o) in zip(keys,outs)])
-            self._out_dict_by_short_names = OrderedDict([(save_name(k.name),o) for (k,o) in zip(keys,outs) if hasattr(k,'name') and type(k.name) is str])
+            self._out_dict_by_short_names = OrderedDict([(save_name(get_convis_attribute(k,'name')),o) for (k,o) in zip(keys,outs) if has_convis_attribute(k,'name') and type(get_convis_attribute(k,'name')) is str])
         self.__dict__.update(self._out_dict_by_full_names)
     def __len__(self):
         return len(self._outs)
@@ -420,7 +420,7 @@ class M(object):
             a = a.graph
         if getattr(a,'name',None) is None and name is not None:
             a = as_output(a)
-            a.name = name
+            set_convis_attribute(a, 'name', name)
         self.outputs.append(a)
     def in_out(self,a,b):
         #self.map(b.var('input'),a.var('output'))
@@ -611,7 +611,7 @@ class M(object):
         tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
         v = as_input(tp(name),name=name)
         er = error_func(variable,v)
-        er.name='output'
+        set_convis_attribute(er,'name','output')
         error_node = N(er,model=self,name='ErrorNode')
         e = self.outputs.append(error_node.output)
         variable.__dict__['error_functions'] = variable.__dict__.get('error_functions',[])
@@ -620,7 +620,7 @@ class M(object):
     def add_update(self,variable,error_term,opt_func = lambda x,y: x+as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y):
         variable.__dict__['updates'] = variable.__dict__.get('error_functions',[])
         g = T.grad(error_term,variable)
-        g.name = 'gradient'
+        set_convis_attribute(g,'name','gradient')
         variable.__dict__['updates'].append(opt_func(variable,g))
     def add_gradient_descent(self,v_to_change,v_to_target=None):
         if v_to_target is None:
