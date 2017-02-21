@@ -28,7 +28,8 @@ Also the original variable is referenced.
 
 """
 import convis
-from convis.variable_describe import save_name, full_path
+from convis.o import save_name
+from convis.variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, full_path
 config = convis.retina.RetinaConfiguration()
 retina = convis.retina.Retina(config)
 retina.outputs.append(retina.opl.graph)
@@ -40,27 +41,27 @@ def is_scan_op(n):
     return False
 
 var_counter = 1
-def full_path(v):
-    if type(v) == str:
-        return save_name(v)
-    if hasattr(v,'copied_from'):
-        return full_path(v.copied_from)
-    if not hasattr(v,'path') or v.path is None:
-        if not hasattr(v,'name') or v.name is None:
-            #if is_scan_op(v):
-            #    return 'scan'
-            global var_counter
-            var_counter += 1
-            v.name = 'v'+str(var_counter)
-            return 'v'+str(var_counter)
-        return save_name(v.name)
-    return '_'.join([save_name(p.name) for p in v.path])
+# def full_path(v):
+#     if type(v) == str:
+#         return save_name(v)
+#     if hasattr(v,'copied_from'):
+#         return full_path(v.copied_from)
+#     if not hasattr(v,'path') or v.path is None:
+#         if not hasattr(v,'name') or v.name is None:
+#             #if is_scan_op(v):
+#             #    return 'scan'
+#             global var_counter
+#             var_counter += 1
+#             v.name = 'v'+str(var_counter)
+#             return 'v'+str(var_counter)
+#         return save_name(v.name)
+#     return '_'.join([save_name(p.name) for p in v.path])
 
 def format_node(v):
-    if hasattr(v,'html_name') and v.html_name is not None:
-        return full_path(v)+" [label=<"+v.html_name+">];"
-    if hasattr(v,'name') and v.name is not None:
-        return full_path(v)+" [label=\""+v.name+"\"];"
+    if has_convis_attribute(v,'html_name') and get_convis_attribute(v,'html_name') is not None:
+        return full_path(v)+" [label=<"+get_convis_attribute(v,'html_name')+">];"
+    if has_convis_attribute(v,'name') and get_convis_attribute(v,'name') is not None:
+        return full_path(v)+" [label=\""+get_convis_attribute(v,'name')+"\"];"
     return full_path(v)+";"
 
 def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[], 
@@ -90,8 +91,8 @@ def explore_to_edge_of_node_iter(apply_node,depth=None,my_node=None,ignore=[],
             if node in scan_outputs.keys():
                 nodes_to_explore.append((scan_outputs[node],new_path))
                 del scan_outputs[node]
-            if hasattr(node,'copied_from'):
-                nodes_to_explore.append((node.copied_from,new_path))
+            if has_convis_attribute(node,'copied_from'):
+                nodes_to_explore.append((get_convis_attribute(node,'copied_from'),new_path))
             if do_scan_exploration:
                 if not is_scan_op(node):
                     nodes_to_explore.extend([(i,new_path) for i in node.owner.inputs 
@@ -207,8 +208,8 @@ def recursive_subgraphing(d,depth=0):
             dot += "        label = \""+subgraph_name+"\";\n"
         boxes = {'input':[],'output':[],'state':[],'parameter':[],'variable':[]}
         for k,v in n.items():
-            if hasattr(v,'variable_type') and v.variable_type in boxes.keys():# and not hasattr(v,'copied_from'):
-                boxes[v.variable_type].append(v)
+            if has_convis_attribute(v,'variable_type') and get_convis_attribute(v,'variable_type') in boxes.keys():# and not hasattr(v,'copied_from'):
+                boxes[get_convis_attribute(v,'variable_type')].append(v)
             else:
                 if type(v) == dict:
                     recursive_subgraphing({k: v},depth=depth+1)
@@ -232,8 +233,8 @@ def recursive_subgraphing(d,depth=0):
         dot += "        node [];\n" # out_states
         dot += "        { rank = same; \n"
         for k,v in n.items():
-            if hasattr(v,'state_out_state'):
-                dot += "        "+full_path(v.state_out_state)+" ["+options['out_state_style']+"];\n"
+            if has_convis_attribute(v,'state_out_state'):
+                dot += "        "+full_path(get_convis_attribute(v,'state_out_state'))+" ["+options['out_state_style']+"];\n"
         dot += "        }\n"
         dot += "        node ["+options['output_style']+"];\n" # outputs
         dot += "        { rank = max; \n"
@@ -261,7 +262,7 @@ def recursive_subgraphing(d,depth=0):
         #paths = explore_to_edge_of_node_iter(subgraph.graph,depth=20000)
         ## this second option only includes the nodes that are part of the global tree
         for k,v in n.items():
-            if hasattr(v,'variable_type'):
+            if has_convis_attribute(v,'variable_type'):
                 paths = explore_to_edge_of_node_iter(v,depth=20000)
                 for node,p in paths:
                     if len(p) > 0:
@@ -269,14 +270,14 @@ def recursive_subgraphing(d,depth=0):
                             connections.append((p[i],p[i+1], ''))
                         connections.append((p[-1],node, ''))  
         for v in boxes['state']:
-            if hasattr(v,'state_out_state'):
-                paths = explore_to_edge_of_node_iter(v.state_out_state,depth=1000)
+            if has_convis_attribute(v,'state_out_state'):
+                paths = explore_to_edge_of_node_iter(get_convis_attribute(v,'state_out_state'),depth=1000)
                 for node,p in paths:
                     if len(p) > 0:
                         for i in range(len(p)-1):
                             connections.append((p[i],p[i+1], ''))
                         connections.append((p[-1],node, ''))
-                connections.append((v,v.state_out_state, ''))
+                connections.append((v,get_convis_attribute(v,'state_out_state'), ''))
 
         dot += "    }\n"
 recursive_subgraphing(all_dict)
@@ -290,21 +291,25 @@ if False:
                     connections.append((p[i],p[i+1], ' [color=black]'))
                 connections.append((p[-1],full_path(node), ' [color=black]'))
     for v in all_vars:
-        if hasattr(v,'state_out_state'):
-            paths = explore_to_edge_of_node_iter(v.state_out_state,depth=1000)
-            print v.state_out_state, full_path(v.state_out_state)
+        if has_convis_attribute(v,'state_out_state'):
+            paths = explore_to_edge_of_node_iter(get_convis_attribute(v,'state_out_state'),depth=1000)
+            print v.state_out_state, full_path(get_convis_attribute(v,'state_out_state'))
             for node,p in paths:
                 if len(p) > 0:
                     for i in range(len(p)-1):
                         connections.append((p[i],p[i+1], ' [color=black]'))
                     connections.append((p[-1],full_path(node), ' [color=black]'))
-            connections.append((full_path(v),full_path(v.state_out_state), ' [color=red,style=dashed,penwidth=2.0,constraint=false]'))
+            connections.append((full_path(v),full_path(get_convis_attribute(v,'state_out_state')), ' [color=red,style=dashed,penwidth=2.0,constraint=false]'))
 connections = [(c[0],c[1]) for c in connections]
 connections = convis.f7(connections)
 print len(connections)
 for c in connections:
     fmt = {};
-    if hasattr(c[1],'node') and hasattr(c[0],'node') and c[1].node != c[0].node and len(c[0].path) == len(c[1].path)  and len(c[0].path) <= 2:
+    if (has_convis_attribute(c[1],'node') 
+        and has_convis_attribute(c[0],'node') 
+        and get_convis_attribute(c[1],'node') != get_convis_attribute(c[0],'node') 
+        and len(get_convis_attribute(c[0],'path')) == len(get_convis_attribute(c[1],'path'))
+        and len(get_convis_attribute(c[0],'path')) <= 2):
         fmt['color'] = 'black';
         fmt['penwidth'] = '4.0';
         fmt['minlen'] = '5.0';
@@ -316,7 +321,7 @@ for c in connections:
     if convis.base.is_parameter(c[1]):
         fmt['style'] = 'solid';
         fmt['color'] = 'blue';
-    if hasattr(c[0],'state_out_state') and convis.base.is_out_state(c[1]):
+    if has_convis_attribute(c[0],'state_out_state') and convis.base.is_out_state(c[1]) and get_convis_attribute(c[0],'state_out_state') == c[1]:
         fmt['style'] = 'dashed';
         fmt['color'] = 'yellow';
         fmt['penwidth'] = '2.0';
@@ -336,8 +341,8 @@ if False:
         fmt['color'] = 'green';
         if getattr(n,'name','') is None:
             continue
-        if hasattr(n,'copied_from'):
-            p1 = full_path(n.copied_from)
+        if has_convis_attribute(n,'copied_from'):
+            p1 = full_path(get_convis_attribute(n,'copied_from'))
             p2 = full_path(n)
             fmt_str = '['+(', '.join([k+'='+v for (k,v) in fmt.items()]))+']'
             dot += "    "+p1+" -> "+p2+" "+fmt_str+";\n"
@@ -366,7 +371,7 @@ for i,v in enumerate(retina.outputs):
 
 # finding free inputs
 for v in all_vars:
-    if hasattr(v,'variable_type') and v.variable_type == 'input':
+    if has_convis_attribute(v,'variable_type') and get_convis_attribute(v,'variable_type') == 'input':
         dot += "    global_input -> "+full_path(v)+";\n"
 
 
@@ -376,11 +381,12 @@ dot += """
 
 print '-'*40
 print dot[:1000]
-with open('/home/jacob/Projects/convis/dot_test_3.dot','w') as f:
+i = 10
+with open('/home/jacob/Projects/convis/dot_test_'+str(i)+'.dot','w') as f:
     f.write(dot)
 import os
-os.system('dot /home/jacob/Projects/convis/dot_test_3.dot -Tpng -o /home/jacob/Projects/convis/dot_test_3.png')
-os.system('neato /home/jacob/Projects/convis/dot_test_3.dot -Tpng -o /home/jacob/Projects/convis/dot_test_3_neato.png')
-os.system('patchwork /home/jacob/Projects/convis/dot_test_3.dot -Tpng -o /home/jacob/Projects/convis/dot_test_3_patchwork.png')
-os.system('osage /home/jacob/Projects/convis/dot_test_3.dot -Tpng -o /home/jacob/Projects/convis/dot_test_3_osage.png')
-os.system('twopi /home/jacob/Projects/convis/dot_test_3.dot -Tpng -o /home/jacob/Projects/convis/dot_test_3_twopi.png')
+os.system('dot /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'.png')
+os.system('neato /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_neato.png')
+os.system('patchwork /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_patchwork.png')
+os.system('osage /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_osage.png')
+os.system('twopi /home/jacob/Projects/convis/dot_test_'+str(i)+'.dot -Tpng -o /home/jacob/Projects/convis/dot_test_'+str(i)+'_twopi.png')

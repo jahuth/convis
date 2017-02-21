@@ -58,7 +58,6 @@ class GraphWrapper(object):
             # we only replace the name if it is necessary
             self.graph.name = 'output'
         set_convis_attribute(self.graph,'root_of', self)
-        #self.outputs = [self.graph]
         self.name = name
         self.ignore = ignore
         self.scan_op = scan_op
@@ -67,10 +66,6 @@ class GraphWrapper(object):
         if self.follow_scan and scan_op is None:
             self.wrap_scans(self.graph)
         self.label_variables(self.graph)
-        #self.label_variables(self.scan_outputs,follow_scan=False) # just labeling these to prevent infinite recursion
-        #self.inputs = theano_utils.get_input_variables_iter(self.graph)
-        #if self.m is not None:
-        #    self.m.add(self)
     def get_model(self):
         if hasattr(self,'model'):
             return self.model
@@ -155,12 +150,6 @@ class GraphWrapper(object):
             Note from theano source: # TODO: pass name and ndim arguments
         """
         return self.graph
-    #@property
-    #def inputs(self):
-    #    return create_hierarchical_Ox(filter(is_input,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
-    #@property
-    #def outputs(self):
-    #    return [self.graph]
     def filter_variables(self,filter_func=is_input):
         return create_hierarchical_Ox(filter(filter_func,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
@@ -183,10 +172,7 @@ class GraphWrapper(object):
             # we can provide a dynamic description
             return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description())
         return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description)
-    def map_state(self,in_state,out_state,**kwargs):
-        as_state(in_state,out_state=out_state,**kwargsW)
     def replace(self,a,b):
-        """todo: decide of whether to do this here or in node or model (or different alltogether)"""
         for o in self.graph:
             theano_utils._replace(o,b,a)
         # replace in out states
@@ -269,7 +255,6 @@ class GraphWrapper(object):
         return self.graph // other
 
 class N(GraphWrapper):
-    #parameters = []
     states = {}
     state_initializers = {}
     inputs = OrderedDict()
@@ -278,20 +263,10 @@ class N(GraphWrapper):
             name = str(uuid.uuid4())
         self.m = m
         self.parent = parent
-        # this input can be used in the graph or simply ignored. However, then automatic connections no longer work!
-        #self.graph = T.as_tensor_variable(graph)
-        #if self.graph.name is None:
-        #    self.graph.name = 'output'
-        #self.outputs = [self.graph]
-        #self.name = name
-        #self.set_name(name)
-        #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
         self.node_description = ''
         if config is not None:
             self.set_config(config)
-        if self.m is not None:
-            self.m.add(self)
         if self.config is None:
             raise Exception('No config for node '+str(self.name)+'! Use .set_config({}) before calling super constructor!')
         if not hasattr(self,'default_input'):
@@ -315,58 +290,12 @@ class N(GraphWrapper):
             return self.inputs
         else:
             raise Exception('Argument not understood. Options are: an int (either 1 for a single input or >1 for more) or a list of names for the inputs.')
-    def get_parents(self):
-        p = []
-        if self.parent is not None:
-            p.append(self.parent)
-            if hasattr(self.parent,'get_parents'):
-                p.extend(self.parent.get_parents())
-        return p
-    def set_name(self,name):
-        pass
-        #self.name = name
-        #my_named_vars = theano_utils.get_named_variables_iter(self.graph)
-        #for v in my_named_vars:
-        #    if hasattr(v,'node') and v.node != self:
-        #        continue
-        #        #raise Exception('Variable registered twice!')
-        #    if not hasattr(v,'simple_name') or v.simple_name is None:
-        #        v.simple_name = v.name
-        #    v.node = self
-        #    v.name = self.name+'_'+v.simple_name
-        #self.variables = dict([(v.simple_name,v) for v in my_named_vars])
-    def get_variables(self):
-        my_named_vars = theano_utils.get_named_variables_iter(self.graph)
-        return dict([(v,v) for v in my_named_vars])
-    def get_input_variables(self):
-        return dict([(v,self) for v in theano_utils.get_input_variables_iter(self.graph)])
-    def get_output_variables(self):
-        return {self.graph: self}
-    def set_m(self,m):
-        self.m = m
-        return self
-    def var(self,v):
-        raise Exception('\'%s\' not a variable of this node'%v)
-    def map_state(self,in_state,out_state,**kwargs):
-        self.states[in_state] = out_state
-        as_state(in_state,out_state=out_state,**kwargsW)
-    def replace(self,a,b):
-        theano_utils._replace(self.graph,b,a)
-        # replace in out states
-        for o in [v.state_out_state for v in filter(is_state,self.get_variables())]:
-            theano_utils._replace(o,b,a)
     def get_config(self,key,default=None,type_cast=None):
         if type_cast is not None:
             return type_cast(self.get_config(key,default))
         if not hasattr(self,'config'):
             return default
         return self.config.get(key,default)
-        #def set_config(self,key,v=None):
-        #if v is None and hasattr(key,'get'):
-        #    super(N, self).set_config(key)
-        #else:
-        #    self.config[key] = v
-        #notify model? self.model.set_config(self,key,v)
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         if 'config_key' in kwargs.keys() and 'config_default' in kwargs.keys():
             return shared_parameter(f,
@@ -380,34 +309,7 @@ class N(GraphWrapper):
     def shape(self,input_shape):
         # unless this node does something special, the shape of the output should be identical to the input
         return input_shape
-    def __add__(self,other):
-        raise Exception('Not implemented!')
-        ##
-        # to get this working, I need to have a sure way to clone nodes with all the associated info in the graph.
-        # after that this function should merge two nodes and return a new one
-        # this means that it's not really for connecting two nodes that we already have in a model, but rather replacing them
-        # with a new one.
-        return N()
 
-class _Vars(O):
-    def __init__(self,model,**kwargs):
-        self._model = model
-        super(_Vars,self).__init__(**kwargs)
-        vars = [v for v in self._model.get_variables()  if v.name is not None]
-        nodes = f7([v.node for v in vars if hasattr(v,'node')])
-        for n in nodes:
-            self.__dict__[save_name(n.name)] = O(**dict([(save_name(k.simple_name),k) for k in vars if has_convis_attribute(k,'node') and get_convis_attribute(k,'node') == n]))
-        self.__dict__['_all'] = O(**dict([(full_path(k),k) for k in vars if has_convis_attribute(k,'path')]))
-        self.__dict__['_search'] = _Search(**dict([(full_path(k),k) for k in vars if has_convis_attribute(k,'path')]))
-
-class _Configuration(O):
-    def __init__(self,model,**kwargs):
-        self._model = model
-        super(_Configuration,self).__init__(**kwargs)
-        vars = [v for v in self._model.get_variables() if is_parameter(v)]
-        nodes = f7([v.node for v in vars if hasattr(v,'node')])
-        for n in nodes:
-            self.__dict__[save_name(n.name)] = O(**dict([(str(k.simple_name),k) for k in vars  if hasattr(k,'node') and k.node == n]))
 
 def connect(list_of_lists):
     """
@@ -489,28 +391,13 @@ class Output(object):
 class M(object):
     def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, **kwargs):
         self.debug = False
-        self.nodes = []
-        self.var_outputs = {}
         self.mappings = {}
         self.givens = {}
         self.outputs = []
         self.config = {}
-        self.module_graph = []
         self.resolution = ResolutionInfo(pixel_per_degree,steps_per_second)
         self.size_in_degree = size
         self.__dict__.update(kwargs)
-    @property
-    def shape(self):
-        return tuple([np.newaxis]+[int(self.degree_to_pixel(x)) for x in self.size_in_degree])
-    @shape.setter
-    def shape(self,new_shape):
-        self.size_in_degree = tuple(self.pixel_to_degree(x) for x in new_shape[1:])
-    @property
-    def c(self):
-        return _Configuration(self)
-    @property
-    def v(self):
-        return _Vars(self)
     @property
     def parameters(self):
         return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
@@ -528,33 +415,6 @@ class M(object):
         return self.resolution.seconds_to_steps(t)
     def steps_to_seconds(self,steps):
         return self.resolution.steps_to_seconds(steps)
-    def add(self,n):
-        if n.name in map(lambda x: x.name, self.nodes):
-            pass#raise Exception('Node named %s already exists!'%n.name)
-        self.nodes.append(n.set_m(self))
-        self.var_outputs.update(n.get_output_variables())
-    def __contains__(self,item):
-        raise Exception('Will be reimplemented!')
-    def map(self,a,b):
-        raise Exception('Will be reimplemented!')
-    def out(self,a):
-        """ 
-            Will add a variable as an output.
-
-            If this function is provided with a node, it tries to add an attribute `output`,
-            then add a list in the attribute `outputs`, then a variable named `output`.
-        """
-        if has_convis_attribute(a,'node'):
-            self.add(get_convis_attribute(a,'node'))
-            self.outputs.append(a)
-        else:
-            self.add(a)
-            if hasattr(a,'output'):
-                self.outputs.append(getattr(a,'output'))
-            elif hasattr(a,'outputs'):
-                self.outputs.extend(getattr(a,'outputs'))
-            else:
-                self.outputs.append(a.var('output'))
     def add_output(self,a,name=None):
         if hasattr(a,'graph'):
             a = a.graph
@@ -585,35 +445,12 @@ class M(object):
             theano_utils._replace(get_convis_attribute(b,'node').output,b,a)
         else:
             raise Exception('This is not a node and not a variable with a node. Maybe the variable was not named?')
-        #self.module_graph.append([a,b]) # no longer used??
-        #b.replace(b.var('input'),a.var('output'))
-    def _in_out(self,a,b):
-        #self.map(b.var('input'),a.var('output'))
-        aa = a
-        bb = b
-        if issubclass(a.__class__, N):
-            aa = a.output
-            #aa = a.var('output')
-        if issubclass(b.__class__, N):
-            bb = b.var('input')
-        if hasattr(bb,'variable_type') and bb.variable_type == 'input':
-            bb.variable_type = 'replaced_input'
-        for o in b.outputs:
-            theano_utils.replace(o,bb,aa)
-    def get_variables(self):
-        vs = []
-        for o in self.outputs:
-            vs.extend(theano_utils.get_variables_iter(o))
-        return f7(vs)
-    def describe_variables(self):
-        return [describe(v) for v in self.get_variables()]
     def create_function(self,updates=None,additional_inputs=[]):
         if self.debug is not True:
             # we disable warnings from theano gof because of the unresolved cache leak
             # TODO: fix the leak and re-enable warnings
             import logging
             logging.getLogger("theano.gof.cmodule").setLevel(logging.ERROR) 
-            ##pass
         if updates is None:
             updates = theano.updates.OrderedUpdates()
         for a,b in  self.mappings.items():
@@ -727,6 +564,48 @@ class M(object):
                 self.compute_state_dict[k] = o
         return Output(the_output[:len(self.outputs)],keys=self.compute_output_order[:len(self.outputs)])
 
+    def draw_simple_diagram(self, connector = ' -> '):
+        """
+            Prints a very simple horizontal tree diagram of the connected `N` nodes.
+
+            Note: This diagram only shows connections that were created between 
+            `N` nodes by `add_input` (or `+=`).
+            
+            Example:: 
+
+                print draw_simple_diagram(retina, connector=' - ')
+
+            Output::
+
+                input - OPL - Bipolar - GanglionInputLayer_Parvocellular_On - GanglionSpikes__Parvocellular_On - output
+                                      - GanglionInputLayer_Parvocellular_Off - GanglionSpikes__Parvocellular_Off - output
+        """
+        node_dict = {}
+        for v in filter(lambda x: has_convis_attribute(x,'connects'), self.variables._all):
+            for c in get_convis_attribute(v,'connects'):
+                node_dict.setdefault(c[1],[]).append(c[0])
+        possible_start_nodes = node_dict.keys()
+        possible_end_nodes = reduce(lambda x,y: x+y, node_dict.values())
+        true_start_nodes = []
+        for e in possible_start_nodes:
+            if not e in possible_end_nodes:
+                true_start_nodes.append(e)
+        def simple_model_diagram(n,offset=0,prev_offset=0):
+            if type(n) is list:
+                return '\n'.join(['input'+connector+simple_model_diagram(i,offset=offset,prev_offset=prev_offset+len('input'+connector)) for i in n])
+            s = save_name(n.name)
+            if n not in node_dict:
+                s += connector+'output\n'
+                return s
+            next_offset = prev_offset+len(save_name(n.name))
+            for i,child in enumerate(node_dict[n]):
+                if i > 0:
+                    s += ' '*next_offset
+                s+= connector
+                s+= simple_model_diagram(child,offset=prev_offset,prev_offset=next_offset+len(connector))
+            return s
+        diagram = simple_model_diagram(true_start_nodes)
+        return diagram
     # methods for adding optimization methods easily
     def add_target(self,variable,error_func=lambda x,y: T.mean((x-y)**2),name='target',bcast=(True,True,True)):
         tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)

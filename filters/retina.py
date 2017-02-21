@@ -74,8 +74,6 @@ class OPLLayerNode(N):
             lambda x: m_g_filter(float(x.get_config('surround-sigma__deg',0.15)),
                        float(x.get_config('surround-sigma__deg',0.15)),
                        retina=x.node.get_model(),normalize=True,even=False),name='G_S')
-        #self._lambda_OPL = self.shared_parameter(
-        #    lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',x.model.config.get('retina.input-luminosity-range',255.0))),name='lambda_OPL')
         self._lambda_OPL = self.shared_parameter(
                 lambda x: float(x.value_from_config()) / float(x.resolution.input_luminosity_range),
                 save = lambda x: x.value_to_config(float(x.resolution.input_luminosity_range) * (float(x.var.get_value()))),
@@ -87,7 +85,6 @@ class OPLLayerNode(N):
         self._w_OPL = self.shared_parameter(
             lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
 
-        # this parameter has to be initialized last :/
         self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(get_convis_attribute(x.node._G_S,'update')(x).get_value(),
                                                                         get_convis_attribute(x.node._E_S,'update')(x).get_value()),name='Reshape_C_S',
                                                   doc='This filter resizes C such that the output has the same size as S.')

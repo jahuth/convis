@@ -8,7 +8,7 @@ from theano.tensor.signal.conv import conv2d
 import uuid
 from . import retina_base
 from exceptions import NotImplementedError
-from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute
+from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, Variable
 
 def f7(seq):
     """ This function is removing duplicates from a list while keeping the order """
@@ -125,7 +125,7 @@ def get_all_variables(apply_node):
         parent_inputs += get_all_variables(i)
     return parent_inputs
 
-def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
+def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=None):
     """ get variables that have a name """
     if hasattr(apply_node,'_as_TensorVariable'):
         apply_node = apply_node._as_TensorVariable() 
@@ -151,9 +151,11 @@ def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include
                 nodes_to_explore.extend(node.owner.op.outputs)
             if depth is not None and len(nodes_explored) > depth:
                 break
+        if factory is not None:
+            return [factory(n) for n in nodes_explored]
         return nodes_explored
 
-def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
+def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=None):
     """ get variables that have a name """
     if hasattr(apply_node,'_as_TensorVariable'):
         apply_node = apply_node._as_TensorVariable() 
@@ -176,14 +178,28 @@ def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,i
             input_nodes.append(node)
         if depth is not None and len(nodes_explored) > depth:
             break
+    if factory is not None:
+        return [factory(n) for n in input_nodes]
     return input_nodes
 
-def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
+def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=Variable):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_variables_iter(apply_node,depth=depth,ignore=ignore,explore_scan=explore_scan,include_copies=include_copies))
-def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False):
+    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), 
+                    get_variables_iter(apply_node,
+                        depth=depth,
+                        ignore=ignore,
+                        explore_scan=explore_scan,
+                        include_copies=include_copies,
+                        factory=factory))
+def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=Variable):
     """ get variables that have a name """
-    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), get_input_variables_iter(apply_node,depth=depth,ignore=ignore,explore_scan=explore_scan,include_copies=include_copies))
+    return filter(lambda x: x.name is not None and hasattr(x,'__is_convis_var'), 
+                    get_input_variables_iter(apply_node,
+                        depth=depth,
+                        ignore=ignore,
+                        explore_scan=explore_scan,
+                        include_copies=include_copies,
+                        factory=factory))
 
 #def replace(apply_node,old,new):
 #    apply_node.replace(old,new)
