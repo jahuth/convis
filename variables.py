@@ -3,6 +3,9 @@ import theano.tensor as T
 import new
 from debug import *
 from o import f7, O, Ox, save_name
+from theano.tensor.var import TensorVariable
+from theano.tensor.sharedvar import ScalarSharedVariable
+replaceable_theano_vars = [TensorVariable,ScalarSharedVariable]
 
 global_lookup_table = {}
 only_use_lookup_table = True
@@ -36,6 +39,29 @@ def get_convis_attribute(v,key,default=None):
             return global_lookup_table[s].get(key,default)
     return getattr(v,key,default)
 
+def get_convis_attribute_dict(v):
+    if v is None:
+        return {}
+    global global_lookup_table
+    if hasattr(v,'_convis_lookup'):
+        if not v._convis_lookup in global_lookup_table:
+            global_lookup_table[v._convis_lookup] = {}
+        return global_lookup_table[v._convis_lookup]
+    if hasattr(v,'name') and v.name is not None and '!' in v.name:
+        s = v.name.split('!')[0]
+        if not s in global_lookup_table:
+            global_lookup_table[s] = {}
+        return global_lookup_table[s]
+    new_key = len(global_lookup_table.keys())
+    while str(new_key) in global_lookup_table.keys():
+        new_key += 1
+    if v.name is None:
+        v.name = str(new_key)+'!'
+    else:
+        v.name = str(new_key)+'!'+str(v.name)
+    v._convis_lookup = str(new_key)
+    global_lookup_table[v._convis_lookup] = {}
+    return global_lookup_table[v._convis_lookup]
 def set_convis_attribute(v,key,value):
     if v is None:
         return
@@ -82,6 +108,109 @@ def update_convis_attributes(v,d):
     else:
         for (key,value) in d.items():
             setattr(v,key,value)
+
+def v(ret):
+    """
+        Attempts to wrap `ret` into a proxy class, such that convis variables as
+        well as thenao attributes are available
+    """
+    if type(ret) in replaceable_theano_vars:
+        return cls(ret)
+    return ret
+
+class Variable(object):
+    __slots__ = ["_var","_info", "__weakref__"]
+    def __init__(self, obj):
+        object.__setattr__(self, "_var", obj)
+        object.__setattr__(self, "_info", get_convis_attribute_dict(obj))
+    def _as_TensorVariable(self):
+        return object.__getattribute__(self, "_var")
+    def __getattribute__(self, name):
+        if name in ['_var','_info']:
+            return object.__getattribute__(self, name)
+        if name == 'name':
+            return getattr(object.__getattribute__(self, "_var"), name)
+        if name in convis_attributes:
+            if name in object.__getattribute__(self, "_info").keys():
+                return object.__getattribute__(self, "_info").get(name)
+        return getattr(object.__getattribute__(self, "_var"), name)
+    def __delattr__(self, name):
+        if name in convis_attributes:
+            if name in object.__getattribute__(self, "_info").keys():
+                return object.__getattribute__(self, "_info").remove(name)
+        delattr(object.__getattribute__(self, "_var"), name)
+    def __setattr__(self, name, value):
+        if name == 'name':
+            setattr(object.__getattribute__(self, "_var"), name, value)
+        else:
+            if name in convis_attributes:
+                if name in object.__getattribute__(self, "_info").keys():
+                    object.__getattribute__(self, "_info")[name] = value
+            setattr(object.__getattribute__(self, "_var"), name, value)
+    def __nonzero__(self):
+        return bool(object.__getattribute__(self, "_var"))
+    def __str__(self):
+        return str(object.__getattribute__(self, "_var"))
+    def __unicode__(self):
+        return unicode(object.__getattribute__(self, "_var"))
+    def __repr__(self):
+        return repr(object.__getattribute__(self, "_var"))
+    def __hash__(self):
+        return hash(object.__getattribute__(self, "_var"))
+    def __dir__(self):
+        my_convis_attributes = filter(lambda x: has_convis_attribute(self, x), convis_attributes)
+        return my_convis_attributes + dir(object.__getattribute__(self, "_var"))
+    _special_names = [
+        '__abs__', '__add__', '__and__', '__call__', '__cmp__', '__coerce__', 
+        '__contains__', '__delitem__', '__delslice__', '__div__', '__divmod__', 
+        '__eq__', '__float__', '__floordiv__', '__ge__', '__getitem__', 
+        '__getslice__', '__gt__', '__hash__', '__hex__', '__iadd__', '__iand__',
+        '__idiv__', '__idivmod__', '__ifloordiv__', '__ilshift__', '__imod__', 
+        '__imul__', '__int__', '__invert__', '__ior__', '__ipow__', '__irshift__', 
+        '__isub__', '__iter__', '__itruediv__', '__ixor__', '__le__', '__len__', 
+        '__long__', '__lshift__', '__lt__', '__mod__', '__mul__', '__ne__', 
+        '__neg__', '__oct__', '__or__', '__pos__', '__pow__', '__radd__', 
+        '__rand__', '__rdiv__', '__rdivmod__', '__reduce__', '__reduce_ex__', 
+        '__repr__', '__reversed__', '__rfloorfiv__', '__rlshift__', '__rmod__', 
+        '__rmul__', '__ror__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', 
+        '__rtruediv__', '__rxor__', '__setitem__', '__setslice__', '__sub__', 
+        '__truediv__', '__xor__', 'next','__rfloorfiv__'
+    ]
+    
+    @classmethod
+    def _create_class_proxy(cls, theclass):
+        """creates a proxy for the given class"""
+        def make_method(name):
+            def method(self, *args, **kw):
+                ret = getattr(object.__getattribute__(self, "_var"), name)(*args, **kw)
+                if type(ret) in replaceable_theano_vars:
+                    return cls(ret)
+                return ret
+            return method
+        namespace = {}
+        for name in cls._special_names:
+            if hasattr(theclass, name) and not hasattr(cls, name):
+                namespace[name] = make_method(name)
+        return type("%s(%s)" % (cls.__name__, theclass.__name__), (cls,), namespace)
+    
+    def __new__(cls, obj, *args, **kwargs):
+        """
+        creates an proxy instance referencing `obj`. (obj, *args, **kwargs) are
+        passed to this class' __init__, so deriving classes can define an 
+        __init__ method of their own.
+        note: _class_proxy_cache is unique per deriving class (each deriving
+        class must hold its own cache)
+        """
+        try:
+            cache = cls.__dict__["_class_proxy_cache"]
+        except KeyError:
+            cls._class_proxy_cache = cache = {}
+        try:
+            theclass = cache[obj.__class__]
+        except KeyError:
+            cache[obj.__class__] = theclass = cls._create_class_proxy(obj.__class__)
+        ins = object.__new__(theclass)
+        return ins
 
 class ResolutionInfo(object):
     def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0):
@@ -172,8 +301,9 @@ def get_convis_attributes(v):
 def get_convis_attributes_dict(v):
     return dict([(a,get_convis_attribute(v,a)) for a in convis_attributes if has_convis_attribute(v,a)])
 
-def v(v):
-    return O(**v.__dict__)(**get_convis_attributes_dict(v))
+#proxy objects are better?
+#def v(v):
+#    return O(**v.__dict__)(variable=v, **get_convis_attributes_dict(v))
 
 
 def override_copy(v,actually_do_it=True):
