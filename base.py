@@ -184,6 +184,7 @@ class GraphWrapper(object):
             return shared_parameter(f,
                                     O()(node=self,
                                         model=self.model,
+                                        resolution=self.model.resolution,
                                         get_config=self.get_config,
                                         value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
@@ -301,6 +302,7 @@ class N(GraphWrapper):
             return shared_parameter(f,
                                     O()(node=self,
                                         model=self.model,
+                                        resolution=self.model.resolution,
                                         get_config=self.get_config,
                                         value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
@@ -389,13 +391,13 @@ class Output(object):
 
 
 class M(object):
-    def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, **kwargs):
+    def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, filter_epsilon=0.01, **kwargs):
         self.debug = False
         self.mappings = {}
         self.givens = {}
         self.outputs = []
         self.config = {}
-        self.resolution = ResolutionInfo(pixel_per_degree,steps_per_second)
+        self.resolution = ResolutionInfo(pixel_per_degree=pixel_per_degree,steps_per_second=steps_per_second,filter_epsilon=filter_epsilon)
         self.size_in_degree = size
         self.__dict__.update(kwargs)
     @property
@@ -500,8 +502,8 @@ class M(object):
         self.compute_state_dict = {}
     def reset_parameters(self):
         for shared_parameter in self.parameters._all:
-            if is_shared_parameter(shared_parameter) and hasattr(shared_parameter,'initialized'):
-                shared_parameter.initialized = False
+            if is_shared_parameter(shared_parameter) and has_convis_attribute(shared_parameter,'initialized'):
+                set_convis_attribute(shared_parameter, 'initialized', False)
     def run_in_chunks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
         chunked_output = []
         t = 0
@@ -542,10 +544,10 @@ class M(object):
                         else:
                             input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = get_convis_attribute(k,'param_init')(create_context_O(k,input=the_input))
+                    input_dict[k] = get_convis_attribute(k,'param_init')(create_context_O(k,input=the_input,model=self,resolution=self.resolution))
                 if is_state(k):
                     if self.compute_state_dict.get(get_convis_attribute(k,'state_out_state'),None) is None:
-                        input_dict[k] = get_convis_attribute(k,'state_init')(create_context_O(k,input=the_input))
+                        input_dict[k] = get_convis_attribute(k,'state_init')(create_context_O(k,input=the_input,model=self,resolution=self.resolution))
                     else:
                         input_dict[k] = self.compute_state_dict[get_convis_attribute(k,'state_out_state')]
         for shared_parameter in self.parameters._all:
@@ -553,7 +555,7 @@ class M(object):
                 #if (not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False) and not hasattr(shared_parameter,'optimized'):
                 # until we can track which config values where changed, we re-initialize everything
                 # all smart stuff is now in the injected .update method
-                get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input))
+                get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input,model=self,resolution=self.resolution))
                 #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
@@ -682,15 +684,15 @@ class Runner(object):
                     if k not in self.additional_inputs:
                         input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = k.param_init(create_context_O(k,model=self,input=the_input))
+                    input_dict[k] = k.param_init(create_context_O(k,model=self.model,input=the_input,resolution=self.model.resolution))
                 if is_state(k):
                     if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(create_context_O(k,model=self,input=the_input))
+                        input_dict[k] = k.state_init(create_context_O(k,model=self.model,input=the_input,resolution=self.model.resolution))
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
         for shared_parameter in self.parameters._all:
             if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(create_context_O(shared_parameter,model=self,input=the_input)))
+                shared_parameter.set_value(shared_parameter.param_init(create_context_O(shared_parameter,model=self.model,input=the_input,resolution=self.model.resolution)))
                 shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)

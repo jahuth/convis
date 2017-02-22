@@ -78,6 +78,8 @@ class Retina(M):
         pixel_per_degree = None
         steps_per_second = None
         input_luminosity_range = None
+        if debug in kwargs:
+            self.debug = debug
         try:
             pixel_per_degree = float(config.get('retina',{}).get('pixels-per-degree',None))
         except:
@@ -107,12 +109,14 @@ class Retina(M):
             self.opl = choose_class('opl',OPLLayerNode)(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
             if not kwargs.get('bipolar',True):
                 self.add_output(self.opl)
-
+                if self.debug:
+                    print 'adding opl output'
         if kwargs.get('bipolar',True):
             self.bipol = choose_class('bipolar',BipolarLayerNode)(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
             if not kwargs.get('ganglion_input',True):
                 self.add_output(self.bipol)
-
+                if self.debug:
+                    print 'adding bipolar output'
         self.ganglion_input_layers = []
         self.ganglion_spiking_layers = []
         for ganglion_config in self.config.retina_config.get('ganglion-layers',[]):
@@ -125,17 +129,26 @@ class Retina(M):
                     self.ganglion_input_layers.append(gang_in)
                     if not kwargs.get('ganglion_spikes',True):
                         self.add_output(gang_in)
-
+                        if self.debug:
+                            print 'adding ganglion input output'
                 if kwargs.get('ganglion_spikes',True):
                     if 'spiking-channel' in ganglion_config and ganglion_config['spiking-channel'].get('enabled',True) != False:
                         gang_spikes = choose_class('ganglion_spikes',GanglionSpikingLayerNode)(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
+                        if self.debug:
+                            print 'adding ganglion spikes output'
                         if kwargs.get('ganglion_input',True):
                             gang_spikes.add_input(gang_in)
+                            if self.debug:
+                                print 'connecting ganglion input to ganglion spikes'
                         self.ganglion_spiking_layers.append(gang_spikes)
 
                 if kwargs.get('bipolar',True) and kwargs.get('ganglion_input',True):
                     gang_in.add_input(self.bipol)
+                    if self.debug:
+                        print 'connecting bipolar to ganglion input'
 
         if kwargs.get('opl',True) and kwargs.get('bipolar',True):
             self.bipol.add_input(self.opl)
+            if self.debug:
+                print 'connecting opl and bipolar'

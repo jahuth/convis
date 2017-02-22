@@ -4,6 +4,7 @@
 
 """
 
+var_name_counter = 0
 def save_name(n):
     """
         Makes a name save to be used as an attribute.
@@ -29,7 +30,7 @@ def save_name(n):
         else:
             try:
                 global var_name_counter
-                n.name = 'unnamed_var_'+str(var_name_counter)
+                n.name = 'unnamed_variable_'+str(var_name_counter)
                 n = n.name
                 var_name_counter += 1
             except:

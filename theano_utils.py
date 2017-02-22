@@ -182,7 +182,7 @@ def get_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,i
         return [factory(n) for n in input_nodes]
     return input_nodes
 
-def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=Variable):
+def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=None):
     """ get variables that have a name """
     return filter(lambda x: get_convis_attribute(x,'name',None) is not None and is_var(x), 
                     get_variables_iter(apply_node,
@@ -191,7 +191,7 @@ def get_named_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,i
                         explore_scan=explore_scan,
                         include_copies=include_copies,
                         factory=factory))
-def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=Variable):
+def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include_copies=False,factory=None):
     """ get variables that have a name """
     return filter(lambda x: get_convis_attribute(x,'name',None) is not None and is_var(x), 
                     get_input_variables_iter(apply_node,

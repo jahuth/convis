@@ -11,6 +11,7 @@ from exceptions import NotImplementedError
 from ..base import *
 from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad3_txy
 from .. import retina_base
+from .. import numerical_filters
 
 
 class G_2d_recursive_filter(N):        
@@ -98,7 +99,7 @@ class G_2d_recursive_filter(N):
     def compute_config(self,c):
             density = self.config.get('scalar_density',1.0) * np.ones(c.input.shape[1:])
             density = self.config.get('density_map',density)
-            coeff = retina_base.deriche_coefficients(density)
+            coeff = numerical_filters.deriche_coefficients(density)
             self.a = np.array([coeff[c][:,:,np.newaxis] for c in ['A1','A2','A3','A4']])
             self.b = np.array([coeff[c][:,:,np.newaxis] for c in ['B1','B2']])
 
@@ -138,13 +139,13 @@ class E_1d_recursive_filter(N):
         b_0 = 1.0 - a_1
         _k = as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0]) # number of iteration steps
         def bipolar_step(input_image,
-                        preceding_V):
+                        preceding_V,b_0,a_0,a_1):
             V = (input_image * b_0 - preceding_V * a_1) / a_0
             return V
         output_variable, _updates = theano.scan(fn=bipolar_step,
                                       outputs_info=[_preceding_V],
                                       sequences = [self.create_input()],
-                                      non_sequences=[],
+                                      non_sequences=[b_0,a_0,a_1],
                                       n_steps=_k)
         output_variable.name = 'output'
         as_out_state(output_variable[-1],_preceding_V)
@@ -482,7 +483,7 @@ class RecursiveLeakyHeatFilter(N):
     def compute_config(self,c):
             density = self.config.get('scalar_density',1.0) * np.ones(c.input.shape[1:])
             density = self.config.get('density_map',density)
-            coeff = retina_base.deriche_coefficients(density)
+            coeff = numerical_filters.deriche_coefficients(density)
             self.a = np.array([coeff[c][:,:,np.newaxis] for c in ['A1','A2','A3','A4']])
             self.b = np.array([coeff[c][:,:,np.newaxis] for c in ['B1','B2']])
         
@@ -537,7 +538,7 @@ class LeakyHeatFilter(N):
                              config_key = 'kernel',
                              doc = """Holds a dense matrix that is to be used as a 2d smoothing kernel.
 
-                             A gaussian kernel for this variable can be created using `retina_base.m_g_filter_2d`.
+                             A gaussian kernel for this variable can be created using `convis.numerical_filters.m_g_filter_2d`.
 
                              The filter can be optimized.
                              """,

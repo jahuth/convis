@@ -160,13 +160,13 @@ def update_convis_attributes(v,new_d):
         for (key,value) in d.items():
             setattr(v,key,value)
 
-def v(ret):
+def make_variable(ret):
     """
         Attempts to wrap `ret` into a proxy class, such that convis variables as
         well as thenao attributes are available
     """
     if type(ret) in replaceable_theano_vars:
-        return cls(ret)
+        return Variable(ret)
     return ret
 
 class Variable(object):
@@ -240,15 +240,29 @@ class Variable(object):
         """creates a proxy for the given class"""
         def make_method(name):
             def method(self, *args, **kw):
+                args = [getattr(a,'_var',a) for a in args]
+                kw = dict((k,getattr(v,'_var',v)) for k,v in kw.items())
                 ret = getattr(object.__getattribute__(self, "_var"), name)(*args, **kw)
                 #if type(ret) in replaceable_theano_vars:
-                #    return cls(ret)
+                #    return Variable(ret)
                 return ret
             return method
         namespace = {}
         for name in cls._special_names:
             if hasattr(theclass, name) and not hasattr(cls, name):
                 namespace[name] = make_method(name)
+            # else:
+            #     pass
+            #     # if name == '__eq__':
+            #     #     def eq(self, other):
+            #     #         return object.__getattribute__(self, "_var") == getattr(other,'_var',other) 
+            #     #     namespace[name] = eq
+            # if name == '__ne__':
+            #     def ne(self, other):
+            #         # this is never called?
+            #         print 'testing for not equalness'
+            #         return not object.__getattribute__(self, "_var") == getattr(other,'_var',other)  
+            #     namespace[name] = ne
         return type("%s(%s)" % (cls.__name__, theclass.__name__), (cls,), namespace)
     
     def __new__(cls, obj, *args, **kwargs):
@@ -271,10 +285,11 @@ class Variable(object):
         return ins
 
 class ResolutionInfo(object):
-    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0):
+    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0,filter_epsilon = 0.001):
         self.pixel_per_degree = pixel_per_degree
         self.steps_per_second = steps_per_second
         self.input_luminosity_range = input_luminosity_range
+        self.filter_epsilon = filter_epsilon
     def degree_to_pixel(self,degree):
         if self.pixel_per_degree is None:
             return default_resolution.degree_to_pixel(degree)
@@ -561,7 +576,7 @@ def shared_parameter(fun,init_object=None,**kwargs):
     if init_object is None:
         init_object = create_context_O()
     if not hasattr(init_object,'resolution'):
-        init_object(resolution = default_resolution)
+        init_object(resolution = default_resolution) # for initial filters we only want a single 1
     return as_parameter(theano.shared(fun(init_object)),
                         initialized = True,
                         init=fun,**kwargs)
@@ -606,5 +621,5 @@ def create_context_O(var=None, **kwargs):
                  get_config=get_config,
                  value_from_config=lambda: node.get_config(config_key,get_convis_attribute(var,'config_default')),
                  value_to_config=lambda v: node.set_config(config_key,v))(**kwargs)
-    return O(var=var,node=node,model=model,get_config=get_config,resolution=default_resolution,
+    return O(var=var,node=node,model=model,get_config=get_config,resolution=getattr(model,'resolution',default_resolution),
              value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(get_convis_attribute(var,'name'))+'\n')))(**kwargs)
