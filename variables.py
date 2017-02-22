@@ -10,6 +10,11 @@ replaceable_theano_vars = [TensorVariable,ScalarSharedVariable]
 global_lookup_table = {}
 only_use_lookup_table = True
 
+if '__convis_global_lookup_table' in globals():
+    global_lookup_table = globals()['__convis_global_lookup_table']
+else:
+    globals()['__convis_global_lookup_table'] = global_lookup_table
+
 def full_path(v):
     return '_'.join([save_name(p) for p in get_convis_attribute(v,'path',[v])])
 
