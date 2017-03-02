@@ -2,13 +2,10 @@ import unittest
 
 
 class TestConvis(unittest.TestCase):
-    def setUp(self):
-        import convis
-        self.convis = convis
     def test_retina(self):
-        import convis
+        from . import retina
         import numpy as np
-        ret = convis.retina.Retina()
+        ret = retina.Retina()
         stimulus = np.zeros((5000,5,5))
         T,X,Y = np.meshgrid(np.arange(stimulus.shape[0]),
                             np.arange(stimulus.shape[1]),
@@ -19,20 +16,21 @@ class TestConvis(unittest.TestCase):
 
 class TestConvisFilters(unittest.TestCase):
     def test_exponentials(self):
-        import convis
+        from . import variables
+        from . import numerical_filters
         import numpy as np
         tau = 0.1
-        resolution = convis.variables.ResolutionInfo()
-        f = convis.numerical_filters.exponential_filter_1d(tau,n=0)
+        resolution = variables.ResolutionInfo()
+        f = numerical_filters.exponential_filter_1d(tau,n=0)
         self.assertTrue(np.abs(np.sum(f) - 1.0)<0.1,msg="Exponential filter is not normalized.")
         self.assertAlmostEqual(np.sum(f),1.0,msg="Cascade filter normalization is unprecise.")
-        f = convis.numerical_filters.exponential_filter_1d(tau,n=4)
+        f = numerical_filters.exponential_filter_1d(tau,n=4)
         self.assertTrue(np.abs(np.sum(f) - 1.0)<0.1,msg="Cascade exponential filter is not normalized.")
         self.assertAlmostEqual(np.sum(f),1.0,msg="Cascade exponential normalization is unprecise.")
     def test_gaussians(self):
-        import convis
+        from . import numerical_filters
         import numpy as np
-        g = convis.numerical_filters.gauss_filter_2d(2.0,2.0)
+        g = numerical_filters.gauss_filter_2d(2.0,2.0)
         self.assertTrue(np.abs(np.sum(g) - 1.0)<0.1,msg="Gauss filter is not normalized.")
         self.assertAlmostEqual(np.sum(g),1.0,msg="Gauss filter normalization is unprecise.")
 
