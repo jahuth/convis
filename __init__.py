@@ -1,5 +1,8 @@
 import misc_utils
 
+import variables
+import numerical_filters
+
 import theano_utils
 reload(theano_utils)
 import variable_describe
