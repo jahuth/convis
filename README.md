@@ -3,7 +3,7 @@
 This python package provides an implementation of the [Virtual Retina](http://www-sop.inria.fr/neuromathcomp/public/software/virtualretina/) developed by Adrien Wohrer. It uses `theano` to simulate spike trains of retinal ganglion cells by directing the input through a number of computation nodes. Each node might do linear or nonlinear computations, eg. convolve the inpute with a spatio-temporal kernel or apply gain control.
 
 
-TravisCI on the master branch: <img src="https://api.travis-ci.org/jahuth/convis.svg?branch=master" \>
+TravisCI on the master branch: [![Build Status](https://travis-ci.org/jahuth/convis.svg?branch=master)](https://travis-ci.org/jahuth/convis) 
 
 Usage Example:
 
