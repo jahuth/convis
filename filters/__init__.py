@@ -1,2 +1,0 @@
-#import .retina
-#import .simple

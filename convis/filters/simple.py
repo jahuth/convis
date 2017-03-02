@@ -9,8 +9,9 @@ import uuid
 from exceptions import NotImplementedError
 
 from ..base import *
-from ..theano_utils import make_nd, dtensor5
+from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad3_txy
 from .. import retina_base
+from .. import numerical_filters
 
 
 class G_2d_recursive_filter(N):        
@@ -25,7 +26,7 @@ class G_2d_recursive_filter(N):
 
             To convert $\sigma$ into density there will be some convenience functions.
         """
-        self.config = config
+        self.set_config(config)
         dtensor4_broadcastable = T.TensorType('float64', (False,False,False,True))
         dtensor3_broadcastable = T.TensorType('float64', (False,False,True))
         a = as_parameter(dtensor4_broadcastable('a'), lambda x: (x.node.compute_config(x), x.node.a)[1])
@@ -40,7 +41,7 @@ class G_2d_recursive_filter(N):
             return [Y0+Ybuf, Y0, Y1, L]
         # symbolic_input has dimensions (time,x,y)
         # to iterate over x dimension we swap to (x,y,time)
-        L_shuffled_to_x_y_time = as_input(T.dtensor3(),name='input').dimshuffle((1,2,0))
+        L_shuffled_to_x_y_time = self.create_input().dimshuffle((1,2,0))
         result_forward_x, updates_forward_x = theano.scan(fn=smooth_function_forward,
                                       outputs_info = [L_shuffled_to_x_y_time[0]/2.0,
                                                       L_shuffled_to_x_y_time[0]/2.0,
@@ -98,7 +99,7 @@ class G_2d_recursive_filter(N):
     def compute_config(self,c):
             density = self.config.get('scalar_density',1.0) * np.ones(c.input.shape[1:])
             density = self.config.get('density_map',density)
-            coeff = retina_base.deriche_coefficients(density)
+            coeff = numerical_filters.deriche_coefficients(density)
             self.a = np.array([coeff[c][:,:,np.newaxis] for c in ['A1','A2','A3','A4']])
             self.b = np.array([coeff[c][:,:,np.newaxis] for c in ['B1','B2']])
 
@@ -113,7 +114,7 @@ class E_1d_recursive_filter(N):
 
     """
     def __init__(self,config,name=None,model=None):
-        self.config=config
+        self.set_config(config)
         self.model = model
         tau = as_parameter(theano.shared(model.seconds_to_steps(config.get('tau__sec',0.001))),
                            name = 'tau',
@@ -126,11 +127,11 @@ class E_1d_recursive_filter(N):
                            initialized = True,
                            optimizable = True,
                            config_key = 'tau__sec',
-                           init=lambda x: x.node.model.seconds_to_steps(x.node.config.get('tau__sec',0.001)))
+                           init=lambda x: x.node.get_model().seconds_to_steps(x.node.config.get('tau__sec',0.001)))
         steps = as_parameter(theano.shared(model.steps_to_seconds(1.0)),
                             name = 'step',
                             initialized = True, 
-                            init=lambda x: x.node.model.steps_to_seconds(1.0))
+                            init=lambda x: x.node.get_model().steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                init=lambda x: x.input[0,:,:]) # initial condition for sequence
         a_0 = 1.0
@@ -138,13 +139,13 @@ class E_1d_recursive_filter(N):
         b_0 = 1.0 - a_1
         _k = as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0]) # number of iteration steps
         def bipolar_step(input_image,
-                        preceding_V):
+                        preceding_V,b_0,a_0,a_1):
             V = (input_image * b_0 - preceding_V * a_1) / a_0
             return V
         output_variable, _updates = theano.scan(fn=bipolar_step,
                                       outputs_info=[_preceding_V],
-                                      sequences = [as_input(T.dtensor3(),name='input')],
-                                      non_sequences=[],
+                                      sequences = [self.create_input()],
+                                      non_sequences=[b_0,a_0,a_1],
                                       n_steps=_k)
         output_variable.name = 'output'
         as_out_state(output_variable[-1],_preceding_V)
@@ -160,13 +161,13 @@ class G_2d_kernel_filter(N):
         """
             This node implements 2d kernel filtering by convolution.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
         self.size = self.config.get('kernel',self.config.get('size',(10,10))).shape
-        kernel = as_parameter(theano.shared(self.config.get('kernel',self.config.get('size',(10,10))),name='kernel'),
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10)))),name='kernel'),
                              initialized=True,
                              init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10)))))
-        output_variable = conv2d(as_input(T.dtensor3(),name='input'),kernel)
+        output_variable = conv2d(pad3_txy(self.create_input(),0,kernel.shape[0]-1,kernel.shape[1]-1,mode='mirror'),kernel)
         output_variable.name = 'output'
         node_type = '2d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
@@ -177,30 +178,82 @@ class K_1d_kernel_filter(N):
         """
             This node implements 2d kernel filtering by convolution.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
-        self.size = self.config.get('kernel',self.config.get('size',(10))).shape
-        kernel = as_parameter(theano.shared(self.config.get('kernel',self.config.get('size',(10))),name='kernel'),
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10)))),name='kernel'),
                              initialized=True,
                              init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10)))))
+        self.size = kernel.shape
         N = kernel.shape[0]
-        output_variable = make_nd(conv3d(pad5(make_nd(as_input(T.dtensor3(),name='input'),5),N,1),make_nd(kernel,5)),3)
+        output_variable = make_nd(conv3d(pad5(make_nd(self.create_input(),5),N,1),make_nd(kernel,5)),3)
         output_variable.name = 'output'
         node_type = '1d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
         super(K_1d_kernel_filter,self).__init__(output_variable,name=name)
 
+class K_3d_kernel_filter(N):        
+    def __init__(self,config={},name=None,model=None):
+        """
+            This node implements 3d kernel filtering by convolution.
+        """
+        self.set_config(config)
+        self.model = model
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10,10)))),name='kernel'),
+                             initialized=True,
+                             init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10,10)))))
+        self.size = kernel.shape
+        output_variable = make_nd(
+                              conv3d(
+                                  pad5_txy(
+                                              make_nd(self.create_input(),5),
+                                              kernel.shape[0]-1,kernel.shape[1]-1,kernel.shape[2]-1,
+                                              mode='mirror'
+                                          ),
+                                  make_nd(kernel,5)
+                              )
+                          ,3)
+        output_variable.name = 'output'
+        node_type = '3d Kernel Filter Node'
+        node_description = lambda: 'Convolutional Filtering'
+        super(K_3d_kernel_filter,self).__init__(output_variable,name=name)
+
 ConvolutionFilter1d = K_1d_kernel_filter
 ConvolutionFilter2d = G_2d_kernel_filter
+ConvolutionFilter3d = K_3d_kernel_filter
+
+
+class Nonlinearity(N):
+    """
+    :math:`output = N(eT * V_{Bip})`
+    :math:`N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
+    :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
+    """
+    def __init__(self,config={},name=None,model=None):
+        self.model = model
+        self.set_config(config)
+        my_input = self.create_input()
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',70.0)),
+                                          name="i_0_G")
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+                                          name="v_0_G")
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',100.0)),
+                                          name="lambda_G")
+        self.N = GraphWrapper(as_variable(theano.tensor.switch(my_input < self._v_0_G, 
+                                 as_variable(self._i_0_G/(1-self._lambda_G*(my_input-self._v_0_G)/self._i_0_G),name='N_0',html_name='N<sub>V&lt;v0</sub>'),
+                                 as_variable(self._i_0_G + self._lambda_G*(my_input-self._v_0_G),name='N_1',html_name='N<sub>V&gt;=v0</sub>')),'output',
+                        requires=[self._lambda_G,self._i_0_G,self._v_0_G]),name='N',ignore=[my_input],parent=self).graph
+        node_type = 'Nonlinear Node'
+        node_description = lambda: ''
+        super(Nonlinearity,self).__init__(make_nd(self.N,3),name=name)
 
 class MaxFilter(N):        
     def __init__(self,config={},name=None,model=None):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
-        output_variable = T.max(as_input(T.dtensor3(),name='input'),(1,2))
+        output_variable = T.max(self.create_input(),(1,2))
         output_variable.name = 'output'
         node_type = 'Spatial Max Filter'
         node_description = lambda: ''
@@ -212,9 +265,9 @@ class MinFilter(N):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
-        output_variable = T.min(as_input(T.dtensor3(),name='input'),(1,2))
+        output_variable = T.min(self.create_input(),(1,2))
         output_variable.name = 'output'
         node_type = 'Spatial Max Filter'
         node_description = lambda: ''
@@ -226,7 +279,7 @@ class SelectPixelFilter(N):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
         self._x = self.shared_parameter(
                 lambda x: int(x.value_from_config()),
@@ -240,7 +293,7 @@ class SelectPixelFilter(N):
                 config_default = 0,
                 doc='y index of selection',
                 name = "y")
-        output_variable = as_input(T.dtensor3(),name='input')[:,self._x,self._y]
+        output_variable = self.create_input()[:,self._x,self._y]
         output_variable.name = 'output'
         #raise NotImplementedError('Filter is not defined yet')
         super(SelectPixelFilter,self).__init__(output_variable,name=name)
@@ -252,15 +305,16 @@ class SoftSelectFilter(N):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
         self.a = self.shared_parameter(
-                lambda x: 0.5,
+                lambda x: x.value_from_config(),
                 config_key = 'a',
-                config_default = 0,
+                config_default = 0.5*np.ones((1,1)),
                 doc='Ratio of input a in the output. Input b will have ratio (1-`a`)',
                 name = "a")
-        output_variable = self.a * as_input(T.dtensor3(),name='input_a') + (1.0-self.a) * as_input(T.dtensor3(),name='input_b')
+        inputs = self.create_input(['input_a','input_b'])
+        output_variable = self.a.dimshuffle(('x',0,1)) * inputs['input_a'] + (1.0-self.a.dimshuffle(('x',0,1))) * inputs['input_b']
         output_variable.name = 'output'
         #raise NotImplementedError('Filter is not defined yet')
         super(SoftSelectFilter,self).__init__(output_variable,name=name)
@@ -272,17 +326,45 @@ class RF_2d_kernel_filter(N):
         """
             This node implements 2d kernel filtering by convolution.
         """
-        self.config = config
+        self.set_config(config)
         self.model = model
         self.size = self.config.get('kernel',self.config.get('size',(10,10))).shape
         kernel = as_parameter(theano.shared(self.config.get('kernel',self.config.get('size',(10,10))),name='kernel'),
                              initialized=True,
                              init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10)))))
-        output_variable = as_input(T.dtensor3(),name='input')[:,:kernel.shape[0],:kernel.shape[1]] * kernel.dimshuffle(('x',0,1))
+        output_variable = self.create_input()[:,:kernel.shape[0],:kernel.shape[1]] * kernel.dimshuffle(('x',0,1))
         output_variable.name = 'output'
         node_type = '2d Single RF Node'
         node_description = lambda: 'Multiplicative Mask'
         super(RF_2d_kernel_filter,self).__init__(output_variable,name=name)
+
+class RF_3d_kernel_filter(N):
+    def __init__(self,config={},name=None,model=None):
+        """
+            This node implements 3d kernel filtering by convolution.
+
+            The spatial dimensions are fixed to a reference frame, the temporal dimension is convolved.
+        """
+        self.set_config(config)
+        self.model = model
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10,10)))),name='kernel'),
+                             initialized=True,
+                             init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10,10)))))
+        self.size = kernel.shape
+        output_variable = make_nd(
+                              conv3d(
+                                  pad5_txy(
+                                              make_nd(self.create_input(),5),
+                                              kernel.shape[0]-1,0,0,
+                                              mode='mirror'
+                                          ),
+                                  make_nd(kernel,5)
+                              )
+                          ,3)
+        output_variable.name = 'output'
+        node_type = '3d Single RF Node'
+        node_description = lambda: 'Mask * Temporal Convolution'
+        super(RF_3d_kernel_filter,self).__init__(output_variable,name=name)
 
 class T_1d_filter_with_sigma_param(N):
     """
@@ -294,7 +376,7 @@ class T_1d_filter_with_sigma_param(N):
 
     """
     def __init__(self,config,name=None,model=None):
-        self.config=config
+        self.set_config(config)
         self.model = model
         tau = as_parameter(theano.shared(model.seconds_to_steps(config.get('tau__sec',0.001))),
                            name = 'tau',
@@ -307,11 +389,11 @@ class T_1d_filter_with_sigma_param(N):
                            initialized = True,
                            optimizable = True,
                            config_key = 'tau__sec',
-                           init=lambda x: x.node.model.seconds_to_steps(x.node.config.get('tau__sec',0.001)))
+                           init=lambda x: x.node.get_model().seconds_to_steps(x.node.config.get('tau__sec',0.001)))
         steps = as_parameter(theano.shared(model.steps_to_seconds(1.0)),
                             name = 'step',
                             initialized = True, 
-                            init=lambda x: x.node.model.steps_to_seconds(1.0))
+                            init=lambda x: x.node.get_model().steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                init=lambda x: x.input[0,:,:]) # initial condition for sequence
         _preceding_input = as_state(T.dmatrix("preceding_input"),
@@ -324,7 +406,7 @@ class T_1d_filter_with_sigma_param(N):
                         preceding_V,preceding_input):
             V = input_image - 0.1*(preceding_input * b_0 - preceding_V * a_1) / a_0
             return V,input_image
-        inp = as_input(T.dtensor3(),name='input')
+        inp = self.create_input()
         output_variable, _updates = theano.scan(fn=bipolar_step,
                                       outputs_info=[_preceding_V,_preceding_input],
                                       sequences = [inp],
@@ -349,7 +431,7 @@ class RecursiveLeakyHeatFilter(N):
 
             To convert $\sigma$ into density there will be some convenience functions.
         """
-        self.config = config
+        self.set_config(config)
         raise NotImplementedError('This class is not yet implemented. Use `LeakyHeatFilter` for now.')
         tau = as_parameter(theano.shared(model.seconds_to_steps(config.get('tau__sec',0.001))),
                            doc="""$\\tau_{sec}$ gives the time constant of the exponential decay in seconds.
@@ -361,11 +443,11 @@ class RecursiveLeakyHeatFilter(N):
                            initialized = True,
                            optimizable = True,
                            config_key = 'tau__sec',
-                           init=lambda x: x.node.model.seconds_to_steps(x.node.config.get('tau__sec',0.001)))
+                           init=lambda x: x.node.get_model().seconds_to_steps(x.node.config.get('tau__sec',0.001)))
         steps = as_parameter(theano.shared(model.steps_to_seconds(1.0)),
                             name = 'step',
                             initialized = True, 
-                            init=lambda x: x.node.model.steps_to_seconds(1.0))
+                            init=lambda x: x.node.get_model().steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                init=lambda x: x.input[0,:,:]) # initial condition for sequence
         _preceding_input = as_state(T.dmatrix("preceding_input"),
@@ -411,7 +493,7 @@ class RecursiveLeakyHeatFilter(N):
             V_smoothed = (result_backward_y[0].dimshuffle((2,1,0)))#.reshape((result_backward_y[0].shape[2],result_backward_y[0].shape[1],result_backward_y[0].shape[0]))
             return V_smoothed[0],input_image
         
-        inp = as_input(T.dtensor3(),name='input')
+        inp = self.create_input()
         output_variable, _updates = theano.scan(fn=bipolar_step,
                                       outputs_info=[_preceding_V,_preceding_input],
                                       sequences = [inp],
@@ -426,7 +508,7 @@ class RecursiveLeakyHeatFilter(N):
     def compute_config(self,c):
             density = self.config.get('scalar_density',1.0) * np.ones(c.input.shape[1:])
             density = self.config.get('density_map',density)
-            coeff = retina_base.deriche_coefficients(density)
+            coeff = numerical_filters.deriche_coefficients(density)
             self.a = np.array([coeff[c][:,:,np.newaxis] for c in ['A1','A2','A3','A4']])
             self.b = np.array([coeff[c][:,:,np.newaxis] for c in ['B1','B2']])
         
@@ -443,7 +525,7 @@ class LeakyHeatFilter(N):
 
             To convert $\sigma$ into density there will be some convenience functions.
         """
-        self.config = config
+        self.set_config(config)
         tau = as_parameter(theano.shared(model.seconds_to_steps(config.get('tau',0.001))),
                            name = 'tau',
                            doc="""$\\tau$ gives the time constant of the exponential decay in seconds.
@@ -455,12 +537,12 @@ class LeakyHeatFilter(N):
                            initialized = True,
                            optimizable = True,
                            config_key = 'tau',
-                           init=lambda x: x.node.model.seconds_to_steps(x.node.config.get('tau',0.001)))
+                           init=lambda x: x.node.get_model().seconds_to_steps(x.node.config.get('tau',0.001)))
         steps = as_parameter(theano.shared(model.steps_to_seconds(1.0)),
                             name = 'step',
                             doc="""To convert the time constant in seconds into the appropriate length in bins or steps, this value will be automatically filled via the associatated model.""",
                             initialized = True, 
-                            init=lambda x: x.node.model.steps_to_seconds(1.0))
+                            init=lambda x: x.node.get_model().steps_to_seconds(1.0))
         _preceding_V = as_state(T.dmatrix("preceding_V"),
                                doc="Since recursive filtering needs the result of the previous timestep, the last time step has to be remembered as a state inbetween computations.",
                                init=lambda x: x.input[0,:,:]) # initial condition for sequence
@@ -481,7 +563,7 @@ class LeakyHeatFilter(N):
                              config_key = 'kernel',
                              doc = """Holds a dense matrix that is to be used as a 2d smoothing kernel.
 
-                             A gaussian kernel for this variable can be created using `retina_base.m_g_filter_2d`.
+                             A gaussian kernel for this variable can be created using `convis.numerical_filters.m_g_filter_2d`.
 
                              The filter can be optimized.
                              """,
@@ -507,7 +589,7 @@ class LeakyHeatFilter(N):
             V_smoothed = theano.tensor.signal.conv.conv2d(V,kernel, border_mode='full')[s0:s0end,s1:s1end]
             return V_smoothed,input_image
         
-        inp = as_input(T.dtensor3(),name='input')
+        inp = self.create_input()
         output_variable, _updates = theano.scan(fn=filter_step,
                                       outputs_info=[_preceding_V,_preceding_input],
                                       sequences = [inp],

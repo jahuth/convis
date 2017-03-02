@@ -5,6 +5,7 @@ This module is a compatibility layer between the Virtual Retina configurations a
 """
 import xml.etree.ElementTree as ET
 import collections
+import copy
 
 def dict_recursive_update(d, u):
     for k, v in u.iteritems():
@@ -58,171 +59,8 @@ valid_retina_tags = {
     'circular-array': ['fovea-density__inv-deg','diameter__deg']
 }
 
-
-class RetinaConfiguration:
-    """
-        A configuration object that writes an xml file for VirtualRetina.
-
-        (When this is altered, silver.glue.RetinaConfiguration has to also be updated by hand)
-
-        Does not currently care to parse an xml file, but can save/load in json instead.
-        The defaults are equal to `human.parvo.xml`.
-
-        Values can be changed either directly in the configuration dictionary, or with the `set` helperfunction::
-
-            config = silver.glue.RetinaConfiguration()
-            config.retina_config['retina']['input-luminosity-range'] = 200
-            config.set('basic-microsaccade-generator.enabled') = True
-            config.set('ganglion-layers.*.spiking-channel.sigma-V') = 0.5 # for all layers
-
-    """
-    def __init__(self,updates={}):
-        self.default()
-        self.retina_config = dict_recursive_update(self.retina_config,updates)
-    def default(self):
-        """
-        Generates a default config::
-
-            self.retina_config = {
-                        'basic-microsaccade-generator' :{
-                            'enabled': False,
-                            'pixels-per-degree':200,
-                            'temporal-step__sec':0.005,
-                            'angular-noise__pi-radians':0.3,
-                            'period-mean__sec':0.2,
-                            'period-stdev__sec':0,
-                            'amplitude-mean__deg':0.5,
-                            'amplitude-stdev__deg':0.1,
-                            'saccade-duration-mean__sec':0.025,
-                            'saccade-duration-stdev__sec':0.005,
-                        },
-                        'retina': {
-                            'temporal-step__sec':0.01,
-                            'input-luminosity-range':255,
-                            'pixels-per-degree':5.0
-                        },
-                        'log-polar-scheme' : {
-                            'enabled': False,
-                            'fovea-radius__deg': 1.0,
-                            'scaling-factor-outside-fovea__inv-deg': 1.0
-                        },
-                        'outer-plexiform-layers': [
-                            {   
-                                'version': 'linear-version',
-                                'center-sigma__deg': 0.05,
-                                'surround-sigma__deg': 0.15,
-                                'center-tau__sec': 0.01,
-                                'surround-tau__sec': 0.004,
-                                'opl-amplification': 10,
-                                'opl-relative-weight': 1,
-                                'leaky-heat-equation': 1,
-                                'undershoot': {
-                                    'enabled': True,
-                                    'relative-weight': 0.8,
-                                    'tau__sec': 0.1
-                                }
-                            }
-                        ],
-                        'contrast-gain-control': {
-                            'opl-amplification__Hz': 50, # for linear OPL: ampOPL = relative_ampOPL / fatherRetina->input_luminosity_range ;
-                            'bipolar-inert-leaks__Hz': 50,
-                            'adaptation-sigma__deg': 0.2,
-                            'adaptation-tau__sec': 0.005,
-                            'adaptation-feedback-amplification__Hz': 0
-                        },
-                        'ganglion-layers': [
-                            {
-                                'name': 'Parvocellular On',
-                                'enabled': True,
-                                'sign': 1,
-                                'transient-tau__sec':0.02,
-                                'transient-relative-weight':0.7,
-                                'bipolar-linear-threshold':0,
-                                'value-at-linear-threshold__Hz':37,
-                                'bipolar-amplification__Hz':100,
-                                'sigma-pool__deg': 0.0,
-                                'spiking-channel': {
-                                    'g-leak__Hz': 50,
-                                    'sigma-V': 0.1,
-                                    'refr-mean__sec': 0.003,
-                                    'refr-stdev__sec': 0,
-                                    'random-init': 1,
-                                    'square-array': {
-                                        'size-x__deg': 4,
-                                        'size-y__deg': 4,
-                                        'uniform-density__inv-deg': 20
-                                    }
-                                }
-                            },
-                            {
-                                'name': 'Parvocellular Off',
-                                'enabled': True,
-                                'sign': -1,
-                                'transient-tau__sec':0.02,
-                                'transient-relative-weight':0.7,
-                                'bipolar-linear-threshold':0,
-                                'value-at-linear-threshold__Hz':37,
-                                'bipolar-amplification__Hz':100,
-                                'sigma-pool__deg': 0.0,
-                                'spiking-channel': {
-                                    'g-leak__Hz': 50,
-                                    'sigma-V': 0.1,
-                                    'refr-mean__sec': 0.003,
-                                    'refr-stdev__sec': 0,
-                                    'random-init': 1,
-                                    'square-array': {
-                                        'size-x__deg': 4,
-                                        'size-y__deg': 4,
-                                        'uniform-density__inv-deg': 20
-                                    }
-                                }
-                            },
-                            {
-                                'name': 'Magnocellular On',
-                                'enabled': False,
-                                'sign': 1,
-                                'transient-tau__sec':0.03,
-                                'transient-relative-weight':1.0,
-                                'bipolar-linear-threshold':0,
-                                'value-at-linear-threshold__Hz':80,
-                                'bipolar-amplification__Hz':400,
-                                'sigma-pool__deg': 0.1,
-                                'spiking-channel': {
-                                    'g-leak__Hz': 50,
-                                    'sigma-V': 0,
-                                    'refr-mean__sec': 0.003,
-                                    'refr-stdev__sec': 0,
-                                    'random-init': 1,
-                                    'circular-array': {
-                                        'fovea-density__inv-deg': 15.0
-                                    }
-                                }
-                            },
-                            {
-                                'name': 'Magnocellular Off',
-                                'enabled': False,
-                                'sign': -1,
-                                'transient-tau__sec':0.03,
-                                'transient-relative-weight':1.0,
-                                'bipolar-linear-threshold':0,
-                                'value-at-linear-threshold__Hz':80,
-                                'bipolar-amplification__Hz':400,
-                                'sigma-pool__deg': 0.1,
-                                'spiking-channel': {
-                                    'g-leak__Hz': 50,
-                                    'sigma-V': 0,
-                                    'refr-mean__sec': 0.003,
-                                    'refr-stdev__sec': 0,
-                                    'random-init': 1,
-                                    'circular-array': {
-                                        'fovea-density__inv-deg': 15.0
-                                    }
-                                }
-                            }
-                        ]
-                    }
-        """
-        self.retina_config = {
+#only deep copy from this!
+_default_config = {
             'basic-microsaccade-generator' :{
                 'enabled': False,
                 'pixels-per-degree':200,
@@ -362,6 +200,165 @@ class RetinaConfiguration:
                 }
             ]
         }
+_config_info = {
+            'basic-microsaccade-generator' :{
+                'enabled': {
+                        'default':False, 
+                        'range':[False,True],
+                        'doc': "The microsaccade generator is not implemented in convis."
+                        },
+                'pixels-per-degree':{ 'default': 200 },
+                'temporal-step__sec':{ 'default': 0.005},
+                'angular-noise__pi-radians':{ 'default': 0.3},
+                'period-mean__sec':{ 'default': 0.2},
+                'period-stdev__sec':{ 'default': 0},
+                'amplitude-mean__deg':{ 'default': 0.5},
+                'amplitude-stdev__deg':{ 'default': 0.1},
+                'saccade-duration-mean__sec':{ 'default': 0.025},
+                'saccade-duration-stdev__sec':{ 'default': 0.005},
+            },
+            'retina': {
+                'temporal-step__sec':{ 'default': 0.01 },
+                'input-luminosity-range':{ 'default': 255 },
+                'pixels-per-degree':{ 'default': 5.0 }
+            },
+            'log-polar-scheme' : {
+                'enabled': { 'default': False},
+                'fovea-radius__deg': { 'default': 1.0},
+                'scaling-factor-outside-fovea__inv-deg': { 'default': 1.0}
+            },
+            'outer-plexiform-layers': [
+                {
+                    'linear-version': {
+                        'center-sigma__deg': { 
+                            'default': 0.05
+                            },
+                        'surround-sigma__deg': { 
+                            'default': 0.15
+                            },
+                        'center-tau__sec': {
+                            'default': 0.01
+                            },
+                        'center-n__uint': {
+                            'default': 0
+                            },
+                        'surround-tau__sec': {
+                            'default': 0.004
+                            },
+                        'opl-amplification': {
+                            'default': 10
+                            },
+                        'opl-relative-weight': {
+                            'default': 1
+                            },
+                        'leaky-heat-equation': {
+                            'default': 1
+                            },
+                        'undershoot': {
+                            'enabled': { 'default': True},
+                            'relative-weight': { 'default': 0.8},
+                            'tau__sec': { 'default': 0.1}
+                        }                    
+                    }
+                }
+            ],
+            'contrast-gain-control': {
+                'opl-amplification__Hz': { 'default': 50}, # for linear OPL: ampOPL = relative_ampOPL / fatherRetina->input_luminosity_range ;
+                'bipolar-inert-leaks__Hz': { 'default': 50},
+                'adaptation-sigma__deg': { 'default': 0.2},
+                'adaptation-tau__sec': { 'default': 0.005},
+                'adaptation-feedback-amplification__Hz': { 'default': 0}
+            },
+            'ganglion-layers': [
+                {
+                    'name': { 
+                        'default': 'Cell Layer' },
+                    'enabled': { 
+                        'default': True},
+                    'sign': { 
+                        'default': {'On': 1, 'Off': -1}, 
+                        'values': [-1,1] },
+                    'transient-tau__sec':{ 
+                        'default': {'Parvocellular': 0.02, 'Magnocellular': 0.03}, 
+                        'range': ['log',0.0001,1.0]},
+                    'transient-relative-weight':{ 
+                        'default': {'Parvocellular': 0.7, 'Magnocellular': 1.0},
+                        'range':[0.0,1.0]},
+                    'bipolar-linear-threshold':{ 
+                        'default': 0, 
+                        'var_name':'i_0_g',
+                        'range': [-1.0,1.0]},
+                    'value-at-linear-threshold__Hz':{ 
+                        'default': {'Parvocellular': 37.0, 'Magnocellular': 80.0}
+                        },
+                    'bipolar-amplification__Hz':{ 
+                        'default': {'Parvocellular': 0, 'Magnocellular':400},
+                        'range': [0,600]
+                        },
+                    'sigma-pool__deg': {
+                        'default': {'Parvocellular': 0.0, 'Magnocellular': 0.1}
+                        },
+                    'spiking-channel': {
+                        'g-leak__Hz': { 
+                            'default': 50
+                            },
+                        'sigma-V': { 
+                            'default': 0.1
+                            },
+                        'refr-mean__sec': { 
+                            'default': 0.003
+                            },
+                        'refr-stdev__sec': { 
+                            'default': 0
+                            },
+                        'random-init': { 
+                            'default': 1
+                            },
+                        'square-array': {
+                            'size-x__deg': { 
+                                'default': 4
+                                },
+                            'size-y__deg': { 
+                                'default': 4
+                                },
+                            'uniform-density__inv-deg': { 
+                                'default': 20
+                                }
+                        }
+                    }
+                }
+            ]
+        }
+
+
+class RetinaConfiguration:
+    """
+        A configuration object that writes an xml file for VirtualRetina.
+
+        (When this is altered, silver.glue.RetinaConfiguration has to also be updated by hand)
+
+        Does not currently care to parse an xml file, but can save/load in json instead.
+        The defaults are equal to `human.parvo.xml`.
+
+        Values can be changed either directly in the configuration dictionary, or with the `set` helperfunction::
+
+            config = silver.glue.RetinaConfiguration()
+            config.retina_config['retina']['input-luminosity-range'] = 200
+            config.set('basic-microsaccade-generator.enabled') = True
+            config.set('ganglion-layers.*.spiking-channel.sigma-V') = 0.5 # for all layers
+
+    """
+    def __init__(self,updates={}):
+        self.default()
+        self.retina_config = dict_recursive_update(self.retina_config,updates)
+    def default(self):
+        """
+        Generates a default config::
+
+            self.retina_config = 
+        """ + str(_default_config)
+
+        self.retina_config = copy.deepcopy(_default_config)
     def get(self,key,default=None):
         """
             Retrieves values from the configuration.
@@ -369,6 +366,8 @@ class RetinaConfiguration:
             conf.set("ganglion-layers.*.spiking-channel.sigma-V",None) # gets the value for all layers
             conf.set("ganglion-layers.0",{}) # gets the first layer
         """
+        if key == 'pixels-per-degree':
+            return self.retina_config.get('retina',{}).get('pixels-per-degree',default)
         def get(config,key,default):
             if key == '':
                 return config
@@ -630,7 +629,11 @@ class RetinaConfiguration:
         import copy
         return RetinaConfiguration(copy.copy(self.retina_config))
 
+def default_config():
+    return RetinaConfiguration()
 
+def random_config():
+    return RetinaConfiguration()
 
 def deriche_filter_density_map(retina, sigma0 = 1.0, Nx = None, Ny = None):
     """
