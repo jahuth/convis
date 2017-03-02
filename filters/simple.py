@@ -221,6 +221,31 @@ ConvolutionFilter1d = K_1d_kernel_filter
 ConvolutionFilter2d = G_2d_kernel_filter
 ConvolutionFilter3d = K_3d_kernel_filter
 
+
+class Nonlinearity(N):
+    """
+    :math:`output = N(eT * V_{Bip})`
+    :math:`N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
+    :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
+    """
+    def __init__(self,config={},name=None,model=None):
+        self.model = model
+        self.set_config(config)
+        my_input = self.create_input()
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',70.0)),
+                                          name="i_0_G")
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+                                          name="v_0_G")
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',100.0)),
+                                          name="lambda_G")
+        self.N = GraphWrapper(as_variable(theano.tensor.switch(my_input < self._v_0_G, 
+                                 as_variable(self._i_0_G/(1-self._lambda_G*(my_input-self._v_0_G)/self._i_0_G),name='N_0',html_name='N<sub>V&lt;v0</sub>'),
+                                 as_variable(self._i_0_G + self._lambda_G*(my_input-self._v_0_G),name='N_1',html_name='N<sub>V&gt;=v0</sub>')),'output',
+                        requires=[self._lambda_G,self._i_0_G,self._v_0_G]),name='N',ignore=[my_input],parent=self).graph
+        node_type = 'Nonlinear Node'
+        node_description = lambda: ''
+        super(Nonlinearity,self).__init__(make_nd(self.N,3),name=name)
+
 class MaxFilter(N):        
     def __init__(self,config={},name=None,model=None):
         """

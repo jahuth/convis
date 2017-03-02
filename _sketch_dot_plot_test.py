@@ -351,7 +351,7 @@ if False:
                     connections.append((p[-1],full_path(node), ' [color=black]'))
             connections.append((full_path(v),full_path(get_convis_attribute(v,'state_out_state')), ' [color=red,style=dashed,penwidth=2.0,constraint=false]'))
 connections = [(c[0],c[1]) for c in connections]
-connections = convis.f7(connections)
+connections = convis.unique_list(connections)
 print len(connections)
 for c in connections:
     fmt = {};

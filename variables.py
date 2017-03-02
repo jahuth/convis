@@ -2,7 +2,8 @@ import theano
 import theano.tensor as T
 import new
 from debug import *
-from o import f7, O, Ox, save_name
+from misc_utils import unique_list
+from o import O, Ox, save_name
 from theano.tensor.var import TensorVariable
 from theano.tensor.sharedvar import ScalarSharedVariable
 replaceable_theano_vars = [TensorVariable,ScalarSharedVariable]
@@ -30,13 +31,6 @@ def has_convis_attribute(v,key,default=None):
     global global_lookup_table
     if key in get_convis_attribute_dict(v):
         return True
-    # if hasattr(v,'_convis_lookup'):
-    #     if v._convis_lookup in global_lookup_table and key in global_lookup_table[v._convis_lookup]:
-    #         return True
-    # if hasattr(v,'name') and v.name is not None and '!' in v.name:
-    #     s = v.name.split('!')[0]
-    #     if s in global_lookup_table and key in global_lookup_table[s]:
-    #         return True
     return hasattr(v,key)
     
 def get_convis_attribute(v,key,default=None):
@@ -48,19 +42,7 @@ def get_convis_attribute(v,key,default=None):
             return None
         return name
     d = get_convis_attribute_dict(v)
-    if key in d:
-        return d[key]
-    # if v is None:
-    #     return default
-    # global global_lookup_table
-    # if hasattr(v,'_convis_lookup'):
-    #     if v._convis_lookup in global_lookup_table:
-    #         return global_lookup_table[v._convis_lookup].get(key,default)
-    # if hasattr(v,'name') and v.name is not None and '!' in v.name:
-    #     s = v.name.split('!')[0]
-    #     if s in global_lookup_table:
-    #         return global_lookup_table[s].get(key,default)
-    return getattr(v,key,default)
+    return d.get(key, getattr(v, key, default))
 
 def get_convis_key(v):
     if hasattr(v,'_convis_lookup'):
@@ -114,29 +96,6 @@ def set_convis_attribute(v,key,value):
         else:
             v.name = value
         return
-    # if only_use_lookup_table and key not in ['__is_convis_var']:
-    #     old_key = None
-    #     convis_key = None
-    #     if not hasattr(v,'_convis_lookup'):
-    #         if hasattr(v,'name') and v.name is not None and '!' in v.name:
-    #             old_key = v.name.split('!')[0]
-    #         convis_key = len(global_lookup_table.keys())
-    #         while str(convis_key) in global_lookup_table.keys():
-    #             convis_key += 1
-    #         v.name = str(convis_key)+'!'+str(v.name)
-    #         v._convis_lookup = str(convis_key)
-    #     else:
-    #         convis_key = v._convis_lookup
-    #     if not v._convis_lookup in global_lookup_table:
-    #         global_lookup_table[convis_key] = {}
-    #     if old_key in global_lookup_table:
-    #         global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
-    #     if key is 'name':
-    #         convis_key_and_name = str(v.name).split('!')
-    #         v.name = str(convis_key)+'!'+convis_key_and_name[-1]
-    #     else:
-    #         global_lookup_table[v._convis_lookup][key] = value
-    # else:
     setattr(v,key,value)
 
 def update_convis_attributes(v,new_d):
@@ -147,20 +106,6 @@ def update_convis_attributes(v,new_d):
     if only_use_lookup_table:
         d = get_convis_attribute_dict(v)
         d.update(new_d)
-        # old_key = None
-        # if not hasattr(v,'_convis_lookup'):
-        #     if hasattr(v,'name') and v.name is not None and '!' in v.name:
-        #         old_key = v.name.split('!')[0]
-        #     new_key = len(global_lookup_table.keys())
-        #     while new_key in global_lookup_table.keys():
-        #         new_key += 1
-        #     v.name = str(new_key)+'!'+str(v.name)
-        #     v._convis_lookup = new_key
-        # if not v._convis_lookup in global_lookup_table:
-        #     global_lookup_table[v._convis_lookup] = {}
-        # if old_key in global_lookup_table:
-        #     global_lookup_table[v._convis_lookup].update(global_lookup_table[old_key])
-        # global_lookup_table[v._convis_lookup].update(new_d)
     else:
         for (key,value) in d.items():
             setattr(v,key,value)
@@ -322,8 +267,8 @@ def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
             The path will only be used from element pi onwards
     """
     o = {}
-    paths = f7([name_sanitizer(get_convis_attribute(get_convis_attribute(v,'path')[pi],'name')) for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
-    leaves = f7([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
+    paths = unique_list([name_sanitizer(get_convis_attribute(get_convis_attribute(v,'path')[pi],'name')) for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
+    leaves = unique_list([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
     for p in paths:
         o.update(**{p: create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path') 
                                                                 and len(get_convis_attribute(v,'path')) > pi 
@@ -340,8 +285,8 @@ def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
         name_sanitizer: eg. convis.base.save_name or str
     """
     o = {}
-    paths = f7([get_convis_attribute(v,'path')[pi] for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
-    leaves = f7([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
+    paths = unique_list([get_convis_attribute(v,'path')[pi] for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
+    leaves = unique_list([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
     for p in paths:
         o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if 
                                                         has_convis_attribute(v,'path') 

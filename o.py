@@ -45,13 +45,6 @@ try:
 except:
     import pickle
 
-def f7(seq):
-    """ This function is removing duplicates from a list while keeping the order """
-    seen = set()
-    seen_add = seen.add
-    return [x for x in seq if not (x in seen or seen_add(x))]
-
-
 def find_a_class(class_name):
     class_path = class_name.split('.')
     try:

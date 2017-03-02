@@ -23,6 +23,7 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 
 
 """
+from .misc_utils import suppress
 from .retina_virtualretina import RetinaConfiguration, default_config, random_config
 from . import retina_virtualretina
 from .base import M, GraphWrapper
@@ -80,18 +81,12 @@ class Retina(M):
         input_luminosity_range = None
         if debug in kwargs:
             self.debug = debug
-        try:
+        with suppress(Exception):
             pixel_per_degree = float(config.get('retina',{}).get('pixels-per-degree',None))
-        except:
-            pass
-        try:
+        with suppress(Exception):
             steps_per_second = 1.0/float(config.get('retina',{}).get('temporal-step__sec',None))
-        except:
-            pass
-        try:
+        with suppress(Exception):
             input_luminosity_range = float(config.get('retina',{}).get('input-luminosity-range',None))
-        except:
-            pass
         super(Retina,self).__init__(pixel_per_degree=pixel_per_degree,steps_per_second=steps_per_second,input_luminosity_range=input_luminosity_range,**kwargs)
         self.config = config
         if self.config is None:

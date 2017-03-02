@@ -1,8 +1,9 @@
+import misc_utils
+
 import theano_utils
 reload(theano_utils)
 import variable_describe
 reload(variable_describe)
-
 
 import base
 reload(base)
@@ -18,7 +19,7 @@ from filters.simple import *
 from theano.tensor import as_tensor_variable as as_var
 import retina
 reload(retina)
-
+import models
 
 import error_functions
 reload(error_functions)

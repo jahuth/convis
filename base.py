@@ -1,4 +1,5 @@
-import litus
+from misc_utils import unique_list, suppress
+
 import theano
 import theano.tensor as T
 import numpy as np
@@ -22,13 +23,6 @@ from variables import *
 import o
 from o import O, Ox, save_name
 from collections import OrderedDict
-
-def f7(seq):
-    """ This function is removing duplicates from a list while keeping the order """
-    seen = set()
-    seen_add = seen.add
-    return [x for x in seq if not (x in seen or seen_add(x))]
-
 
 ### Node and Model classes
 
@@ -100,7 +94,7 @@ class GraphWrapper(object):
         return p
     def wrap_scans(self,g):
         my_scan_vars = filter(lambda x: theano_utils.is_scan_op(x), theano_utils.get_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False))
-        for i,ow in enumerate(f7([v.owner for v in my_scan_vars])):
+        for i,ow in enumerate(unique_list([v.owner for v in my_scan_vars])):
             op = ow.op
             variables_leading_to_op = [v for v in my_scan_vars if v.owner.op is op]
             #print ow, variables_leading_to_op
@@ -461,18 +455,18 @@ class M(object):
                     set_convis_attribute(v,'variable_type', 'replaced_input')
                 theano_utils.replace(n.graph,a,b)
         outputs = [o._as_TensorVariable() if hasattr(o,'_as_TensorVariable') else o for o in self.outputs]
-        variables = f7([v for o in outputs for v in theano_utils.get_variables_iter(o)])
+        variables = unique_list([v for o in outputs for v in theano_utils.get_variables_iter(o)])
         for v in variables:
             if has_convis_attribute(v,'updates'):
                 if v in updates:
                     updates[v] = T.sum([updates[v]]+[u for u in get_convis_attribute(v,'updates')])
                 else:
                     updates[v] = T.sum([u for u in get_convis_attribute(v,'updates')])
-        self.compute_input_order = f7(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
+        self.compute_input_order = unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = additional_inputs
         self.compute_state_inits = []
         state_variables = filter(is_state,variables)
-        self.compute_output_order = f7(outputs + [get_convis_attribute(v,'state_out_state') for v in state_variables])
+        self.compute_output_order = unique_list(outputs + [get_convis_attribute(v,'state_out_state') for v in state_variables])
         self.compute_updates_order = theano.updates.OrderedUpdates()
         self.compute_updates_order.update(updates)
         for state_var in state_variables:
@@ -553,9 +547,10 @@ class M(object):
         for shared_parameter in self.parameters._all:
             if is_shared_parameter(shared_parameter):
                 #if (not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False) and not hasattr(shared_parameter,'optimized'):
-                # until we can track which config values where changed, we re-initialize everything
+                # until we can track which config values were changed, we re-initialize everything
                 # all smart stuff is now in the injected .update method
-                get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input,model=self,resolution=self.resolution))
+                if (not has_convis_attribute(shared_parameter,'initialized') or get_convis_attribute(shared_parameter,'initialized',)) and not has_convis_attribute(shared_parameter,'optimized'):
+                    get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input,model=self,resolution=self.resolution))
                 #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
@@ -643,10 +638,10 @@ class Runner(object):
     """
     def __init__(self,model):
         self.model=model
-        self.input_order = [] #f7(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
+        self.input_order = [] #unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = [] #additional_inputs
         self.state_inits = [] #?
-        self.output_order = [] # f7(self.outputs + [v.state_out_state for v in state_variables])
+        self.output_order = [] # unique_list(self.outputs + [v.state_out_state for v in state_variables])
         self.updates = theano.updates.OrderedUpdates()
         self.givens = [] # [(a,b) for (a,b) in givens.items()]
         self.debug = False

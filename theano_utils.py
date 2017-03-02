@@ -1,4 +1,3 @@
-import litus
 import theano
 import theano.tensor as T
 import numpy as np
@@ -7,14 +6,10 @@ from theano.tensor.nnet.conv3d2d import conv3d
 from theano.tensor.signal.conv import conv2d
 import uuid
 from . import retina_base
+from misc_utils import unique_list, suppress
 from exceptions import NotImplementedError
 from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, Variable, is_var
 
-def f7(seq):
-    """ This function is removing duplicates from a list while keeping the order """
-    seen = set()
-    seen_add = seen.add
-    return [x for x in seq if not (x in seen or seen_add(x))]
 
 dtensor5 = T.TensorType('float64', (False,)*5)
 
@@ -130,7 +125,7 @@ def get_variables_iter(apply_node,depth=None,ignore=[],explore_scan=True,include
     if hasattr(apply_node,'_as_TensorVariable'):
         apply_node = apply_node._as_TensorVariable() 
     if type(apply_node) in [list,tuple]:
-        return f7([b for a in apply_node for b in get_variables_iter(a,depth=depth)])
+        return unique_list([b for a in apply_node for b in get_variables_iter(a,depth=depth)])
     else:
         nodes_to_explore = [apply_node]
         nodes_explored = []
@@ -206,13 +201,9 @@ def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=
 
 def replace(apply_node,old,new,depth=None):
     for v in get_variables_iter(apply_node,depth=depth):
-        try:
-            #for old in v.owner.inputs:
-            #    #v.owner.inputs.replace(old,new)
+        with suppress():
             inputs = v.owner.inputs
             v.owner.inputs = map(lambda x:new if x==old else x,inputs)
-        except:
-            pass
 
 def _replace(apply_node,old,new,depth=300):
     """ replaces one variable in a graph with another one """
