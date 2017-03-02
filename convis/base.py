@@ -1,4 +1,5 @@
-import litus
+from misc_utils import unique_list, suppress
+
 import theano
 import theano.tensor as T
 import numpy as np
@@ -9,220 +10,19 @@ import uuid
 from . import retina_base
 from . import theano_utils
 from exceptions import NotImplementedError
+from variable_describe import describe, describe_dict, describe_html
+import warnings
 
+import debug
+reload(debug)
+from debug import *
 
-def f7(seq):
-    """ This function is removing duplicates from a list while keeping the order """
-    seen = set()
-    seen_add = seen.add
-    return [x for x in seq if not (x in seen or seen_add(x))]
-
-
-def describe(v):
-    if type(v) in [list, tuple] or hasattr(v,'__iter__'):
-        try:
-            return [describe(vv) for vv in v]
-        except:
-            # Tensor Variables love to raise TypeErrors when iterated over
-            pass
-    d = {}
-    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set']:
-        if hasattr(v,k):
-            d[k] = getattr(v,k)
-    try:
-        d['value'] = v.get_value()
-    except:
-        pass
-    try:
-        d['got'] = v.get(tu.create_context_O(v))
-    except:
-        pass
-    return d
-
-### Helper functions to deal with annotated variables
-
-def unindent(text):
-    from textwrap import dedent
-    if text == '':
-        return text
-    lines = text.split('\n')
-    if lines[0] == lines[0].rstrip():
-        return lines[0]+'\n'+dedent('\n'.join(lines[1:]))
-    else:
-        return dedent(text)
-
-def add_kwargs_to_v(v,**kwargs):
-    v.__dict__.update(kwargs)
-    v.__dict__['doc'] = unindent(kwargs.get('doc',''))
-    return v    
-
-
-# functions on theano variables
-def as_state(v,out_state=None,init=None,name=None,**kwargs):
-    v.variable_type = 'state'
-    if out_state is not None:
-        v.state_out_state = out_state
-    if init is not None:
-        v.state_init = init
-    if name is not None:
-        v.name = name
-    return add_kwargs_to_v(v,**kwargs)
-def as_out_state(v,in_state=None,init=None,name=None,**kwargs):
-    v.variable_type = 'out_state'
-    if in_state is not None:
-        as_state(in_state,out_state=v,init=init)
-        v.state_in_state = in_state
-    if name is not None:
-        v.name = name
-    return add_kwargs_to_v(v,**kwargs)
-S = as_state
-OS = as_out_state
-def as_input(v,name=None,**kwargs):
-    v.variable_type = 'input'
-    if name is not None:
-        v.name = name
-    v.__dict__.update(kwargs)
-    return add_kwargs_to_v(v,**kwargs)
-I = as_input
-def as_parameter(v,init=None,name=None,**kwargs):
-    v.variable_type = 'parameter'
-    if init is not None:
-        v.param_init = init
-    if name is not None:
-        v.name = name
-    v.__dict__.update(kwargs)
-    return add_kwargs_to_v(v,**kwargs)
-P = as_parameter
-
-
-class O(object):
-    """
-        An `O` object is an object that allows easy access to its members.
-
-        Example::
-
-            o1 = O(a=1,b=2,c=3)
-            print o1.a
-            print dir(o1)
-
-            print o1(d=4).d # creates a new O object with the added keywords
-
-    """
-    def __init__(self,**kwargs):
-        self.__dict__.update(kwargs)
-    def __call__(self,**kwargs):
-        self.__dict__.update(kwargs)
-        return self
-    def __iter__(self):
-        return iter(self.__dict__.values())
-
-def create_context_O(var):
-    """
-        This function creates the 'typical' context that annotated variables can expect when defining `init` functions.
-
-            * `var`: the variable itself
-            * `node`: the node that wraps this part of the graph (providing eg. configuration options)
-            * `get_config`: a function of `node` that provides the configuration dictionary local to this node
-            * `model`: the model providing global options such as `pixel_to_degree()` and `seconds_to_step()`
-    
-        During execution:
-
-            * `input`: the variable that is fed as input to the model (not the node!)
-
-        Further, if the variable has a `config_key` and a `config_default` field,
-        two short cut functions retrieve and save the configuration value to minimize code redundancy:
-
-            * `value_from_config()`: retrieves the configuration value from `node`, falling back to `config_default` if no option is provided
-            * `value_to_config(v)`: calls the `set_config` method of the `node` to save a configuration value (eg. when updated when optimizing)
-
-        To use these values in an `init` function eg::
-
-            as_parameter(T.iscalar("k"),init=lambda x: x.input.shape[0])
-    """
-    if hasattr(var, 'config_key') and hasattr(var,'config_default'):
-        return O(var=var,node=var.node,model=var.node.model,
-                 get_config=var.node.get_config,
-                 value_from_config=lambda: var.node.get_config(var.config_key,var.config_default),
-                 value_to_config=lambda v: var.node.set_config(var.config_key,v))
-    return O(var=var,node=var.node,model=var.node.model,get_config=var.node.get_config)
-
-def create_hierarchical_O(vs,pi=0):
-    """
-
-    """
-    o = O()
-    paths = f7([v.path[pi].name for v in vs if hasattr(v,'path') and len(v.path) > pi+1])
-    leaves = f7([v for v in vs if hasattr(v,'path') and len(v.path) == pi+1])
-    for p in paths:
-        o(**{p: create_hierarchical_O([v for v in vs if hasattr(v,'path') and len(v.path) > pi and v.path[pi].name == p], pi+1)})
-    for l in leaves:
-        o(**{l.name: l})
-    return o
-
-def is_state(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'state'
-def is_out_state(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'out_state'
-def is_input_parameter(v):
-    return hasattr(v,'variable_type') and (not hasattr(v,'get_value')) and v.variable_type == 'parameter'
-def is_shared_parameter(v):
-    return hasattr(v,'variable_type') and hasattr(v,'get_value') and v.variable_type == 'parameter'
-def is_parameter(v):
-    return is_input_parameter(v) or is_shared_parameter(v)
-def is_input(v):
-    return hasattr(v,'variable_type') and v.variable_type == 'input'
-def are_states(vs):
-    return filter(is_state,vs)
-def are_out_states(vs):
-    return filter(is_out_state,vs)
-def are_parameters(vs):
-    return filter(is_input_parameter,vs)
-def are_inputs(vs):
-    return filter(is_input,vs)
-
-def shared_parameter(fun,init_object=O(),**kwargs):
-    return as_parameter(theano.shared(fun(init_object)),
-                        initialized = True,
-                        init=fun,**kwargs)
-def pad5(ar,N,axis=3,mode='mirror',c=0.0):
-    """
-        Padds a 5 dimensional tensor with N additional values.
-
-        Dimensions 0 and 2 are ignored.
-    """
-    N1,N2 = (N/2),N-(N/2)
-    if mode == 'mirror':
-        if axis == 1:
-            return T.concatenate([ar[:,N:0:-1,:,:,:],ar],axis=1)
-        if axis == 3:
-            return T.concatenate([ar[:,:,:,N1:0:-1,:],ar,ar[:,:,:,-1:-(N2+1):-1,:]],axis=3)
-        if axis ==4:
-            return T.concatenate([ar[:,:,:,:,N1:0:-1],ar,ar[:,:,:,:,-1:-(N2+1):-1]],axis=4)
-    if mode == 'border':
-        if axis == 1:
-            return T.concatenate([ar[:,:1,:,:,:]]*N+[ar],axis=1)
-        if axis == 3:
-            return T.concatenate([ar[:,:,:,:1,:]]*N1+[ar]+[ar[:,:,:,-1:,:]]*N2,axis=3)
-        if axis ==4:
-            return T.concatenate([ar[:,:,:,:,:1]]*N1+[ar]+[ar[:,:,:,:,-1:]]*N2,axis=4)
-    if mode == 'const':
-        if axis == 1:
-            return T.concatenate([c*T.ones_like(ar[:,N:0:-1,:,:,:]),ar],axis=1)
-        if axis == 3:
-            return T.concatenate([c*T.ones_like(ar[:,:,:,N1:0:-1,:]),ar,c*T.ones_like(ar[:,:,:,-1:-(N2+1):-1,:])],axis=3)
-        if axis ==4:
-            return T.concatenate([c*T.ones_like(ar[:,:,:,:,N1:0:-1]),ar,c*T.ones_like(ar[:,:,:,:,-1:-(N2+1):-1])],axis=4)
-        
-def pad5_txy(ar,Nt,Nx,Ny,mode='mirror',c=0.0):
-    """
-        padds a 5 dimensional tensor with additional values
-
-            Nt: number of steps added to the temporal dimension
-            Nx,Ny: number of pixels added to the spatial dimensions
-
-    """
-    return pad5(pad5(pad5(I,Nt,1,mode=mode),Nx,3,mode=mode),Ny,4,mode=mode)
-
+import variables
+reload(variables)
+from variables import *
+import o
+from o import O, Ox, save_name
+from collections import OrderedDict
 
 ### Node and Model classes
 
@@ -236,21 +36,55 @@ class GraphWrapper(object):
         
 
     """
-    def __init__(self,graph,name,m=None,parent=None,**kwargs):
+    parent = None
+    config_dict = None
+    node_type = 'Node'
+    node_description = ''
+    def __init__(self,graph,name,m=None,parent=None,ignore=[],scan_op=None,**kwargs):
         self.m = m
         self.parent = parent
-        self.graph = T.as_tensor_variable(graph)
-        if self.graph.name is None:
-            self.graph.name = 'output'
-        #self.outputs = [self.graph]
+        self.graph = graph
+        if has_convis_attribute(self.graph,'root_of'):
+            return get_convis_attribute(self.graph,'root_of')
+        if not is_var(self.graph):
+            self.graph = as_output(T.as_tensor_variable(self.graph))
+        if get_convis_attribute(self.graph,'name') is None:
+            # we only replace the name if it is necessary
+            set_convis_attribute(self.graph,'name','output')
+        set_convis_attribute(self.graph,'root_of', self)
         self.name = name
-        self.variable_dict = {}
+        self.ignore = ignore
+        self.scan_op = scan_op
+        self.__dict__.update(kwargs)
+        self.follow_scan = True
+        if self.follow_scan and scan_op is None:
+            self.wrap_scans(self.graph)
         self.label_variables(self.graph)
-        #self.inputs = theano_utils.get_input_variables_iter(self.graph)
-        self.node_type = 'Node'
-        self.node_description = ''
-        #if self.m is not None:
-        #    self.m.add(self)
+    def get_model(self):
+        if hasattr(self,'model'):
+            return self.model
+        if self.parent is not None:
+            return self.parent.get_model()
+    def get_config(self,key=None,default=None,type_cast=None):
+        if key is None:
+            return self.config_dict
+        if type_cast is not None:
+            return type_cast(self.get_config(key,default))
+        return self.config.get(key,default)
+    def set_config(self,key,v=None):
+        if v is None and hasattr(key,'get'):
+            send_dbg('set_config',str(getattr(self,'name',''))+' replaced config: '+str(key)+'',1)
+            self.config_dict = key
+        else:
+            send_dbg('set_config',str(getattr(self,'name',''))+' set config: '+str(key)+': '+str(v),1)
+            self.config_dict[key] = v
+    @property
+    def config(self):
+        if self.config_dict is None:
+            if self.parent is not None:
+                return self.parent.config
+            raise Exception('GraphWrapper '+str(self.name)+' has no configuration! But also no parent!')
+        return self.config_dict
     def get_parents(self):
         p = []
         if self.parent is not None:
@@ -258,28 +92,50 @@ class GraphWrapper(object):
             if hasattr(self.parent,'get_parents'):
                 p.extend(self.parent.get_parents())
         return p
-    def label_variables(self,g):
-        my_named_vars = theano_utils.get_named_variables_iter(g)
+    def wrap_scans(self,g):
+        my_scan_vars = filter(lambda x: theano_utils.is_scan_op(x), theano_utils.get_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False))
+        for i,ow in enumerate(unique_list([v.owner for v in my_scan_vars])):
+            op = ow.op
+            variables_leading_to_op = [v for v in my_scan_vars if v.owner.op is op]
+            #print ow, variables_leading_to_op
+            GraphWrapper(as_output(T.as_tensor_variable(op.outputs),name='scan_group_'+str(i)),scan_op=op,name='Scan Loop '+str(i),ignore=[self.graph]+self.ignore+ow.inputs) # creating a sub node
+            #+ow.inputs
+            self.label_variables([o for o in op.outputs])
+    def label_variables(self,g,follow_scan=True,max_depth=2):
+        if max_depth <= 0:
+            return
+        my_named_vars = theano_utils.get_named_variables_iter(g,ignore=self.ignore,explore_scan=True,include_copies=True)
         # variables that don't have a name are not tracked.
-        for v in my_named_vars:
-            if hasattr(v,'path'):
-                if v.path[0] == self:
+        # exception: we name and claim all scan op variables, since they mess up plotting the graph!
+        my_scan_vars = filter(lambda x: theano_utils.is_scan_op(x), theano_utils.get_variables_iter(g,ignore=self.ignore,explore_scan=False,include_copies=False))
+        if not follow_scan or not self.follow_scan:
+            my_scan_vars = []
+        scan_ops = {}
+        for i,v in enumerate(my_scan_vars):
+            if get_convis_attribute(v,'name') is None:
+                set_convis_attribute(v,'name','scan_output_'+str(i))
+            as_output(v)
+        for v in my_named_vars + [v for v in my_scan_vars if v.owner.op != self.scan_op]:
+            if not get_convis_attribute(v,'path',None) is None:
+                if get_convis_attribute(v,'path')[0] == self:
                     continue # we already are the owner of this variable
-            if hasattr(v,'full_name'):
-                v.full_name = self.name+'.'+v.full_name
-                v.path = [self] + v.path
+            if has_convis_attribute(v,'full_name'):
+                set_convis_attribute(v,'full_name', self.name+'.'+get_convis_attribute(v,'full_name',''))
+                set_convis_attribute(v,'path', [self] + get_convis_attribute(v,'path',[v]))
             else:
-                v.full_name = self.name+'.'+v.name
-                v.path = [self,v]
-            if hasattr(v,'node') and v.node != None and v.node != self:
-                if v.node.parent is None:
-                    v.node.parent = self
+                set_convis_attribute(v,'full_name', self.name+'.'+str(get_convis_attribute(v,'name','')))
+                set_convis_attribute(v,'path', [self, v])
+            global do_debug
+            if do_debug:
+                print 'labeled: ',get_convis_attribute(v,'path')
+            if get_convis_attribute(v,'node',None) != None and get_convis_attribute(v,'node') != self:
+                if get_convis_attribute(v,'node').parent is None:
+                    get_convis_attribute(v,'node').parent = self
             else:
-                v.node = self
-            if not hasattr(v,'simple_name') or v.simple_name is None:
-                v.simple_name = v.name
+                set_convis_attribute(v,'node', self)
+            if not get_convis_attribute(v,'simple_name', None) is None:
+                set_convis_attribute(v,'simple_name', get_convis_attribute(v,'name'))
             #v.node = self
-        self.variable_dict.update(dict([(v.full_name,v) for v in my_named_vars]))
     def _as_TensorVariable(self):
         """
             When theano uses an object as a variable it will first check if it supports this function.
@@ -288,41 +144,33 @@ class GraphWrapper(object):
             Note from theano source: # TODO: pass name and ndim arguments
         """
         return self.graph
-    @property
-    def inputs(self):
-        return create_hierarchical_O(filter(is_input,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
-    #@property
-    #def outputs(self):
-    #    return [self.graph]
+    def filter_variables(self,filter_func=is_input):
+        return create_hierarchical_Ox(filter(filter_func,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def output(self):
         return self.graph
-        #return create_hierarchical_O(theano_utils.get_input_variables_iter(self.graph),pi=1)
     @property
     def parameters(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+        return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def params(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+        return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def states(self):
-        return create_hierarchical_O(filter(is_state,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
+        return create_hierarchical_Ox(filter(is_state,theano_utils.get_named_variables_iter(self.graph)),pi=len_parents(self))
     @property
     def variables(self):
-        return create_hierarchical_O(theano_utils.get_named_variables_iter(self.graph),pi=len_parents(self))
+        return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.graph),pi=len_parents(self))
     def __repr__(self):
-        if callable(self.node_description):
+        if hasattr(self, 'node_description') and callable(self.node_description):
             # we can provide a dynamic description
-            return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description())
-        return '['+str(self.node_type)+'] ' + self.name + ': ' + str(self.node_description)
-    def map_state(self,in_state,out_state,**kwargs):
-        as_state(in_state,out_state=out_state,**kwargsW)
+            return '['+str(self.node_type)+'] ' + getattr(self,'name','??') + ': ' + str(self.node_description())
+        return '['+str(self.node_type)+'] ' + getattr(self,'name','??') + ': ' + str(self.node_description)
     def replace(self,a,b):
-        """todo: decide of whether to do this here or in node or model (or different alltogether)"""
         for o in self.graph:
             theano_utils._replace(o,b,a)
         # replace in out states
-        for o in [v.state_out_state for v in filter(is_state,self.get_variables())]:
+        for o in [get_convis_attribute(v,'state_out_state') for v in filter(is_state,self.get_variables())]:
             theano_utils._replace(o,b,a)
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         # todo: where to save config?
@@ -330,312 +178,346 @@ class GraphWrapper(object):
             return shared_parameter(f,
                                     O()(node=self,
                                         model=self.model,
+                                        resolution=self.model.resolution,
                                         get_config=self.get_config,
                                         value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
+    def add_input(self,other,replace_inputs=do_replace_inputs,input=None):
+        if input is None:
+            if hasattr(self, 'default_input'):
+                input = self.default_input
+            elif hasattr(self.variables, 'input'):
+                input = self.variables.input
+            else:
+                raise Exception('No input found in '+getattr(self,'name','[unnamed node]')+'!')
+        if type(input) is str:
+            if input in self.inputs.keys():
+                input = self.inputs[input]
+            else:
+                raise Exception('Input "'+str(input)+'"" found in '+getattr(self,'name','[unnamed node]')+' inputs!')
+        if do_debug:
+            print 'connecting',other.name,'to',getattr(self,'name','??'),''
+        v = other
+        if hasattr(other,'_as_TensorVariable'):
+            v = other._as_TensorVariable()
+        if type(input.owner.op) == T.elemwise.Sum:
+            if do_debug:
+                print 'Adding to sum'
+            # assuming a 3d input/ output
+            if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
+            else:
+                input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
+            if do_debug:
+                print 'inputs are now:',input.owner.inputs[0].owner.inputs
+            if get_convis_attribute(v, 'connects', None) is None:
+                set_convis_attribute(v, 'connects',[])
+            get_convis_attribute(v,'connects').append([self,other])
+        else:
+            if has_convis_attribute(input,'variable_type') and get_convis_attribute(input,'variable_type') == 'input':
+                set_convis_attribute(input,'variable_type','replaced_input')
+            if get_convis_attribute(v, 'connects',None) is None:
+                set_convis_attribute(v, 'connects',[])
+            get_convis_attribute(v,'connects').append([self,other])
+            try:
+                theano_utils._replace(self.output,input,v)
+            except:
+                print 'Something not found! ',other.variables,self.variables
+    def __iadd__(self,other):
+        self.add_input(other)
+        return self
+    def __neg__(self):
+        return -self.graph
+    def __add__(self,other):
+        return self.graph + other
+    def __radd__(self,other):
+        return other + self.graph
+    def __mul__(self,other):
+        return self.graph * other
+    def __rmul__(self,other):
+        return other * self.graph
+    def __sub__(self,other):
+        return self.graph - other
+    def __rsub__(self,other):
+        return other - self.graph
+    def __div__(self,other):
+        return self.graph / other
+    def __rdiv__(self,other):
+        return other / self.graph
+    def __floordiv__(self,other):
+        return self.graph // other
 
 class N(GraphWrapper):
-    #parameters = []
     states = {}
     state_initializers = {}
-    def __init__(self,graph,name=None,m=None,parent=None,**kwargs):
+    inputs = OrderedDict()
+    def __init__(self,graph,name=None,m=None,parent=None,config=None,**kwargs):
         if name is None:
             name = str(uuid.uuid4())
         self.m = m
         self.parent = parent
-        #self.graph = T.as_tensor_variable(graph)
-        #if self.graph.name is None:
-        #    self.graph.name = 'output'
-        #self.outputs = [self.graph]
-        #self.name = name
-        #self.set_name(name)
-        #self.inputs = theano_utils.get_input_variables_iter(self.graph)
         self.node_type = 'Node'
         self.node_description = ''
-        if self.m is not None:
-            self.m.add(self)
+        if config is not None:
+            self.set_config(config)
+        if self.config is None:
+            raise Exception('No config for node '+str(getattr(self,'name','??'))+'! Use .set_config({}) before calling super constructor!')
+        if not hasattr(self,'default_input'):
+            raise Exception('No input defined for node '+str(getattr(self,'name','??'))+'! Use .create_input(...) before calling super constructor!')
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
-    def get_parents(self):
-        p = []
-        if self.parent is not None:
-            p.append(self.parent)
-            if hasattr(self.parent,'get_parents'):
-                p.extend(self.parent.get_parents())
-        return p
-    def set_name(self,name):
-        pass
-        #self.name = name
-        #my_named_vars = theano_utils.get_named_variables_iter(self.graph)
-        #for v in my_named_vars:
-        #    if hasattr(v,'node') and v.node != self:
-        #        continue
-        #        #raise Exception('Variable registered twice!')
-        #    if not hasattr(v,'simple_name') or v.simple_name is None:
-        #        v.simple_name = v.name
-        #    v.node = self
-        #    v.name = self.name+'_'+v.simple_name
-        #self.variables = dict([(v.simple_name,v) for v in my_named_vars])
-    def get_variables(self):
-        my_named_vars = theano_utils.get_named_variables_iter(self.graph)
-        return dict([(v,v) for v in my_named_vars])
-    def get_input_variables(self):
-        return dict([(v,self) for v in theano_utils.get_input_variables_iter(self.graph)])
-    def get_output_variables(self):
-        return dict([(v,self) for v in self.outputs])
-    def set_m(self,m):
-        self.m = m
-        return self
-    def var(self,v):
-        if type(v) is str:
-            if v in self.variable_dict.keys():
-                return self.variable_dict[v]
-            else:
-                return lambda: self.var(v)
+    def create_input(self,n=1,name='input',sep='_'):
+        if n == 1:
+            self.input = T.sum([as_input(T.dtensor3(),name,replaceable_input=True)],axis=0)
+            self.default_input = self.input
+            self.inputs.update(OrderedDict([(name,self.input)]))
+            return self.input
+        elif type(n) == int:
+            self.inputs.update(OrderedDict([(name+sep+str(i),T.sum([as_input(T.dtensor3(),name+sep+str(i),replaceable_input=True)],axis=0)) for i in range(n)]))
+            self.default_input = self.inputs.values()[0]
+            self.input = T.join(*([0]+self.inputs.values()))
+            return self.inputs.values()
+        elif type(n) in [list,tuple]:
+            self.inputs.update(OrderedDict([(input_name,T.sum([as_input(T.dtensor3(),str(input_name),replaceable_input=True)],axis=0)) for input_name in n]))
+            self.default_input = self.inputs[n[0]]
+            self.input = self.inputs[n[0]]
+            return self.inputs
         else:
-            if v in self.variable_dict.values():
-                return v
-        raise Exception('\'%s\' not a variable of this node'%v)
-    def map_state(self,in_state,out_state,**kwargs):
-        self.states[in_state] = out_state
-        as_state(in_state,out_state=out_state,**kwargsW)
-    def replace(self,a,b):
-        for o in self.outputs:
-            theano_utils._replace(o,b,a)
-        # replace in out states
-        for o in [v.state_out_state for v in filter(is_state,self.get_variables())]:
-            theano_utils._replace(o,b,a)
-    def get_config(self,key,default=None):
+            raise Exception('Argument not understood. Options are: an int (either 1 for a single input or >1 for more) or a list of names for the inputs.')
+    def get_config(self,key,default=None,type_cast=None):
+        if type_cast is not None:
+            return type_cast(self.get_config(key,default))
         if not hasattr(self,'config'):
             return default
         return self.config.get(key,default)
-    def set_config(self,key,v):
-        self.config[key] = v
-        #notify model? self.model.set_config(self,key,v)
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         if 'config_key' in kwargs.keys() and 'config_default' in kwargs.keys():
             return shared_parameter(f,
                                     O()(node=self,
                                         model=self.model,
+                                        resolution=self.model.resolution,
                                         get_config=self.get_config,
                                         value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
         return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
+    def shape(self,input_shape):
+        # unless this node does something special, the shape of the output should be identical to the input
+        return input_shape
 
 
+def connect(list_of_lists):
+    """
+        Connects nodes alternatingly in sequence and parallel:
 
-class _Vars(O):
-    def __init__(self,model,**kwargs):
-        self.model = model
-        super(_Vars,self).__init__(**kwargs)
-        vars = [v for v in self.model.get_variables()  if v.name is not None]
-        nodes = f7([v.node for v in vars if hasattr(v,'node')])
-        for n in nodes:
-            self.__dict__[n.name] = O(**dict([(str(k.simple_name),k) for k in vars if hasattr(k,'node') and k.node == n]))
+        [A,B,[[C,D],[E,F],G] will results in two paths:
 
-class _Configuration(O):
-    def __init__(self,model,**kwargs):
-        self.model = model
-        super(_Configuration,self).__init__(**kwargs)
-        vars = [v for v in self.model.get_variables() if is_parameter(v)]
-        nodes = f7([v.node for v in vars if hasattr(v,'node')])
-        for n in nodes:
-            self.__dict__[n.name] = O(**dict([(str(k.simple_name),k) for k in vars  if hasattr(k,'node') and k.node == n]))
+            A -> B -> C -> D -> G
+            A -> B -> E -> F -> G
+
+
+    """
+    def connect_in_sequence(l,last_outputs = []):
+        if not type(l) is list:
+            return [[l,l]]
+        last_outputs = []
+        for e in l:
+            new_outputs = connect_in_parallel(e,last_outputs=last_outputs)
+            if len(last_outputs) > 0 and len(new_outputs) > 0:
+                for e1 in last_outputs:
+                    for e2 in new_outputs:
+                        e2[0]+=e1[1]
+            last_outputs = new_outputs
+        return [l[0],l[-1]]
+    def connect_in_parallel(l,last_outputs=[]):
+        if not type(l) is list:
+            return [[l,l]]
+        last_elements = []
+        for e in l:
+            last_elements.append(connect_in_sequence(e,last_outputs))
+        return last_elements
+    connect_in_sequence(list_of_lists)
+    return list_of_lists
+
+class Output(object):
+    def __init__(self,outs,keys=None):
+        """
+            This object provides a container for output numpy arrays which are labeled with theano variables.
+
+            The outputs can be queried either by sorted order (like a simple list),
+            by the theano variable which represents this output, the name of this variable
+            or the full path of the variable.
+            To make this meaningfull, provide a name to your output variables.
+
+            In the case of name collisions, the behavior of OrderedDict will use the last variable added.
+
+            The full path names of all variables are also added to this objects __dict__,
+            allowing for tab completion.
+        """
+        self._out_dict = OrderedDict({})
+        self._out_dict_by_full_names = OrderedDict({})
+        self._out_dict_by_short_names = OrderedDict({})
+        self._outs = outs
+        self.keys = keys
+        if keys is not None:
+            self._out_dict = OrderedDict(zip(keys,outs))
+            self._out_dict_by_full_names = OrderedDict([(full_path(k),o) for (k,o) in zip(keys,outs)])
+            self._out_dict_by_short_names = OrderedDict([(save_name(get_convis_attribute(k,'name')),o) for (k,o) in zip(keys,outs) if has_convis_attribute(k,'name') and type(get_convis_attribute(k,'name')) is str])
+        self.__dict__.update(self._out_dict_by_full_names)
+    def __len__(self):
+        return len(self._outs)
+    def __iter__(self):
+        return iter(self._outs)
+    def __getitem__(self,k):
+        if type(k) is int:
+            return self._outs[k]
+        else:
+            if k in self._out_dict.keys():
+                return self._out_dict[k]
+            if save_name(k) in self._out_dict_by_short_names.keys():
+                return self._out_dict_by_short_names[save_name(k)]
+            if save_name(k) in self._out_dict_by_full_names.keys():
+                return self._out_dict_by_full_names[save_name(k)]
+        if str(k) != save_name(k):
+            raise IndexError('Key not found: '+str(k)+' / '+save_name(k))
+        raise IndexError('Key not found: '+str(k))
 
 
 class M(object):
-    def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, **kwargs):
+    def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, filter_epsilon=0.01, **kwargs):
         self.debug = False
-        self.nodes = []
-        self.variables = {}
-        self.var_outputs = {}
         self.mappings = {}
         self.givens = {}
         self.outputs = []
         self.config = {}
-        self.module_graph = []
-        self.pixel_per_degree = pixel_per_degree
-        self.steps_per_second = steps_per_second
+        self.resolution = ResolutionInfo(pixel_per_degree=pixel_per_degree,steps_per_second=steps_per_second,filter_epsilon=filter_epsilon)
         self.size_in_degree = size
         self.__dict__.update(kwargs)
     @property
-    def shape(self):
-        return tuple([np.newaxis]+[int(self.degree_to_pixel(x)) for x in self.size_in_degree])
-    @shape.setter
-    def shape(self,new_shape):
-        self.size_in_degree = tuple(self.pixel_to_degree(x) for x in new_shape[1:])
+    def parameters(self):
+        return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
     @property
-    def c(self):
-        return _Configuration(self)
+    def states(self):
+        return create_hierarchical_Ox(filter(is_state,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
     @property
-    def v(self):
-        return _Vars(self)
-    @property
-    def _parameters(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
-    @property
-    def _params(self):
-        return create_hierarchical_O(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
-    @property
-    def _states(self):
-        return create_hierarchical_O(filter(is_state,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
-    @property
-    def _variables(self):
-        return create_hierarchical_O(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
+    def variables(self):
+        return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
     def degree_to_pixel(self,degree):
-        return float(degree) * self.pixel_per_degree
+        return self.resolution.degree_to_pixel(degree)
     def pixel_to_degree(self,pixel):
-        return float(pixel) / self.pixel_per_degree
+        return self.resolution.pixel_to_degree(pixel)
     def seconds_to_steps(self,t):
-        return float(t) * self.steps_per_second
+        return self.resolution.seconds_to_steps(t)
     def steps_to_seconds(self,steps):
-        return float(steps) / self.steps_per_second
-    def add(self,n):
-        if n.name in map(lambda x: x.name, self.nodes):
-            pass#raise Exception('Node named %s already exists!'%n.name)
-        self.nodes.append(n.set_m(self))
-        self.variables.update(n.get_variables())
-        self.var_outputs.update(n.get_output_variables())
-    def __contains__(self,item):
-        return item in self.nodes or item in self.variables.keys()
-    def map(self,a,b):
-        if not a in self.variables.keys():
-            self.add(a.node)
-        if not b in self.variables.keys():
-            self.add(b.node)    
-        self.mappings[a] = b
-    def out(self,a):
-        """ 
-            Will add a variable as an output.
-
-            If this function is provided with a node, it tries to add an attribute `output`,
-            then add a list in the attribute `outputs`, then a variable named `output`.
-        """
-        if hasattr(a,'node'):
-            self.add(a.node)
-            self.outputs.append(a)
-        else:
-            self.add(a)
-            if hasattr(a,'output'):
-                self.outputs.append(getattr(a,'output'))
-            elif hasattr(a,'outputs'):
-                self.outputs.extend(getattr(a,'outputs'))
-            else:
-                self.outputs.append(a.var('output'))
+        return self.resolution.steps_to_seconds(steps)
+    def add_output(self,a,name=None):
+        if hasattr(a,'graph'):
+            a = a.graph
+        if getattr(a,'name',None) is None and name is not None:
+            a = as_output(a)
+            set_convis_attribute(a, 'name', name)
+        self.outputs.append(a)
     def in_out(self,a,b):
         #self.map(b.var('input'),a.var('output'))
+        if hasattr(a,'graph'):
+            a = a.graph
+        print 'Replacing:',a,b
         if issubclass(b.__class__, N):
-            if hasattr(b.var('input'),'variable_type') and b.var('input').variable_type == 'input':
-                b.var('input').variable_type = 'replaced_input'
-            theano_utils._replace(b.output,b.var('input'),a.var('output'))
+            if has_convis_attribute(b.var('input'),'variable_type') and get_convis_attribute(b.var('input'),'variable_type') == 'input':
+                set_convis_attribute(b.var('input'),'variable_type','replaced_input')
+            #theano_utils._replace(b.output,b.var('input'),a.var('output'))
+            if not has_convis_attribute(a, 'connects'):
+                set_convis_attribute(a,'connects',[])
+            get_convis_attribute(a,'connects').append([b,get_convis_attribute(a,'node',a)])
+            try:
+                theano_utils._replace(b.output,b.variables.input,a)
+            except:
+                print 'Something not found! ',a,b.variables
+        elif has_convis_attribute(b,'node'):
+            if not has_convis_attribute(a, 'connects'):
+                set_convis_attribute(a,'connects',[])
+            get_convis_attribute(a,'connects').append([get_convis_attribute(b,'node'),get_convis_attribute(a,'node',a)])
+            theano_utils._replace(get_convis_attribute(b,'node').output,b,a)
         else:
-            theano_utils._replace(b.node.output,b,a.output)
-        #self.module_graph.append([a,b]) # no longer used??
-        #b.replace(b.var('input'),a.var('output'))
-    def _in_out(self,a,b):
-        #self.map(b.var('input'),a.var('output'))
-        aa = a
-        bb = b
-        if issubclass(a.__class__, N):
-            aa = a.output
-            #aa = a.var('output')
-        if issubclass(b.__class__, N):
-            bb = b.var('input')
-        if hasattr(bb,'variable_type') and bb.variable_type == 'input':
-            bb.variable_type = 'replaced_input'
-        for o in b.outputs:
-            theano_utils.replace(o,bb,aa)
-    def get_variables(self):
-        vs = []
-        for o in self.outputs:
-            vs.extend(theano_utils.get_variables_iter(o))
-        return f7(vs)
-    def describe_variables(self):
-        return [describe(v) for v in self.get_variables()]
-    def var(self,var_name=None,**kwargs):
-        for va in self.variables.keys():
-            if va == var_name or va.name == var_name:
-                return va
-        for va in self.variables.keys():
-            if va == var_name or va.simple_name == var_name:
-                return va
-    def vars(self,var_name=None,**kwargs):
-        vs = []
-        for va in self.variables.keys():
-            if va == var_name or va.name == var_name or va.simple_name == var_name:
-                vs.append(va)
-        return vs
-    def _deprecated_get_inputs(self,outputs=None): 
-        import copy
-        if outputs is None:
-            outputs = copy.copy(self.outputs)
-        seen = []
-        inputs = []
-        while True:
-            outputs = f7(outputs)
-            #print outputs,seen,inputs
-            if len(outputs) == 0:
-                break
-            o = output
-            outputs.remove(o)
-            if o in seen:
-                continue
-            seen.append(o)
-            inputs_to_o = theano_utils.get_input_variables_iter(o)
-            if o in self.mappings.keys():
-                #print 'mapping for ',o
-                outputs.append(self.mappings[o])
-            elif o in self.var_outputs.keys():
-                #print 'inout for ',o
-                outputs.extend(self.var_outputs[o].inputs)
-            elif inputs_to_o != [o]:
-                #print 'inputs: ',inputs_to_o
-                outputs.extend(theano_utils.get_input_variables_iter(o))
-            else:
-                #print "No substitution!"
-                inputs.append(o)
-        return inputs 
-    def create_function(self,updates=theano.updates.OrderedUpdates(),additional_inputs=[]):
+            raise Exception('This is not a node and not a variable with a node. Maybe the variable was not named?')
+    def create_function(self,updates=None,additional_inputs=[]):
+        if self.debug is not True:
+            # we disable warnings from theano gof because of the unresolved cache leak
+            # TODO: fix the leak and re-enable warnings
+            import logging
+            logging.getLogger("theano.gof.cmodule").setLevel(logging.ERROR) 
+        if updates is None:
+            updates = theano.updates.OrderedUpdates()
         for a,b in  self.mappings.items():
             for n in self.nodes:
-                if a.variable_type == 'input':
-                    a.variable_type = 'replaced_input'
+                if get_convis_attribute(v,'variable_type') == 'input':
+                    set_convis_attribute(v,'variable_type', 'replaced_input')
                 theano_utils.replace(n.graph,a,b)
-        variables = f7([v for o in self.outputs for v in theano_utils.get_variables_iter(o)])
+        outputs = [o._as_TensorVariable() if hasattr(o,'_as_TensorVariable') else o for o in self.outputs]
+        variables = unique_list([v for o in outputs for v in theano_utils.get_variables_iter(o)])
         for v in variables:
-            if hasattr(v,'updates'):
-                updates[v] = np.sum([u for u in v.updates])
-        self.compute_input_order = f7(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
+            if has_convis_attribute(v,'updates'):
+                if v in updates:
+                    updates[v] = T.sum([updates[v]]+[u for u in get_convis_attribute(v,'updates')])
+                else:
+                    updates[v] = T.sum([u for u in get_convis_attribute(v,'updates')])
+        self.compute_input_order = unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = additional_inputs
         self.compute_state_inits = []
         state_variables = filter(is_state,variables)
-        self.compute_output_order = f7(self.outputs + [v.state_out_state for v in state_variables])
+        self.compute_output_order = unique_list(outputs + [get_convis_attribute(v,'state_out_state') for v in state_variables])
         self.compute_updates_order = theano.updates.OrderedUpdates()
         self.compute_updates_order.update(updates)
         for state_var in state_variables:
             self.compute_input_order.append(state_var)
             #self.compute_updates_order[state_var] = state_var.state_out_state
             #print state_var.state_out_state
-            self.compute_state_inits.append(state_var.state_init)
+            self.compute_state_inits.append(get_convis_attribute(state_var,'state_init'))
         givens = [(a,b) for (a,b) in self.givens.items()]
         self.compute_input_dict = dict((v,None) for v in self.compute_input_order)
         self.compute_state_dict = dict((v,None) for v in self.compute_output_order if is_out_state(v))
         if self.debug:# hasattr(retina, 'debug') and retina.debug:
-            print 'solving for:',self.outputs
+            print 'solving for:',outputs
             print 'all variables:',len(variables)
             print 'input:',filter(is_input,variables)
             print 'parameters:',filter(is_input_parameter,variables)
             print 'states:',state_variables
             print 'updates:',self.compute_updates_order
+        self.reset_parameters()
         self.compute = theano.function(inputs=self.compute_input_order, 
-                                        outputs=self.compute_output_order, 
-                                        updates=self.compute_updates_order,
-                                        givens=givens,on_unused_input='ignore')
+                                    outputs=self.compute_output_order, 
+                                    updates=self.compute_updates_order,
+                                    givens=givens,on_unused_input='ignore')
+        if self.debug is not True:
+            import logging
+            logging.getLogger("theano.gof.cmodule").setLevel(logging.WARNING) 
     def clear_states(self):
         self.compute_state_dict = {}
-    def run(self,the_input,additional_inputs=[],**kwargs):
+    def reset_parameters(self):
+        for shared_parameter in self.parameters._all:
+            if is_shared_parameter(shared_parameter) and has_convis_attribute(shared_parameter,'initialized'):
+                set_convis_attribute(shared_parameter, 'initialized', False)
+    def run_in_chunks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        chunked_output = []
+        t = 0
+        while t < the_input.shape[0]:
+            if self.debug:
+                print 'Chunk:', t, t+max_length
+            oo = self.run(the_input[t:(t+max_length)],
+                          additional_inputs=[ai[t:(t+max_length)] for ai in additional_inputs],
+                          inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]),
+                          run_after=run_after)
+            chunked_output.append([o for o in oo])
+            t += max_length
+        return Output(np.concatenate(chunked_output,axis=1),keys=self.compute_output_order[:len(self.outputs)])
+    def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        """typo"""
+        return self.run_in_chunks(the_input,max_length,additional_inputs=additional_inputs,inputs=inputs,run_after=run_after,**kwargs)
+    def run(self,the_input,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        if not hasattr(self,'compute_input_dict'):
+            # todo: manage multiple functions
+            self.create_function()
         c = O()
         c.input = the_input
         c.model = self
@@ -651,29 +533,82 @@ class M(object):
             else:
                 if is_input(k):
                     if k not in self.additional_inputs:
-                        input_dict[k] = the_input
+                        if k in inputs.keys():
+                            input_dict[k] = inputs[k]
+                        else:
+                            input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = k.param_init(c(node=k.node,var=k,model=self))
+                    input_dict[k] = get_convis_attribute(k,'param_init')(create_context_O(k,input=the_input,model=self,resolution=self.resolution))
                 if is_state(k):
-                    if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(c(node=k.node,var=k,model=self))
+                    if self.compute_state_dict.get(get_convis_attribute(k,'state_out_state'),None) is None:
+                        input_dict[k] = get_convis_attribute(k,'state_init')(create_context_O(k,input=the_input,model=self,resolution=self.resolution))
                     else:
-                        input_dict[k] = self.compute_state_dict[k.state_out_state]
-        for shared_parameter in filter(is_shared_parameter,self.variables.keys()):
-            if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(c(node=shared_parameter.node,var=shared_parameter,model=self)))
-                shared_parameter.initialized = True
+                        input_dict[k] = self.compute_state_dict[get_convis_attribute(k,'state_out_state')]
+        for shared_parameter in self.parameters._all:
+            if is_shared_parameter(shared_parameter):
+                #if (not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False) and not hasattr(shared_parameter,'optimized'):
+                # until we can track which config values were changed, we re-initialize everything
+                # all smart stuff is now in the injected .update method
+                if (not has_convis_attribute(shared_parameter,'initialized') or get_convis_attribute(shared_parameter,'initialized',)) and not has_convis_attribute(shared_parameter,'optimized'):
+                    get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input,model=self,resolution=self.resolution))
+                #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
+        if run_after is not None:
+            run_after(the_output,self)
         for (o,k) in zip(the_output, self.compute_output_order):
             if is_out_state(k):
                 self.compute_state_dict[k] = o
-        return the_output[:len(self.outputs)]
+        return Output(the_output[:len(self.outputs)],keys=self.compute_output_order[:len(self.outputs)])
+
+    def draw_simple_diagram(self, connector = ' -> '):
+        """
+            Prints a very simple horizontal tree diagram of the connected `N` nodes.
+
+            Note: This diagram only shows connections that were created between 
+            `N` nodes by `add_input` (or `+=`).
+            
+            Example:: 
+
+                print draw_simple_diagram(retina, connector=' - ')
+
+            Output::
+
+                input - OPL - Bipolar - GanglionInputLayer_Parvocellular_On - GanglionSpikes__Parvocellular_On - output
+                                      - GanglionInputLayer_Parvocellular_Off - GanglionSpikes__Parvocellular_Off - output
+        """
+        node_dict = {}
+        for v in filter(lambda x: has_convis_attribute(x,'connects'), self.variables._all):
+            for c in get_convis_attribute(v,'connects'):
+                node_dict.setdefault(c[1],[]).append(c[0])
+        possible_start_nodes = node_dict.keys()
+        possible_end_nodes = reduce(lambda x,y: x+y, node_dict.values())
+        true_start_nodes = []
+        for e in possible_start_nodes:
+            if not e in possible_end_nodes:
+                true_start_nodes.append(e)
+        def simple_model_diagram(n,offset=0,prev_offset=0):
+            if type(n) is list:
+                return '\n'.join(['input'+connector+simple_model_diagram(i,offset=offset,prev_offset=prev_offset+len('input'+connector)) for i in n])
+            s = save_name(n.name)
+            if n not in node_dict:
+                s += connector+'output\n'
+                return s
+            next_offset = prev_offset+len(save_name(n.name))
+            for i,child in enumerate(node_dict[n]):
+                if i > 0:
+                    s += ' '*next_offset
+                s+= connector
+                s+= simple_model_diagram(child,offset=prev_offset,prev_offset=next_offset+len(connector))
+            return s
+        diagram = simple_model_diagram(true_start_nodes)
+        return diagram
+    # methods for adding optimization methods easily
     def add_target(self,variable,error_func=lambda x,y: T.mean((x-y)**2),name='target',bcast=(True,True,True)):
         tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
         v = as_input(tp(name),name=name)
         er = error_func(variable,v)
-        er.name='output'
+        set_convis_attribute(er,'name','output')
         error_node = N(er,model=self,name='ErrorNode')
         e = self.outputs.append(error_node.output)
         variable.__dict__['error_functions'] = variable.__dict__.get('error_functions',[])
@@ -682,7 +617,7 @@ class M(object):
     def add_update(self,variable,error_term,opt_func = lambda x,y: x+as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y):
         variable.__dict__['updates'] = variable.__dict__.get('error_functions',[])
         g = T.grad(error_term,variable)
-        g.name = 'gradient'
+        set_convis_attribute(g,'name','gradient')
         variable.__dict__['updates'].append(opt_func(variable,g))
     def add_gradient_descent(self,v_to_change,v_to_target=None):
         if v_to_target is None:
@@ -703,10 +638,10 @@ class Runner(object):
     """
     def __init__(self,model):
         self.model=model
-        self.input_order = [] #f7(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
+        self.input_order = [] #unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = [] #additional_inputs
         self.state_inits = [] #?
-        self.output_order = [] # f7(self.outputs + [v.state_out_state for v in state_variables])
+        self.output_order = [] # unique_list(self.outputs + [v.state_out_state for v in state_variables])
         self.updates = theano.updates.OrderedUpdates()
         self.givens = [] # [(a,b) for (a,b) in givens.items()]
         self.debug = False
@@ -744,15 +679,15 @@ class Runner(object):
                     if k not in self.additional_inputs:
                         input_dict[k] = the_input
                 if is_input_parameter(k):
-                    input_dict[k] = k.param_init(c(node=k.node,var=k,model=self))
+                    input_dict[k] = k.param_init(create_context_O(k,model=self.model,input=the_input,resolution=self.model.resolution))
                 if is_state(k):
                     if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(c(node=k.node,var=k,model=self))
+                        input_dict[k] = k.state_init(create_context_O(k,model=self.model,input=the_input,resolution=self.model.resolution))
                     else:
                         input_dict[k] = self.compute_state_dict[k.state_out_state]
-        for shared_parameter in filter(is_shared_parameter,self.variables.keys()):
+        for shared_parameter in self.parameters._all:
             if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(c(node=shared_parameter.node,var=shared_parameter,model=self)))
+                shared_parameter.set_value(shared_parameter.param_init(create_context_O(shared_parameter,model=self.model,input=the_input,resolution=self.model.resolution)))
                 shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
         the_output = self.compute(*the_vars)
