@@ -267,12 +267,14 @@ def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
             The path will only be used from element pi onwards
     """
     o = {}
-    paths = unique_list([name_sanitizer(get_convis_attribute(get_convis_attribute(v,'path')[pi],'name')) for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
+    paths = unique_list([get_convis_attribute(v,'path')[pi] for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
     leaves = unique_list([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
     for p in paths:
-        o.update(**{p: create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path') 
+        o.update(**{name_sanitizer(get_convis_attribute(p,'name')): create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path') 
                                                                 and len(get_convis_attribute(v,'path')) > pi 
-                                                                and name_sanitizer(get_convis_attribute(get_convis_attribute(v,'path')[pi],'name')) == p], pi+1)})
+                                                                and get_convis_attribute(v,'path')[pi] == p], pi+1)})
+    for p in paths:
+        o[name_sanitizer(get_convis_attribute(p,'name'))]['_original'] = p 
     for l in leaves:
         o.update(**{name_sanitizer(get_convis_attribute(l,'name')): l})
     return o
@@ -476,7 +478,14 @@ def as_parameter(v,init=None,name=None,**kwargs):
                 send_dbg('param.update',str(self.name)+' was already initialized or is optimizing itself.',0)
                 return self
             # this might entail recursion when param_init calls update of other variables:
-            new_val = get_convis_attribute(self,'param_init',lambda x: x.old_value)(create_context_O(self,old_value=self.get_value(),update_trace=getattr(x,'update_trace',[])+[self]))
+            init = get_convis_attribute(self,'param_init',lambda x: x.old_value)
+            if callable(init):
+                new_val = init(create_context_O(self,old_value=self.get_value(),update_trace=getattr(x,'update_trace',[])+[self]))
+            else:
+                if has_convis_attribute(self,'config_key'):
+                    new_val = x.value_from_config()
+                else:
+                    new_val = init
             #if self.name is not None and 'lambda' in self.name:
             #    print self.name, new_val
             send_dbg('param.update',str(self.name)+' updated itself from '+str(self.get_value())[:10]+' to '+str(new_val)[:10]+'.',2)
@@ -523,11 +532,15 @@ def is_scalar(v):
     return False
 
 def shared_parameter(fun,init_object=None,**kwargs):
-    if init_object is None:
-        init_object = create_context_O()
-    if not hasattr(init_object,'resolution'):
-        init_object(resolution = default_resolution) # for initial filters we only want a single 1
-    return as_parameter(theano.shared(fun(init_object)),
+    if callable(fun):
+        if init_object is None:
+            init_object = create_context_O()
+        if not hasattr(init_object,'resolution'):
+            init_object(resolution = default_resolution) # for initial filters we only want a single 1
+        return as_parameter(theano.shared(fun(init_object)),
+                            initialized = True,
+                            init=fun,**kwargs)
+    return as_parameter(theano.shared(fun),
                         initialized = True,
                         init=fun,**kwargs)
 
@@ -566,10 +579,10 @@ def create_context_O(var=None, **kwargs):
         model = node.get_model()
         get_config = node.get_config
     config_key = get_convis_attribute(var,'config_key','')
-    if has_convis_attribute(var, 'config_key') and has_convis_attribute(var,'config_default'):
+    if has_convis_attribute(var, 'config_key'):
         return O(var=var,node=node,model=model,resolution=getattr(model,'resolution',default_resolution),
                  get_config=get_config,
-                 value_from_config=lambda: node.get_config(config_key,get_convis_attribute(var,'config_default')),
+                 value_from_config=lambda: node.get_config(config_key,get_convis_attribute(var,'config_default',var.get_value())),
                  value_to_config=lambda v: node.set_config(config_key,v))(**kwargs)
     return O(var=var,node=node,model=model,get_config=get_config,resolution=getattr(model,'resolution',default_resolution),
              value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(get_convis_attribute(var,'name'))+'\n')))(**kwargs)

@@ -1,5 +1,6 @@
 import numpy as np
 import glob,litus
+import datetime
 
 """
 Test::
@@ -38,6 +39,7 @@ class InrImageStreamer(object):
         self.header = dict([h.split('=') for h in self.raw_header.split('\n') if '=' in h])
         self.header = dict([(k,litus._make_an_int_if_possible(v)) for k,v in self.header.iteritems()])
         self.z = z
+        self.last_image = np.zeros((50,50))
         self.start_at = 0
         self.stop_at = None
         self.step_at = None
@@ -50,35 +52,44 @@ class InrImageStreamer(object):
         if self.step_at is None:
             self.step_at = 1
         self.image_i = self.start_at
+    @property
+    def shape(self):
+        return (self.header['VDIM'],self.header['XDIM'],self.header['YDIM'])
     def reset(self):
         self.image_i = self.start_at
     def skip(self,i=1):
         self.image_i += i
-        self.file.skip(self.header['VDIM']*self.header['XDIM']*self.header['YDIM']*8)
+        self.file.skip(self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8)
     def seek(self,i):
         self.image_i = i
-        if i >= self.header['ZDIM']:
+        if i >= self.header['VDIM']:
             raise StopIteration()
-        self.file.seek(256 + i * self.header['VDIM']*self.header['XDIM']*self.header['YDIM']*8)
+        self.file.seek(256 + i * self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8)
     def read(self,i):
         self.seek(i)
         if self.header['TYPE'] == 'float' and self.header['PIXSIZE'] == '64 bits':
             if self.z:
-                return np.array([[np.frombuffer(self.file.read(self.header['VDIM']*8),'float') for y in range(self.header['YDIM'])] for x in range(self.header['XDIM'])])
+                self.last_image = np.array([[np.frombuffer(self.file.read(self.header['ZDIM']*8),'float') for y in range(self.header['YDIM'])] for x in range(self.header['XDIM'])])
             else:
-                return np.array([np.concatenate([np.frombuffer(self.file.read(self.header['VDIM']*8),'float') for y in range(self.header['YDIM'])],0) for x in range(self.header['XDIM'])])
+                self.last_image = np.array([np.concatenate([np.frombuffer(self.file.read(self.header['ZDIM']*8),'float') for y in range(self.header['YDIM'])],0) for x in range(self.header['XDIM'])])
+            return self.last_image
         else:
             raise Exception("Not Implemented. So far only 8 byte floats are supported")
+    def get_image(self):
+        return self.last_image
     def _read_one_image(self):
         self.image_i += 1
         if self.header['TYPE'] == 'float' and self.header['PIXSIZE'] == '64 bits':
-            return np.array([[np.frombuffer(self.file.read(self.header['VDIM']*8),'float') for y in range(self.header['YDIM'])] for x in range(self.header['XDIM'])])
+            a = np.array([[np.frombuffer(self.file.read(self.header['ZDIM']*8),'float') for y in range(self.header['YDIM'])] for x in range(self.header['XDIM'])])
+            return a[:,:,0]
         else:
             raise Exception("Not Implemented. So far only 8 byte floats are supported")
+    def get(self,i=1):
+        return np.array([self._read_one_image() for ii in range(i)])
     def __iter__(self):
         def f():
             image_i = self.start_at
-            max_image = self.header['ZDIM']
+            max_image = self.header['VDIM']
             if self.stop_at is not None:
                 max_image = self.stop_at
             while image_i < max_image:
@@ -93,7 +104,7 @@ class InrImageStreamer(object):
             return ImageStreamer(self.filename,z=self.z, slice_at=indx)
     def __len__(self):
         image_i = self.start_at
-        max_image = self.header['ZDIM']
+        max_image = self.header['VDIM']
         if self.stop_at is not None:
             max_image = self.stop_at
         return max_image - image_i
@@ -101,6 +112,9 @@ class InrImageStreamer(object):
         return self
     def __exit__(self,*args):
         self.file.close()
+    @property
+    def buffered(self):
+        return 0
 
 class InrImageStreamWriter(object):
     def __init__(self,filename,v=0,x=0,y=0,z=0):
@@ -114,6 +128,7 @@ class InrImageStreamWriter(object):
                          'XDIM': x,
                          'YDIM': y,
                          'ZDIM': z}
+        self.last_image = np.zeros((50,50))
         #self.write_header()
     def write_header(self):
         self.file.seek(0)
@@ -128,6 +143,12 @@ class InrImageStreamWriter(object):
         self.file.close()
     def seek(self,i):
         self.file.seek(255 + i * self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8)
+    def get_image(self):
+        return self.last_image
+    def put(self,seq):
+        for s in seq:
+            self.write(s)
+            self.last_image = s
     def write(self,img):
         if self.header['TYPE'] == 'float' and self.header['PIXSIZE'] == '64 bits':
             buff = np.array(img,dtype='float64').tobytes()
@@ -139,6 +160,16 @@ class InrImageStreamWriter(object):
                 raise Exception("Image has incorrect size:"+str(len(buff))+" != "+str(self.header['ZDIM']*self.header['XDIM']*self.header['YDIM']*8))
         else:
             raise Exception("Not Implemented. So far only 8 byte floats are supported")
+    def _web_repr_(self,name,namespace):
+        s= "Inr Stream Writer Object: <br>"
+        s += " + file: "+str(self.filename)+" <br>"
+        s += " + length: "+str(self.image_i)+" <br>"
+        if hasattr(self,'get_image'):
+            s+= '<img class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+        return s
+    @property
+    def buffered(self):
+        return 0
 
 class InrImageFileStreamer(object):
     def __init__(self,filenames):
@@ -150,7 +181,7 @@ class InrImageFileStreamer(object):
         self.fileobject = None
         self.fileobject_index = None
         for i,f in enumerate(self.filenames):
-            with ImageStreamer(f) as ims:
+            with InrImageStreamer(f) as ims:
                 self.lengths.append(len(ims))
     def reset(self):
         self.file_i = 0
@@ -160,7 +191,7 @@ class InrImageFileStreamer(object):
             file_i = 0
             image_i = 0
             while file_i < len(self.filenames):
-                ims = ImageStreamer(self.filenames[file_i])
+                ims = InrImageStreamer(self.filenames[file_i])
                 image_i = 0
                 try:
                     while True:
@@ -184,15 +215,28 @@ class InrImageFileStreamer(object):
                 raise StopIteration()
     def read(self):
         if self.fileobject_index != self.file_i:
-            self.fileobject = ImageStreamer(self.filenames[self.file_i])
+            self.fileobject = InrImageStreamer(self.filenames[self.file_i])
             self.fileobject_index = self.file_i
         return self.fileobject.read(self.image_i)
+    def get_image(self):
+        return self.fileobject.get_image()
     def __len__(self):
         return np.sum(self.lengths)
     def __getitem__(self,indx):
         if type(indx) is int:
             self.seek(f=0,i=indx)
             return self.read()
+    def _web_repr_(self,name,namespace):
+        s= "Inr Stream Object:<br>"
+        s += " + file: "+str(self.filename)+" <br>"
+        s += " + length: "+str(self.image_i)+" <br>"
+        if hasattr(self,'get_image'):
+            s+= '<img class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+        return s
+    @property
+    def buffered(self):
+        return 0
+
 
 class Stream(object):
     """Basic stream that gives zeros"""
@@ -215,6 +259,26 @@ class Stream(object):
         return np.zeros([i]+self.size)
     def put(self,s):
         raise Exception("Not implemented for basic stream.")
+    def close(self):
+        pass
+    def _web_repr_(self,name,namespace):
+        import cgi
+        s= "Image Stream Object:<br>"
+        s+= " + class: "+cgi.escape(str(self.__class__))+"<br>"
+        try:
+            s+= " + time: "+str(self.t)+"<br>"
+        except:
+            pass
+        try:
+            s+= " + length: "+str(len(self))+"<br>"
+        except:
+            s+= " + length: -- <br>"
+        if hasattr(self,'get_image'):
+            s+= '<img class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+        return s
+    @property
+    def buffered(self):
+        return 0
 
 class RandomStream(Stream):
     def __init__(self, size=(50,50), pixel_per_degree=10, level=1.0):
@@ -226,6 +290,8 @@ class RandomStream(Stream):
             yield self.level * np.random.rand(*self.size)
     def available(self,l=1):
         return True
+    def get_image(self):
+        return np.random.rand(*(self.size))
     def get(self,i):
         return self.level * np.random.rand(*([i]+self.size))
     def put(self,s):
@@ -238,17 +304,30 @@ class SequenceStream(Stream):
         self.pixel_per_degree = pixel_per_degree
         self.sequence = sequence
         self.i = 0
+        self.max_frames = 50
     def __iter__(self):
         while len(self.sequence) < self.i:
             self.i += 1
             yield self.sequence[i-1]
+    def __len__(self):
+        return len(self.sequence)
     def available(self,l=1):
         return (len(self.sequence) - self.i) > l
+    def get_image(self):
+        try:
+            if self.i < 1:
+                return self.sequence[-1]
+            return self.sequence[self.i]
+        except:
+            return np.zeros(self.sequence.shape[1:])
     def get(self,i):
         self.i += i
-        return self.sequence[(self.i-i):self.i]
+        return self.sequence[int(self.i-i):self.i]
     def put(self,s):
-        self.sequence = np.concatenate([self.sequence,s],axis=0.0)
+        if len(self.sequence) + len(s) > self.max_frames:
+            self.sequence = np.concatenate([self.sequence,s],axis=0)[-self.max_frames:]
+        else:
+            self.sequence = np.concatenate([self.sequence,s],axis=0)
 
 class RepeatingStream(Stream):
     def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10):
@@ -264,10 +343,15 @@ class RepeatingStream(Stream):
             yield self.sequence[i-1]
     def available(self,l=1):
         return len(sequence) > 0
+    def get_image(self):
+        try:
+            return self.sequence[self.i]
+        except:
+            return np.zeros(self.sequence.shape[1:])
     def get(self,i):
         self.i += i
         if len(self.sequence) < self.i:
-            pre_index = self.i-i
+            pre_index = int(self.i-i)
             self.i -= len(self.sequence)
             return np.concatenate([self.sequence[pre_index:],self.sequence[:self.i]],axis=0)
         return self.sequence[(self.i-i):self.i]
@@ -357,9 +441,16 @@ _main_root = None
 class StreamVisualizer():
     def __init__(self):
         self.dirty = False
-        self.refresh_rate = 1
+        self.refresh_rate = 0.001
+        self.minimal_refresh_rate = 0.01
         self.last_buffer = []
         self.closed = False
+        self.auto_scale_refresh_rate = True
+        self._last_put = datetime.datetime.now()
+        self.decay = 0.05
+        self.decay_activity = None
+        self.last_batch_length = None
+        self.last_batch_time = None
         #self.recieve_thread = thread.start_new_thread(self.recieve,tuple())
     def mainloop(self):
         import Tkinter as tk
@@ -370,12 +461,13 @@ class StreamVisualizer():
         import socket
         self.root = tk.Toplevel() #Tk()
         self.root.title('Display')
-        self.buffer = cStringIO.StringIO()
+        #self.buffer = cStringIO.StringIO()
         self.image = Image.fromarray(np.zeros((200,200))).convert('RGB')
         self.image1 = ImageTk.PhotoImage(self.image)
         self.panel1 = tk.Label(self.root, image=self.image1)
         self.display = self.image1
         self.panel1.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
+        self.root.after(100, self.advance_image)
         self.root.after(100, self.update_image)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         #global _started_tkinter_main_loop
@@ -389,26 +481,97 @@ class StreamVisualizer():
     def put(self,img):
         if self.closed:
             pass #
-        self.last_buffer.extend([i for i in img])
+        new_images = [i for i in img]
+        self.last_buffer.extend(new_images)
+        self.last_batch_length = len(new_images)
+        if self.auto_scale_refresh_rate:
+            self.last_batch_time = (datetime.datetime.now() - self._last_put).total_seconds()
+            self.refresh_rate = self.last_batch_time/float(len(new_images))
+            #print self.refresh_rate
+        self._last_put = datetime.datetime.now()
+        #if hasattr(self,'root'):
+        #    self.root.title(str(len(self.last_buffer))+' Images buffered')
+    def get_image(self):
+        if self.decay_activity is not None:
+            return self.decay_activity
+        if len(self.last_buffer) > 0:
+            return self.last_buffer[0]
+        return np.zeros((50,50))
+    def advance_image(self):
+        from PIL import Image, ImageTk
+        function_start = datetime.datetime.now()
+        #refresh = (self.refresh_rate)
+        half = len(self.last_buffer)*0.9
+        num_frames = 0 # consume all
+        #if self._last_put is not None and self.last_batch_length is not None and self.last_batch_time is not None:
+        #    # only consume up to X images
+        #    if self.last_batch_length > 0:
+        #        num_frames = self.last_batch_length+((self._last_put - datetime.datetime.now()).total_seconds() + self.last_batch_time)/self.refresh_rate
+        #while len(self.last_buffer) > 1.2*num_frames:
+        for i in np.arange(np.floor(self.minimal_refresh_rate/self.refresh_rate)+1.0):
+            if len(self.last_buffer) > 1:
+                try:
+                    image_buffer = self.last_buffer.pop(0) # take image from the front
+                    if self.decay_activity is None:
+                        self.decay_activity = 1.0*image_buffer
+                    self.decay_activity -= self.decay * self.decay_activity
+                    self.decay_activity += image_buffer
+                    #refresh = self.image.info.get('refresh',refresh)
+                except Exception as e:
+                    #print e
+                    raise
+                    #pass
+        function_lag = (datetime.datetime.now() - function_start).total_seconds()
+        self.root.after(int(max((self.refresh_rate-function_lag),self.minimal_refresh_rate)*1000.0), self.advance_image)
     def update_image(self):
         from PIL import Image, ImageTk
-        refresh = int(self.refresh_rate)
-        if len(self.last_buffer) > 0:
+        if self.decay_activity is not None:
             try:
-                image_buffer = self.last_buffer.pop(0) # take image from the front
-                self.image = Image.fromarray(256.0*image_buffer).convert('RGB')#Image.open(image_buffer)#cStringIO.StringIO(self.last_buffer))
-                self.image.load()
+                im = self.decay_activity/max(np.max(self.decay_activity),1.0)
+                im = im.clip(0.0,1.0)
+                if im.shape[0] < 50:
+                    im = np.repeat(im,10,axis=0)
+                    im = np.repeat(im,10,axis=1)
+                elif im.shape[0] < 100:
+                    im = np.repeat(im,5,axis=0)
+                    im = np.repeat(im,5,axis=1)
+                elif im.shape[0] < 300:
+                    im = np.repeat(im,2,axis=0)
+                    im = np.repeat(im,2,axis=1)
+                self.image = Image.fromarray(256.0*im).convert('RGB')#Image.open(image_buffer)#cStringIO.StringIO(self.last_buffer))
+                #self.image.resize((500,500), Image.ANTIALIAS)
+                #self.image.load()
                 self.image1 = ImageTk.PhotoImage(self.image)
                 self.panel1.configure(image=self.image1)
                 self.root.title(str(len(self.last_buffer))+' Images buffered')
                 self.display = self.image1
-                refresh = self.image.info.get('refresh',refresh)
             except Exception as e:
                 #print e
                 raise
                 #pass
-        self.root.after(refresh, self.update_image)
-
+        self.root.after(int(50), self.update_image)
+    @property
+    def buffered(self):
+        return len(self.last_buffer)
+    def _web_repr_(self,name,namespace):
+        import cgi
+        s= "Image Stream Object:<br>"
+        s+= " + class: "+cgi.escape(str(self.__class__))+"<br>"
+        try:
+            s+= " + length: "+str(len(self))+"<br>"
+        except:
+            s+= " + length: -- <br>"
+        if hasattr(self,'get_image'):
+            s+= '<img class="mjpg" class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+        return s
+    def _web_repr_status_(self,name,namespace):
+        import cgi
+        s= ""
+        try:
+            s+= " + time: "+str(self.t)+"<br>"
+        except:
+            pass
+        return s
 def _create_mainloop():
     import Tkinter as tk
     global _main_root
@@ -438,3 +601,70 @@ class StreamToNetwork(Stream):
     def put(self,s):
         from . import png
         png.png_client(s,info={},port=self.port,host=self.host,compress_level=self.compress_level,resize=self.resize)
+
+class HDF5InputStream(Stream):
+    pass
+
+class HDF5OutputStream(Stream):
+    pass
+
+
+class NumpyInputStream(Stream):
+    pass
+
+class NumpyOutputStream(Stream):
+    pass
+
+
+class VideoReader(Stream):
+    def __init__(self,filename='Projects/ExampleMovies/big_buck_bunny_480p_surround-fix.avi',size=(50,50),offset=None,dt=1.0/24.0):
+        
+        try:
+            import cv2
+        except:
+            print """ OpenCV has to be installed for video input """
+            raise
+        self.cv2_module = cv2
+        self.size =size
+        self.offset = offset
+        self.mode = 'mean'
+        self.cap = cv2.VideoCapture(filename)
+        self.dt = dt
+        self.i = 0
+        self.last_image = np.zeros(self.size)
+        #frames = np.asarray([np.asarray(f) for f in v[i]])
+    def __len__(self):
+        return len(self.sequence)
+    def get_one_frame(self):
+        try:
+            ret, frame = self.cap.read()
+            offset = self.offset
+            if self.offset is None:
+                offset = (int(np.floor((frame.shape[0]-self.size[0])/2.0)),
+                          int(np.floor((frame.shape[1]-self.size[1])/2.0)))
+            if self.mode == 'mean':
+                return frame[offset[0]:(offset[0]+self.size[0]),
+                                    offset[1]:(offset[1]+self.size[1])].mean(2)
+            if self.mode == 'r':
+                return frame[offset[0]:(offset[0]+self.size[0]),
+                                    offset[1]:(offset[1]+self.size[1]),0]
+            if self.mode == 'g':
+                return frame[offset[0]:(offset[0]+self.size[0]),
+                                    offset[1]:(offset[1]+self.size[1]),1]
+            if self.mode == 'b':
+                return frame[offset[0]:(offset[0]+self.size[0]),
+                                    offset[1]:(offset[1]+self.size[1]),2]
+            return frame[offset[0]:(offset[0]+self.size[0]),
+                                offset[1]:(offset[1]+self.size[1])]
+        except:
+            return np.zeros(self.size)
+    def get_image(self):
+        return self.last_image
+    def get(self,i):
+        self.i += i
+        frames = np.asarray([self.get_one_frame() for f in range(i)])
+        self.last_image = frames[-1]
+        return frames
+    def close(self):
+        self.cap.release()
+

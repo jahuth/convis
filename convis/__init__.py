@@ -1,8 +1,5 @@
 import misc_utils
 
-import variables
-import numerical_filters
-
 import theano_utils
 reload(theano_utils)
 import variable_describe
@@ -29,3 +26,15 @@ reload(error_functions)
 
 # just to make sure that we don't use filters.simple version of everything
 from base import N, M, GraphWrapper, describe, filter_dbg
+from variable_describe import describe, describe_text, describe_dict, describe_html
+
+import samples
+import kernels
+
+def main():
+    import sys
+    print len(sys.argv)
+
+if __name__ == "__main__":
+    main()
+    sys.exit()

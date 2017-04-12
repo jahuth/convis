@@ -33,19 +33,20 @@ def len_parents(n):
 
 class GraphWrapper(object):
     """
-        
+        A proto class for a Layer.
 
     """
     parent = None
     config_dict = None
     node_type = 'Node'
     node_description = ''
+    expects_config = False
     def __init__(self,graph,name,m=None,parent=None,ignore=[],scan_op=None,**kwargs):
         self.m = m
         self.parent = parent
         self.graph = graph
-        if has_convis_attribute(self.graph,'root_of'):
-            return get_convis_attribute(self.graph,'root_of')
+        #if has_convis_attribute(self.graph,'root_of'):
+        #    return get_convis_attribute(self.graph,'root_of')
         if not is_var(self.graph):
             self.graph = as_output(T.as_tensor_variable(self.graph))
         if get_convis_attribute(self.graph,'name') is None:
@@ -78,12 +79,17 @@ class GraphWrapper(object):
         else:
             send_dbg('set_config',str(getattr(self,'name',''))+' set config: '+str(key)+': '+str(v),1)
             self.config_dict[key] = v
+    def compute(self):
+        self.f = theano.function([],self.graph)
+        return self.f()
     @property
     def config(self):
         if self.config_dict is None:
             if self.parent is not None:
                 return self.parent.config
-            raise Exception('GraphWrapper '+str(self.name)+' has no configuration! But also no parent!')
+            if self.expects_config:
+                raise Exception('GraphWrapper '+str(getattr(self,'name','??'))+' has no configuration! But also no parent!')
+            return {}
         return self.config_dict
     def get_parents(self):
         p = []
@@ -175,15 +181,17 @@ class GraphWrapper(object):
     def shared_parameter(self, f=lambda x:x, name='',**kwargs):
         # todo: where to save config?
         if 'config_key' in kwargs.keys() and 'config_default' in kwargs.keys():
+            if not callable(f):
+                raise Exception('Need to implement this!')
             return shared_parameter(f,
                                     O()(node=self,
-                                        model=self.model,
-                                        resolution=self.model.resolution,
+                                        model=getattr(self,'model',None),
+                                        resolution= self.model.resolution if hasattr(self,'model') else variables.default_resolution,
                                         get_config=self.get_config,
                                         value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
                                         value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
-        return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
+        return shared_parameter(f,O()(node=self,model=getattr(self,'model',None),get_config=self.get_config),name=name,**kwargs)
     def add_input(self,other,replace_inputs=do_replace_inputs,input=None):
         if input is None:
             if hasattr(self, 'default_input'):
@@ -193,6 +201,7 @@ class GraphWrapper(object):
             else:
                 raise Exception('No input found in '+getattr(self,'name','[unnamed node]')+'!')
         if type(input) is str:
+            """if we have more than one input, we have to specify which one we want to add something to"""
             if input in self.inputs.keys():
                 input = self.inputs[input]
             else:
@@ -205,16 +214,30 @@ class GraphWrapper(object):
         if type(input.owner.op) == T.elemwise.Sum:
             if do_debug:
                 print 'Adding to sum'
-            # assuming a 3d input/ output
-            if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
-                input.owner.inputs[0].owner.inputs[1] = v.dimshuffle(('x',0,1,2))
+            if input.owner.inputs[0].owner.inputs[1].ndim == 3+1:
+                # assuming a 3d input/ output
+                if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                    input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)) # TODO: We add a dimension for summing? Don't we have that from the list?
+                else:
+                    input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)))
+                if do_debug:
+                    print 'inputs are now:',input.owner.inputs[0].owner.inputs
+                if get_convis_attribute(v, 'connects', None) is None:
+                    set_convis_attribute(v, 'connects',[])
+                get_convis_attribute(v,'connects').append([self,other])
+            elif input.owner.inputs[0].owner.inputs[1].ndim == 5+1:
+                # otherwise a 5 dimensional input
+                if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                    input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,5).dimshuffle(('x',0,1,2,3,4))
+                else:
+                    input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,5).dimshuffle(('x',0,1,2,3,4)))
+                if do_debug:
+                    print 'inputs are now:',input.owner.inputs[0].owner.inputs
+                if get_convis_attribute(v, 'connects', None) is None:
+                    set_convis_attribute(v, 'connects',[])
+                get_convis_attribute(v,'connects').append([self,other])
             else:
-                input.owner.inputs[0].owner.inputs.append(v.dimshuffle(('x',0,1,2)))
-            if do_debug:
-                print 'inputs are now:',input.owner.inputs[0].owner.inputs
-            if get_convis_attribute(v, 'connects', None) is None:
-                set_convis_attribute(v, 'connects',[])
-            get_convis_attribute(v,'connects').append([self,other])
+                raise Exception('Specified input is a sum of tensors that neither have 3 or 5 dimensions!')
         else:
             if has_convis_attribute(input,'variable_type') and get_convis_attribute(input,'variable_type') == 'input':
                 set_convis_attribute(input,'variable_type','replaced_input')
@@ -248,21 +271,24 @@ class GraphWrapper(object):
         return other / self.graph
     def __floordiv__(self,other):
         return self.graph // other
+    def debugprint(self):
+        theano.printing.debugprint(self.graph)
 
 class N(GraphWrapper):
     states = {}
     state_initializers = {}
     inputs = OrderedDict()
+    expects_config = False
     def __init__(self,graph,name=None,m=None,parent=None,config=None,**kwargs):
         if name is None:
-            name = str(uuid.uuid4())
+            name = str(uuid.uuid4()).replace('-','')
         self.m = m
         self.parent = parent
         self.node_type = 'Node'
         self.node_description = ''
         if config is not None:
             self.set_config(config)
-        if self.config is None:
+        if self.config is None and self.expects_config:
             raise Exception('No config for node '+str(getattr(self,'name','??'))+'! Use .set_config({}) before calling super constructor!')
         if not hasattr(self,'default_input'):
             raise Exception('No input defined for node '+str(getattr(self,'name','??'))+'! Use .create_input(...) before calling super constructor!')
@@ -280,6 +306,24 @@ class N(GraphWrapper):
             return self.inputs.values()
         elif type(n) in [list,tuple]:
             self.inputs.update(OrderedDict([(input_name,T.sum([as_input(T.dtensor3(),str(input_name),replaceable_input=True)],axis=0)) for input_name in n]))
+            self.default_input = self.inputs[n[0]]
+            self.input = self.inputs[n[0]]
+            return self.inputs
+        else:
+            raise Exception('Argument not understood. Options are: an int (either 1 for a single input or >1 for more) or a list of names for the inputs.')
+    def create_input_5d(self,n=1,name='input',sep='_'):
+        if n == 1:
+            self.input = T.sum([as_input(theano_utils.dtensor5(),name,replaceable_input=True)],axis=1)
+            self.default_input = self.input
+            self.inputs.update(OrderedDict([(name,self.input)]))
+            return self.input
+        elif type(n) == int:
+            self.inputs.update(OrderedDict([(name+sep+str(i),T.sum([as_input(theano_utils.dtensor5(),name+sep+str(i),replaceable_input=True)],axis=1)) for i in range(n)]))
+            self.default_input = self.inputs.values()[0]
+            self.input = T.join(*([0]+self.inputs.values()))
+            return self.inputs.values()
+        elif type(n) in [list,tuple]:
+            self.inputs.update(OrderedDict([(input_name,T.sum([as_input(theano_utils.dtensor5(),str(input_name),replaceable_input=True)],axis=1)) for input_name in n]))
             self.default_input = self.inputs[n[0]]
             self.input = self.inputs[n[0]]
             return self.inputs
@@ -459,9 +503,9 @@ class M(object):
         for v in variables:
             if has_convis_attribute(v,'updates'):
                 if v in updates:
-                    updates[v] = T.sum([updates[v]]+[u for u in get_convis_attribute(v,'updates')])
+                    updates[v] = T.sum([updates[v]]+[u for u in get_convis_attribute(v,'updates')],axis=0)
                 else:
-                    updates[v] = T.sum([u for u in get_convis_attribute(v,'updates')])
+                    updates[v] = T.sum([u for u in get_convis_attribute(v,'updates')],axis=0)
         self.compute_input_order = unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = additional_inputs
         self.compute_state_inits = []
@@ -549,7 +593,7 @@ class M(object):
                 #if (not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False) and not hasattr(shared_parameter,'optimized'):
                 # until we can track which config values were changed, we re-initialize everything
                 # all smart stuff is now in the injected .update method
-                if (not has_convis_attribute(shared_parameter,'initialized') or get_convis_attribute(shared_parameter,'initialized',)) and not has_convis_attribute(shared_parameter,'optimized'):
+                if (get_convis_attribute(shared_parameter,'initialized',False) is False) and not has_convis_attribute(shared_parameter,'optimized'):
                     get_convis_attribute(shared_parameter,'update')(create_context_O(shared_parameter,input=the_input,model=self,resolution=self.resolution))
                 #shared_parameter.initialized = True
         the_vars = [input_dict[v] for v in self.compute_input_order]
@@ -590,7 +634,7 @@ class M(object):
         def simple_model_diagram(n,offset=0,prev_offset=0):
             if type(n) is list:
                 return '\n'.join(['input'+connector+simple_model_diagram(i,offset=offset,prev_offset=prev_offset+len('input'+connector)) for i in n])
-            s = save_name(n.name)
+            s = save_name(getattr(n,'name','Layer'))
             if n not in node_dict:
                 s += connector+'output\n'
                 return s
@@ -603,97 +647,55 @@ class M(object):
             return s
         diagram = simple_model_diagram(true_start_nodes)
         return diagram
+    def debugprint(self):
+        theano.printing.debugprint(self.outputs)
     # methods for adding optimization methods easily
-    def add_target(self,variable,error_func=lambda x,y: T.mean((x-y)**2),name='target',bcast=(True,True,True)):
+    def add_target(self,variable,error_func= None,name='target',bcast=(True,True,True)):
+        """
+            Default error func: lambda x,y: T.mean((x-y)**2)
+        """
+        if error_func is None:
+            error_func = lambda x,y: T.mean((x-y)**2)
         tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
         v = as_input(tp(name),name=name)
         er = error_func(variable,v)
         set_convis_attribute(er,'name','output')
-        error_node = N(er,model=self,name='ErrorNode')
+        error_node = GraphWrapper(er,config={},model=self,name='ErrorNode',ignore=[variable])
         e = self.outputs.append(error_node.output)
         variable.__dict__['error_functions'] = variable.__dict__.get('error_functions',[])
         variable.__dict__['error_functions'].append(e)
         return v,er
-    def add_update(self,variable,error_term,opt_func = lambda x,y: x+as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y):
+    def add_update(self,variable,error_term,opt_func = None):
+        """
+            Default opt_func: lambda x,y: x-as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y
+        """
+        if opt_func is None:
+            opt_func = lambda x,y: x-as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y
         variable.__dict__['updates'] = variable.__dict__.get('error_functions',[])
         g = T.grad(error_term,variable)
         set_convis_attribute(g,'name','gradient')
+        self.outputs.append(opt_func(variable,g)) # instead we should also explore all updates :/
+        # but that means we have to explore all variables after we explored all varaibles etc.
         variable.__dict__['updates'].append(opt_func(variable,g))
-    def add_gradient_descent(self,v_to_change,v_to_target=None):
+    def add_gradient_descent(self,v_to_change,v_to_target=None,error_func=None,opt_func = None):
         if v_to_target is None:
             if len(self.outputs) > 1:
                 raise Exception('Target variable is not provided and the model has no outputs.')
             v_to_target = self.output
-        v,er = self.add_target(v_to_target)
-        self.add_update(v_to_change,er)
+        v,er = self.add_target(v_to_target,error_func=error_func)
+        self.add_update(v_to_change,er,opt_func=opt_func)
         return v
+    def _repr_html_(self):
+        s = ""
+        s += "<h1>"+str(getattr(self,'name','(unnamed model)'))+"</h1>"
+        s += "Diagram of this model:<br><pre>"+str(self.draw_simple_diagram())+"</pre>"
+        return s
 
-class Runner(object):
-    """
-        A runner object holds the theano compiled function and the associated input/output mappings.
-
-        Also a state can be either per model or per Runner.
-
-        To decide: does a runner have a copy of all variables or references?
-    """
-    def __init__(self,model):
-        self.model=model
-        self.input_order = [] #unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
-        self.additional_inputs = [] #additional_inputs
-        self.state_inits = [] #?
-        self.output_order = [] # unique_list(self.outputs + [v.state_out_state for v in state_variables])
-        self.updates = theano.updates.OrderedUpdates()
-        self.givens = [] # [(a,b) for (a,b) in givens.items()]
-        self.debug = False
-    def create(self):
-        if self.debug:
-            print 'solving for:',self.outputs
-            print 'all variables:',len(variables)
-            print 'input:',filter(is_input,variables)
-            print 'parameters:',filter(is_input_parameter,variables)
-            print 'states:',state_variables
-            print 'updates:',self.compute_updates_order
-        self.input_dict = dict((v,None) for v in self.input_order)
-        self.state_dict = dict((v,None) for v in self.output_order if is_out_state(v))
-        self.compute = theano.function(inputs=self.input_order, 
-                                        outputs=self.output_order, 
-                                        updates=self.updates,
-                                        givens=self.givens,
-                                        on_unused_input='ignore')
-    def run(self,inp):
-        ## TODO: adapt this to the context
-        c = O()
-        c.input = the_input
-        c.model = self
-        #c.config = self.config
-        input_dict = {}
-        input_dict.update(dict(zip(self.additional_inputs,additional_inputs)))
-        for k,v in self.compute_input_dict.items():
-            if v is not None:
-                if hasattr(v,'array'):
-                    input_dict[k] = v
-                elif hasattr(v,'get'):
-                    input_dict[k] = v.get(len(the_input))
-            else:
-                if is_input(k):
-                    if k not in self.additional_inputs:
-                        input_dict[k] = the_input
-                if is_input_parameter(k):
-                    input_dict[k] = k.param_init(create_context_O(k,model=self.model,input=the_input,resolution=self.model.resolution))
-                if is_state(k):
-                    if self.compute_state_dict.get(k.state_out_state,None) is None:
-                        input_dict[k] = k.state_init(create_context_O(k,model=self.model,input=the_input,resolution=self.model.resolution))
-                    else:
-                        input_dict[k] = self.compute_state_dict[k.state_out_state]
-        for shared_parameter in self.parameters._all:
-            if not hasattr(shared_parameter,'initialized') or shared_parameter.initialized == False:
-                shared_parameter.set_value(shared_parameter.param_init(create_context_O(shared_parameter,model=self.model,input=the_input,resolution=self.model.resolution)))
-                shared_parameter.initialized = True
-        the_vars = [input_dict[v] for v in self.compute_input_order]
-        the_output = self.compute(*the_vars)
-        for (o,k) in zip(the_output, self.compute_output_order):
-            if is_out_state(k):
-                self.compute_state_dict[k] = o
-        return the_output[:len(self.outputs)]
-
-
+def make_model(outputs,name='Model',**kwargs):
+    if type(outputs) not in [list,tuple]:
+        outputs = [outputs]
+    m = M(name=name,**kwargs)
+    for o in outputs:
+        m.add_output(o)
+    m.create_function()
+    return m

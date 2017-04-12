@@ -73,6 +73,7 @@ class Retina(M):
 
             Note: Handeling the config is still a mess
         """
+        self.name = 'Retina Model'
         if hasattr(config,'_'):
             # if the configuration is an Ox dictionary, only use the dictionary
             config = config._

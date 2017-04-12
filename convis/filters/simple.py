@@ -217,9 +217,63 @@ class K_3d_kernel_filter(N):
         node_description = lambda: 'Convolutional Filtering'
         super(K_3d_kernel_filter,self).__init__(output_variable,name=name)
 
+class K_5d_kernel_filter(N):        
+    def __init__(self,config={},name=None,model=None):
+        """
+            This node implements 5d kernel filtering by convolution.
+
+            The dimensions of the input are:
+
+                0: (set to be 1)
+                1: time
+                2: (set to be 1)
+                3: x
+                4: y
+
+            The dimensions of the filter are:
+
+                0: filter id
+                1: time
+                2: color
+                3: x
+                4: y
+
+            This layer has a 5 dimensional output:
+
+                   Input (batch, t, c, x, y) 
+                +  Filter (out_channel, t, c, x, y)
+                -> Result (batch, t, out_channel, x, y)
+
+            t,c,x and y dimensions must match between input and filter.
+            Batch should always be length 1 for convis (batchs are handled outside the model).
+            To preserve color channels, the filter has to have a multiple of 3 out_channels.
+            
+        """
+        self.set_config(config)
+        self.model = model
+        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(1,10,1,10,10)))),name='kernel'),
+                             initialized=True,
+                             init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(1,10,1,10,10)))))
+        self.size = kernel.shape
+        output_variable = make_nd(
+                              conv3d(
+                                  pad5_txy(
+                                              make_nd(self.create_input_5d(),5),
+                                              kernel.shape[1]-1,kernel.shape[3]-1,kernel.shape[4]-1,
+                                              mode='mirror'
+                                          ),
+                                  make_nd(kernel,5)
+                              )
+                          ,5)
+        output_variable.name = 'output'
+        node_type = '5d Kernel Filter Node'
+        node_description = lambda: 'Convolutional Filtering'
+        super(K_5d_kernel_filter,self).__init__(output_variable,name=name)
+
 ConvolutionFilter1d = K_1d_kernel_filter
 ConvolutionFilter2d = G_2d_kernel_filter
 ConvolutionFilter3d = K_3d_kernel_filter
+ConvolutionFilter5d = K_5d_kernel_filter
 
 
 class Nonlinearity(N):
@@ -230,13 +284,14 @@ class Nonlinearity(N):
     """
     def __init__(self,config={},name=None,model=None):
         self.model = model
+        self.name = name
         self.set_config(config)
         my_input = self.create_input()
-        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',70.0)),
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',1.0)),
                                           name="i_0_G")
         self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
                                           name="v_0_G")
-        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',100.0)),
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',1.0)),
                                           name="lambda_G")
         self.N = GraphWrapper(as_variable(theano.tensor.switch(my_input < self._v_0_G, 
                                  as_variable(self._i_0_G/(1-self._lambda_G*(my_input-self._v_0_G)/self._i_0_G),name='N_0',html_name='N<sub>V&lt;v0</sub>'),
@@ -245,6 +300,47 @@ class Nonlinearity(N):
         node_type = 'Nonlinear Node'
         node_description = lambda: ''
         super(Nonlinearity,self).__init__(make_nd(self.N,3),name=name)
+
+class Nonlinearity_5d(N):
+    """
+    :math:`output = N(eT * V_{Bip})`
+    :math:`N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
+    :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
+    """
+    def __init__(self,config={},name=None,model=None):
+        self.model = model
+        self.name = name
+        self.set_config(config)
+        my_input = self.create_input_5d()
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',1.0)),
+                                          name="i_0_G")
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+                                          name="v_0_G")
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',1.0)),
+                                          name="lambda_G")
+        self.N = GraphWrapper(as_variable(theano.tensor.switch(my_input < self._v_0_G, 
+                                 as_variable(self._i_0_G/(1-self._lambda_G*(my_input-self._v_0_G)/self._i_0_G),name='N_0',html_name='N<sub>V&lt;v0</sub>'),
+                                 as_variable(self._i_0_G + self._lambda_G*(my_input-self._v_0_G),name='N_1',html_name='N<sub>V&gt;=v0</sub>')),'output',
+                        requires=[self._lambda_G,self._i_0_G,self._v_0_G]),name='N',ignore=[my_input],parent=self).graph
+        node_type = 'Nonlinear Node'
+        node_description = lambda: ''
+        super(Nonlinearity_5d,self).__init__(make_nd(self.N,5),name=name)
+
+class Filter_5d_to_3d(N):        
+    def __init__(self,config={},op=T.max,name=None,model=None):
+        """
+            This gives the maximum (or another op) of the input channels and batches for each time step.
+
+            Thus a 5d tensor is transformed into a 3d tensor, collapsing all batches and channels with the same operation.
+        """
+        self.set_config(config)
+        self.model = model
+        output_variable = op(self.create_input_5d(),(0,2))
+        output_variable.name = 'output'
+        node_type = 'Spatial Max Filter'
+        node_description = lambda: ''
+        #raise NotImplementedError('Filter is not defined yet')
+        super(Filter_5d_to_3d,self).__init__(output_variable,name=name)
 
 class MaxFilter(N):        
     def __init__(self,config={},name=None,model=None):
@@ -602,3 +698,22 @@ class LeakyHeatFilter(N):
         self.node_type = 'Leaky Heat Filter Node'
         self.node_description = lambda: 'Temporal Recursive Filtering and Spatial Convolution'
         
+class FullConnection(N):
+    """
+        This node implements a full connection between the input and the output
+        using a 4 dimensional connectivity matrix `w`.
+        
+        The size of the input and output can be different, resulting in zooming
+        or supersampling.
+    
+    """
+    def __init__(self,config={},name=None,model=None):
+        self.model = model
+        self.set_config(config)
+        my_input = self.create_input()
+        self.connectivity = self.shared_parameter(lambda x: x.get_config('w',np.zeros((20,20,20,20))),
+                                          name="w")
+        node_type = 'Full Connection Node'
+        o = T.tensordot(my_input,self.connectivity.dimshuffle(('x',0,1,2,3)),axes=[(1,2),(1,2)])[:,0,:,:]
+        node_description = lambda: ''
+        super(FullConnection,self).__init__(o,name=name)

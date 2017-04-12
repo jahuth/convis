@@ -63,6 +63,10 @@ def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=Tr
     kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=relative_weight)
     return np.concatenate([[1], kernel],axis=0)
 
+def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
+    kernel = exponential_highpass_filter_1d(tau=tau, relative_weight=relative_weight, normalize=normalize,resolution=resolution)
+    return kernel.reshape((len(kernel),1,1))
+
 def exponential_highpass_filter_5d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
     kernel = exponential_highpass_filter_1d(tau=tau, relative_weight=relative_weight, normalize=normalize,resolution=resolution)
     return kernel.reshape((1,len(kernel),1,1,1))
@@ -97,6 +101,17 @@ def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, 
     if np.any(np.array(kernel.shape) == 0):
         return np.ones((1,1))
     return kernel
+
+def gauss_filter_3d(x_sig,y_sig,normalize=False,resolution=None, even=None):
+    """
+        A 2d gaussian in a 5d data structure (1 x time x 1 x X x Y)
+
+        x_sig and y_sig are the standard deviations in x and y direction.
+
+        if :py:obj:`even` is not None, the kernel will be either made to have even or uneven side lengths, depending on the truth value of :py:obj:`even`.
+    """
+    kernel = gauss_filter_2d(x_sig,y_sig,normalize=normalize,resolution=resolution, even=even)
+    return kernel.reshape((1,kernel.shape[0],kernel.shape[1]))
 
 def gauss_filter_5d(x_sig,y_sig,normalize=False,resolution=None, even=None):
     """
@@ -216,3 +231,18 @@ def deriche_coefficients(density):
     B1 = 2*ema
     B2 = -ema*ema
     return {'A1':A1, 'A2':A2, 'A3':A3, 'A4':A4, 'B1':B1, 'B2':B2 }
+
+def sum_kernels(kernels):
+    """
+        Sums numeric kernels and extends their size 
+    """
+    max_shape = np.max([k.shape for k in kernels],axis=0)
+    print max_shape
+    new_k = np.zeros(max_shape)
+    for k in kernels:
+        x1 = np.floor((max_shape[0] - k.shape[0])/2.0)
+        x2 = x1 + k.shape[0]
+        y1 = np.floor((max_shape[1] - k.shape[1])/2.0)
+        y2 = y1 + k.shape[1]
+        new_k[x1:x2,y1:y2] += k
+    return new_k

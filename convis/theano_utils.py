@@ -202,8 +202,9 @@ def get_named_input_variables_iter(apply_node,depth=None,ignore=[],explore_scan=
 def replace(apply_node,old,new,depth=None):
     for v in get_variables_iter(apply_node,depth=depth):
         with suppress():
-            inputs = v.owner.inputs
-            v.owner.inputs = map(lambda x:new if x==old else x,inputs)
+            if v.owner is not None:
+                inputs = v.owner.inputs
+                v.owner.inputs = map(lambda x:new if x==old else x,inputs)
 
 def _replace(apply_node,old,new,depth=300):
     """ replaces one variable in a graph with another one """

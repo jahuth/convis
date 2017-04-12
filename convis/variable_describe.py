@@ -4,6 +4,7 @@
 #
 ### Helper functions to deal with annotated variables
 
+import re
 import numpy as np
 from o import save_name
 from variables import get_convis_attribute, has_convis_attribute, full_path
@@ -33,14 +34,45 @@ class _Descriptor(object):
     def __repr__(self):
         return repr(describe_dict(self.v))
     def __str__(self):
-        return str(describe_dict(self.v))
+        return describe_text(self.v)
+    def _repr_pretty_(self,  p, cycle):
+        p.text(describe_text(self.v))
     def _repr_html_(self):
         return describe_html(self.v,wrap_in_html=False,**self.kwargs)
+
+def describe_text(v, indent=' '):
+    pure_indent = len(indent) * ' '
+    def repr_if_not_str(s):
+        if type(s) is str:
+            return s
+        return re.sub( '\n+', '\n', repr(s) )
+    if hasattr(v,'__iteritems__'):
+        return (indent + ' keys:' + ', '.join([k for k,vv in v.__iteritems__()]) + '\n' +
+                '\n'.join([indent[:-1] + '---\\ ' + k + '\n'+describe_text(vv,indent=pure_indent+'  | ')+'\n' for k,vv in v.__iteritems__()]))
+    if type(v) in [list, tuple] or hasattr(v,'__iter__'):
+        try:
+            return '\n'.join([describe_text(vv,indent=indent+'    ') for vv in v])
+        except:
+            # Tensor Variables love to raise TypeErrors when iterated over
+            pass
+    d = ''
+    for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','auto_name']:
+        if has_convis_attribute(v,k):
+            d+= str(k) +':'+ repr_if_not_str(get_convis_attribute(v,k)) + '\n'
+    try:
+        d+= 'value:' + repr_if_not_str(v.get_value()) + '\n'
+    except:
+        pass
+    try:
+        d+= 'got: ' + repr_if_not_str(get_convis_attribute(v,'get',(tu.create_context_O(v)))) + '\n'
+    except:
+        pass
+    return ('\n'.join([indent + line for line in d.split('\n')])).replace('\n\n','\n')
 
 def describe_dict(v):
     if type(v) in [list, tuple] or hasattr(v,'__iter__'):
         try:
-            return [describe_text(vv) for vv in v]
+            return [describe_dict(vv) for vv in v]
         except:
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
@@ -185,7 +217,18 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                 if t.shape[0] == 1 and t.shape[2] == 1:
                     return "Numpy array "+str(t.shape)+"<br/>"+_tensor_to_html(t[0,:,0,:,:],preamble=False,**kwargs)
                 else:
-                    return '5D tensor with too large first or third dimensions!'
+                    if t.shape[0] == 1:
+                        s = "Numpy array "+str(t.shape)+"<br/>"
+                        for i in range(t.shape[2]):
+                           s+= _tensor_to_html(t[0,:,i,:,:],preamble=False,**kwargs) + "<br/>"
+                        return s
+                    elif t.shape[2] == 1:
+                        s = "Numpy array "+str(t.shape)+"<br/>"
+                        for i in range(t.shape[0]):
+                           s+= _tensor_to_html(t[i,:,0,:,:],preamble=False,**kwargs) + "<br/>"
+                        return s
+                    else:
+                        return '5D tensor with too large first or third dimensions!'
         return 'Numpy Array ('+str(t.shape)+')'
     else:
         if preamble is False:

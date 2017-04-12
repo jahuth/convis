@@ -2,6 +2,40 @@
     Friendly `O` objects
     ====================
 
+    `O` objects are python objects that can be initialized easily.
+    They are used as user friendly dictionaries, as their attributes
+    can be tab-completed in interactive python evnironments.
+
+    To convert a dictionary into an `O`, supply it as keyword arguemnts::
+
+        a_dictionary = {'something': "a string", 'x': 0, 'y': 2}
+        an_o = O(**a_dictionary)
+        print an_o.x
+
+    Or supply it to an already created `O` object to create a new one:
+
+        a_second_dictionary = {'x':5, 'z':7}
+        a_new_o = an_o(**a_second_dictionary)
+
+    Methods you would use on a dictionary are renamed with with surrounding double underscores
+    to avoid name conflicts: All attributes/methods *without* a leading underscrore
+    are user supplied!
+
+        a_new_o.__iteritems__() # is the same as a_new.__dict__.iteritems()
+
+    The `Ox` object is an *extended* version of an `O` object. It converts
+    lists, dictionaries and tuples *recursively*. Also it provides the special
+    attributes `._all` and `._search` to find variables in a nested structure.
+
+
+    The `O` objects included in this toolbox have additional behaviour to make it
+    easier to work with theano parameters. Normally, assigning a value to an attribute
+    is ignored, but for the case of `.parameter` objects, when a numeric object is
+    assigned to a shared parameter, the value will be supplied to the parameters `set_value`
+    function. If a theano variable is supplied or an object with a `get_graph` method,
+    the shared parameter will be replaced everywhere it occurs with the subgraph.
+    This can be used to switch between a parameterized and a dense kernel.
+
 """
 
 var_name_counter = 0
@@ -75,7 +109,14 @@ class O(object):
 
             print o1(d=4).d # creates a new O object with the added keywords
 
+
+        Whether entries can be modified can be controlled with the
+        `._readonly` boolean flag which enables or disables direct
+        attribute assignment.
+
+        Two special cases always allow assignment:
     """
+    _readonly = True
     def __init__(self,**kwargs):
         global oid
         self._id=oid
@@ -97,18 +138,44 @@ class O(object):
     def __iteritems__(self):
         return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
     def __setattr__(self, name, value):
-        if name in self.__dict__.keys() and hasattr(getattr(self, name),'set_value'):
-            #print 'has set value'
-            getattr(self, name).set_value(value)
+        if name in self.__dict__.keys():
+            var_to_replace = getattr(self, name)
+            import convis, theano
+            if hasattr(var_to_replace,'set_value') and hasattr(value,'__array__'):
+                #print 'has set value'
+                var_to_replace.set_value(value.__array__())
+            elif isinstance(value, convis.GraphWrapper) or isinstance(value, theano.Variable):
+                # replace parameter with paramterized parameter if possible 
+                ## only when getattr(self, name) is a parameter
+                ## only when dimensions match
+                # then
+                ## we find the parameters children and replace it in each with the graph we get from value.get_graph(name=old_name)
+                #### what about parameters that are used in multiple places?
+                from variables import get_convis_attribute, set_convis_attribute
+                
+                if hasattr(var_to_replace,'_') and hasattr(var_to_replace._,'graph'):
+                    # the variable is actually
+                    var_to_replace = var_to_replace._.graph
+                filter_node = get_convis_attribute(var_to_replace,'original_node',get_convis_attribute(var_to_replace,'node'))
+                if hasattr(value,'_as_TensorVariable'):
+                    value.name = name
+                    value = value._as_TensorVariable()
+                else:
+                    set_convis_attribute(value,'name', name)
+                set_convis_attribute(value,'original_node',filter_node)
+                convis.theano_utils.replace(filter_node.output,var_to_replace,value)
+                filter_node.label_variables(filter_node.output)
+                return
+        if self._readonly and not name.startswith('_'):
+            return
+        if name in self.__dict__.keys():
+            #print 'setting in dictionary'
+            self.__dict__[name] = value
         else:
-            if name in self.__dict__.keys():
-                #print 'setting in dictionary'
-                self.__dict__[name] = value
-            else:
-                #print 'setting for object'
-                object.__setattr__(self, name, value)
+            #print 'setting for object'
+            object.__setattr__(self, name, value)
     def __setitem__(self,k,v):
-        setattr(self,k,v)
+        self.__dict__[save_name(k)] = v
     def __getitem__(self,k):
         if k in self.__dict__.keys():
             return getattr(self, k)
@@ -119,7 +186,13 @@ class O(object):
         raise IndexError('Key not found: '+str(k))
     @property
     def _(self):
+        if hasattr(self,'_original'):
+            return getattr(self,'_original')
         return self._get_as('_original_type',recursive=True)
+    def _as_TensorVariable(self):
+        if hasattr(self,'_original'):
+            if hasattr(getattr(self,'_original'),'_as_TensorVariable()'):
+                return getattr(self,'_original')._as_TensorVariable()
     def _get_as(self,as_type='_original_type',recursive=False):
         def get_as_if_has_get_as(v,v_type='_original_type',recursive=False):
             "if the obejct provides a `_get_as` method, we call it, otherwise it is a normal object"
