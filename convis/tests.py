@@ -9,7 +9,8 @@ class TestConvis(unittest.TestCase):
         import convis
         import numpy as np
         ret = convis.retina.Retina()
-        stimulus = np.zeros((5000,5,5))
+        ret.debug = True
+        stimulus = np.zeros((2000,50,50))
         T,X,Y = np.meshgrid(np.arange(stimulus.shape[0]),
                             np.arange(stimulus.shape[1]),
                             np.arange(stimulus.shape[2]),indexing='ij')

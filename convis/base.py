@@ -220,6 +220,7 @@ class GraphWrapper(object):
                 if get_convis_attribute(v, 'connects', None) is None:
                     set_convis_attribute(v, 'connects',[])
                 get_convis_attribute(v,'connects').append([self,other])
+                print input.owner.inputs[0].owner.inputs
             elif input.owner.inputs[0].owner.inputs[1].ndim == 3+1:
                 # assuming a 3d input/ output
                 if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
