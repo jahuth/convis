@@ -211,10 +211,16 @@ class GraphWrapper(object):
         v = other
         if hasattr(other,'_as_TensorVariable'):
             v = other._as_TensorVariable()
-        if type(input.owner.op) == T.elemwise.Sum:
+        if type(input.owner.op) == T.elemwise.Sum and hasattr(input.owner,'inputs') and len(input.owner.inputs) > 0:
             if do_debug:
                 print 'Adding to sum'
-            if input.owner.inputs[0].owner.inputs[1].ndim == 3+1:
+            if len(input.owner.inputs[0].owner.inputs) == 1:
+                # only the dimension of the sum is present
+                input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)))
+                if get_convis_attribute(v, 'connects', None) is None:
+                    set_convis_attribute(v, 'connects',[])
+                get_convis_attribute(v,'connects').append([self,other])
+            elif input.owner.inputs[0].owner.inputs[1].ndim == 3+1:
                 # assuming a 3d input/ output
                 if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
                     input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)) # TODO: We add a dimension for summing? Don't we have that from the list?
