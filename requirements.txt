@@ -1,4 +1,4 @@
 numpy
 matplotlib
-Theano
+Theano==0.9.0.dev2
 litus
