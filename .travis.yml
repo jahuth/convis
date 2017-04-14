@@ -1,5 +1,7 @@
 language: python
 sudo: false
+os:
+  - linux
 python:
   - "2.7"
 addons:
@@ -9,11 +11,14 @@ addons:
     - libblas-dev
     - liblapack-dev
     - gfortran
+env:
+    - REQUIREMENTS=requirements_stable.txt
+    - REQUIREMENTS=requirements.txt
 before_install:
   - pip install -U pip
 # command to install dependencies
 install: 
-  - travis_wait travis_retry pip install -r requirements.txt
+  - travis_wait travis_retry pip install -r $REQUIREMENTS
 # command to run tests
 script: python -m convis.tests
 cache:
