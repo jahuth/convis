@@ -214,37 +214,45 @@ class GraphWrapper(object):
         if type(input.owner.op) == T.elemwise.Sum and hasattr(input.owner,'inputs') and len(input.owner.inputs) > 0:
             if do_debug:
                 print 'Adding to sum'
-            if len(input.owner.inputs[0].owner.inputs) == 1:
-                # only the dimension of the sum is present
-                input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)))
-                if get_convis_attribute(v, 'connects', None) is None:
-                    set_convis_attribute(v, 'connects',[])
-                get_convis_attribute(v,'connects').append([self,other])
-                print input.owner.inputs[0].owner.inputs
-            elif input.owner.inputs[0].owner.inputs[1].ndim == 3+1:
-                # assuming a 3d input/ output
-                if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
-                    input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)) # TODO: We add a dimension for summing? Don't we have that from the list?
+            # Since Theano 9.0 T.sum([a]) will no longer give a Join.0([a]), but a InplaceDimShuffle{x,0,1,2}(a)
+            if isinstance(input.owner.inputs[0].owner.op, theano.tensor.DimShuffle):
+                # we replace the DimShuffle with a one element Join that can then be extended
+                input.owner.inputs[0] = T.Join()(0,input.owner.inputs[0].owner.inputs)
+            if isinstance(input.owner.inputs[0].owner.op, theano.tensor.Join):
+                # The Sum Op contains a Join as an input.
+                # If the dimensions match, we extend the Join with another element (the new input).
+                # A special case is the first new input:
+                #  if the previous input was a zero tensor with a 'replaceable_input' flag,
+                #  this tensor will be removed from the list when an input is provided.
+                if input.owner.inputs[0].owner.inputs[1].ndim == 3+1:
+                    # assuming a 3d input/ output
+                    if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                        input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)) # TODO: We add a dimension for summing? Don't we have that from the list?
+                    else:
+                        input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)))
+                    if do_debug:
+                        print 'inputs are now:',input.owner.inputs[0].owner.inputs
+                    if get_convis_attribute(v, 'connects', None) is None:
+                        set_convis_attribute(v, 'connects',[])
+                    get_convis_attribute(v,'connects').append([self,other])
+                elif input.owner.inputs[0].owner.inputs[1].ndim == 5+1:
+                    # otherwise a 5 dimensional input
+                    if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                        input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,5).dimshuffle(('x',0,1,2,3,4))
+                    else:
+                        input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,5).dimshuffle(('x',0,1,2,3,4)))
+                    if do_debug:
+                        print 'inputs are now:',input.owner.inputs[0].owner.inputs
+                    if get_convis_attribute(v, 'connects', None) is None:
+                        set_convis_attribute(v, 'connects',[])
+                    get_convis_attribute(v,'connects').append([self,other])
                 else:
-                    input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,3).dimshuffle(('x',0,1,2)))
-                if do_debug:
-                    print 'inputs are now:',input.owner.inputs[0].owner.inputs
-                if get_convis_attribute(v, 'connects', None) is None:
-                    set_convis_attribute(v, 'connects',[])
-                get_convis_attribute(v,'connects').append([self,other])
-            elif input.owner.inputs[0].owner.inputs[1].ndim == 5+1:
-                # otherwise a 5 dimensional input
-                if replace_inputs and has_convis_attribute(input.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
-                    input.owner.inputs[0].owner.inputs[1] = theano_utils.make_nd(v,5).dimshuffle(('x',0,1,2,3,4))
-                else:
-                    input.owner.inputs[0].owner.inputs.append(theano_utils.make_nd(v,5).dimshuffle(('x',0,1,2,3,4)))
-                if do_debug:
-                    print 'inputs are now:',input.owner.inputs[0].owner.inputs
-                if get_convis_attribute(v, 'connects', None) is None:
-                    set_convis_attribute(v, 'connects',[])
-                get_convis_attribute(v,'connects').append([self,other])
+                    raise Exception('Specified input is a sum of tensors that neither have 3 or 5 dimensions!')
             else:
-                raise Exception('Specified input is a sum of tensors that neither have 3 or 5 dimensions!')
+                # Since a change in Theano broke the input mechanics without any usefull error,
+                # the user should at least know that this part of the toolbox depends on the Theano
+                # version and can break when Theano changes how sums are handled.
+                raise Exception('The Sum Op has neither a Join nor a DimShuffle as an input! This means that your version of Theano is possibly too new (try 8.2 or 9.0).')
         else:
             if has_convis_attribute(input,'variable_type') and get_convis_attribute(input,'variable_type') == 'input':
                 set_convis_attribute(input,'variable_type','replaced_input')
