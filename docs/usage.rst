@@ -1,6 +1,14 @@
 Usage
 =====
 
+The convis toolbox provides a framework for creating models of visual processes.
+The toolbox can be used on three different levels:
+
+  1. by running a model and tuning its parameters
+  2. Creating a custom model out of `Layers`
+  3. Creating a custom Layer to be used in a model
+
+
 Running a model
 -----------------
 
@@ -10,13 +18,42 @@ Running a model
     The size of images and the length of time you can process in one go will depend on your system and specifically on the amount of continouus memory available on your graphics card. If theano can not find enough continouus memory, the python code running the model will fail and until this python process is restarted it might hold some GPU memory as unusable.
     For now there is no good way to fix this other than restarting the process and choosing a smaller chunk size.
 
+The simplest case of running a model is to instanciate the model and call the `.run` method::
+
+    In [1]: import convis, numpy
+    In [2]: retina = convis.retina.Retina()
+    In [3]: o = retina.run(numpy.zeros((200,10,10)))
+    In [4]: convis.describe(o) # optional visualization of the output
+
+When the retina model is executed, the model is compiled to run on your GPU 
+(if available) or CPU otherwise and the output(s) of the model will be saved into
+`o`, an Output object.
+
+The retina model produces more than one output. To visualize where this output is coming from we can 
+print a simplified version of the model::
+
+    In [1]: print retina.draw_simple_diagram()
+
+        input -> OPL -> Bipolar -> GanglionInputLayer_Parvocellular_On -> GanglionSpikes__Parvocellular_On -> output
+                                -> GanglionInputLayer_Parvocellular_Off -> GanglionSpikes__Parvocellular_Off -> output
+
+After the Layer "Bipolar", the model is split into two pathways, one for On, the other for Off responses.
+Each of these has its own spiking output.
+
+The content of output objects can be addressed in one of two ways: by name or by numerical index::
+
+    In [1]: o.GanglionSpikes__Parvocellular_On_output_spikes is o[0]
+    Out[1]: True
+    In [2]: o.GanglionSpikes__Parvocellular_Off_output_spikes is o[1]
+    Out[2]: True
+
+
+
 Changing Parameters
 ~~~~~~~~~~~~~~~~~~~~~~
 
-There are two ways that parameters of a model can be changed.
-One involves changing the ´config´ of a specific layer, the other is to directly access the parameter variables in the graph.
-
-When creating a new model from an xml or json configuration, the easiest way is to change this configuration. But once the model is created, it is easier to directly access the variables.
+When creating a new model from an xml or json configuration, the easiest way is to change this configuration.
+But once the model is created, it is easier to directly access the variables.
 
 .. note::
 
@@ -149,7 +186,7 @@ If more than one input or output are specified, a specific one can be set like t
 
 If two outputs are connected to the same input, their values will be added together.
 
-More complciated connectivity can be achieved in `convis.connect` by nesting lists::
+More complicated connectivity can be achieved in `convis.connect` by nesting lists::
 
     convis.connect([a,[b,c,[d,e,f]],g])
     
@@ -174,6 +211,21 @@ More complciated connectivity can be achieved in `convis.connect` by nesting lis
 
 Creating a layer from a graph
 -----------------------------
+
+Example::
+
+    class Delay(convis.N):
+        def __init__(self,config,name=None,model=None):
+            inp = self.create_input()
+            delay = config.get('delay',1)
+            self._input_init = convis.as_state(convis.T.dtensor3('input_init'),
+                                        init=lambda x: np.zeros((delay,
+                                        x.input.shape[1], x.input.shape[2])))
+            o = T.concatenate([self._input_init,
+                               inp[delay:,:,:]],axis=0)
+            convis.as_out_state(T.set_subtensor(self._input_init[-(o[-(delay):,:,:].shape[0]):,:,:],
+                                        o[-(delay):,:,:]), self._input_init)
+            super(Delay,self).__init__(o,name=name)
 
 
 

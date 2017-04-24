@@ -2,7 +2,7 @@ import theano
 import theano.tensor as T
 
 
-if theano.version.version >= '0.9':
+try:
     from theano.tensor.nnet import conv3d as theano_conv3d
     from theano.tensor.nnet import conv2d as theano_conv2d
 
@@ -19,7 +19,7 @@ if theano.version.version >= '0.9':
 
     def conv3d(inp,filt,*args,**kwargs):
         return theano_conv3d(inp.dimshuffle(0,2,1,3,4),filt.dimshuffle(0,2,1,3,4),*args,**kwargs).dimshuffle(0,2,1,3,4)
-else:
+except ImportError:
     # old convolutions
     from theano.tensor.nnet.conv3d2d import conv3d
     from theano.tensor.signal.conv import conv2d
