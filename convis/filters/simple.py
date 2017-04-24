@@ -184,7 +184,7 @@ class K_1d_kernel_filter(N):
                              init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10)))))
         self.size = kernel.shape
         N = kernel.shape[0]
-        output_variable = make_nd(conv3d(pad5(make_nd(self.create_input(),5),N,1),make_nd(kernel,5)),3)
+        output_variable = make_nd(conv3d(pad5(make_nd(self.create_input(),5),N-1,1),make_nd(kernel,5)),3)
         output_variable.name = 'output'
         node_type = '1d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
