@@ -1,9 +1,32 @@
 import theano
 import theano.tensor as T
+
+
+if theano.version.version >= '0.9':
+    from theano.tensor.nnet import conv3d as theano_conv3d
+    from theano.tensor.nnet import conv2d as theano_conv2d
+
+    def conv2d(inp,filt,*args,**kwargs):
+        """
+            Converts the new (>Theano 9.0) conv2d interface to work with a 3d image and a 2d kernel.
+        """
+        if inp.ndim == 2 and filt.ndim == 2:
+            return theano_conv2d(inp.dimshuffle('x','x',0,1),filt.dimshuffle('x','x',0,1),*args,**kwargs)[0,0,:,:]
+        elif inp.ndim == 3 and filt.ndim == 2:
+            return theano_conv2d(inp.dimshuffle(0,'x',1,2),filt.dimshuffle('x','x',0,1),*args,**kwargs)[:,0,:,:]
+        else:
+            return theano_conv2d(inp,filt,*args,**kwargs)[:,0,:,:]
+
+    def conv3d(inp,filt,*args,**kwargs):
+        return theano_conv3d(inp.dimshuffle(0,2,1,3,4),filt.dimshuffle(0,2,1,3,4),*args,**kwargs).dimshuffle(0,2,1,3,4)
+else:
+    # old convolutions
+    from theano.tensor.nnet.conv3d2d import conv3d
+    from theano.tensor.signal.conv import conv2d
+
+
 import numpy as np
 import matplotlib.pylab as plt
-from theano.tensor.nnet.conv3d2d import conv3d
-from theano.tensor.signal.conv import conv2d
 import uuid
 from . import retina_base
 from misc_utils import unique_list, suppress

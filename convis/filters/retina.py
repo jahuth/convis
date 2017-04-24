@@ -3,8 +3,7 @@ import theano
 import theano.tensor as T
 import numpy as np
 import matplotlib.pylab as plt
-from theano.tensor.nnet.conv3d2d import conv3d
-from theano.tensor.signal.conv import conv2d
+from ..theano_utils import conv3d, conv2d
 import uuid
 from exceptions import NotImplementedError
 
@@ -294,8 +293,7 @@ class OPLLayerLeakyHeatNode(N):
             s1begin = (kernel.shape[1]-1)//2 + s1 -1
             s0end = V.shape[0] + s0begin
             s1end = V.shape[1] + s1begin
-            #V_smoothed = theano.tensor.signal.conv.conv2d(V,kernel, border_mode='full')[s0:s0end,s1:s1end]
-            V_smoothed = theano.tensor.signal.conv.conv2d(V_padded,kernel, border_mode='full')[s0begin:s0end,s1begin:s1end]
+            V_smoothed = conv2d(V_padded,kernel, border_mode='full')[s0begin:s0end,s1begin:s1end]
             return V_smoothed,input_image
         
         output_variable, _updates = theano.scan(fn=filter_step,
@@ -403,7 +401,7 @@ class BipolarLayerNode(N):
             s0end = preceding_V_bip.shape[0] + s0
             s1 = (inhibition_smoothing_kernel.shape[1]-1)/2
             s1end = preceding_V_bip.shape[1] + s1
-            inhibition = as_variable((theano.tensor.signal.conv.conv2d((lambda_amp*(preceding_V_bip)**2 * b_0 
+            inhibition = as_variable((conv2d((lambda_amp*(preceding_V_bip)**2 * b_0 
                                        - preceding_inhibition * a_1) / a_0, inhibition_smoothing_kernel, border_mode='full')[s0:s0end,s1:s1end]),'smoothed_inhibition')
             # // # missing feature from Virtual Retina:
             # // ##if(gCoupling!=0)

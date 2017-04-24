@@ -2,8 +2,8 @@ import theano
 import theano.tensor as T
 import numpy as np
 import matplotlib.pylab as plt
-from theano.tensor.nnet.conv3d2d import conv3d
-from theano.tensor.signal.conv import conv2d
+from .theano_utils import conv3d, conv2d
+
 
 
 dtensor5 = T.TensorType('float64', (False,)*5)
