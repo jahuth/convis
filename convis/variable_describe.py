@@ -27,6 +27,11 @@ except Exception as e:
 def describe(v,**kwargs):
     return _Descriptor(v,**kwargs)
 
+
+def help(v,**kwargs):
+    return _Descriptor({'name': get_convis_attribute(v,'name'),
+                        'doc': get_convis_attribute(v,'doc')},**kwargs)
+
 class _Descriptor(object):
     def __init__(self,v,**kwargs):
         self.v = v
@@ -265,12 +270,12 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         s = "<div class='convis_description list'>"
         iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
         s += "<b id="+uid+" "+on_click_toggle+" >+</b>&nbsp;"
-        for (k,vv) in v.__iteritems__():
+        for (k,vv) in iteration:
             s += '| <a style="text-decoration: none; font-size: 8pt;" href="#'+uid+save_name(k)+'">'+k+'</a> '
         s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
         s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;'>"
         iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
-        for (k,vv) in v.__iteritems__():
+        for (k,vv) in iteration:
             s += "<div class='convis_description dict_item'><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b> <a style=\"text-decoration: none;\" href='#"+uid+"''>&#8617;</a>"
             s += "<div class='description_content_replacer' style='border-left: 0px solid #ddd; padding-left: 5px; display: none;'>(&#8230;)</div>"
             s += "<div class='description_content' style='border-left: 0px solid #ddd; padding-left: 5px;'>"

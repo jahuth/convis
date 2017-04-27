@@ -141,6 +141,12 @@ class GraphWrapper(object):
             if not get_convis_attribute(v,'simple_name', None) is None:
                 set_convis_attribute(v,'simple_name', get_convis_attribute(v,'name'))
             #v.node = self
+    @property
+    def shape(self):
+        return self.graph.shape
+    @property
+    def reshape(self):
+        return self.graph.reshape
     def _as_TensorVariable(self):
         """
             When theano uses an object as a variable it will first check if it supports this function.
@@ -659,7 +665,7 @@ class M(object):
         if v_to_target is None:
             if len(self.outputs) > 1:
                 raise Exception('Target variable is not provided and the model has no outputs.')
-            v_to_target = self.output
+            v_to_target = self.graph
         v,er = self.add_target(v_to_target,error_func=error_func)
         self.add_update(v_to_change,er,opt_func=opt_func)
         return v

@@ -626,7 +626,7 @@ class GanglionSpikingLayerNode(N):
                     prior_refr - 1.0
                     ),'refr')
             next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
-            return [V,next_refr,spikes]
+            return [V,next_refr,spikes*1.0]
         k = self.input_variable.shape[0]
         self._result, updates = theano.scan(fn=spikeStep,
                                       outputs_info=[(self._V_initial),(self._initial_refr),None],

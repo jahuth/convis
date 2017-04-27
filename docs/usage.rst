@@ -8,6 +8,15 @@ The toolbox can be used on three different levels:
   2. Creating a custom model out of `Layers`
   3. Creating a custom Layer to be used in a model
 
+Self-help
+-----------------
+
+`convis.describe(...)` will give you information about any object of you don't know what it does.
+Also most objects contain doc strings which can be accessed in most python environments.
+In the case of theano variables, the doc string is theano specific, but with `convis.help(...)`
+the convis specific documentation to this specific variable can be retrieved.
+
+
 
 Running a model
 -----------------
