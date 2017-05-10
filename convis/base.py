@@ -634,7 +634,7 @@ class M(object):
                 outs.append(np.concatenate(co,axis=0))
             except:
                 outs.append(np.array(co))
-        return convis.base.Output(outs,keys=self.compute_output_order[:len(self.outputs)])
+        return Output(outs,keys=self.compute_output_order[:len(self.outputs)])
     def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
         """typo"""
         return self.run_in_chunks(the_input,max_length,additional_inputs=additional_inputs,inputs=inputs,run_after=run_after,**kwargs)
