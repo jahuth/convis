@@ -10,6 +10,7 @@ from exceptions import NotImplementedError
 from ..base import *
 from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad3_txy
 from .. import retina_base
+from .. import variables
 from .. import numerical_filters
 
 
@@ -716,3 +717,16 @@ class FullConnection(N):
         o = T.tensordot(my_input,self.connectivity.dimshuffle(('x',0,1,2,3)),axes=[(1,2),(1,2)])[:,0,:,:]
         node_description = lambda: ''
         super(FullConnection,self).__init__(o,name=name)
+
+class Delay(N):
+    def __init__(self,config,name=None,model=None):
+        inp = self.create_input()
+        delay = config.get('delay',1)
+        self._input_init = variables.as_state(T.dtensor3('input_init'),
+                                    init=lambda x: np.zeros((delay,
+                                    x.input.shape[1], x.input.shape[2])))
+        o = T.concatenate([self._input_init,
+                           inp[delay:,:,:]],axis=0)
+        variables.as_out_state(T.set_subtensor(self._input_init[-(o[-(delay):,:,:].shape[0]):,:,:],
+                                    o[-(delay):,:,:]), self._input_init)
+        super(Delay,self).__init__(o,name=name)
