@@ -32,7 +32,26 @@ def len_parents(n):
 
 class GraphWrapper(object):
     """
-        A proto class for a Layer.
+        `GraphWrapper` wraps a theano graph and provides
+        labeling to the named variables within.
+
+        The graph within the `GraphWrapper` is accessible through
+        the `.graph` attribute.
+        
+        If the graph has no inputs (only shared variables),
+        `.compute()` compiles the graph and gives its value.
+
+        `.add_input(var,input=i)` can be used to add `var` to an input
+        variable `i`. This will either add `var` to the input `i` if it is
+        a sum, or replace it with `var`. `i` can be the input variable 
+        itself or its name or `None`. If `input=None`, the `default_input`
+        attribute of the `GraphWrapper` will be used.
+
+        A `GraphWrapper` (and also `N` layer objects) will try to behave 
+        similar to a theano variable in many contexts.
+        Mathematical operations, such as `+`, `-`, etc. create a new theano
+        variable, the same as if it was applied to the graph within the
+        `GraphWrapper`.
 
     """
     parent = None
@@ -259,6 +278,27 @@ class GraphWrapper(object):
         theano.printing.debugprint(self.graph)
 
 class N(GraphWrapper):
+    """
+        N: The layer class
+        ------------------
+
+        A Layer is a wrapper around a theano graph that has to contain
+        a input (3d or 5d) and keeps its configuration.
+
+        A simpler wrapper is `GraphWrapper`.
+
+        Minimal Usage::
+
+            class A_New_Layer(N):
+                def __init__(self,config={},name=None,model=None):
+                    self.model = model
+                    self.set_config(config)
+                    my_input = self.create_input()
+                    super(ANewLayer,self).__init__(my_input,name=name)
+
+        
+
+    """
     states = {}
     state_initializers = {}
     inputs = OrderedDict()
@@ -413,6 +453,26 @@ class Output(object):
 
 
 class M(object):
+    """
+        M: The model class
+        ------------------
+
+        Creates a model that can compute a set of outputs.
+
+        Minimal Usage::
+
+            m = M()
+            m.add_output(some_theano_variable_or_convis_layer)
+            some_output = m.run(some_input)
+
+        When calling `run` the first time, the graph attached to 
+        `some_theano_variable_or_convis_layer` will be compiled.
+        To recompile the function or compile it with a certain order
+        of parameters use `create_function`.
+
+        Long input should be supplied to `run_in_chunks` instead of `run`.
+
+    """
     def __init__(self, size=(10,10), pixel_per_degree=10.0, steps_per_second= 1000.0, filter_epsilon=0.01, **kwargs):
         self.debug = False
         self.mappings = {}
@@ -527,7 +587,34 @@ class M(object):
             if is_shared_parameter(shared_parameter) and has_convis_attribute(shared_parameter,'initialized'):
                 set_convis_attribute(shared_parameter, 'initialized', False)
     def run_in_chunks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
-        chunked_output = []
+        """
+            To run a simulation that is longer than your memory is large,
+            the input has to be chunked into smaller pieces.
+
+            This function computes chunks of `max_length` at a time and 
+            returns the concatenated output (scalar outputs will be a vector 
+            of return values, one for each chunk).
+
+            `additional_inputs`, `inputs` and `run_after` will be forwarded
+            to the run function.
+
+                `inputs` is a dictionary mapping input variables to their values
+
+                `additional_inputs` is a list of input values that has to match
+                the order of `additional_inputs` supplied to `create_function`.
+                If you did not use `additional_inputs` when you created the function
+                or you do not remember the order, use the `input` dictionary
+                instead!
+
+                `run_after` is None or a 2 argument python function that will 
+                be executed after each chunk. It will recieve the output as 
+                a first argument and the model as a second argument.
+
+            All inputs will be truncated according  to the current chunk, so the
+            complete time series has to be supplied for all inputs.
+
+        """
+        chunked_output = [] # this will store a list of lists of our chunked results
         t = 0
         while t < the_input.shape[0]:
             if self.debug:
@@ -536,16 +623,45 @@ class M(object):
                           additional_inputs=[ai[t:(t+max_length)] for ai in additional_inputs],
                           inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]),
                           run_after=run_after)
-            chunked_output.append([o for o in oo])
+            for i,o in enumerate(oo):
+                while len(chunked_output) < i+1:
+                    chunked_output.append([])
+                chunked_output[i].append(o)
             t += max_length
-        return Output(np.concatenate(chunked_output,axis=1),keys=self.compute_output_order[:len(self.outputs)])
+        outs = []
+        for co in chunked_output:
+            try:
+                outs.append(np.concatenate(co,axis=0))
+            except:
+                outs.append(np.array(co))
+        return convis.base.Output(outs,keys=self.compute_output_order[:len(self.outputs)])
     def run_in_chuncks(self,the_input,max_length,additional_inputs=[],inputs={},run_after=None,**kwargs):
         """typo"""
         return self.run_in_chunks(the_input,max_length,additional_inputs=additional_inputs,inputs=inputs,run_after=run_after,**kwargs)
     def run(self,the_input,additional_inputs=[],inputs={},run_after=None,**kwargs):
+        """
+            Runs the model
+
+                `the_input` is the main input to the model. All inputs that were not
+                set explicitly, will recieve this value!
+
+                `inputs` is a dictionary mapping input variables to their values
+
+                `additional_inputs` is a list of input values that has to match
+                the order of `additional_inputs` supplied to `create_function`.
+                If you did not use `additional_inputs` when you created the function
+                or you do not remember the order, use the `input` dictionary
+                instead!
+
+                `run_after` is None or a 2 argument python function that will 
+                be executed after the computation finishes. It will recieve the output as 
+                a first argument and the model as a second argument.
+        """
         if not hasattr(self,'compute_input_dict'):
             # todo: manage multiple functions
             self.create_function()
+        if self.debug:
+            print "Using supplied inputs: ", inputs.keys()
         c = O()
         c.input = the_input
         c.model = self

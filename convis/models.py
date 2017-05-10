@@ -2,6 +2,7 @@ from .base import M
 from . import filters
 from .filters.simple import K_3d_kernel_filter, K_5d_kernel_filter, Nonlinearity, Nonlinearity_5d, Delay
 import numpy as np
+from variables import as_parameter, as_variable
 
 class LN3d(M):
     def __init__(self,config={},**kwargs):
@@ -105,9 +106,10 @@ class Real_LNSNF_model(M):
             model = self,
             name='GCM_feedback')
         self.gcm_feedback_filter += gcm_output
-        self.gcm_delay = Delay({'delay':100})
+        self.gcm_delay = Delay({'delay':100},name='GCM_delay')
         self.gcm_delay += self.gcm_feedback_filter
-        self.add_output((gcm_output - 0.00001*self.gcm_delay.graph).sum(axis=(1,2)))
+        feedback_strength = as_parameter(0.00001,name='feedback_strength',doc="Output - feedback_strength * feedback")
+        self.add_output((gcm_output - feedback_strength*self.gcm_delay.graph).sum(axis=(1,2)))
 
 
 class Real_LNFSNF_model(M):
@@ -128,7 +130,8 @@ class Real_LNFSNF_model(M):
             name='BCM_feedback')
         self.bcm_feedback_filter.add_input(bcm_output)
         self.bcm_delay = filters.simple.RF_3d_kernel_filter({'kernel':np.ones((1,1,1))},name='BCM_delays')
-        self.bcm_delay += bcm_output - 0.001 * self.bcm_feedback_filter
+        bcm_feedback_strength = as_parameter(0.001,name='BCM_feedback_strength',doc="Output - feedback_strength * feedback")
+        self.bcm_delay += bcm_output - bcm_feedback_strength * self.bcm_feedback_filter
         self.gcm_linear_filter = filters.simple.RF_2d_kernel_filter(config.get('linear',{'kernel':np.ones((20,20))}),name='GCM')
         self.gcm_linear_filter += self.bcm_delay.graph
         gcm_output = self.gcm_linear_filter.graph.clip(0,100000)
@@ -137,9 +140,10 @@ class Real_LNFSNF_model(M):
             model = self,
             name='GCM_feedback')
         self.gcm_feedback_filter += gcm_output
-        self.gcm_delay = Delay({'delay':100})
+        self.gcm_delay = Delay({'delay':100},name='GCM_delay')
         self.gcm_delay += self.gcm_feedback_filter
-        self.add_output((gcm_output - 0.00001 * self.gcm_delay.graph).sum(axis=(1,2)))
+        gcm_feedback_strength = as_parameter(0.00001,name='GCM_feedback_strength',doc="Output - feedback_strength * feedback")
+        self.add_output((gcm_output - gcm_feedback_strength * self.gcm_delay.graph).sum(axis=(1,2)))
 
 class Real_LNFDSNF_model(M):
     def __init__(self,config={},**kwargs):
@@ -168,6 +172,6 @@ class Real_LNFDSNF_model(M):
             model = self,
             name='GCM_feedback')
         self.gcm_feedback_filter += gcm_output
-        self.gcm_delay = Delay({'delay':100})
+        self.gcm_delay = Delay({'delay':100},name='GCM_delay')
         self.gcm_delay += self.gcm_feedback_filter
         self.add_output((gcm_output - 0.00001 * self.gcm_delay.graph).sum(axis=(1,2))) 

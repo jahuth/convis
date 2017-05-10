@@ -292,33 +292,33 @@ def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
             The path will only be used from element pi onwards
     """
     o = {}
-    paths = unique_list([get_convis_attribute(v,'path')[pi] for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
-    leaves = unique_list([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
+    paths = unique_list([get_convis_attribute(v,'path',[v])[pi] for v in vs if len(get_convis_attribute(v,'path',[v])) > pi+1])
+    leaves = unique_list([v for v in vs if len(get_convis_attribute(v,'path',[v])) == pi+1])
     for p in paths:
-        o.update(**{name_sanitizer(get_convis_attribute(p,'name')): create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path') 
-                                                                and len(get_convis_attribute(v,'path')) > pi 
-                                                                and get_convis_attribute(v,'path')[pi] == p], pi+1)})
+        o.update(**{name_sanitizer(get_convis_attribute(p,'name')): create_hierarchical_dict([v for v in vs if has_convis_attribute(v,'path',[v]) 
+                                                                and len(get_convis_attribute(v,'path',[v])) > pi 
+                                                                and get_convis_attribute(v,'path',[v])[pi] == p], pi+1)})
     for p in paths:
         o[name_sanitizer(get_convis_attribute(p,'name'))]['_original'] = p 
     for l in leaves:
         o.update(**{name_sanitizer(get_convis_attribute(l,'name')): l})
     return o
 
-def create_hierarchical_Ox(vs,pi=0):
-    return Ox(**create_hierarchical_dict(vs,pi))
+def create_hierarchical_Ox(vs,pi=0,name_sanitizer=save_name):
+    return Ox(**create_hierarchical_dict(vs,pi,name_sanitizer=name_sanitizer))
 
 def create_hierarchical_dict_with_nodes(vs,pi=0,name_sanitizer=save_name):
     """
         name_sanitizer: eg. convis.base.save_name or str
     """
     o = {}
-    paths = unique_list([get_convis_attribute(v,'path')[pi] for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) > pi+1])
-    leaves = unique_list([v for v in vs if has_convis_attribute(v,'path') and len(get_convis_attribute(v,'path')) == pi+1])
+    paths = unique_list([get_convis_attribute(v,'path',[v])[pi] for v in vs if len(get_convis_attribute(v,'path',[v])) > pi+1])
+    leaves = unique_list([v for v in vs if len(get_convis_attribute(v,'path',[v])) == pi+1])
     for p in paths:
         o.update(**{p: create_hierarchical_dict_with_nodes([v for v in vs if 
-                                                        has_convis_attribute(v,'path') 
-                                                        and len(get_convis_attribute(v,'path')) > pi 
-                                                        and get_convis_attribute(v,'path')[pi] == p], pi+1)})
+                                                        has_convis_attribute(v,'path',[v]) 
+                                                        and len(get_convis_attribute(v,'path',[v])) > pi 
+                                                        and get_convis_attribute(v,'path',[v])[pi] == p], pi+1)})
     for l in leaves:
         o.update(**{name_sanitizer(get_convis_attribute(l,'name')): l})
     return o
