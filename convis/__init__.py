@@ -26,7 +26,7 @@ reload(error_functions)
 
 # just to make sure that we don't use filters.simple version of everything
 from base import N, M, GraphWrapper, describe, filter_dbg
-from variable_describe import describe, describe_text, describe_dict, describe_html
+from variable_describe import help, describe, describe_text, describe_dict, describe_html
 
 import samples
 import kernels

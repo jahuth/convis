@@ -1,3 +1,21 @@
+"""
+
+Experimental reimplementation of the retina layers
+---------------------------------------------------
+
+ConfigParameter objects: linked to a variable and a configuration
+
+Remove redundancy and boilerplate code as much as possible.
+
+Kernels should be parametrized and repalceable.
+Also a combination of Kernels should be replaceable? (OPL Center space * time - Surround space * time)
+
+Revamping variable labeling.
+
+Distinguishing between theano and convis variables.
+
+"""
+
 import litus
 import theano
 import theano.tensor as T
@@ -9,10 +27,12 @@ from exceptions import NotImplementedError
 
 from ..base import *
 from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad2_xy
-from .. import retina_base
+from .. import retina_base, kernels, variables
 from ..numerical_filters import conv, fake_filter, fake_filter_shape
 from ..numerical_filters import exponential_filter_1d, exponential_filter_5d, exponential_highpass_filter_1d, exponential_highpass_filter_5d
 from ..numerical_filters import gauss_filter_2d, gauss_filter_5d
+from ..variables import ConfigParameter
+       
 
 class OPLLayerNode(N):
     """
@@ -50,60 +70,61 @@ class OPLLayerNode(N):
         self.retina = model
         self.model = model
         self.set_config(config)
-
+        self.resolution = variables.ResolutionInfo() # needs to be updated with values when replaced
         if name is None:
             name = str(uuid.uuid4())
         self.name = self.config.get('name',name)
-        self.input_variable = make_nd(self.create_input(),5)
-        self._E_n_C = self.shared_parameter(
-            lambda x: exponential_filter_5d(tau=float(x.get_config('center-tau__sec',0.01,float)),
-                                            n=int(x.get_config('center-n__uint', 0, int)),
-                                            resolution=x.resolution),
-                        name='E_n_C',
-                        doc="The n-fold cascaded exponential creates a low-pass characteristic. A filter can be created with `numeric_filters.exponential_filter_5d`")
-        self._TwuTu_C = self.shared_parameter(
-            lambda x: exponential_highpass_filter_5d(tau = float(x.get_config('undershoot',{}).get('tau__sec',0.01)),
-                                                     relative_weight=float(x.get_config('undershoot',{}).get('relative-weight', 0.8)),
-                                                     resolution=x.resolution),name='TwuTu_C')
-        self._G_C = self.shared_parameter(
-            lambda x: gauss_filter_5d(float(x.get_config('center-sigma__deg',0.05)),float(x.get_config('center-sigma__deg',0.05)),
-                                      resolution=x.resolution,even=False),name='G_C')
-        self._E_S = self.shared_parameter(
-            lambda x: exponential_filter_5d(tau=float(x.get_config('surround-tau__sec',0.004)),resolution=x.resolution),name='E_S')
-        self._G_S = self.shared_parameter(
-            lambda x: gauss_filter_5d(float(x.get_config('surround-sigma__deg',0.15)),float(x.get_config('surround-sigma__deg',0.15)),
-                                      resolution=x.resolution,even=False),name='G_S')
-        self._lambda_OPL = self.shared_parameter(
-                lambda x: float(x.value_from_config()) / float(x.resolution.input_luminosity_range),
-                save = lambda x: x.value_to_config(float(x.resolution.input_luminosity_range) * (float(x.var.get_value()))),
-                get = lambda x: float(x.model.resolution.input_luminosity_range) * (float(x.var.get_value())),
-                config_key = 'opl-amplification',
-                config_default = 10.0,
-                name='lambda_OPL',
-                doc='Gain applied to the OPL signal.')
-        self._w_OPL = self.shared_parameter(
-            lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
 
-        self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(get_convis_attribute(x.node._G_S,'update')(x).get_value(),
-                                                                        get_convis_attribute(x.node._E_S,'update')(x).get_value()),name='Reshape_C_S',
-                                                  doc='This filter resizes C such that the output has the same size as S.')
+
+        self.input_variable = make_nd(self.create_input(),5)
+
+        self._E_n_C = kernels.ExponentialKernel1d(0,
+                            ConfigParameter('center-tau__sec',0.01,type=float),
+                            n=0, 
+                            name='E_n_C',
+                            resolution = self.resolution)
+        self._TwuTu_C = kernels.ExponentialHighPassKernel1d(0,
+                            tau = ConfigParameter('undershoot.tau__sec',0.01,float),
+                            relative_weight=ConfigParameter('undershoot.relative-weight', 0.8,float),
+                            resolution=self.resolution,name='TwuTu_C')
+        self._G_C = kernels.GaussKernel2d(
+                            ConfigParameter('center-sigma__deg',0.05,float),
+                            ConfigParameter('center-sigma__deg',0.05,float),
+                            resolution=self.resolution,name='G_C')
+        self._E_S = kernels.ExponentialKernel1d(0.0,
+                            ConfigParameter('surround-tau__sec',0.004,type=float), 
+                            n=0, 
+                            name='E_S',
+                            resolution = self.resolution)
+        self._G_S = kernels.GaussKernel2d(
+                            ConfigParameter('surround-sigma__deg',0.15,float),
+                            ConfigParameter('surround-sigma__deg',0.15,float),
+                            resolution=self.resolution,
+                            name='G_S')
+        self._lambda_OPL = as_parameter(
+                ConfigParameter('opl-amplification', 10.0, float)
+                name='lambda_OPL',
+                doc='Gain applied to the OPL signal.') / self.resolution.var_input_luminosity_range
+        self._w_OPL = as_parameter(ConfigParameter('opl-relative-weight',1.0,float),name='w_OPL')
+
+        self._Reshape_C_S = kernels.FakeFilter5d([self._E_S.graph,self._G_S.graph])
 
         self._input_init = as_state(dtensor5('input_init'),
-                                    init=lambda x: np.zeros((1, get_convis_attribute(x.node._E_n_C,'update')(x).get_value().shape[1]-1+
-                                                    get_convis_attribute(x.node._TwuTu_C,'update')(x).get_value().shape[1]-1+
-                                                    get_convis_attribute(x.node._Reshape_C_S,'update')(x).get_value().shape[1]-1,
+                                    init=lambda x: np.zeros((1, x.node._E_n_C.compute().shape[0]-1+
+                                                    x.node._TwuTu_C.compute().shape[0]-1+
+                                                    x.node._Reshape_C_S.compute().shape[1]-1,
                                     1, x.input.shape[1], x.input.shape[2])))
         input_padded_in_time = T.concatenate([
                         self._input_init,
                         self.input_variable],axis=1)
-        Nx = self._G_C.shape[3]-1 + self._G_S.shape[3]-1
-        Ny = self._G_C.shape[4]-1 + self._G_S.shape[4]-1
+        Nx = self._G_C.graph.shape[0]-1 + self._G_S.graph.shape[0]-1
+        Ny = self._G_C.graph.shape[1]-1 + self._G_S.graph.shape[1]-1
         self._L = as_variable(pad5(pad5(input_padded_in_time,Nx,3),Ny,4),'L')
-        self._C = GraphWrapper(as_variable(conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C),'C'),name='center',ignore=[self._L]).graph
-        self._S = GraphWrapper(as_variable(conv3d(conv3d(self._C,self._E_S),self._G_S),'S'),name='surround',ignore=[self._C]).graph
+        self._C = as_variable(conv3d(conv3d(conv3d(make_nd(self._L,5),make_nd(self._E_n_C,5)),make_nd(self._TwuTu_C,5)),make_nd(self._G_C,5)),'C')
+        self._S = as_variable(conv3d(conv3d(self._C,make_nd(self._E_S,5)),make_nd(self._G_S,5)),'S')
         I_OPL = as_variable(self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S),'I_OPL',html_name="I<sub>OPL</sub>",html_formula="I<sub>OPL</sub> = &lambda;*(C-w*S)")
 
-        length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 
+        length_of_filters = self._E_n_C.shape[0]-1+self._TwuTu_C.shape[0]-1+self._Reshape_C_S.shape[1]-1 
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
                                     input_padded_in_time[:,-(length_of_filters):,:,:,:]), self._input_init)
         super(OPLLayerNode,self).__init__(make_nd(I_OPL,3),name=name)
@@ -626,7 +647,7 @@ class GanglionSpikingLayerNode(N):
                     prior_refr - 1.0
                     ),'refr')
             next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
-            return [V,next_refr,spikes*1.0]
+            return [V,next_refr,spikes]
         k = self.input_variable.shape[0]
         self._result, updates = theano.scan(fn=spikeStep,
                                       outputs_info=[(self._V_initial),(self._initial_refr),None],

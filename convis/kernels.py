@@ -5,6 +5,7 @@ import numpy as np
 import theano.tensor as T
 from misc_splines import create_splines_linspace, create_splines_logspace
 from variables import as_parameter, as_variable
+from . import theano_utils
 
 raise_on_mismatch = False
 
@@ -159,7 +160,7 @@ class SplineKernel3d(GraphWrapper):
     pass
 
 class ExponentialKernel1d(GraphWrapper):
-    def __init__(self,length=20,tau=2,n=0,name='spline_kernel',approximate=None):
+    def __init__(self,length=20,tau=2,n=0,name='exponetial_kernel',approximate=None,resolution=None):
         """
 
             Creates a (cascade) exponential kernel.
@@ -175,10 +176,12 @@ class ExponentialKernel1d(GraphWrapper):
             If length is shorter than that, it will be ignored.
 
         """
-        tau = as_parameter(theano.shared(float(tau)),name='tau')
-        length = T.max([as_parameter(theano.shared(int(length)),name='length'),4*tau])
+        if resolution is None:
+            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+        tau = as_parameter(tau,name='tau')*resolution.var_steps_per_second
+        length = T.max([as_parameter(length,name='length')*resolution.var_steps_per_second,4*tau])
         t_range = T.arange(length)
-        n = as_parameter(theano.shared(int(n)),name='n')
+        n = as_parameter(n,name='n')
         factorial = theano.tensor.gamma
         kernel = theano.ifelse.ifelse(T.eq(n,0),
                                 T.exp(-t_range/tau)/tau,
@@ -194,16 +197,56 @@ class ExponentialKernel1d(GraphWrapper):
         f = theano.function([],self.graph)
         return f()
 
+class ExponentialHighPassKernel1d(GraphWrapper):
+    def __init__(self,length=20,tau=2,n=0,relative_weight=1.0,name='exponetial_kernel',approximate=None,resolution=None):
+        """
+
+            Creates a negative (cascade) exponential kernel, precedet by a positive 1.
+
+                length:
+                    minimal length of the kernel
+                tau:
+                    time constant of the kernel (time until the signal shrinks to 1/e)
+                n:
+                    number of cascades. Default: n=0 (simple exponential kernal)
+
+            The minimal length of the filter is 4 times the time constant.
+            If length is shorter than that, it will be ignored.
+
+        """
+        if resolution is None:
+            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+        tau = as_parameter(tau,name='tau')*resolution.var_steps_per_second
+        relative_weight = as_parameter(relative_weight,name='relative_weight')
+        length = T.max([as_parameter(length,name='length')*resolution.var_steps_per_second,4*tau])
+        t_range = T.arange(length)
+        n = as_parameter(n,name='n')
+        factorial = theano.tensor.gamma
+        kernel = T.concatenate([[1.0],-relative_weight*theano.ifelse.ifelse(T.eq(n,0),
+                                T.exp(-t_range/tau)/tau,
+                               (n*t_range)**n * T.exp(-n*t_range/tau) / (factorial(n) * tau**(n+1)))],axis=0)
+        super(ExponentialHighPassKernel1d,self).__init__(kernel,name=name)
+        if approximate is not None:
+            self.approximate(approximate)
+    def approximate(self,target):
+        # TODO
+        raise Exception('Not yet implemented!')
+    def compute(self):
+        f = theano.function([],self.graph)
+        return f()
+
 class GaussKernel2d(GraphWrapper):
-    def __init__(self,x_sig,y_sig,epsilon=0.001,name='spline_kernel', even=False):
+    def __init__(self,x_sig,y_sig,epsilon=0.001,name='spline_kernel', even=False,resolution=None):
         """
             Very simple gauss filter (aligned with x and y axis).
 
             For a fancy version see `TiltedGaussKernel2d`.
         """
-        x_sig = as_parameter(theano.shared(float(x_sig)),name='x_sig')
-        y_sig = as_parameter(theano.shared(float(y_sig)),name='y_sig')
-        epsilon = as_parameter(theano.shared(float(epsilon)),name='epsilon')
+        if resolution is None:
+            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+        x_sig = as_parameter(x_sig,name='x_sig')*resolution.var_pixel_per_degree
+        y_sig = as_parameter(y_sig,name='y_sig')*resolution.var_pixel_per_degree
+        epsilon = as_parameter(epsilon,name='epsilon')
         a_x = 1.0/(x_sig * T.sqrt(2.0*np.pi))
         x_min = T.ceil(T.sqrt(-2.0*(x_sig**2)*T.log(epsilon/a_x)))
         a_y = 1.0/(y_sig * T.sqrt(2.0*np.pi))
@@ -220,7 +263,7 @@ class GaussKernel2d(GraphWrapper):
 
 
 class TiltedGaussKernel2d(GraphWrapper):
-    def __init__(self,x_sig,y_sig,x_offset=0,y_offset=0,phi=0,epsilon=0.001,name='spline_kernel', even=False):
+    def __init__(self,x_sig,y_sig,x_offset=0,y_offset=0,phi=0,epsilon=0.001,name='spline_kernel', even=False,resolution=None):
         """
             Allows a 2d gaussian to be tilted and offset from the center.
 
@@ -234,12 +277,14 @@ class TiltedGaussKernel2d(GraphWrapper):
             grows by twice that amount.
 
         """
-        x_sig = as_parameter(theano.shared(float(x_sig)),name='x_sig')
-        y_sig = as_parameter(theano.shared(float(y_sig)),name='y_sig')
-        x_offset = as_parameter(theano.shared(float(x_offset)),name='x_offset')
-        y_offset = as_parameter(theano.shared(float(y_offset)),name='y_offset')
-        phi = as_parameter(theano.shared(float(phi)),name='phi')
-        epsilon = as_parameter(theano.shared(float(epsilon)),name='epsilon')
+        if resolution is None:
+            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+        x_sig = as_parameter(x_sig,name='x_sig')*var_pixel_per_degree
+        y_sig = as_parameter(y_sig,name='y_sig')*var_pixel_per_degree
+        x_offset = as_parameter(x_offset,name='x_offset')
+        y_offset = as_parameter(y_offset,name='y_offset')
+        phi = as_parameter(phi,name='phi')
+        epsilon = as_parameter(epsilon,name='epsilon')
         a_x = 1.0/(x_sig * T.sqrt(2.0*np.pi))
         x_min = T.ceil(T.sqrt(-2.0*(x_sig**2)*T.log(epsilon/a_x)))
         a_y = 1.0/(y_sig * T.sqrt(2.0*np.pi))
@@ -266,3 +311,60 @@ def sum_kernels(kernels):
         y2 = y1 + k.graph.shape[1]
         new_k = T.set_subtensor(new_k[x1:x2,y1:y2], new_k[x1:x2,y1:y2] + k)
     return GraphWrapper(new_k,'Sum')
+
+class FakeFilter(GraphWrapper):
+    def __init__(self,list_of_filters,name='resize_convolution_kernel'):
+        zeros = T.zeros([1+T.sum([l.shape[i]-1 for l in list_of_filters]) for i in range(list_of_filters[0].ndim)])
+        if zeros.ndim == 5:
+            one = T.set_subtensor(zeros[:,0,:,zeros.shape[3]//2,zeros.shape[4]//2], 1)
+        elif zeros.ndim == 3:
+            one = T.set_subtensor(zeros[0,zeros.shape[1]//2,zeros.shape[2]//2], 1)
+        elif zeros.ndim == 2:
+                    one = T.set_subtensor(zeros[zeros.shape[0]//2,zeros.shape[1]//2], 1)
+        elif zeros.ndim == 1:
+                    one = T.set_subtensor(zeros[0], 1)
+        else:
+            raise Exception("Filters do not have 5,3,2 or 1 dimensions!")
+        super(FakeFilter,self).__init__(one,name=name)
+    def compute(self):
+        f = theano.function([],self.graph)
+        return f()
+
+class FakeFilter3d(GraphWrapper):
+    def __init__(self,list_of_filters,name='resize_convolution_kernel'):
+        list_of_filters = [theano_utils.make_nd(l,3) for l in list_of_filters]
+        zeros = T.zeros([1+T.sum([l.shape[i]-1 for l in list_of_filters]) for i in range(list_of_filters[0].ndim)])
+        if zeros.ndim == 5:
+            one = T.set_subtensor(zeros[:,0,:,zeros.shape[3]//2,zeros.shape[4]//2], 1)
+        elif zeros.ndim == 3:
+            one = T.set_subtensor(zeros[0,zeros.shape[1]//2,zeros.shape[2]//2], 1)
+        elif zeros.ndim == 2:
+                    one = T.set_subtensor(zeros[zeros.shape[0]//2,zeros.shape[1]//2], 1)
+        elif zeros.ndim == 1:
+                    one = T.set_subtensor(zeros[0], 1)
+        else:
+            raise Exception("Filters do not have 5,3,2 or 1 dimensions!")
+        super(FakeFilter3d,self).__init__(one,name=name)
+    def compute(self):
+        f = theano.function([],self.graph)
+        return f()
+
+class FakeFilter5d(GraphWrapper):
+    def __init__(self,list_of_filters,name='resize_convolution_kernel'):
+        list_of_filters = [theano_utils.make_nd(l,5) for l in list_of_filters]
+        zeros = T.zeros([1+T.sum([l.shape[i]-1 for l in list_of_filters]) for i in range(list_of_filters[0].ndim)])
+        if zeros.ndim == 5:
+            one = T.set_subtensor(zeros[:,0,:,zeros.shape[3]//2,zeros.shape[4]//2], 1)
+        elif zeros.ndim == 3:
+            one = T.set_subtensor(zeros[0,zeros.shape[1]//2,zeros.shape[2]//2], 1)
+        elif zeros.ndim == 2:
+                    one = T.set_subtensor(zeros[zeros.shape[0]//2,zeros.shape[1]//2], 1)
+        elif zeros.ndim == 1:
+                    one = T.set_subtensor(zeros[0], 1)
+        else:
+            raise Exception("Filters do not have 5,3,2 or 1 dimensions!")
+        super(FakeFilter5d,self).__init__(one,name=name)
+    def compute(self):
+        f = theano.function([],self.graph)
+        return f()
+

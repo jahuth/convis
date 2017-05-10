@@ -2,7 +2,7 @@ import theano
 import theano.tensor as T
 
 
-if theano.version.version >= '0.9':
+try:
     from theano.tensor.nnet import conv3d as theano_conv3d
     from theano.tensor.nnet import conv2d as theano_conv2d
 
@@ -19,7 +19,7 @@ if theano.version.version >= '0.9':
 
     def conv3d(inp,filt,*args,**kwargs):
         return theano_conv3d(inp.dimshuffle(0,2,1,3,4),filt.dimshuffle(0,2,1,3,4),*args,**kwargs).dimshuffle(0,2,1,3,4)
-else:
+except ImportError:
     # old convolutions
     from theano.tensor.nnet.conv3d2d import conv3d
     from theano.tensor.signal.conv import conv2d
@@ -249,6 +249,46 @@ def _replace(apply_node,old,new,depth=300):
             _replace(i,old,new,depth-1)
     return
 
+def add_input_to_a_sum_op(sum_op, v, replace_inputs = True):
+    """
+
+        This function takes an ApplyNode of a Sum Op and adds a new input to it.
+
+    """
+    if type(sum_op.owner.op) == T.elemwise.Sum and hasattr(sum_op.owner,'inputs') and len(sum_op.owner.inputs) > 0:
+        # Since Theano 9.0 T.sum([a]) will no longer give a Join.0([a]), but a InplaceDimShuffle{x,0,1,2}(a)
+        if isinstance(sum_op.owner.inputs[0].owner.op, theano.tensor.DimShuffle):
+            # we replace the DimShuffle with a one element Join that can then be extended
+            sum_op.owner.inputs[0] = T.Join()(0,sum_op.owner.inputs[0].owner.inputs)
+        if isinstance(sum_op.owner.inputs[0].owner.op, theano.tensor.Join):
+            # The Sum Op contains a Join as an input.
+            # If the dimensions match, we extend the Join with another element (the new input).
+            # A special case is the first new input:
+            #  if the previous input was a zero tensor with a 'replaceable_input' flag,
+            #  this tensor will be removed from the list when an input is provided.
+            if sum_op.owner.inputs[0].owner.inputs[1].ndim == 3+1:
+                # assuming a 3d input/ output
+                if replace_inputs and has_convis_attribute(sum_op.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                    sum_op.owner.inputs[0].owner.inputs[1] = make_nd(v,3).dimshuffle(('x',0,1,2)) # TODO: We add a dimension for summing? Don't we have that from the list?
+                else:
+                    sum_op.owner.inputs[0].owner.inputs.append(make_nd(v,3).dimshuffle(('x',0,1,2)))
+                return True
+            elif sum_op.owner.inputs[0].owner.inputs[1].ndim == 5+1:
+                # otherwise a 5 dimensional input
+                if replace_inputs and has_convis_attribute(sum_op.owner.inputs[0].owner.inputs[1].owner.inputs[0],'replaceable_input'):
+                    sum_op.owner.inputs[0].owner.inputs[1] = make_nd(v,5).dimshuffle(('x',0,1,2,3,4))
+                else:
+                    sum_op.owner.inputs[0].owner.inputs.append(make_nd(v,5).dimshuffle(('x',0,1,2,3,4)))
+                return True
+            else:
+                raise Exception('Specified input is a sum of tensors that neither have 3 or 5 dimensions!')
+        else:
+            # Since a change in Theano broke the input mechanics without any usefull error,
+            # the user should at least know that this part of the toolbox depends on the Theano
+            # version and can break when Theano changes how sums are handled.
+            raise Exception('The Sum Op has neither a Join nor a DimShuffle as an input! This means that your version of Theano is possibly too new (try 8.2 or 9.0).')
+    else:
+        return False
 
 def is_scan_op(n):
     if hasattr(n,'owner') and hasattr(n.owner,'op') and type(n.owner.op) == theano.scan_module.scan_op.Scan:

@@ -6,6 +6,7 @@ from misc_utils import unique_list
 from o import O, Ox, save_name
 from theano.tensor.var import TensorVariable
 from theano.tensor.sharedvar import ScalarSharedVariable
+import numpy as np
 replaceable_theano_vars = [TensorVariable,ScalarSharedVariable]
 
 global_lookup_table = {}
@@ -119,6 +120,26 @@ def make_variable(ret):
         return Variable(ret)
     return ret
 
+class ConfigParameter(object):
+    def __init__(self,name,default,type=None):
+        self.name = name
+        self.config = None
+        self.var = None
+        self.default = default
+        if type is not None:
+            self.type = type
+        self.type = lambda x: x
+    def set(self, value):
+        self.config[self.name] = self.type(value)
+        self.var.set_value(self.type(value))
+    def var_to_config(self, value):
+        self.config[self.name] = self.type(self.var.get_value())
+    def config_to_var(self, value):
+        if config is not None:
+            self.var.set_value(self.type(self.config.get(self.name,default)))
+        else:
+            self.var.set_value(self.type(default))
+        
 class Variable(object):
     __slots__ = ["_var","_info", "__weakref__"]
     def __init__(self, obj):
@@ -240,6 +261,10 @@ class ResolutionInfo(object):
         self.steps_per_second = steps_per_second
         self.input_luminosity_range = input_luminosity_range
         self.filter_epsilon = filter_epsilon
+        self.var_pixel_per_degree = theano.shared(self.pixel_per_degree)
+        self.var_steps_per_second = theano.shared(self.steps_per_second)
+        self.var_input_luminosity_range = theano.shared(self.input_luminosity_range)
+        self.var_filter_epsilon = theano.shared(self.filter_epsilon)
     def degree_to_pixel(self,degree):
         if self.pixel_per_degree is None:
             return default_resolution.degree_to_pixel(degree)
@@ -449,9 +474,18 @@ def as_output(v,name=None,**kwargs):
     return add_kwargs_to_v(v,**kwargs)
 
 def as_parameter(v,init=None,name=None,**kwargs):
+    cparm = None
+    if type(v) in [int, float, np.ndarray]:
+        v = theano.shared(v)
+    elif type(v) is ConfigParameter:
+        cparm = v
+        v = theano.shared(v.default)
+        cparm.var = v
     get_convis_key(v)
     v.__is_convis_var = True
     set_convis_attribute(v,'variable_type','parameter')
+    if cparm is not None:
+        set_convis_attribute(v,'config_parameter',cparm)
     if init is not None:
         set_convis_attribute(v,'param_init',init)
     if name is not None:
