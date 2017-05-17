@@ -303,7 +303,7 @@ class N(GraphWrapper):
     state_initializers = {}
     inputs = OrderedDict()
     expects_config = False
-    def __init__(self,graph,name=None,m=None,parent=None,config=None,**kwargs):
+    def __init__(self,graph,name=None,m=None,parent=None,config=None,inputs=None,**kwargs):
         if name is None:
             name = str(uuid.uuid4()).replace('-','')
         self.m = m
@@ -317,6 +317,12 @@ class N(GraphWrapper):
         if not hasattr(self,'default_input'):
             raise Exception('No input defined for node '+str(getattr(self,'name','??'))+'! Use .create_input(...) before calling super constructor!')
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
+        if inputs is not None:
+            if type(inputs) is list:
+                for inp in inputs:
+                    self.add_input(inp)
+            else:
+                self.add_input(inputs)
     def create_input(self,n=1,name='input',sep='_'):
         if n == 1:
             self.input = T.sum([as_input(T.dtensor3(),name,replaceable_input=True)],axis=0)

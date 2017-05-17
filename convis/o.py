@@ -62,6 +62,8 @@ def save_name(n):
                     # n.name == '!'?
                     n = '_'
         else:
+            if type(n) in [int,float]:
+                return str(n)
             try:
                 global var_name_counter
                 n.name = 'unnamed_variable_'+str(var_name_counter)

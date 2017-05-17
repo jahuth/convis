@@ -45,7 +45,7 @@ class OPLLayerNode(N):
 
     Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don't have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: <a href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">theano.tensor.nnet.conv</a>), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.
     """
-    def __init__(self,model=None,config={},name=None,input_variable=None):
+    def __init__(self,model=None,config={},name=None,input_variable=None,inputs=None):
         
         self.retina = model
         self.model = model
@@ -106,7 +106,7 @@ class OPLLayerNode(N):
         length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
                                     input_padded_in_time[:,-(length_of_filters):,:,:,:]), self._input_init)
-        super(OPLLayerNode,self).__init__(make_nd(I_OPL,3),name=name)
+        super(OPLLayerNode,self).__init__(make_nd(I_OPL,3),name=name,inputs=inputs)
 
 class OPLAllRecursive(N):
     """
@@ -118,7 +118,7 @@ class OPLAllRecursive(N):
      * :py:obj:`lambda_OPL`, :py:obj:`w_OPL` (scaling and weight parameters)
 
     """
-    def __init__(self,model=None,config={},name=None,input_variable=None):
+    def __init__(self,model=None,config={},name=None,input_variable=None,inputs=None):
         
         self.retina = model
         self.model = model
@@ -150,7 +150,7 @@ class OPLAllRecursive(N):
 
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(padding[0]):,:,:,:].shape[1]):,:,:,:],
                                     input_padded_in_time[:,-(padding[0]):,:,:,:]), self._input_init)
-        super(OPLAllRecursive,self).__init__(make_nd(I_OPL,3),name=name)
+        super(OPLAllRecursive,self).__init__(make_nd(I_OPL,3),name=name,inputs=inputs)
 
 class OPLLayerLeakyHeatNode(N):        
     """
@@ -183,7 +183,7 @@ class OPLLayerLeakyHeatNode(N):
 
     Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don't have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: <a href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">theano.tensor.nnet.conv</a>), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.
     """
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         self.set_config(config)
         
         # center
@@ -312,7 +312,7 @@ class OPLLayerLeakyHeatNode(N):
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(length_of_filters):,:,:,:].shape[1]):,:,:,:],
                                     input_padded_in_time[:,-(length_of_filters):,:,:,:]), self._input_init)
         
-        super(OPLLayerLeakyHeatNode,self).__init__(I_OPL,name=name)
+        super(OPLLayerLeakyHeatNode,self).__init__(I_OPL,name=name,inputs=inputs)
         self.node_type = 'OPL Layer LeakyHeat Node'
         self.node_description = lambda: 'Temporal Recursive Filtering and Spatial Convolution'
 
@@ -331,7 +331,7 @@ class BipolarLayerNode(N):
             'adaptation-feedback-amplification__Hz': 0 # `ampFeedback` in virtual retina
         },
     """
-    def __init__(self,model=None,config=None,name=None,input_variable=None):
+    def __init__(self,model=None,config=None,name=None,input_variable=None,inputs=None):
         
         self.retina = model
         self.model = model
@@ -427,7 +427,7 @@ class BipolarLayerNode(N):
         #                                              self._k_bip], 
         #                                      outputs=self._result, 
         #                                      updates=self._updates)
-        super(BipolarLayerNode,self).__init__(make_nd(self._result[0],3),name=name)
+        super(BipolarLayerNode,self).__init__(make_nd(self._result[0],3),name=name,inputs=inputs)
 
 
 class GanglionInputLayerNode(N):
@@ -474,7 +474,7 @@ class GanglionInputLayerNode(N):
             },
 
     """
-    def __init__(self,model=None,config=None,name=None,input_variable=None):
+    def __init__(self,model=None,config=None,name=None,input_variable=None,inputs=None):
         
         self.retina = model
         self.model = model
@@ -521,7 +521,7 @@ class GanglionInputLayerNode(N):
         self._I_Gang = conv3d(self._N,self._G_gang)
         self.output_variable = self._I_Gang
         #self.compute_I_Gang = theano.function([self._V_bip, self._T_G, self._i_0_G, self._v_0_G, self._lambda_G, self._G_gang], theano.Out(self.output_variable, borrow=True))
-        super(GanglionInputLayerNode,self).__init__(make_nd(self._I_Gang,3),name=name)
+        super(GanglionInputLayerNode,self).__init__(make_nd(self._I_Gang,3),name=name,inputs=inputs)
     def __repr__(self):
         return '[Ganglion Input Node] Shape: '+str(fake_filter_shape(self._G_gang.get_value(),self._T_G.get_value()))
 
@@ -537,7 +537,7 @@ class GanglionSpikingLayerNode(N):
 
     Otherwise it is set to 0.
     """
-    def __init__(self,model=None,config=None,name=None,input_variable=None):
+    def __init__(self,model=None,config=None,name=None,input_variable=None,inputs=None):
         self.retina = model
         self.model = model
         self.set_config(config)
@@ -644,6 +644,6 @@ class GanglionSpikingLayerNode(N):
         self.output_spikes = as_variable(self._result[2],name='output_spikes',
             doc='Binary count of spikes for each unit for each timestep. The maximal firing rate of this spike generation process is bounded by the size of time bins.')
         #spikes = T.extra_ops.diff(T.gt(self._result[1],0.0),n=1,axis=0)
-        super(GanglionSpikingLayerNode,self).__init__(self._result[2],name=name)
+        super(GanglionSpikingLayerNode,self).__init__(self._result[2],name=name,inputs=inputs)
     def __repr__(self):
         return '[Ganglion Spike Node] Differential Equation'

@@ -15,7 +15,7 @@ from .. import numerical_filters
 
 
 class G_2d_recursive_filter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements gauss filtering by two step recursion [see Deriche 92].
 
@@ -93,7 +93,7 @@ class G_2d_recursive_filter(N):
         update_variables = updates_forward_x + updates_backward_x + updates_forward_y + updates_backward_y
         output_variable = (result_backward_y[0].dimshuffle((2,1,0))[:,::-1,::-1]).reshape((result_backward_y[0].shape[2],result_backward_y[0].shape[1],result_backward_y[0].shape[0]))
         output_variable.name = 'output'
-        super(G_2d_recursive_filter,self).__init__(output_variable,name=name)
+        super(G_2d_recursive_filter,self).__init__(output_variable,name=name,inputs=inputs)
         self.node_type = '2d Gauss Filter Node'
         self.node_description = lambda: 'Recursive Filtering'
     def compute_config(self,c):
@@ -113,7 +113,7 @@ class E_1d_recursive_filter(N):
             * 'tau__sec': the time constant (in seconds relative to the model)
 
     """
-    def __init__(self,config,name=None,model=None):
+    def __init__(self,config,name=None,model=None,inputs=None):
         self.set_config(config)
         self.model = model
         tau = as_parameter(theano.shared(model.seconds_to_steps(config.get('tau__sec',0.001))),
@@ -149,7 +149,7 @@ class E_1d_recursive_filter(N):
                                       n_steps=_k)
         output_variable.name = 'output'
         as_out_state(output_variable[-1],_preceding_V)
-        super(E_1d_recursive_filter,self).__init__(output_variable,name=name)
+        super(E_1d_recursive_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 E = E_1d_recursive_filter
 G = G_2d_recursive_filter
@@ -157,24 +157,29 @@ RecursiveFilter1dExponential = E_1d_recursive_filter
 RecursiveFilter2dGaussian = G_2d_recursive_filter
 
 class G_2d_kernel_filter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements 2d kernel filtering by convolution.
         """
         self.set_config(config)
         self.model = model
-        self.size = self.config.get('kernel',self.config.get('size',(10,10))).shape
-        kernel = as_parameter(theano.shared(self.config.get('kernel',np.zeros(self.config.get('size',(10,10)))),name='kernel'),
+        if 'kernel' in self.config.keys():
+            init_kernel = self.config.get('kernel')
+            self.size = init_kernel.shape
+        else:
+            self.size = self.config.get('size',(10,10))
+            init_kernel = np.zeros(self.size)
+        kernel = as_parameter(theano.shared(init_kernel,name='kernel'),
                              initialized=True,
-                             init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10)))))
+                             init = lambda x: x.node.config.get('kernel',init_kernel))
         output_variable = conv2d(pad3_txy(self.create_input(),0,kernel.shape[0]-1,kernel.shape[1]-1,mode='mirror'),kernel)
         output_variable.name = 'output'
         node_type = '2d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
-        super(G_2d_kernel_filter,self).__init__(output_variable,name=name)
+        super(G_2d_kernel_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class K_1d_kernel_filter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements 2d kernel filtering by convolution.
         """
@@ -189,10 +194,10 @@ class K_1d_kernel_filter(N):
         output_variable.name = 'output'
         node_type = '1d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
-        super(K_1d_kernel_filter,self).__init__(output_variable,name=name)
+        super(K_1d_kernel_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class K_3d_kernel_filter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements 3d kernel filtering by convolution.
         """
@@ -215,10 +220,10 @@ class K_3d_kernel_filter(N):
         output_variable.name = 'output'
         node_type = '3d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
-        super(K_3d_kernel_filter,self).__init__(output_variable,name=name)
+        super(K_3d_kernel_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class K_5d_kernel_filter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements 5d kernel filtering by convolution.
 
@@ -268,7 +273,7 @@ class K_5d_kernel_filter(N):
         output_variable.name = 'output'
         node_type = '5d Kernel Filter Node'
         node_description = lambda: 'Convolutional Filtering'
-        super(K_5d_kernel_filter,self).__init__(output_variable,name=name)
+        super(K_5d_kernel_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 ConvolutionFilter1d = K_1d_kernel_filter
 ConvolutionFilter2d = G_2d_kernel_filter
@@ -282,7 +287,7 @@ class Nonlinearity(N):
     :math:`N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
     :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
     """
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         self.model = model
         self.name = name
         self.set_config(config)
@@ -299,7 +304,7 @@ class Nonlinearity(N):
                         requires=[self._lambda_G,self._i_0_G,self._v_0_G]),name='N',ignore=[my_input],parent=self).graph
         node_type = 'Nonlinear Node'
         node_description = lambda: ''
-        super(Nonlinearity,self).__init__(make_nd(self.N,3),name=name)
+        super(Nonlinearity,self).__init__(make_nd(self.N,3),name=name,inputs=inputs)
 
 class Nonlinearity_5d(N):
     """
@@ -307,7 +312,7 @@ class Nonlinearity_5d(N):
     :math:`N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
     :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
     """
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         self.model = model
         self.name = name
         self.set_config(config)
@@ -324,10 +329,10 @@ class Nonlinearity_5d(N):
                         requires=[self._lambda_G,self._i_0_G,self._v_0_G]),name='N',ignore=[my_input],parent=self).graph
         node_type = 'Nonlinear Node'
         node_description = lambda: ''
-        super(Nonlinearity_5d,self).__init__(make_nd(self.N,5),name=name)
+        super(Nonlinearity_5d,self).__init__(make_nd(self.N,5),name=name,inputs=inputs)
 
 class Filter_5d_to_3d(N):        
-    def __init__(self,config={},op=T.max,name=None,model=None):
+    def __init__(self,config={},op=T.max,name=None,model=None,inputs=None):
         """
             This gives the maximum (or another op) of the input channels and batches for each time step.
 
@@ -340,10 +345,10 @@ class Filter_5d_to_3d(N):
         node_type = 'Spatial Max Filter'
         node_description = lambda: ''
         #raise NotImplementedError('Filter is not defined yet')
-        super(Filter_5d_to_3d,self).__init__(output_variable,name=name)
+        super(Filter_5d_to_3d,self).__init__(output_variable,name=name,inputs=inputs)
 
 class MaxFilter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
@@ -354,10 +359,10 @@ class MaxFilter(N):
         node_type = 'Spatial Max Filter'
         node_description = lambda: ''
         #raise NotImplementedError('Filter is not defined yet')
-        super(MaxFilter,self).__init__(output_variable,name=name)
+        super(MaxFilter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class MinFilter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
@@ -368,10 +373,10 @@ class MinFilter(N):
         node_type = 'Spatial Max Filter'
         node_description = lambda: ''
         #raise NotImplementedError('Filter is not defined yet')
-        super(MinFilter,self).__init__(output_variable,name=name)
+        super(MinFilter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class SelectPixelFilter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
@@ -392,12 +397,12 @@ class SelectPixelFilter(N):
         output_variable = self.create_input()[:,self._x,self._y]
         output_variable.name = 'output'
         #raise NotImplementedError('Filter is not defined yet')
-        super(SelectPixelFilter,self).__init__(output_variable,name=name)
+        super(SelectPixelFilter,self).__init__(output_variable,name=name,inputs=inputs)
         self.node_type = 'Spatial Selection Filter'
         self.node_description = lambda: ''
 
 class SoftSelectFilter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This gives the (spatial) maximum of the input for each time step.
         """
@@ -409,16 +414,16 @@ class SoftSelectFilter(N):
                 config_default = 0.5*np.ones((1,1)),
                 doc='Ratio of input a in the output. Input b will have ratio (1-`a`)',
                 name = "a")
-        inputs = self.create_input(['input_a','input_b'])
-        output_variable = self.a.dimshuffle(('x',0,1)) * inputs['input_a'] + (1.0-self.a.dimshuffle(('x',0,1))) * inputs['input_b']
+        my_inputs = self.create_input(['input_a','input_b'])
+        output_variable = self.a.dimshuffle(('x',0,1)) * my_inputs['input_a'] + (1.0-self.a.dimshuffle(('x',0,1))) * my_inputs['input_b']
         output_variable.name = 'output'
         #raise NotImplementedError('Filter is not defined yet')
-        super(SoftSelectFilter,self).__init__(output_variable,name=name)
+        super(SoftSelectFilter,self).__init__(output_variable,name=name,inputs=inputs)
         self.node_type = 'Soft Select Filter'
         self.node_description = lambda: ''
 
 class RF_2d_kernel_filter(N):
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements 2d kernel filtering by convolution.
         """
@@ -432,10 +437,10 @@ class RF_2d_kernel_filter(N):
         output_variable.name = 'output'
         node_type = '2d Single RF Node'
         node_description = lambda: 'Multiplicative Mask'
-        super(RF_2d_kernel_filter,self).__init__(output_variable,name=name)
+        super(RF_2d_kernel_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class RF_3d_kernel_filter(N):
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements 3d kernel filtering by convolution.
 
@@ -460,7 +465,7 @@ class RF_3d_kernel_filter(N):
         output_variable.name = 'output'
         node_type = '3d Single RF Node'
         node_description = lambda: 'Mask * Temporal Convolution'
-        super(RF_3d_kernel_filter,self).__init__(output_variable,name=name)
+        super(RF_3d_kernel_filter,self).__init__(output_variable,name=name,inputs=inputs)
 
 class T_1d_filter_with_sigma_param(N):
     """
@@ -471,7 +476,7 @@ class T_1d_filter_with_sigma_param(N):
             * 'tau__sec': the time constant (in seconds relative to the model)
 
     """
-    def __init__(self,config,name=None,model=None):
+    def __init__(self,config,name=None,model=None,inputs=None):
         self.set_config(config)
         self.model = model
         tau = as_parameter(theano.shared(model.seconds_to_steps(config.get('tau__sec',0.001))),
@@ -511,12 +516,12 @@ class T_1d_filter_with_sigma_param(N):
         output_variable[0].name = 'output'
         as_out_state(output_variable[0][-1],_preceding_V)
         as_out_state(inp[-1],_preceding_input)
-        super(T_1d_filter_with_sigma_param,self).__init__(output_variable[0],name=name)
+        super(T_1d_filter_with_sigma_param,self).__init__(output_variable[0],name=name,inputs=inputs)
 
 RecursiveFilter1dExponentialHighPass = T_1d_filter_with_sigma_param
     
 class RecursiveLeakyHeatFilter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements gauss filtering by two step recursion [see Deriche 92].
 
@@ -598,7 +603,7 @@ class RecursiveLeakyHeatFilter(N):
         output_variable[0].name = 'output'
         as_out_state(output_variable[0][-1],_preceding_V)
         as_out_state(inp[-1],_preceding_input)
-        super(RecursiveLeakyHeatFilter,self).__init__(output_variable[0],name=name)
+        super(RecursiveLeakyHeatFilter,self).__init__(output_variable[0],name=name,inputs=inputs)
         self.node_type = 'Leaky Heat Filter Node'
         self.node_description = lambda: 'Double Recursive Filtering'
     def compute_config(self,c):
@@ -610,7 +615,7 @@ class RecursiveLeakyHeatFilter(N):
         
 
 class LeakyHeatFilter(N):        
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This node implements gauss filtering by two step recursion [see Deriche 92].
 
@@ -694,7 +699,7 @@ class LeakyHeatFilter(N):
         output_variable[0].name = 'output'
         as_out_state(output_variable[0][-1],_preceding_V)
         as_out_state(inp[-1],_preceding_input)
-        super(LeakyHeatFilter,self).__init__(output_variable[0],name=name)
+        super(LeakyHeatFilter,self).__init__(output_variable[0],name=name,inputs=inputs)
         self.node_type = 'Leaky Heat Filter Node'
         self.node_description = lambda: 'Temporal Recursive Filtering and Spatial Convolution'
         
@@ -707,7 +712,7 @@ class FullConnection(N):
         or supersampling.
     
     """
-    def __init__(self,config={},name=None,model=None):
+    def __init__(self,config={},name=None,model=None,inputs=None):
         self.model = model
         self.set_config(config)
         my_input = self.create_input()
@@ -716,10 +721,10 @@ class FullConnection(N):
         node_type = 'Full Connection Node'
         o = T.tensordot(my_input,self.connectivity.dimshuffle(('x',0,1,2,3)),axes=[(1,2),(1,2)])[:,0,:,:]
         node_description = lambda: ''
-        super(FullConnection,self).__init__(o,name=name)
+        super(FullConnection,self).__init__(o,name=name,inputs=inputs)
 
 class Delay(N):
-    def __init__(self,config,name=None,model=None):
+    def __init__(self,config,name=None,model=None,inputs=None):
         inp = self.create_input()
         delay = config.get('delay',1)
         self._input_init = variables.as_state(T.dtensor3('input_init'),
@@ -729,4 +734,4 @@ class Delay(N):
                            inp[delay:,:,:]],axis=0)
         variables.as_out_state(T.set_subtensor(self._input_init[-(o[-(delay):,:,:].shape[0]):,:,:],
                                     o[-(delay):,:,:]), self._input_init)
-        super(Delay,self).__init__(o,name=name)
+        super(Delay,self).__init__(o,name=name,inputs=inputs)

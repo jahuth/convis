@@ -4,10 +4,12 @@
 #
 ### Helper functions to deal with annotated variables
 
+from types import ModuleType, FunctionType
 import re
 import numpy as np
 from o import save_name
 from variables import get_convis_attribute, has_convis_attribute, full_path
+import inspect
 
 plotting_possible = False
 plotting_exceptions = []
@@ -61,6 +63,13 @@ def describe_text(v, indent=' '):
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
     d = ''
+    if isinstance(v, ModuleType):
+        d += str(getattr(v,'__doc__',""))
+        for f in dir(v):
+            vv = getattr(v,f)
+            d += f +  '\n' + '-'*len(f) + '\n'
+            d += str(getattr(vv,'__doc__',str(type(vv))))
+        return ('\n'.join([indent + line for line in d.split('\n')])).replace('\n\n','\n')
     for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','auto_name']:
         if has_convis_attribute(v,k):
             d+= str(k) +':'+ repr_if_not_str(get_convis_attribute(v,k)) + '\n'
@@ -82,6 +91,12 @@ def describe_dict(v):
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
     d = {}
+    if isinstance(v, ModuleType):
+        d['doc'] = str(getattr(v,'__doc__',""))
+        for f in dir(v):
+            vv = getattr(v,f)
+            d[f] = str(getattr(vv,'__doc__',str(type(vv))))
+        return d
     for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','auto_name']:
         if has_convis_attribute(v,k):
             d[k] = get_convis_attribute(v,k)
@@ -265,13 +280,57 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         if not wrap_in_html:
             return s
         return HTML(s)
+    if isinstance(v, ModuleType):
+        uid = uuid.uuid4().hex
+        s = """<div class='convis_description module'><b """+on_click_toggle+""">"""+getattr(v,'__name__','(nameless module)')+"""</b>"""
+        s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+        s += "<div class='description_content' style='border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;'>"
+        s += '<pre>'+str(getattr(v,'__doc__',"(no doc string found)"))+'</pre>'
+        for f in dir(v):
+            if f.startswith('_'):
+                continue
+            vv = getattr(v,f)
+            if isinstance(vv, ModuleType):
+                s += "<div class='convis_description dict_item'><b>"+str(f)+"</b> (module "+str(getattr(vv,'__name__',''))+")</div>"
+                continue
+            s += "<div class='convis_description dict_item'><b id="+uid+save_name(f)+" "+on_click_toggle+" >"+str(f)+"</b> <a style=\"text-decoration: none;\" href='#"+uid+"''>&#8617;</a>"
+            s += "<div class='description_content_replacer' style='border-left: 0px solid #ddd; padding-left: 5px; display: none;'>(&#8230;)</div>"
+            s += "<div class='description_content' style='border-left: 0px solid #ddd; padding-left: 5px;'>"
+            s += describe_html(vv,wrap_in_html=False,**kwargs)
+            s += "</div>"
+            s += "</div>"
+        s += """</div>"""
+        s += """</div>"""
+        if not wrap_in_html:
+            return s
+        return HTML(s)
+    if isinstance(v, FunctionType):
+        s = """<div class='convis_description module'><b """+on_click_toggle+""">"""+getattr(v,'__name__','(nameless function)')+"""</b>"""
+        s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+        s += "<div class='description_content' style='border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;'>"
+        s += '<pre>'+str(getattr(v,'__doc__',"(no doc string found)"))+'</pre>'
+        s += """</div>"""
+        s += """</div>"""
+        if not wrap_in_html:
+            return s
+        return HTML(s)
+    if inspect.isclass(v):
+        s = """<div class='convis_description module'><b """+on_click_toggle+""">"""+getattr(v,'__name__','(nameless class)')+"""</b>"""
+        s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+        s += "<div class='description_content' style='border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;'>"
+        s += '<pre>'+str(getattr(v,'__doc__',"(no doc string found)"))+'</pre>'
+        s += """</div>"""
+        s += """</div>"""
+        if not wrap_in_html:
+            return s
+        return HTML(s)
     if type(v) in [dict] or hasattr(v,'__iteritems__'):
         uid = uuid.uuid4().hex
         s = "<div class='convis_description list'>"
         iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
         s += "<b id="+uid+" "+on_click_toggle+" >+</b>&nbsp;"
         for (k,vv) in iteration:
-            s += '| <a style="text-decoration: none; font-size: 8pt;" href="#'+uid+save_name(k)+'">'+k+'</a> '
+            s += '| <a style="text-decoration: none; font-size: 8pt;" href="#'+uid+save_name(k)+'">'+str(k)+'</a> '
         s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
         s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;'>"
         iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
@@ -301,6 +360,7 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         except:
             # Tensor Variables love to raise TypeErrors when iterated over
             pass
+
     ##       
     # Assuming its a annotated theano variable:
     #

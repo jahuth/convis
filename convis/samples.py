@@ -44,3 +44,14 @@ def gabor_kernel(phi=2.0,size=16,resolution=2.0,f=10.0, sigma_x=1, sigma_y=1):
     the_sine = np.sin(np.sin(phi) * xgrid/(2.0*np.pi / f) + np.cos(phi) * ygrid/(2.0*np.pi / f))
     the_gabor = the_gaussian * the_sine  
     return the_gabor
+
+def random_checker_stimulus(t=2000,x=20,y=20,checker_size=5,seed=123):
+    """
+        Creates a random checker flicker of uniformly distributed values
+        in a grid of `checker_size`x`checker_size` pixels.
+    """
+    return (np.random.rand(t,
+                             int(x)/checker_size + 1,
+                             int(y)/checker_size + 1)
+            .repeat(checker_size,axis=1)
+            .repeat(checker_size,axis=2)[:,:x,:y])

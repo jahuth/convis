@@ -3,15 +3,15 @@ import theano.tensor as T
 import numpy as np
 import matplotlib.pylab as plt
 from .theano_utils import conv3d, conv2d
-
+from .variables import default_resolution
 
 
 dtensor5 = T.TensorType('float64', (False,)*5)
 
-A = dtensor5('A')
-B = dtensor5('B')
-C = conv3d(A,B)
-_conv_func = theano.function(inputs=[A,B], outputs=C)
+__A = dtensor5('A')
+__B = dtensor5('B')
+__C = conv3d(__A,__B)
+_conv_func = theano.function(inputs=[__A,__B], outputs=__C)
 
 def conv(a,b,padding_things_equal=[1,3,4],padding_things_tail=[1],*args,**kwargs):
     a_ = a.copy()
@@ -34,7 +34,7 @@ def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
 
 def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0):
     if resolution is None:
-        return np.ones(1)
+        resolution = default_resolution
     tau_in_steps = resolution.seconds_to_steps(tau)
     if n == 0:
         a = amplification/tau_in_steps
@@ -79,7 +79,9 @@ def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, 
 
         if :py:obj:`even` is not None, the kernel will be either made to have even or uneven side lengths, depending on the truth value of :py:obj:`even`.
     """
-    if resolution is None or x_sig == 0 or y_sig == 0:
+    if resolution is None:
+        resolution = default_resolution
+    if x_sig == 0 or y_sig == 0:
         return np.ones((1,1))
     x_sig = resolution.degree_to_pixel(x_sig)
     y_sig = resolution.degree_to_pixel(y_sig)
