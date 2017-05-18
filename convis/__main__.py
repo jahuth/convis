@@ -37,9 +37,9 @@ Create a model from a json file and subsequently start a runner.
 Load an inr file and display it as an animation (slowed down by a factor of x10)
 
 """
-    if arg.endswith('.py'):
+    if arg.endswith('.py') and not arg.endswith('__main__.py'):
         l = {}
-        execfile(sys.argv[1], {}, namespace)
+        execfile(arg, {}, namespace)
     if arg.endswith('.json'):
         with open(sys.argv[1],'r') as f:
             namespace.update(namespace['convis'].load_json(f.read()))

@@ -275,8 +275,8 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         if not wrap_in_html:
             return s
         return HTML(s)
-    elif type(v) == np.ndarray:
-        s = _tensor_to_html(v,**kwargs)
+    elif hasattr(v,'__array__'):
+        s = _tensor_to_html(v.__array__(),**kwargs)
         if not wrap_in_html:
             return s
         return HTML(s)
