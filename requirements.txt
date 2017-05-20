@@ -2,3 +2,4 @@ numpy
 matplotlib
 Theano
 litus
+Pillow

@@ -210,6 +210,7 @@ def start_server():
     import SocketServer
     import SimpleHTTPServer
     import inspect
+    import os
     PORT = 8080 + np.random.randint(100)
 
     def move():
@@ -218,6 +219,7 @@ def start_server():
 
     class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         logging = False
+        promises = []
         def log_message(self, format, *args):
             pass
         def do_GET(self):
@@ -225,6 +227,8 @@ def start_server():
                 self.send_response(200)
                 self.send_header('Content-type','text/html')
                 self.end_headers()
+                with open(os.path.join(os.path.dirname(__file__), 'html_template.html')) as f:
+                    template = f.read()
                 self.wfile.write(template)
             elif self.path == '/namespace':
                 self.send_response(200)
@@ -258,7 +262,10 @@ def start_server():
                 if k in namespace.keys():
                     v = namespace[k]
                 if hasattr(v,'get_image'):
-                    import Image
+                    try:
+                        from PIL import Image
+                    except:
+                        import Image
                     import StringIO
                     import time
                     self.send_response(200)
@@ -305,6 +312,8 @@ def start_server():
                         self.wfile.write("<img src='data:image/png;base64," + urllib.quote(image) + "'>")
                     elif hasattr(v,'_web_repr_status_'):
                         self.wfile.write(v._web_repr_status_(name=k,namespace=namespace))
+                    elif hasattr(v,'__array__'):
+                        self.wfile.write('<pre>'+str(v)+'</pre>')
                 return
             elif self.path.startswith('/show/'):
                 k = self.path[6:]
@@ -324,31 +333,31 @@ def start_server():
                             self.wfile.write(v._repr_html_())
                     elif hasattr(v,'__html__'):
                         self.wfile.write(v.__html__())
+                    elif hasattr(v,'__array__'):
+                        self.wfile.write('Numpy Array '+str(v.shape))
+                        self.wfile.write('Mean: '+str(v.mean())+'<br\>')
+                        self.wfile.write('Max: '+str(v.max())+'<br\>')
+                        self.wfile.write('Min: '+str(v.min())+'<br\>')
+                        try:
+                            from convis import variable_describe
+                            promid = len(self.promises)
+                            self.promises.append(lambda: variable_describe._tensor_to_html(v))
+                            self.wfile.write('<div class="promise" promise="'+str(promid)+'"></div>')
+                        except:
+                            self.wfile.write('<div>could not give promise</div>')
                     else:
-                        self.wfile.write('unrecognized type. Try to <a href="javascript:describe(\''+str(k)+'\')">describe</a> '+str(k)+'.')
+                        self.wfile.write('unrecognized type: '+str(k)+'.')
                 return
-            elif self.path.startswith('/describe/'):
-                from convis import describe
-                k = self.path[10:]
+            elif self.path.startswith('/promise/'):
+                k = self.path[9:]
                 self.send_response(200)
                 self.send_header('Content-type','text/html')
                 self.end_headers()
-                v = namespace.get(k,None)
-                if v is not None:
-                    v = describe(v)
-                    namespace[k+'_description'] = describe(v)
-                    if hasattr(v,'_web_repr_'):
-                        self.wfile.write(v._web_repr_(name=k,namespace=namespace))
-                    elif hasattr(v,'_repr_html_'):
-                        try:
-                            self.wfile.write(v._repr_html_(namespace=namespace))
-                        except:
-                            self.wfile.write(v._repr_html_())
-                    elif hasattr(v,'__html__'):
-                        self.wfile.write(v.__html__())
-                    else:
-                        self.wfile.write("unrecognized type")
-                return
+                try:
+                    self.wfile.write(self.promises[int(k)]())
+                except:
+                    self.wfile.write('An error occured.')
+                    raise
             elif self.path.startswith('/set/'):
                 p = self.path.split('/')
                 k = p[2]
