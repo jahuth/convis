@@ -207,11 +207,19 @@ class K_3d_kernel_filter(N):
                              initialized=True,
                              init = lambda x: x.node.config.get('kernel',np.zeros(x.node.config.get('size',(10,10,10)))))
         self.size = kernel.shape
+        inp = self.create_input()
+        self._input_init = variables.as_state(T.dtensor3('input_init'),
+                                    init=lambda x: np.zeros((100,
+                                    x.input.shape[1], x.input.shape[2])))
+        padded_input = T.concatenate([self._input_init[-kernel.shape[0]+1:,:,:],
+                                       inp],axis=0)
+        variables.as_out_state(T.set_subtensor(self._input_init[-(padded_input[-(kernel.shape[0]-1):,:,:].shape[0]):,:,:],
+                                    padded_input[-(kernel.shape[0]-1):,:,:]), self._input_init)
         output_variable = make_nd(
                               conv3d(
                                   pad5_txy(
-                                              make_nd(self.create_input(),5),
-                                              kernel.shape[0]-1,kernel.shape[1]-1,kernel.shape[2]-1,
+                                              make_nd(padded_input,5),
+                                              0,kernel.shape[1]-1,kernel.shape[2]-1,
                                               mode='mirror'
                                           ),
                                   make_nd(kernel,5)
