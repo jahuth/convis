@@ -7,6 +7,7 @@ import matplotlib.pylab as plt
 from .theano_utils import conv3d, conv2d
 import uuid
 from . import retina_base
+from . import io
 from . import theano_utils
 from exceptions import NotImplementedError
 from variable_describe import describe, describe_dict, describe_html
@@ -191,6 +192,17 @@ class GraphWrapper(object):
     @property
     def variables(self):
         return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.graph),pi=len_parents(self))
+    def save_parameters_to_json(self,filename):
+        io.save_dict_to_json(filename,dict(self.parameters._all.__iteritems__()))
+    def load_parameters_from_json(self,filename,strict=True):
+        dat = io.load_dict_from_json(filename)
+        if strict:
+            assert(set(dat.keys()) == set(self.parameters._all.__iterkeys__()), 'Entries do not match. Are you sure that the parameters are from the same subgraph?')
+        for p, param in self.parameters._all.__iteritems__():
+            if p in dat.keys():
+                param.set_value(dat[p])
+            else:
+                raise Exception('Value not found in saved parameters! Are you sure that the parameters are from the same subgraph?')
     def __repr__(self):
         if hasattr(self, 'node_description') and callable(self.node_description):
             # we can provide a dynamic description
@@ -497,6 +509,17 @@ class M(object):
     @property
     def variables(self):
         return create_hierarchical_Ox(theano_utils.get_named_variables_iter(self.outputs),pi=len_parents(self))
+    def save_parameters_to_json(self,filename):
+        io.save_dict_to_json(filename,dict(self.parameters._all.__iteritems__()))
+    def load_parameters_from_json(self,filename,strict=True):
+        dat = io.load_dict_from_json(filename)
+        if strict:
+            assert(set(dat.keys()) == set(self.parameters._all.__iterkeys__()), 'Entries do not match. Are you sure that the parameters are from the same model?')
+        for p, param in self.parameters._all.__iteritems__():
+            if p in dat.keys():
+                param.set_value(dat[p])
+            else:
+                raise Exception('Value not found in saved parameters! Are you sure that the parameters are from the same model?')
     def degree_to_pixel(self,degree):
         return self.resolution.degree_to_pixel(degree)
     def pixel_to_degree(self,pixel):
