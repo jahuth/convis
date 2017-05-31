@@ -39,6 +39,21 @@ convis.describe(ret.parameters)
 ```
 <a href="retina_graph.png"><img src="retina_graph.png" widht="200"/></a>
 
+## Examples
+
+The `examples` folder contains jupyter notebooks of different use cases and examples.
+
+You can view them directly on github:
+
+ * [Example (0) - running a virtual retina simulation](https://github.com/jahuth/convis/blob/master/examples/Example%20%280%29%20-%20running%20a%20virtual%20retina%20simulation.ipynb)
+ * [Example (1) - Fitting Linear Parameters](https://github.com/jahuth/convis/blob/master/examples/Example%20%281%29%20-%20Fitting%20Linear%20Parameters.ipynb)
+ * [Example (2) - Fitting Spatial Kernels](https://github.com/jahuth/convis/blob/master/examples/Example%20%282%29%20-%20Fitting%20Spatial%20Kernels%20.ipynb)
+ * [Example (3) - Fitting nonlinear parameters](https://github.com/jahuth/convis/blob/master/examples/Example%20%283%29%20-%20Fitting%20nonlinear%20parameters.ipynb)
+ * [Example (4) - multi scales](https://github.com/jahuth/convis/blob/master/examples/Example%20%284%29%20-%20multi%20scales.ipynb)
+ * [Example (5) - Build your own model](https://github.com/jahuth/convis/blob/master/examples/Example%20%285%29%20-%20Build%20your%20own%20model.ipynb)
+
+
+
 ## Defining a Model
 
 
