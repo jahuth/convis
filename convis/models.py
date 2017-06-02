@@ -1,10 +1,10 @@
-from .base import M
+from .base import Model
 from . import filters
 from .filters.simple import K_3d_kernel_filter, K_5d_kernel_filter, Nonlinearity, Nonlinearity_5d, Delay
 import numpy as np
 from variables import as_parameter, as_variable
 
-class LN3d(M):
+class LN3d(Model):
     def __init__(self,config={},**kwargs):
         """
             :math:`I_{Gang}(x,y,t) = K_{x,y,t} * N(eT * V_{Bip})`
@@ -24,7 +24,7 @@ class LN3d(M):
         self.add_output(self.non_linear_filter.graph)
 
 
-class LN(M):
+class LN(Model):
     def __init__(self,config={},**kwargs):
         """
             :math:`I_{Gang}(x,y,t) = K_{x,y,t} * N(eT * V_{Bip})`
@@ -44,7 +44,7 @@ class LN(M):
         self.add_output(self.non_linear_filter.graph)
 
 
-class Real_LN_model_5d(M):
+class Real_LN_model_5d(Model):
     def __init__(self,config={},**kwargs):
         """
             A linear temp-spatial filter and a rectification.
@@ -59,7 +59,7 @@ class Real_LN_model_5d(M):
         super(Real_LN_model,self).__init__(config=config,**kwargs)
         self.add_output(self.linear_filter.graph.sum(axis=(0,2,3,4)).clip(0,100000))
 
-class Real_LN_model(M):
+class Real_LN_model(Model):
     def __init__(self,config={},**kwargs):
         """
             A linear temporal-spatial filter and a rectification
@@ -71,7 +71,7 @@ class Real_LN_model(M):
         super(Real_LN_model,self).__init__(config=config,**kwargs)
         self.add_output(self.linear_filter.graph.sum(axis=(1,2)).clip(0,100000))
 
-class Real_LNSN_model(M):
+class Real_LNSN_model(Model):
     def __init__(self,config={},**kwargs):
         """
             A subunit LN-LN cascade model.
@@ -87,7 +87,7 @@ class Real_LNSN_model(M):
         self.add_output(self.gcm_linear_filter.graph.sum(axis=(1,2)).clip(0,100000))
 
         
-class Real_LNSNF_model(M):
+class Real_LNSNF_model(Model):
     def __init__(self,config={},**kwargs):
         """
             A subunit LN-LN cascade model with temporal feedback.
@@ -112,7 +112,7 @@ class Real_LNSNF_model(M):
         self.add_output((gcm_output - feedback_strength*self.gcm_delay.graph).sum(axis=(1,2)))
 
 
-class Real_LNFSNF_model(M):
+class Real_LNFSNF_model(Model):
     def __init__(self,config={},**kwargs):
         """
             A subunit LN-LN cascade model with temporal feedback at the first and second stage.
@@ -145,7 +145,7 @@ class Real_LNFSNF_model(M):
         gcm_feedback_strength = as_parameter(0.00001,name='GCM_feedback_strength',doc="Output - feedback_strength * feedback")
         self.add_output((gcm_output - gcm_feedback_strength * self.gcm_delay.graph).sum(axis=(1,2)))
 
-class Real_LNFDSNF_model(M):
+class Real_LNFDSNF_model(Model):
     def __init__(self,config={},**kwargs):
         """
             LNFSNF + individual delays after bipolar cell modules.

@@ -139,10 +139,37 @@ class ConfigParameter(object):
             self.var.set_value(self.type(self.config.get(self.name,default)))
         else:
             self.var.set_value(self.type(default))
-        
+
+
 class Variable(object):
     __slots__ = ["_var","_info", "__weakref__"]
     def __init__(self, obj):
+        """
+            A `convis.Variable` object wraps a theano variable
+            and provides direct access to its convis attributes
+            which are otherwise hidden.
+
+            Note: this object is *sometimes* interchangeable with
+            theano variables::
+
+                v = Variable(as_parameter(0.0))
+                v.name = "v"
+                v.doc = "A variable named `v`"
+                v_squared = v**2 # returns a convis variable.
+                v_sum = T.sum(v) # returns a theano variable!
+
+            The value returned from theano functions will not be a 
+            convis Variable.
+
+            To be absolutely certain that a operation
+            uses the associated theano variable use the `._var`
+            attribute
+
+            At the moment it is not advised to use this object inplace
+            of theano variables, since that can easily lead to confusion.
+            
+
+        """
         object.__setattr__(self, "_var", obj)
         #print obj, str(obj.owner)
         object.__setattr__(self, "_info", get_convis_attribute_dict(obj))
@@ -164,7 +191,7 @@ class Variable(object):
         delattr(object.__getattribute__(self, "_var"), name)
     def __setattr__(self, name, value):
         if name == 'name':
-            setattr(object.__getattribute__(self, "_var"), name, value)
+            set_convis_attribute(object.__getattribute__(self, "_var"), name, value)
         else:
             if name in convis_attributes:
                 if name in object.__getattribute__(self, "_info").keys():
@@ -214,8 +241,8 @@ class Variable(object):
                 args = [getattr(a,'_var',a) for a in args]
                 kw = dict((k,getattr(v,'_var',v)) for k,v in kw.items())
                 ret = getattr(object.__getattribute__(self, "_var"), name)(*args, **kw)
-                #if type(ret) in replaceable_theano_vars:
-                #    return Variable(ret)
+                if type(ret) in replaceable_theano_vars:
+                    return Variable(ret)
                 return ret
             return method
         namespace = {}
@@ -257,14 +284,61 @@ class Variable(object):
 
 class ResolutionInfo(object):
     def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0,filter_epsilon = 0.001):
-        self.pixel_per_degree = pixel_per_degree
-        self.steps_per_second = steps_per_second
+        """
+            A resolution object tells a model how the dimensions of a
+            discreet filter relate to the input in terms of:
+
+                `pixel_per_degree`: the number of pixel (x or y) that correspond to one visual degree
+                `steps_per_second`: the number of time steps that correspond to one second
+
+            The functions `steps_to_seconds` and `seconds_to_steps`
+            convert a float value from timesteps to seconds or vice versa.
+            The functions `pixel_to_degree` and `degree_to_pixel`
+            convert a float value from pixel to visual degree or vice versa.
+
+            The attributes `var_pixel_per_degree` and `var_steps_per_second`
+            provide theano variables that are updated every time either
+            numerical attribute is changed.
+
+            Use as such::
+
+                res = convis.variables.Resolution()
+                value_in_pixel = convis.as_parameter(100.0,'value_in_pixel')
+                value_in_degree = convis.as_parameter(10.0,'value_in_degree')
+                new_value_in_degree = value_in_pixel / res.var_pixel_per_degree
+                new_value_in_pixel = value_in_degree * res.var_pixel_per_degree
+
+
+            Please note: The plural of pixel used for naming these functions 
+            is "pixel" and never "pixels". But to be compatible with
+            VirtualRetina, there is one exception: The configuration value
+            in VirtualRetina Configuration objects is named `pixels-per-degree`.
+
+        """
+        self._pixel_per_degree = pixel_per_degree
+        self._steps_per_second = steps_per_second
         self.input_luminosity_range = input_luminosity_range
         self.filter_epsilon = filter_epsilon
         self.var_pixel_per_degree = theano.shared(self.pixel_per_degree)
         self.var_steps_per_second = theano.shared(self.steps_per_second)
         self.var_input_luminosity_range = theano.shared(self.input_luminosity_range)
         self.var_filter_epsilon = theano.shared(self.filter_epsilon)
+    @property
+    def pixel_per_degree(self):
+        return self._pixel_per_degree
+    @pixel_per_degree.setter
+    def pixel_per_degree(self,v):
+        v = float(v)
+        self._pixel_per_degree = v
+        self.var_pixel_per_degree.set_value(v)
+    @property
+    def steps_per_second(self):
+        return self._steps_per_second
+    @pixel_per_degree.setter
+    def steps_per_second(self,v):
+        v = float(v)
+        self._steps_per_second = v
+        self.var_steps_per_second.set_value(v)
     def degree_to_pixel(self,degree):
         if self.pixel_per_degree is None:
             return default_resolution.degree_to_pixel(degree)
@@ -287,7 +361,7 @@ default_resolution = ResolutionInfo(10.0,1000.0,1.0)
 
 def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
     """
-        pi: offset in the path
+        pi: "path i" offset in the path
 
             The path will only be used from element pi onwards
     """
@@ -475,7 +549,8 @@ def as_output(v,name=None,**kwargs):
 
 def as_parameter(v,init=None,name=None,**kwargs):
     cparm = None
-    if type(v) in [int, float, np.ndarray]:
+    if type(v) in [int, float, np.ndarray, np.float, np.float16, np.float32, np.float64, np.float128,
+    np.int, np.int0, np.int8, np.int16, np.int32, np.int64]:
         v = theano.shared(v)
     elif type(v) is ConfigParameter:
         cparm = v

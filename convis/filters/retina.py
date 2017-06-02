@@ -14,7 +14,7 @@ from ..numerical_filters import conv, fake_filter, fake_filter_shape
 from ..numerical_filters import exponential_filter_1d, exponential_filter_5d, exponential_highpass_filter_1d, exponential_highpass_filter_5d
 from ..numerical_filters import gauss_filter_2d, gauss_filter_5d
 
-class OPLLayerNode(N):
+class OPLLayerNode(Layer):
     """
     The OPL current is a filtered version of the luminance input with spatial and temporal kernels.
 
@@ -108,7 +108,7 @@ class OPLLayerNode(N):
                                     input_padded_in_time[:,-(length_of_filters):,:,:,:]), self._input_init)
         super(OPLLayerNode,self).__init__(make_nd(I_OPL,3),name=name,inputs=inputs)
 
-class OPLAllRecursive(N):
+class OPLAllRecursive(Layer):
     """
     The OPL current is a filtered version of the luminance input with spatial and temporal kernels.
 
@@ -152,7 +152,7 @@ class OPLAllRecursive(N):
                                     input_padded_in_time[:,-(padding[0]):,:,:,:]), self._input_init)
         super(OPLAllRecursive,self).__init__(make_nd(I_OPL,3),name=name,inputs=inputs)
 
-class OPLLayerLeakyHeatNode(N):        
+class OPLLayerLeakyHeatNode(Layer):        
     """
     The OPL current is a filtered version of the luminance input with spatial and temporal kernels.
 
@@ -317,7 +317,7 @@ class OPLLayerLeakyHeatNode(N):
         self.node_description = lambda: 'Temporal Recursive Filtering and Spatial Convolution'
 
  
-class BipolarLayerNode(N):
+class BipolarLayerNode(Layer):
     """
 
     Example Configuration::
@@ -430,7 +430,7 @@ class BipolarLayerNode(N):
         super(BipolarLayerNode,self).__init__(make_nd(self._result[0],3),name=name,inputs=inputs)
 
 
-class GanglionInputLayerNode(N):
+class GanglionInputLayerNode(Layer):
     """
     The input current to the ganglion cells is filtered through a gain function.
 
@@ -525,7 +525,7 @@ class GanglionInputLayerNode(N):
     def __repr__(self):
         return '[Ganglion Input Node] Shape: '+str(fake_filter_shape(self._G_gang.get_value(),self._T_G.get_value()))
 
-class GanglionSpikingLayerNode(N):
+class GanglionSpikingLayerNode(Layer):
     """
     **TODO:DONE** ~~The refractory time now working!~~
 

@@ -4,7 +4,7 @@ import theano
 import numpy as np
 import theano.tensor as T
 from misc_splines import create_splines_linspace, create_splines_logspace
-from variables import as_parameter, as_variable
+from variables import as_parameter, as_variable, default_resolution
 from . import theano_utils
 
 raise_on_mismatch = False
@@ -177,7 +177,7 @@ class ExponentialKernel1d(GraphWrapper):
 
         """
         if resolution is None:
-            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+            resolution = default_resolution
         tau = as_parameter(tau,name='tau')*resolution.var_steps_per_second
         length = T.max([as_parameter(length,name='length')*resolution.var_steps_per_second,4*tau])
         t_range = T.arange(length)
@@ -215,7 +215,7 @@ class ExponentialHighPassKernel1d(GraphWrapper):
 
         """
         if resolution is None:
-            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+            resolution = default_resolution
         tau = as_parameter(tau,name='tau')*resolution.var_steps_per_second
         relative_weight = as_parameter(relative_weight,name='relative_weight')
         length = T.max([as_parameter(length,name='length')*resolution.var_steps_per_second,4*tau])
@@ -243,7 +243,7 @@ class GaussKernel2d(GraphWrapper):
             For a fancy version see `TiltedGaussKernel2d`.
         """
         if resolution is None:
-            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
+            resolution = default_resolution
         x_sig = as_parameter(x_sig,name='x_sig')*resolution.var_pixel_per_degree
         y_sig = as_parameter(y_sig,name='y_sig')*resolution.var_pixel_per_degree
         epsilon = as_parameter(epsilon,name='epsilon')
@@ -278,9 +278,9 @@ class TiltedGaussKernel2d(GraphWrapper):
 
         """
         if resolution is None:
-            resolution = variables.ResolutionInfo(pixel_per_degree=1.0,steps_per_second=1.0)
-        x_sig = as_parameter(x_sig,name='x_sig')*var_pixel_per_degree
-        y_sig = as_parameter(y_sig,name='y_sig')*var_pixel_per_degree
+            resolution = default_resolution
+        x_sig = as_parameter(x_sig,name='x_sig')*resolution.var_pixel_per_degree
+        y_sig = as_parameter(y_sig,name='y_sig')*resolution.var_pixel_per_degree
         x_offset = as_parameter(x_offset,name='x_offset')
         y_offset = as_parameter(y_offset,name='y_offset')
         phi = as_parameter(phi,name='phi')
@@ -300,6 +300,52 @@ class TiltedGaussKernel2d(GraphWrapper):
         f = theano.function([],self.graph)
         return f()
 
+class Gabor(GraphWrapper):
+    def __init__(self,x_sig,y_sig,x_offset=0,y_offset=0,freq=1.0,phi=0,phase=0.0,epsilon=0.0005,
+                 name='gabor_kernel', even=False,resolution=None):
+        """
+            A gabor filter is the product of a gaussian and a cosine.           
+
+            `x_sig` and `y_sig` are the width of the gaussian in the two principal directions.
+
+            `phi` is the rotation in rad. when `phi` = 0, x_sig aligns with the x axis,
+            y_sig aligns with the y axis.
+
+            `freq` is the frequency of the oscillation in 1/visual degrees.
+            The direction of the oscillation is orthogonal to `phi` (along `y_sig`).
+            `phase` is the phase of the oscillation from `-pi` to `pi` (or `0` to `2*pi`).
+            Default is `0`, ie. the center has value `1.0` and falls off symmetrically.
+
+            The size of the filter is determined automatically and is always square.
+            The offsets are from the center, ie. with each increase in x_offset, the filter
+            grows by twice that amount.
+
+        """
+        if resolution is None:
+            resolution = default_resolution
+        x_sig = as_parameter(x_sig,name='x_sig')*resolution.var_pixel_per_degree
+        y_sig = as_parameter(y_sig,name='y_sig')*resolution.var_pixel_per_degree
+        x_offset = as_parameter(x_offset,name='x_offset')
+        y_offset = as_parameter(y_offset,name='y_offset')
+        phi = as_parameter(phi,name='phi')
+        epsilon = as_parameter(epsilon,name='epsilon')
+        gabor_freq = as_parameter(freq,name='freq')/resolution.var_pixel_per_degree
+        gabor_phase = as_parameter(phase,name='phase')
+        a_x = 1.0/(x_sig * T.sqrt(2.0*np.pi))
+        x_min = T.ceil(T.sqrt(-2.0*(x_sig**2)*T.log(epsilon/a_x)))
+        a_y = 1.0/(y_sig * T.sqrt(2.0*np.pi))
+        y_min = T.ceil(T.sqrt(-2.0*(y_sig**2)*T.log(epsilon/a_y)))
+        length = T.max([x_min,y_min]) + T.max([abs(x_offset),abs(y_offset)])
+        X = T.arange(1.0-length-(0.5 if even else 0.0),length+(0.5 if even else 0.0))
+        Y = T.arange(1.0-length-(0.5 if even else 0.0),length+(0.5 if even else 0.0))
+        u = T.sin(phi)*(X.dimshuffle(0,'x')+x_offset) + T.cos(phi)*(Y.dimshuffle('x',0)+y_offset)
+        v = T.cos(phi)*(X.dimshuffle(0,'x')+x_offset) - T.sin(phi)*(Y.dimshuffle('x',0)+y_offset)
+        kernel = (a_x * T.exp(-0.5*(u)**2/x_sig**2)).clip(0,1)*(a_y *T.exp(-0.5*(v)**2/y_sig**2)).clip(0,1)
+        kernel = kernel * T.cos(u*gabor_freq + gabor_phase)
+        super(Gabor,self).__init__(kernel,name=name)
+    def compute(self):
+        f = theano.function([],self.graph)
+        return f()  
 
 def sum_kernels(kernels):
     max_shape = T.max([k.graph.shape for k in kernels],axis=0)

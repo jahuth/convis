@@ -26,12 +26,12 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 from .misc_utils import suppress
 from .retina_virtualretina import RetinaConfiguration, default_config, random_config
 from . import retina_virtualretina
-from .base import M, GraphWrapper
+from .base import Model, GraphWrapper
 
 from .filters.retina import *
 
 
-class Retina(M):
+class Retina(Model):
     def __init__(self,config=None,**kwargs):
         """
             This class instantiates a model similar to the Virtual Retina simulator.

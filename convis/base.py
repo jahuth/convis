@@ -289,7 +289,7 @@ class GraphWrapper(object):
     def debugprint(self):
         theano.printing.debugprint(self.graph)
 
-class N(GraphWrapper):
+class Layer(GraphWrapper):
     """
         N: The layer class
         ------------------
@@ -391,7 +391,7 @@ class N(GraphWrapper):
     def shape(self,input_shape):
         # unless this node does something special, the shape of the output should be identical to the input
         return input_shape
-
+N = Layer
 
 def connect(list_of_lists):
     """
@@ -470,7 +470,7 @@ class Output(object):
         raise IndexError('Key not found: '+str(k))
 
 
-class M(object):
+class Model(object):
     """
         M: The model class
         ------------------
@@ -479,7 +479,7 @@ class M(object):
 
         Minimal Usage::
 
-            m = M()
+            m = Model()
             m.add_output(some_theano_variable_or_convis_layer)
             some_output = m.run(some_input)
 
@@ -820,10 +820,12 @@ class M(object):
         s += "Diagram of this model:<br><pre>"+str(self.draw_simple_diagram())+"</pre>"
         return s
 
+M = Model
+
 def make_model(outputs,name='Model',**kwargs):
     if type(outputs) not in [list,tuple]:
         outputs = [outputs]
-    m = M(name=name,**kwargs)
+    m = Model(name=name,**kwargs)
     for o in outputs:
         m.add_output(o)
     m.create_function()
