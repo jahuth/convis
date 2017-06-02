@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Usage &mdash; convis 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="convis 0.1 documentation" href="index.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Welcome to convis’s documentation!" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to convis’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="running-a-model">
+<h2>Running a model<a class="headerlink" href="#running-a-model" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The size of images and the length of time you can process in one go will depend on your system and specifically on the amount of continouus memory available on your graphics card. If theano can not find enough continouus memory, the python code running the model will fail and until this python process is restarted it might hold some GPU memory as unusable.
+For now there is no good way to fix this other than restarting the process and choosing a smaller chunk size.</p>
+</div>
+<div class="section" id="changing-parameters">
+<h3>Changing Parameters<a class="headerlink" href="#changing-parameters" title="Permalink to this headline">¶</a></h3>
+<p>There are two ways that parameters of a model can be changed.
+One involves changing the ´config´ of a specific layer, the other is to directly access the parameter variables in the graph.</p>
+<p>When creating a new model from an xml or json configuration, the easiest way is to change this configuration. But once the model is created, it is easier to directly access the variables.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Updating shared variables in an existing model from a changed configuration is not implemented right now. So changing the values directly is the only option when the model is already created.
+This is different for input parameters (see below for the difference between them).</p>
+</div>
+<p>Since no one should be forced to remember the fairly arbitrary names of the
+different parameters, they act as attributes such that Tab completion (eg. in an ipython console
+or a ipython/jupyter notebook) gives you a list of all names.</p>
+<p>By default this list is categorized by layers (and sub-layers):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>In[1]: retina = convis.retina.Retina()
+In[2]: retina.parameters.&lt;press tab&gt;
+            retina.parameters.Bipolar
+            retina.parameters.GanglionInputLayer_Parvocellular_Off
+            retina.parameters.GanglionInputLayer_Parvocellular_On
+            retina.parameters.GanglionSpikes__Parvocellular_Off
+            retina.parameters.GanglionSpikes__Parvocellular_On
+            retina.parameters.OPL
+
+In[3]: retina.parameters.OPL.&lt;press tab&gt;
+            retina.parameters.OPL.center
+            retina.parameters.OPL.surround
+            retina.parameters.OPL.lambda_OPL
+            retina.parameters.OPL.w_OPL
+            retina.parameters.OPL.Reshape_C_S
+
+In[4]: retina.parameters.OPL.center.&lt;press tab&gt;
+            retina.parameters.OPL.center.E_n_C
+            retina.parameters.OPL.center.G_C
+            retina.parameters.OPL.center.Twu_Tu_C
+</pre></div>
+</div>
+<p>To see all parameters in a flat list instead of the nested structure, use the special attribute <cite>_all</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>In[5]: retina.parameters._all.&lt;press tab&gt;
+            # a very long list of all parameters
+</pre></div>
+</div>
+<p>Since these names still might not give you an idea of what they do, you can let convis describe them:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [6]: convis.describe(retina.parameters.OPL.center.E_n_C)
+
+
+Out [6]: {&#39;doc&#39;: &#39;The n-fold cascaded exponential creates a low-pass characteristic.
+                  A filter can be created with `retina_base.m_en_filter`\n&#39;,
+ &#39;name&#39;: &#39;E_n_C&#39;,
+ &#39;node&#39;: [Node] center: ,
+ &#39;simple_name&#39;: &#39;E_n_C&#39;,
+ &#39;value&#39;: array([[[[[ 0.63214926]]],
+         [[[ 0.23255472]]],
+         [[[ 0.0855521 ]]],
+         [[[ 0.03147286]]],
+         [[[ 0.01157822]]],
+         [[[ 0.00425939]]],
+         [[[ 0.00156694]]]]])}
+</pre></div>
+</div>
+<p>´describe´ will output a formatted table in an ipython notebook and a dictionary in a console.
+To verify that it is actually a shared parameter, we can ask for its type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>In [7]: type(retina.parameters.OPL.center.E_n_C)
+
+Out [7]: theano.tensor.sharedvar.TensorSharedVariable
+</pre></div>
+</div>
+<p>So what we learned is that <cite>retina.parameters.OPL.center.E_n_C</cite> is a convolution kernel and has some specific value. It is a theano share variable, which means that it represents both, a node in a computational graph as well as a portion of memory which is synchronized between RAM and GPU memory. To change the value we can use the method <cite>set_value()</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
+retina.parameters.OPL.center.E_n_C.set_value(k)
+</pre></div>
+</div>
+<p>For parameters which are accessed through the <cite>M().parameters.</cite> attribute, there is also a shortcut for setting the value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
+retina.parameters.OPL.center.E_n_C = k
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="creating-a-model-from-layers">
+<h2>Creating a model from layers<a class="headerlink" href="#creating-a-model-from-layers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="initializing-a-layer">
+<h3>Initializing a Layer<a class="headerlink" href="#initializing-a-layer" title="Permalink to this headline">¶</a></h3>
+<p>Layers typically expect a configuration dictionary that contains the initial values of their
+parameters.</p>
+<p>Initializing a convolution filter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_5d</span><span class="p">()</span>
+<span class="c1"># creates a 5 dimensional tensor with a 2d gaussian filter</span>
+<span class="c1"># in the x and y dimensions</span>
+<span class="n">gauss_filter_layer</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">K_5d_kernel_filter</span><span class="p">(</span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="n">k</span>
+    <span class="p">})</span>
+</pre></div>
+</div>
+<p><cite>K_5d_kernel_filter</cite> is a layer that computes a convolution of the input with a 5 dimensional
+kernel filter. The dimensions are &#8220;batch&#8221;, &#8220;time&#8221;, &#8220;channel&#8221;, &#8220;x&#8221;, &#8220;y&#8221;.</p>
+<p>TODO: make a section for convolution filters</p>
+</div>
+<div class="section" id="connecting-layers">
+<h3>Connecting Layers<a class="headerlink" href="#connecting-layers" title="Permalink to this headline">¶</a></h3>
+<p>Layers can either be connected one by one by using <cite>add_input</cite> or in batch by using <cite>convis.connect</cite>.
+A shorthand for <cite>b.addinput(a)</cite> is <cite>b += a</cite>.
+The following is equivalent:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+<span class="n">c</span> <span class="o">+=</span> <span class="n">b</span> <span class="c1"># if c and b are convis Layers</span>
+<span class="n">b</span> <span class="o">+=</span> <span class="n">a</span>
+</pre></div>
+</div>
+<p>Both will result in a graph in which only <cite>a</cite> has an open input. <cite>b</cite> recieves the output of <cite>a</cite> as input, <cite>c</cite> recieves the output of b.</p>
+<p>If more than one input or output are specified, a specific one can be set like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;input_0&#39;</span><span class="p">)</span>
+<span class="c1"># connects the first element of the</span>
+<span class="c1"># output of a to the input named &#39;input_0&#39; of b</span>
+<span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;input_1&#39;</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;input_2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If two outputs are connected to the same input, their values will be added together.</p>
+<p>More complciated connectivity can be achieved in <cite>convis.connect</cite> by nesting lists:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,[</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,[</span><span class="n">d</span><span class="p">,</span><span class="n">e</span><span class="p">,</span><span class="n">f</span><span class="p">]],</span><span class="n">g</span><span class="p">])</span>
+
+<span class="c1"># is equivalent to:</span>
+<span class="n">b</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="c1"># the second nested level is even,</span>
+        <span class="c1"># so connected in parallel</span>
+<span class="n">c</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="c1"># the third nested level is odd,</span>
+        <span class="c1"># so again connected in sequence</span>
+<span class="n">f</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="c1"># after a parallel nesting is closed,</span>
+        <span class="c1"># the inputs are all summed</span>
+        <span class="c1"># in the next layer</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="creating-a-layer-from-a-graph">
+<h2>Creating a layer from a graph<a class="headerlink" href="#creating-a-layer-from-a-graph" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="two-kinds-of-parameters">
+<h3>Two kinds of parameters<a class="headerlink" href="#two-kinds-of-parameters" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Usage</a><ul>
+<li><a class="reference internal" href="#running-a-model">Running a model</a><ul>
+<li><a class="reference internal" href="#changing-parameters">Changing Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#creating-a-model-from-layers">Creating a model from layers</a><ul>
+<li><a class="reference internal" href="#initializing-a-layer">Initializing a Layer</a></li>
+<li><a class="reference internal" href="#connecting-layers">Connecting Layers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#creating-a-layer-from-a-graph">Creating a layer from a graph</a><ul>
+<li><a class="reference internal" href="#two-kinds-of-parameters">Two kinds of parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to convis&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">Examples</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usage.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to convis’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
