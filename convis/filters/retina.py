@@ -569,22 +569,22 @@ class GanglionSpikingLayerNode(Layer):
                                 else np.random.rand(*x.input[0,:,:].shape))
 
         self._refr_sigma = self.shared_parameter(
-                lambda x: float(x.resolution.seconds_to_steps(float(x.value_from_config()))),
-                save = lambda x: x.value_to_config(x.resolution.steps_to_seconds(float(x.var.get_value()))),
-                get = lambda x: float(x.resolution.steps_to_seconds(float(x.var.get_value()))),
+                lambda x: float(x.value_from_config()),
+                save = lambda x: x.value_to_config(float(x.var.get_value())),
+                get = lambda x: float(x.var.get_value()),
                 config_key = 'refr-stdev__sec',
                 config_default = 0.001,
                 name='refr_sigma',
-                doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')
+                doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')*self.model.resolution.var_steps_per_second
 
         self._refr_mu = self.shared_parameter(
-                lambda x: float(x.resolution.seconds_to_steps(float(x.value_from_config()))),
-                save = lambda x: x.value_to_config(x.resolution.steps_to_seconds(float(x.var.get_value()))),
-                get = lambda x: float(x.resolution.steps_to_seconds(float(x.var.get_value()))),
+                lambda x: float(x.value_from_config()),
+                save = lambda x: x.value_to_config(float(x.var.get_value())),
+                get = lambda x: float(x.var.get_value()),
                 config_key = 'refr-mean__sec',
                 config_default = 0.000523,
                 name='refr_mu',
-                doc="The mean of the distribution of random refractory times (in seconds).")
+                doc="The mean of the distribution of random refractory times (in seconds).")*self.model.resolution.var_steps_per_second
 
         self._g_L = self.shared_parameter(
                 lambda x: float(x.value_from_config()),
@@ -601,13 +601,13 @@ class GanglionSpikingLayerNode(Layer):
         self._noise_state = as_state(T.dtensor3("initial_noise"), init=lambda x: np.random.randn(*x.input[:1,:,:].shape))
         self._noise_gang = T.concatenate([self._noise_state,self._raw_noise_gang]) # we need to remember one noise state
         self._noise_sigma = self.shared_parameter(
-                lambda x: float(x.value_from_config())*np.sqrt(2*x.resolution.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
-                save = lambda x: x.value_to_config(float(x.var.get_value())/np.sqrt(2*x.model.seconds_to_steps(float(x.get_config('g-leak__Hz',10))))),
-                get = lambda x: (x.var.get_value())/np.sqrt(2*x.resolution.seconds_to_steps(float(x.get_config('g-leak__Hz',10)))),
+                lambda x: float(x.value_from_config()),
+                save = lambda x: x.value_to_config(float(x.var.get_value())),
+                get = lambda x: (x.var.get_value()),
                 config_key = 'sigma-V',
                 config_default = 0.1,
                 doc='Amount of noise added to the membrane potential.',
-                name = "noise_sigma")
+                name = "noise_sigma")*T.sqrt(2*(self._g_L*self.model.resolution.var_steps_per_second))
 
         #self.random_init = self.config.get('random-init',None)
         
@@ -622,11 +622,12 @@ class GanglionSpikingLayerNode(Layer):
             V = as_variable(theano.tensor.switch(T.gt(prior_refr, 0.5), 0.0, V),'V')
             spikes = T.gt(V, 1.0)
             refr = as_variable(theano.tensor.switch(spikes,
-                    prior_refr + refr_mu + refr_sigma * noise_gang,
+                    prior_refr + refr_mu + refr_sigma * noise_gang - 2.0,
                     prior_refr - 1.0
                     ),'refr')
             next_refr = theano.tensor.switch(T.lt(refr, 0.0),0.0,refr)
-            return [V,next_refr,spikes*1.0]
+            # T.switch(spikes,0.0,V)
+            return [T.switch(spikes,0.0,V),next_refr,spikes*1.0]
         k = self.input_variable.shape[0]
         self._result, updates = theano.scan(fn=spikeStep,
                                       outputs_info=[(self._V_initial),(self._initial_refr),None],
