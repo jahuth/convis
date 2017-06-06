@@ -319,12 +319,14 @@ class ResolutionInfo(object):
         self._steps_per_second = steps_per_second
         self.input_luminosity_range = input_luminosity_range
         self.filter_epsilon = filter_epsilon
-        self.var_pixel_per_degree = theano.shared(self.pixel_per_degree)
-        self.var_steps_per_second = theano.shared(self.steps_per_second)
-        self.var_input_luminosity_range = theano.shared(self.input_luminosity_range)
+        self.var_pixel_per_degree = theano.shared(float(self.pixel_per_degree))
+        self.var_steps_per_second = theano.shared(float(self.steps_per_second))
+        self.var_input_luminosity_range = theano.shared(float(self.input_luminosity_range))
         self.var_filter_epsilon = theano.shared(self.filter_epsilon)
     @property
     def pixel_per_degree(self):
+        if self._pixel_per_degree is None:
+            return default_resolution.pixel_per_degree
         return self._pixel_per_degree
     @pixel_per_degree.setter
     def pixel_per_degree(self,v):
@@ -333,6 +335,8 @@ class ResolutionInfo(object):
         self.var_pixel_per_degree.set_value(v)
     @property
     def steps_per_second(self):
+        if self._steps_per_second is None:
+            return default_resolution._steps_per_second
         return self._steps_per_second
     @pixel_per_degree.setter
     def steps_per_second(self,v):
