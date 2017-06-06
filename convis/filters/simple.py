@@ -1,6 +1,6 @@
 import litus
-import theano
-import theano.tensor as T
+from ..imports import theano
+from ..imports import T
 import numpy as np
 import matplotlib.pylab as plt
 from ..theano_utils import conv3d, conv2d

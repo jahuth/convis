@@ -71,8 +71,8 @@ def save_name(n):
                 var_name_counter += 1
             except:
                 raise Exception('save_name got a '+str(type(n))+' instead of a string or object with name attribute.')
-    n = n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace(':', '_').replace('<','lt').replace('>','gt').replace('=','eq').replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace('!', '_')
-    if n[0] in '0123456789':
+    n = n.replace(' ', '_').replace('-', '_').replace('+', '_').replace('*', '_').replace('&', '_').replace('.', 'dot').replace(':', '_').replace('<','lt').replace('>','gt').replace('=','eq').replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace('!', '_')
+    if len(n) >= 1 and n[0] in '0123456789':
         n = 'n'+n
     return n
 

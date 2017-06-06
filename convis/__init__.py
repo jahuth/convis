@@ -1,28 +1,23 @@
 import misc_utils
 
+import variables
+import imports
+#imports.T._variable_factory = variables.make_variable
+
 import theano_utils
-reload(theano_utils)
 import variable_describe
-reload(variable_describe)
 
 import base
-reload(base)
 from base import N, M, GraphWrapper, describe
 import retina_base
-reload(retina_base)
 import filters.retina as retina_filters
-reload(filters.retina)
 import filters.simple as simple_filters
-reload(filters.simple)
 from filters.simple import *
 
-from theano.tensor import as_tensor_variable as as_var
 import retina
-reload(retina)
 import models
 
 import error_functions
-reload(error_functions)
 
 # just to make sure that we don't use filters.simple version of everything
 from base import N, M, GraphWrapper, describe, filter_dbg
@@ -30,6 +25,8 @@ from variable_describe import help, describe, describe_text, describe_dict, desc
 
 import samples
 import kernels
+
+from imports import theano, T
 
 def main():
     import sys

@@ -1,8 +1,8 @@
 
 from base import GraphWrapper
-import theano
+from .imports import theano
+from .imports import T
 import numpy as np
-import theano.tensor as T
 from misc_splines import create_splines_linspace, create_splines_logspace
 from variables import as_parameter, as_variable, default_resolution
 from . import theano_utils
@@ -32,8 +32,17 @@ def DenseKernel3d(t=20,x=10,y=10,name='dense_kernel'):
         t = t.compute()
     if type(t) is int:
         t = np.zeros((t,x,y))
-    if not len(t.shape) == 1:
+    if not len(t.shape) == 3:
         raise Exception('3d Kernel can only have three dimensions!')
+    return DenseKernel(t,name=name)
+
+def DenseKernel5d(t=20,x=10,y=10,name='dense_kernel'):
+    if isinstance(t,GraphWrapper):
+        t = t.compute()
+    if type(t) is int:
+        t = np.zeros((t,x,y))
+    if not len(t.shape) == 5:
+        raise Exception('5d Kernel can only have five  dimensions!')
     return DenseKernel(t,name=name)
 
 def DenseKernel(kernel,name='dense_kernel'):

@@ -1,5 +1,4 @@
 import theano
-import theano.tensor as T
 import new
 from debug import *
 from misc_utils import unique_list
@@ -142,7 +141,7 @@ class ConfigParameter(object):
 
 
 class Variable(object):
-    __slots__ = ["_var","_info", "__weakref__"]
+    __slots__ = ["_var","_info", "__weakref__","_convis_lookup"]
     def __init__(self, obj):
         """
             A `convis.Variable` object wraps a theano variable
@@ -172,6 +171,7 @@ class Variable(object):
         """
         object.__setattr__(self, "_var", obj)
         #print obj, str(obj.owner)
+        object.__setattr__(self, "_convis_lookup", get_convis_key(obj))
         object.__setattr__(self, "_info", get_convis_attribute_dict(obj))
     def _as_TensorVariable(self):
         return object.__getattribute__(self, "_var")
