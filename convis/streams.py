@@ -466,6 +466,7 @@ class StreamVisualizer():
         self.image1 = ImageTk.PhotoImage(self.image)
         self.panel1 = tk.Label(self.root, image=self.image1)
         self.display = self.image1
+        self.frame1 = Frame(self.root, height=50, width=50)
         self.panel1.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
         self.root.after(100, self.advance_image)
         self.root.after(100, self.update_image)
@@ -617,7 +618,16 @@ class NumpyOutputStream(Stream):
 
 
 class VideoReader(Stream):
-    def __init__(self,filename='Projects/ExampleMovies/big_buck_bunny_480p_surround-fix.avi',size=(50,50),offset=None,dt=1.0/24.0):
+    def __init__(self,filename=0,size=(50,50),offset=None,dt=1.0/24.0):
+        """
+            `filename` can be either a device number or the path to a video file.
+            The file will be opened as such: `cv2.VideoCapture(filename)`
+
+            If only one camera is connected, it can be selected with `0`.
+            If more than one camera is connected, 
+
+
+        """
         
         try:
             import cv2
@@ -668,3 +678,23 @@ class VideoReader(Stream):
     def close(self):
         self.cap.release()
 
+
+class VideoWriter(Stream):
+    def __init__(self,filename='output.avi',size=(50,50),codec='XVID', isColor=False):
+        """
+            possible `codec`s: 'DIVX', 'XVID', 'MJPG', 'X264', 'WMV1', 'WMV2'
+
+        """
+        try:
+            import cv2
+        except:
+            print """ OpenCV has to be installed for video output """
+            raise
+        fourcc = cv2.VideoWriter_fourcc(*codec)
+        self.out = cv2.VideoWriter()
+        self.out.open(filename,fourcc, fps=20.0, frameSize=size, isColor=isColor)
+    def put(self,s):
+        for frame in s:
+            self.out.write(np.uint8(frame))
+    def close(self):
+        self.out.release()
