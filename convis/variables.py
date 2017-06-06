@@ -6,7 +6,7 @@ from o import O, Ox, save_name
 from theano.tensor.var import TensorVariable
 from theano.tensor.sharedvar import ScalarSharedVariable
 import numpy as np
-replaceable_theano_vars = [TensorVariable,ScalarSharedVariable]
+replaceable_theano_vars = []#[TensorVariable,ScalarSharedVariable]
 
 global_lookup_table = {}
 only_use_lookup_table = True
