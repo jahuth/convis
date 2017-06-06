@@ -568,8 +568,7 @@ class GanglionSpikingLayerNode(Layer):
                                 if x.node.config.get('random-init',True) is False
                                 else np.random.rand(*x.input[0,:,:].shape))
 
-        try:
-            self._refr_sigma = self.shared_parameter(
+        self._refr_sigma = self.shared_parameter(
                 lambda x: float(x.value_from_config()),
                 save = lambda x: x.value_to_config(float(x.var.get_value())),
                 get = lambda x: float(x.var.get_value()),
@@ -577,23 +576,8 @@ class GanglionSpikingLayerNode(Layer):
                 config_default = 0.001,
                 name='refr_sigma',
                 doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')*self.model.resolution.var_steps_per_second
-        except Exception as e:
-            raise Exception(        
-                '\ntype(var_steps_per_second) = '
-                + str(type(self.model.resolution.var_steps_per_second))
-                + '\n\ntype(self.shared_parameter(...)) ='
-                + str(type(self.shared_parameter(
-                lambda x: float(x.value_from_config()),
-                save = lambda x: x.value_to_config(float(x.var.get_value())),
-                get = lambda x: float(x.var.get_value()),
-                config_key = 'refr-stdev__sec',
-                config_default = 0.001,
-                name='refr_sigma',
-                doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')))+'\n\n'+str(e)
-        )
 
-        try:
-            self._refr_mu = self.shared_parameter(
+        self._refr_mu = self.shared_parameter(
                 lambda x: float(x.value_from_config()),
                 save = lambda x: x.value_to_config(float(x.var.get_value())),
                 get = lambda x: float(x.var.get_value()),
@@ -601,20 +585,6 @@ class GanglionSpikingLayerNode(Layer):
                 config_default = 0.000523,
                 name='refr_mu',
                 doc="The mean of the distribution of random refractory times (in seconds).")*self.model.resolution.var_steps_per_second
-        except Exception as e:
-            raise Exception(        
-                '\ntype(var_steps_per_second) = '
-                + str(type(self.model.resolution.var_steps_per_second))
-                + '\n\ntype(self.shared_parameter(...)) ='
-                + str(type(self.shared_parameter(
-                lambda x: float(x.value_from_config()),
-                save = lambda x: x.value_to_config(float(x.var.get_value())),
-                get = lambda x: float(x.var.get_value()),
-                config_key = 'refr-mean__sec',
-                config_default = 0.000523,
-                name='refr_mu',
-                doc="The mean of the distribution of random refractory times (in seconds).")))+'\n\n'+str(e)
-        )
 
         self._g_L = self.shared_parameter(
                 lambda x: float(x.value_from_config()),
