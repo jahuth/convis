@@ -165,7 +165,7 @@ class InrImageStreamWriter(object):
         s += " + file: "+str(self.filename)+" <br>"
         s += " + length: "+str(self.image_i)+" <br>"
         if hasattr(self,'get_image'):
-            s+= '<img class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+            s+= '<img class="mjpg" src="/mjpg/'+name+'" alt="'+name+'" height="400"/>'
         return s
     @property
     def buffered(self):
@@ -231,7 +231,7 @@ class InrImageFileStreamer(object):
         s += " + file: "+str(self.filename)+" <br>"
         s += " + length: "+str(self.image_i)+" <br>"
         if hasattr(self,'get_image'):
-            s+= '<img class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+            s+= '<img class="mjpg" src="/mjpg/'+name+'" alt="'+name+'" height="400"/>'
         return s
     @property
     def buffered(self):
@@ -274,7 +274,7 @@ class Stream(object):
         except:
             s+= " + length: -- <br>"
         if hasattr(self,'get_image'):
-            s+= '<img class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+            s+= '<img class="mjpg" src="/mjpg/'+name+'" alt="'+name+'" height="400"/>'
         return s
     @property
     def buffered(self):
@@ -324,10 +324,16 @@ class SequenceStream(Stream):
         self.i += i
         return self.sequence[int(self.i-i):self.i]
     def put(self,s):
-        if len(self.sequence) + len(s) > self.max_frames:
-            self.sequence = np.concatenate([self.sequence,s],axis=0)[-self.max_frames:]
+        if self.sequence.shape[1:] == s.shape[1:]:
+            if len(self.sequence) + len(s) > self.max_frames:
+                self.sequence = np.concatenate([self.sequence,s],axis=0)[-self.max_frames:]
+            else:
+                self.sequence = np.concatenate([self.sequence,s],axis=0)
         else:
-            self.sequence = np.concatenate([self.sequence,s],axis=0)
+            if len(s) > self.max_frames:
+                self.sequence = s[-self.max_frames:]
+            else:
+                self.sequence = s
 
 class RepeatingStream(Stream):
     def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10):
@@ -563,7 +569,7 @@ class StreamVisualizer():
         except:
             s+= " + length: -- <br>"
         if hasattr(self,'get_image'):
-            s+= '<img class="mjpg" class="mjpg" src="/mjpg/'+name+'" height="400"/>'
+            s+= '<img class="mjpg" class="mjpg" src="/mjpg/'+name+'" alt="'+name+'" height="400"/>'
         return s
     def _web_repr_status_(self,name,namespace):
         import cgi
@@ -695,6 +701,7 @@ class VideoWriter(Stream):
         self.out.open(filename,fourcc, fps=20.0, frameSize=size, isColor=isColor)
     def put(self,s):
         for frame in s:
+            self.last_image = frame
             self.out.write(np.uint8(frame))
     def close(self):
         self.out.release()

@@ -11,7 +11,7 @@ body {
     border-bottom-right-radius: 5px;
     background-color: #fff;
     margin: 20px;
-    margin-left: -20px;
+    margin-left: -10px;
     padding:10px;
     width: 200px;
     float: left;
@@ -39,13 +39,59 @@ ul#namespace_list a:hover {
     padding: 10px;
 }
 
+#pinned_bar {
+    height: 110px;
+    margin-top:10px;
+    border-radius: 2px;
+    border: 1px solid #eee;
+    background-color: #fefefe;
+}
+
 #pinned_bar div {
     margin:2px;
     border-radius: 2px;
     border: 1px solid #444;
     padding: 2px;
-    background-color: #efdead;
+    background-color: #ffffff;
+    width: 100px;
+    height: 100px;
     float: left;
+    position: relative;
+    top: 0px;
+}
+
+#pinned_bar div:hover {
+    background-color: #efdead;
+}
+
+#pinned_bar div img {
+    width: 100px;
+    height: 100px;
+}
+
+#pinned_bar div b {
+    color: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 9pt;
+}
+
+#menu .item {
+    float: left;
+    padding: 5px;
+}
+#menu .item:hover {
+    background: #fff;
+}
+#menu {
+    height: 30px;
+    width: 100%;
+    background: #efefef;
+    margin-top: -15px;
+    margin-left: -10px;
+    margin-right: -10px;
+    padding: 5px;
 }
 </style>
 <script>
@@ -57,7 +103,10 @@ function feedback(data) {
 }
 
 function init() {
-    $('#pinned_bar').sortable({ revert: true });
+    $('#pinned_bar').sortable({ 
+        revert: 100 
+    });
+    $('#menu>.item')
     update(); // start poll loop
 }
 var selected = '';
@@ -82,7 +131,7 @@ function show(u) {
         });
         $('#disp_main').find('img.mjpg').each(function (i) {
             $(this).click(function () {
-                $('<div><img src="'+$(this).attr('src')+'"></div>').appendTo('#pinned_bar').draggable({
+                $('<div><img src="'+$(this).attr('src')+'"><b>'+$(this).attr('alt')+'</b></div>').appendTo('#pinned_bar').draggable({
                   connectToSortable: "#pinned_bar",
                   containment: $("#pinned_bar"),
                   revert: "invalid"
@@ -150,10 +199,20 @@ function update() {
 </head>
 
 <body onload='init();'>
+<div id="menu">
+    <div class='item'>Control</div>
+    <div class='item'>New</div>
+    <div class='item'>Tools</div>
+    <div class='item'>Help</div>
+</div>
+
 <div id="feedback" style="display:none; position:absolute; top: 10px; border: 5px solid gray; background-color:#efefef;"></div>
-<div id='pinned_bar' style='height: 100px;'></div>
+<div id='pinned_bar'></div>
+
+<div style='clear: both;' />
 
 <div id='namespace_list_div'>
+<b>Variables:</b>
 <ul id='namespace_list'>
 </ul>
 </div>

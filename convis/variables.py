@@ -691,16 +691,19 @@ def create_context_O(var=None, **kwargs):
     if node is not None:
         model = node.get_model()
         get_config = node.get_config
+        get_config_value = node.get_config_value
     config_key = get_convis_attribute(var,'config_key','')
     if has_convis_attribute(var, 'config_key') and hasattr(var,'get_value'):
         return O(var=var,node=node,model=model,resolution=getattr(model,'resolution',default_resolution),
                  get_config=get_config,
-                 value_from_config=lambda: node.get_config(config_key,get_convis_attribute(var,'config_default',var.get_value())),
-                 value_to_config=lambda v: node.set_config(config_key,v))(**kwargs)
+                 get_config_value=get_config_value,
+                 value_from_config=lambda: node.get_config_value(config_key,get_convis_attribute(var,'config_default',var.get_value())),
+                 value_to_config=lambda v: node.set_config_value(config_key,v))(**kwargs)
     elif has_convis_attribute(var, 'config_key') and has_convis_attribute(var, 'config_default'):
         return O(var=var,node=node,model=model,resolution=getattr(model,'resolution',default_resolution),
                  get_config=get_config,
-                 value_from_config=lambda: node.get_config(config_key,get_convis_attribute(var,'config_default',get_convis_attribute(var, 'config_default'))),
-                 value_to_config=lambda v: node.set_config(config_key,v))(**kwargs)
-    return O(var=var,node=node,model=model,get_config=get_config,resolution=getattr(model,'resolution',default_resolution),
+                 get_config_value=get_config_value,
+                 value_from_config=lambda: node.get_config_value(config_key,get_convis_attribute(var,'config_default',get_convis_attribute(var, 'config_default'))),
+                 value_to_config=lambda v: node.set_config_value(config_key,v))(**kwargs)
+    return O(var=var,node=node,model=model,get_config_value=get_config_value,get_config=get_config,resolution=getattr(model,'resolution',default_resolution),
              value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(get_convis_attribute(var,'name'))+'\n')))(**kwargs)

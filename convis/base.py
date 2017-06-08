@@ -56,7 +56,7 @@ class GraphWrapper(object):
 
     """
     parent = None
-    config_dict = None
+    config_dict = {}
     node_type = 'Node'
     node_description = ''
     expects_config = False
@@ -85,19 +85,24 @@ class GraphWrapper(object):
             return self.model
         if self.parent is not None:
             return self.parent.get_model()
-    def get_config(self,key=None,default=None,type_cast=None):
-        if key is None:
-            return self.config_dict
+    def get_config(self):
+        return self.config_dict
+    def get_config_value(self,key=None,default=None,type_cast=None):
         if type_cast is not None:
-            return type_cast(self.get_config(key,default))
+            return type_cast(self.get_config_value(key,default))
         return self.config.get(key,default)
-    def set_config(self,key,v=None):
-        if v is None and hasattr(key,'get'):
+    def set_config(self,key):
+        if hasattr(key,'get'):
             send_dbg('set_config',str(getattr(self,'name',''))+' replaced config: '+str(key)+'',1)
-            self.config_dict = key
+            self.config_dict = dict(key)
+        elif type(key) is str:
+            self.name = key
+            self.config_dict['name'] = key
         else:
-            send_dbg('set_config',str(getattr(self,'name',''))+' set config: '+str(key)+': '+str(v),1)
-            self.config_dict[key] = v
+            raise Exception('Config supplied is not a dict and not a name!')
+    def set_config_value(self,key,v='__set_name__'):
+        send_dbg('set_config',str(getattr(self,'name',''))+' set config: '+str(key)+': '+str(v),1)
+        self.config_dict[key] = v
     def compute(self):
         self.f = theano.function([],self.graph)
         return self.f()
@@ -224,10 +229,11 @@ class GraphWrapper(object):
                                         model=getattr(self,'model',None),
                                         resolution= self.model.resolution if hasattr(self,'model') else variables.default_resolution,
                                         get_config=self.get_config,
-                                        value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
-                                        value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
+                                        get_config_value=self.get_config_value,
+                                        value_from_config=lambda: self.get_config_value(kwargs.get('config_key'),kwargs.get('config_default')),
+                                        value_to_config=lambda v: self.set_config_value(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
-        return shared_parameter(f,O()(node=self,model=getattr(self,'model',None),get_config=self.get_config),name=name,**kwargs)
+        return shared_parameter(f,O()(node=self,model=getattr(self,'model',None),get_config=self.get_config,get_config_value=self.get_config_value),name=name,**kwargs)
     def add_input(self,other,replace_inputs=do_replace_inputs,input=None):
         if input is None:
             if hasattr(self, 'default_input'):
@@ -291,7 +297,7 @@ class GraphWrapper(object):
 
 class Layer(GraphWrapper):
     """
-        N: The layer class
+        The `Layer` class
         ------------------
 
         A Layer is a wrapper around a theano graph that has to contain
@@ -316,16 +322,20 @@ class Layer(GraphWrapper):
     inputs = OrderedDict()
     expects_config = False
     def __init__(self,graph,name=None,m=None,parent=None,config=None,inputs=None,**kwargs):
-        if name is None:
-            name = str(uuid.uuid4()).replace('-','')
         self.m = m
         self.parent = parent
         self.node_type = 'Node'
         self.node_description = ''
         if config is not None:
             self.set_config(config)
-        if self.config is None and self.expects_config:
-            raise Exception('No config for node '+str(getattr(self,'name','??'))+'! Use .set_config({}) before calling super constructor!')
+        elif self.expects_config:
+            raise Exception('No config for node '+str(getattr(self,'name','??'))+'! Use .set_config(\{\}) before calling super constructor!')
+        if name is None:
+            if self.get_config_value('name', None) is None:
+                name = str(uuid.uuid4()).replace('-','')
+                self.set_config_value('name', name)
+            else:
+                name = self.get_config_value('name')
         if not hasattr(self,'default_input'):
             raise Exception('No input defined for node '+str(getattr(self,'name','??'))+'! Use .create_input(...) before calling super constructor!')
         super(N, self).__init__(graph,name=name,m=m,parent=parent)
@@ -371,9 +381,9 @@ class Layer(GraphWrapper):
             return self.inputs
         else:
             raise Exception('Argument not understood. Options are: an int (either 1 for a single input or >1 for more) or a list of names for the inputs.')
-    def get_config(self,key,default=None,type_cast=None):
+    def get_config_value(self,key,default=None,type_cast=None):
         if type_cast is not None:
-            return type_cast(self.get_config(key,default))
+            return type_cast(self.get_config_value(key,default))
         if not hasattr(self,'config'):
             return default
         return self.config.get(key,default)
@@ -384,10 +394,11 @@ class Layer(GraphWrapper):
                                         model=self.model,
                                         resolution=self.model.resolution,
                                         get_config=self.get_config,
-                                        value_from_config=lambda: self.get_config(kwargs.get('config_key'),kwargs.get('config_default')),
-                                        value_to_config=lambda v: self.set_config(kwargs.get('config_key'),v)),
+                                        get_config_value=self.get_config_value,
+                                        value_from_config=lambda: self.get_config_value(kwargs.get('config_key'),kwargs.get('config_default')),
+                                        value_to_config=lambda v: self.set_config_value(kwargs.get('config_key'),v)),
                                     name=name,**kwargs)
-        return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config),name=name,**kwargs)
+        return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config,get_config_value=self.get_config_value),name=name,**kwargs)
     def shape(self,input_shape):
         # unless this node does something special, the shape of the output should be identical to the input
         return input_shape

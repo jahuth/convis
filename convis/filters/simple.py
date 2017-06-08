@@ -14,6 +14,20 @@ from .. import variables
 from .. import numerical_filters
 
 
+class CustomLayer(Layer):        
+    def __init__(self,f,config={},name=None,model=None,inputs=None,dims=5,node_type = 'CustomLayer',node_description = lambda: ''):
+        """
+            This node implements 2d kernel filtering by convolution.
+        """
+        self.set_config(config)
+        self.model = model
+        output_variable = f(make_nd(self.create_input(),dims))
+        output_variable.name = 'output'
+        self.node_type = node_type
+        self.node_description = node_description
+        super(CustomLayer,self).__init__(output_variable,name=name,inputs=inputs)
+
+
 class G_2d_recursive_filter(Layer):        
     def __init__(self,config={},name=None,model=None,inputs=None):
         """
@@ -300,11 +314,11 @@ class Nonlinearity(Layer):
         self.name = name
         self.set_config(config)
         my_input = self.create_input()
-        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',1.0)),
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config_value('value-at-linear-threshold__Hz',1.0)),
                                           name="i_0_G")
-        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config_value('bipolar-linear-threshold',0.0)),
                                           name="v_0_G")
-        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',1.0)),
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config_value('bipolar-amplification__Hz',1.0)),
                                           name="lambda_G")
         self.N = GraphWrapper(as_variable(theano.tensor.switch(my_input < self._v_0_G, 
                                  as_variable(self._i_0_G/(1-self._lambda_G*(my_input-self._v_0_G)/self._i_0_G),name='N_0',html_name='N<sub>V&lt;v0</sub>'),
@@ -325,11 +339,11 @@ class Nonlinearity_5d(Layer):
         self.name = name
         self.set_config(config)
         my_input = self.create_input_5d()
-        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',1.0)),
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config_value('value-at-linear-threshold__Hz',1.0)),
                                           name="i_0_G")
-        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config_value('bipolar-linear-threshold',0.0)),
                                           name="v_0_G")
-        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',1.0)),
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config_value('bipolar-amplification__Hz',1.0)),
                                           name="lambda_G")
         self.N = GraphWrapper(as_variable(theano.tensor.switch(my_input < self._v_0_G, 
                                  as_variable(self._i_0_G/(1-self._lambda_G*(my_input-self._v_0_G)/self._i_0_G),name='N_0',html_name='N<sub>V&lt;v0</sub>'),
@@ -724,7 +738,7 @@ class FullConnection(Layer):
         self.model = model
         self.set_config(config)
         my_input = self.create_input()
-        self.connectivity = self.shared_parameter(lambda x: x.get_config('w',np.zeros((20,20,20,20))),
+        self.connectivity = self.shared_parameter(lambda x: x.get_config_value('w',np.zeros((20,20,20,20))),
                                           name="w")
         node_type = 'Full Connection Node'
         o = T.tensordot(my_input,self.connectivity.dimshuffle(('x',0,1,2,3)),axes=[(1,2),(1,2)])[:,0,:,:]

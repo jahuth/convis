@@ -56,22 +56,22 @@ class OPLLayerNode(Layer):
         self.name = self.config.get('name',name)
         self.input_variable = make_nd(self.create_input(),5)
         self._E_n_C = self.shared_parameter(
-            lambda x: exponential_filter_5d(tau=float(x.get_config('center-tau__sec',0.01,float)),
-                                            n=int(x.get_config('center-n__uint', 0, int)),
+            lambda x: exponential_filter_5d(tau=float(x.get_config_value('center-tau__sec',0.01,float)),
+                                            n=int(x.get_config_value('center-n__uint', 0, int)),
                                             resolution=x.resolution),
                         name='E_n_C',
                         doc="The n-fold cascaded exponential creates a low-pass characteristic. A filter can be created with `numeric_filters.exponential_filter_5d`")
         self._TwuTu_C = self.shared_parameter(
-            lambda x: exponential_highpass_filter_5d(tau = float(x.get_config('undershoot',{}).get('tau__sec',0.01)),
-                                                     relative_weight=float(x.get_config('undershoot',{}).get('relative-weight', 0.8)),
+            lambda x: exponential_highpass_filter_5d(tau = float(x.get_config_value('undershoot',{}).get('tau__sec',0.01)),
+                                                     relative_weight=float(x.get_config_value('undershoot',{}).get('relative-weight', 0.8)),
                                                      resolution=x.resolution),name='TwuTu_C')
         self._G_C = self.shared_parameter(
-            lambda x: gauss_filter_5d(float(x.get_config('center-sigma__deg',0.05)),float(x.get_config('center-sigma__deg',0.05)),
+            lambda x: gauss_filter_5d(float(x.get_config_value('center-sigma__deg',0.05)),float(x.get_config_value('center-sigma__deg',0.05)),
                                       resolution=x.resolution,even=False),name='G_C')
         self._E_S = self.shared_parameter(
-            lambda x: exponential_filter_5d(tau=float(x.get_config('surround-tau__sec',0.004)),resolution=x.resolution),name='E_S')
+            lambda x: exponential_filter_5d(tau=float(x.get_config_value('surround-tau__sec',0.004)),resolution=x.resolution),name='E_S')
         self._G_S = self.shared_parameter(
-            lambda x: gauss_filter_5d(float(x.get_config('surround-sigma__deg',0.15)),float(x.get_config('surround-sigma__deg',0.15)),
+            lambda x: gauss_filter_5d(float(x.get_config_value('surround-sigma__deg',0.15)),float(x.get_config_value('surround-sigma__deg',0.15)),
                                       resolution=x.resolution,even=False),name='G_S')
         self._lambda_OPL = self.shared_parameter(
                 lambda x: float(x.value_from_config()) / float(x.resolution.input_luminosity_range),
@@ -82,7 +82,7 @@ class OPLLayerNode(Layer):
                 name='lambda_OPL',
                 doc='Gain applied to the OPL signal.')
         self._w_OPL = self.shared_parameter(
-            lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
+            lambda x: x.get_config_value('opl-relative-weight',1.0,float),name='w_OPL')
 
         self._Reshape_C_S = self.shared_parameter(lambda x: fake_filter(get_convis_attribute(x.node._G_S,'update')(x).get_value(),
                                                                         get_convis_attribute(x.node._E_S,'update')(x).get_value()),name='Reshape_C_S',
@@ -145,7 +145,7 @@ class OPLAllRecursive(Layer):
                 name='lambda_OPL',
                 doc='Gain applied to the OPL signal.')
         self._w_OPL = self.shared_parameter(
-            lambda x: x.get_config('opl-relative-weight',1.0,float),name='w_OPL')
+            lambda x: x.get_config_value('opl-relative-weight',1.0,float),name='w_OPL')
         I_OPL = self._lambda_OPL * (self._L - self._w_OPL * self._L)
 
         as_out_state(T.set_subtensor(self._input_init[:,-(input_padded_in_time[:,-(padding[0]):,:,:,:].shape[1]):,:,:,:],
@@ -195,21 +195,21 @@ class OPLLayerLeakyHeatNode(Layer):
         self.name = self.config.get('name',name)
         self.input_variable = make_nd(self.create_input(),5)
         self._E_n_C = self.shared_parameter(
-            lambda x: exponential_filter_5d(tau=float(x.get_config('center-tau__sec',0.01)),
-                                            n=int(x.get_config('center-n__uint', 0)),
+            lambda x: exponential_filter_5d(tau=float(x.get_config_value('center-tau__sec',0.01)),
+                                            n=int(x.get_config_value('center-n__uint', 0)),
                                             resolution=x.resolution),name='E_n_C')
         self._TwuTu_C = self.shared_parameter(
-            lambda x: exponential_highpass_filter_5d(tau=float(x.get_config('undershoot',{}).get('tau__sec',0.1)),
-                                                     relative_weight=float(x.get_config('undershoot',{}).get('relative-weight', 0.1)),
+            lambda x: exponential_highpass_filter_5d(tau=float(x.get_config_value('undershoot',{}).get('tau__sec',0.1)),
+                                                     relative_weight=float(x.get_config_value('undershoot',{}).get('relative-weight', 0.1)),
                                                      resolution=x.resolution),name='TwuTu_C')
         self._G_C = self.shared_parameter(
-            lambda x: gauss_filter_5d(float(x.get_config('center-sigma__deg',0.05)),float(x.get_config('center-sigma__deg',0.05)),
+            lambda x: gauss_filter_5d(float(x.get_config_value('center-sigma__deg',0.05)),float(x.get_config_value('center-sigma__deg',0.05)),
                                       resolution=x.resolution,even=False),name='G_C')
         self._G_S = self.shared_parameter(
-            lambda x: gauss_filter_2d(float(x.get_config('surround-sigma__deg',0.15)),float(x.get_config('surround-sigma__deg',0.15)),
+            lambda x: gauss_filter_2d(float(x.get_config_value('surround-sigma__deg',0.15)),float(x.get_config_value('surround-sigma__deg',0.15)),
                                       resolution=x.resolution,even=False),name='G_S')
         #self._lambda_OPL = self.shared_parameter(
-        #    lambda x: x.get_config('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',255.0)),name='lambda_OPL')
+        #    lambda x: x.get_config_value('opl-amplification',10.0,float) / float(x.model.config.get('input-luminosity-range',255.0)),name='lambda_OPL')
         self._lambda_OPL = self.shared_parameter(
                 lambda x: float(x.value_from_config()) / float(self.model.config.get('retina.input-luminosity-range',255.0)),
                 save = lambda x: x.value_to_config(float(self.model.config.get('retina.input-luminosity-range',255.0)) * (float(x.var.get_value()))),
@@ -219,7 +219,7 @@ class OPLLayerLeakyHeatNode(Layer):
                 name='lambda_OPL',
                 doc='Gain applied to the OPL signal.')
         self._w_OPL = self.shared_parameter(
-                lambda x: x.get_config('opl-relative-weight',1.0,float),
+                lambda x: x.get_config_value('opl-relative-weight',1.0,float),
                 name='w_OPL',
                 doc="Weight applied to the surround signal.")
 
@@ -355,7 +355,7 @@ class BipolarLayerNode(Layer):
         self._inputNernst_inhibition = self.shared_parameter(lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
                                                     name="inputNernst_inhibition")
 
-        tau = self.shared_parameter(lambda x: x.resolution.seconds_to_steps(float(x.get_config('adaptation-tau__sec',0.00001))),
+        tau = self.shared_parameter(lambda x: x.resolution.seconds_to_steps(float(x.get_config_value('adaptation-tau__sec',0.00001))),
                            name = 'tau')
         steps = self.shared_parameter(lambda x: x.resolution.steps_to_seconds(1.0),name = 'step')
         a_0 = 1.0
@@ -368,7 +368,7 @@ class BipolarLayerNode(Layer):
         self._preceding_inhibition = as_state(T.dmatrix("preceding_inhibition"),
             init=lambda x: float(x.node.config.get('initial_value',0.5))*np.ones_like(x.input[0,:,:])) # initial condition for sequence
         self._inhibition_smoothing_kernel = self.shared_parameter(
-            lambda x: gauss_filter_2d(float(x.get_config('adaptation-sigma__deg',0.2)),float(x.get_config('adaptation-sigma__deg',0.2)),
+            lambda x: gauss_filter_2d(float(x.get_config_value('adaptation-sigma__deg',0.2)),float(x.get_config_value('adaptation-sigma__deg',0.2)),
                                       resolution=x.resolution,even=False),
             name='inhibition_smoothing_kernel')
                 #T.dmatrix(self.name+"_inhibition_smoothing_kernel") # initial condition for sequence
@@ -486,9 +486,9 @@ class GanglionInputLayerNode(Layer):
         self._V_bip = make_nd(self.create_input(),5)
         # TODO: state? what about previous episode? concatenate?
         #num_V_bip = input.reshape((1,input.shape[0],1,input.shape[1],input.shape[2]))
-        self._T_G = self.shared_parameter(lambda x: float(x.get_config('sign',1)) * 
-                                                        exponential_highpass_filter_5d(tau=float(x.get_config('transient-tau__sec',0.04)),
-                                                            relative_weight=float(x.get_config('transient-relative-weight',0.75)),
+        self._T_G = self.shared_parameter(lambda x: float(x.get_config_value('sign',1)) * 
+                                                        exponential_highpass_filter_5d(tau=float(x.get_config_value('transient-tau__sec',0.04)),
+                                                            relative_weight=float(x.get_config_value('transient-relative-weight',0.75)),
                                                             resolution=x.resolution),
                                      name = 'T_G')
         self._input_init = as_state(dtensor5('input_init'),
@@ -502,13 +502,13 @@ class GanglionInputLayerNode(Layer):
                                     self._V_bip_padded[:,-(length_of_filters):,:,:,:]), self._input_init)
 
         self._V_bip_E = as_variable(conv3d(self._V_bip_padded,self._T_G),'V_bip_E')
-        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config('value-at-linear-threshold__Hz',70.0)),
+        self._i_0_G = self.shared_parameter(lambda x: float(x.get_config_value('value-at-linear-threshold__Hz',70.0)),
                                           name="i_0_G")
-        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-linear-threshold',0.0)),
+        self._v_0_G = self.shared_parameter(lambda x: float(x.get_config_value('bipolar-linear-threshold',0.0)),
                                           name="v_0_G")
-        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config('bipolar-amplification__Hz',100.0)),
+        self._lambda_G = self.shared_parameter(lambda x: float(x.get_config_value('bipolar-amplification__Hz',100.0)),
                                           name="lambda_G")
-        self._G_gang = self.shared_parameter(lambda x: gauss_filter_5d(float(x.get_config('sigma-pool__deg',0.0)),float(x.get_config('sigma-pool__deg',0.0)),
+        self._G_gang = self.shared_parameter(lambda x: gauss_filter_5d(float(x.get_config_value('sigma-pool__deg',0.0)),float(x.get_config_value('sigma-pool__deg',0.0)),
                                                                        resolution=x.resolution,even=False),
                                         name = 'G_gang')
         self._N = GraphWrapper(as_variable(theano.tensor.switch(self._V_bip_E < self._v_0_G, 

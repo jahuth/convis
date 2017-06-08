@@ -288,7 +288,19 @@ def start_server():
                             jpg.save(self.wfile,'JPEG')
                             time.sleep(0.05)
                         except Exception as e:
-                            #print e
+                            img = np.zeros((50,50))
+                            for i in range(img.shape[0]):
+                                img[i,i] = 255.0
+                                img[i,-i] = 255.0
+                            jpg = Image.fromarray(img).convert('RGB')
+                            tmpFile = StringIO.StringIO()
+                            jpg.save(tmpFile,'JPEG')
+                            self.wfile.write("--jpgboundary")
+                            self.send_header('Content-type','image/jpeg')
+                            self.send_header('Content-length',str(tmpFile.len))
+                            self.end_headers()
+                            jpg.save(self.wfile,'JPEG')
+                            print e
                             break
                 else:
                     self.send_response(404)
