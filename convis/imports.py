@@ -1,4 +1,4 @@
-use_patched_theano = True # for now :/
+use_patched_theano = False # for now :/
 
 import numpy
 import numpy as np
