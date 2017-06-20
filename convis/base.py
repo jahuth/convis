@@ -86,8 +86,14 @@ class GraphWrapper(object):
         if self.parent is not None:
             return self.parent.get_model()
     def get_config(self):
+        global debug
+        if debug.do_debug:
+            print 'retrieving config dict'
         return self.config_dict
     def get_config_value(self,key=None,default=None,type_cast=None):
+        global debug
+        if debug.do_debug:
+            print 'retrieving',key,'as',self.config.get(key,default)
         if type_cast is not None:
             return type_cast(self.get_config_value(key,default))
         return self.config.get(key,default)
@@ -108,13 +114,19 @@ class GraphWrapper(object):
         return self.f()
     @property
     def config(self):
-        if self.config_dict is None:
-            if self.parent is not None:
-                return self.parent.config
-            if self.expects_config:
-                raise Exception('GraphWrapper '+str(getattr(self,'name','??'))+' has no configuration! But also no parent!')
-            return {}
-        return self.config_dict
+        c = {}
+        if self.parent is not None:
+            c.update(self.parent.config)
+        if self.config_dict is not None:
+            c.update(self.config_dict)
+        return c
+        #if self.config_dict is None:
+        #    if self.parent is not None:
+        #        return self.parent.config
+        #    if self.expects_config:
+        #        raise Exception('GraphWrapper '+str(getattr(self,'name','??'))+' has no configuration! But also no parent!')
+        #    return {}
+        #return self.config_dict
     def get_parents(self):
         p = []
         if self.parent is not None:
@@ -155,8 +167,8 @@ class GraphWrapper(object):
             else:
                 set_convis_attribute(v,'full_name', self.name+'.'+str(get_convis_attribute(v,'name','')))
                 set_convis_attribute(v,'path', [self, v])
-            global do_debug
-            if do_debug:
+            global debug
+            if debug.do_debug:
                 print 'labeled: ',get_convis_attribute(v,'path')
             if get_convis_attribute(v,'node',None) != None and get_convis_attribute(v,'node') != self:
                 if get_convis_attribute(v,'node').parent is None:
@@ -224,6 +236,8 @@ class GraphWrapper(object):
         if 'config_key' in kwargs.keys() and 'config_default' in kwargs.keys():
             if not callable(f):
                 raise Exception('Need to implement this!')
+            if not hasattr(self,'model'):
+                print "WARNGING: using resolution of a non model!"
             return shared_parameter(f,
                                     O()(node=self,
                                         model=getattr(self,'model',None),

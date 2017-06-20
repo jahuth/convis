@@ -99,8 +99,8 @@ class OPLLayerNode(Layer):
         Nx = self._G_C.shape[3]-1 + self._G_S.shape[3]-1
         Ny = self._G_C.shape[4]-1 + self._G_S.shape[4]-1
         self._L = as_variable(pad5(pad5(input_padded_in_time,Nx,3),Ny,4),'L')
-        self._C = GraphWrapper(as_variable(conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C),'C'),name='center',ignore=[self._L]).graph
-        self._S = GraphWrapper(as_variable(conv3d(conv3d(self._C,self._E_S),self._G_S),'S'),name='surround',ignore=[self._C]).graph
+        self._C = GraphWrapper(as_variable(conv3d(conv3d(conv3d(self._L,self._E_n_C),self._TwuTu_C),self._G_C),'C'),name='center',ignore=[self._L],parent=self).graph
+        self._S = GraphWrapper(as_variable(conv3d(conv3d(self._C,self._E_S),self._G_S),'S'),name='surround',ignore=[self._C],parent=self).graph
         I_OPL = as_variable(self._lambda_OPL * (conv3d(self._C,self._Reshape_C_S) - self._w_OPL * self._S),'I_OPL',html_name="I<sub>OPL</sub>",html_formula="I<sub>OPL</sub> = &lambda;*(C-w*S)")
 
         length_of_filters = self._E_n_C.shape[1]-1+self._TwuTu_C.shape[1]-1+self._Reshape_C_S.shape[1]-1 

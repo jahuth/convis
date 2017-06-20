@@ -32,13 +32,13 @@ def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
     kernel = exponential_filter_1d(tau=tau,n=n,normalize=normalize,resolution=resolution,amplification=amplification)
     return kernel.reshape((1,len(kernel),1,1,1))
 
-def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000):
+def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10):
     if resolution is None:
         resolution = default_resolution
     tau_in_steps = resolution.seconds_to_steps(tau)
     if n == 0:
         a = amplification/tau_in_steps
-        length = int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0
+        length = max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps)
         if length <= 1:
             return np.ones(1)
         t = np.linspace(1.0,length,length)
@@ -62,7 +62,8 @@ def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=Tr
     if resolution is None:
         return np.ones(1)
     tau_in_steps = resolution.seconds_to_steps(tau)
-    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=relative_weight)
+    # we amplify the kernel to enforce greater precision
+    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=100.0*relative_weight)/100.0
     return np.concatenate([[1], kernel],axis=0)
 
 def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):

@@ -338,7 +338,7 @@ class ResolutionInfo(object):
         if self._steps_per_second is None:
             return default_resolution._steps_per_second
         return self._steps_per_second
-    @pixel_per_degree.setter
+    @steps_per_second.setter
     def steps_per_second(self,v):
         v = float(v)
         self._steps_per_second = v
@@ -707,3 +707,7 @@ def create_context_O(var=None, **kwargs):
                  value_to_config=lambda v: node.set_config_value(config_key,v))(**kwargs)
     return O(var=var,node=node,model=model,get_config_value=get_config_value,get_config=get_config,resolution=getattr(model,'resolution',default_resolution),
              value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(get_convis_attribute(var,'name'))+'\n')))(**kwargs)
+
+
+def update(var,**kwargs):
+    return get_convis_attribute(var,'update')(create_context_O(var,**kwargs))
