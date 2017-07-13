@@ -424,6 +424,34 @@ class SelectPixelFilter(Layer):
         self.node_description = lambda: ''
 
 class SoftSelectFilter(Layer):        
+    """
+        A SoftSelect filter combines two inputs ('input_a' and 'input_b')
+        into one output by combining the values at each pixel using a
+        matrix `a`. A value of 1 in `a` will used the value from 'input_a'
+        while a value of 0 will use 'input_b' and values in between will
+        give a weighted sum.
+
+        Parameters:
+
+          a: the spatial map
+
+
+        Example of adding inputs after instanciation::
+
+          f1 = convis.simple_filters.SoftSelectFilter(config={'a': np.ones(input.shape[1:])})
+          f1.add_input(some_input,input='input_a')
+          f1.add_input(some_other_input,input='input_b')
+
+        Example of adding inputs in the constructor::
+
+          f1 = convis.simple_filters.SoftSelectFilter(
+                        config={'a': np.ones(input.shape[1:])},
+                        inputs={
+                            'input_a': retina1.ganglion_input_layers[0],
+                            'input_b': retina1.ganglion_input_layers[1]
+                        })
+
+    """
     def __init__(self,config={},name=None,model=None,inputs=None):
         """
             This gives the (spatial) maximum of the input for each time step.
