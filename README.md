@@ -79,7 +79,10 @@ To use the model, supply a numpy array to the `run` (for short input) or `run_in
 
 ```python
 inp = np.ones((100,20,20))
-output = retina.run_in_chunks(inp)
+output = retina.run(inp)
+
+inp = np.ones((10000,20,20))
+output = retina.run_in_chunks(inp,200)
 ```
 
 It will return an object containing all outputs of the model (the default for retina is two outputs: spikes of On and Off cells).
@@ -116,17 +119,17 @@ You can view them directly on github:
 
 
 ```python
-model = convis.M()
+model = convis.Model()
 A,B,C,D,E,F,G = convis.E('A"'),convis.E('B'),convis.E('C'),convis.E('D'),convis.E('E'),convis.E('F'),convis.E('G')
 convis.connect([A,B,[[C,D],[E,F],G])
 #or:
-B+=A
-C+=B
-D+=C
-E+=B
-F+=E
-G+=D
-G+=F
+B.add_input(A)
+C.add_input(B)
+D.add_input(C)
+E.add_input(B)
+F.add_input(E)
+G.add_input(D)
+G.add_input(F)
 model.outputs.append(G)
 ```
 
@@ -140,7 +143,7 @@ models `outputs`, eg. if its output is itself an output of the model.
 ```python
 import convis
 
-M = convis.M()
+M = convis.Model()
 E = convis.ConvolutionFilter1d({'size':10},'E',M) # 1d filter in time
 M.outputs.append(E.graph)
 
@@ -176,7 +179,7 @@ variables as belonging to this subgraph. This can be done hierarchically and eac
 variable tracks its depth in a `path` attribute, which gets longer each time it
 is wrapped in a subgraph.
 
-A node `N` is a `GraphWrapper` which also manages a the configuration of its
+A node `Layer` is a `GraphWrapper` which also manages a the configuration of its
 parameters.
 
 ### Variable types
@@ -224,7 +227,7 @@ and the new state is requested as an output.
 
 #### Inputs and Outputs
 
-Inputs and outputs work on the level of `N` nodes to connect subgraphs together.
+Inputs and outputs work on the level of `Layer` nodes to connect subgraphs together.
 They have no special attributes.
 
 #### Other Variables
@@ -234,7 +237,7 @@ These variables can be used for visualization or to add their value as an output
 Their only important attribute is their name and their html_name (for prettier typesetting).
 
 
-## How `M` Models and `N` Nodes compile a function
+## How `Model`s and `Layer`s compile a function
 
 In plain `theano`, a function can be created from a list of inputs and a desired
 output. If there is a tree<sup>*</sup> with all inputs as leaves and the ouput as root, the
@@ -244,7 +247,7 @@ the output if supplied with the matching number of numerical arguments.
 ```python
 %pylab inline
 import convis
-M = convis.M()
+M = convis.Model()
 E = convis.ConvolutionFilter1d({'kernel': 1.0/np.arange(1,10)},'E',M) # 1d filter in time
 M.outputs.append(E.graph)
 
@@ -259,7 +262,7 @@ to be computed only once.
 
 If the input is larger than the available memory on the device, the input has to
 be chunked up into smaller pieces.
-The `N` and `M` classes make this process easier by managing states, splitting
+The `Layer` and `Model` classes make this process easier by managing states, splitting
 input and combining outputs.
 
 ## Automatic Differentiation and Optimization
@@ -268,7 +271,7 @@ As an example, let's create a ground truth and try to find the parameter `tau`=0
 ```python
 import convis, theano
 import theano.tensor as T
-m = convis.M()
+m = convis.Model()
 E1 = convis.filters.simple.E_1d_recursive_filter({'tau__sec':0.00003},name="E1",model=m)
 m.outputs.append(E1.graph)
 m.create_function()
@@ -288,7 +291,7 @@ In three expressions, an optimization can be defined:
 
 ```python
 tau = 0.00001
-m2 = convis.M()
+m2 = convis.Model()
 E2 = convis.filters.simple.E_1d_recursive_filter(config={'tau__sec':tau},name="E2",model=m2)
 m2.outputs.append(E2.graph)
 error_term = (E2.graph.mean((1,2))-o_goal[0].mean((1,2)))**2
@@ -332,7 +335,7 @@ Or a momentum based approach:
 
 ```python
 tau = 0.00001
-m2 = convis.M()
+m2 = convis.Model()
 E2 = convis.filters.simple.E_1d_recursive_filter(config={'tau__sec':tau},name="E2",model=m2)
 m2.outputs.append(E2.graph)
 error_term = (E2.graph.mean((1,2))-o_goal[0].mean((1,2)))**2
