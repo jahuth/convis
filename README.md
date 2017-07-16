@@ -68,10 +68,33 @@ A description of all parameters for the retina model can be obtained directly fr
 an instantiated model. This description contains doc strings for each parameter.
 ```python
 import convis
-ret = convis.retina.Retina()
-convis.describe(ret.parameters)
+retina = convis.retina.Retina()
+convis.describe(retina.parameters)
 ```
+
+Here is a graph of the model:
 <a href="retina_graph.png"><img src="retina_graph.png" widht="200"/></a>
+
+To use the model, supply a numpy array to the `run` (for short input) or `run_in_chunks` function:
+
+```python
+inp = np.ones((100,20,20))
+output = retina.run_in_chunks(inp)
+```
+
+It will return an object containing all outputs of the model (the default for retina is two outputs: spikes of On and Off cells).
+
+```python
+convis.describe(output[0]) # will show information about this output
+```
+
+If instead of spikes, only the firing rate should be returned, the retina can be initialized without a spiking mechanism:
+
+```python
+retina_without_spikes = convis.retina.Retina(ganglion_spikes = False)
+```
+
+
 
 ## Examples
 
