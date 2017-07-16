@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.filters.simple &#8212; convis 0.1 documentation</title>
+    <title>convis.filters.simple &#8212; convis 0.3.0.3 documentation</title>
     <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1',
+        VERSION:     '0.3.0.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">convis 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">convis 0.3.0.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -53,7 +53,10 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">..theano_utils</span> <span class="k">import</span> <span class="n">conv3d</span><span class="p">,</span> <span class="n">conv2d</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
-<span class="kn">from</span> <span class="nn">exceptions</span> <span class="k">import</span> <span class="ne">NotImplementedError</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">exceptions</span> <span class="k">import</span> <span class="ne">NotImplementedError</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
 
 <span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">..theano_utils</span> <span class="k">import</span> <span class="n">make_nd</span><span class="p">,</span> <span class="n">dtensor5</span><span class="p">,</span> <span class="n">pad5</span><span class="p">,</span> <span class="n">pad5_txy</span><span class="p">,</span> <span class="n">pad3_txy</span>
@@ -471,7 +474,35 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">node_type</span> <span class="o">=</span> <span class="s1">&#39;Spatial Selection Filter&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_description</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
 
-<span class="k">class</span> <span class="nc">SoftSelectFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>        
+<div class="viewcode-block" id="SoftSelectFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.simple.SoftSelectFilter">[docs]</a><span class="k">class</span> <span class="nc">SoftSelectFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>        
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A SoftSelect filter combines two inputs (&#39;input_a&#39; and &#39;input_b&#39;)</span>
+<span class="sd">        into one output by combining the values at each pixel using a</span>
+<span class="sd">        matrix `a`. A value of 1 in `a` will used the value from &#39;input_a&#39;</span>
+<span class="sd">        while a value of 0 will use &#39;input_b&#39; and values in between will</span>
+<span class="sd">        give a weighted sum.</span>
+
+<span class="sd">        Parameters:</span>
+
+<span class="sd">          a: the spatial map</span>
+
+
+<span class="sd">        Example of adding inputs after instanciation::</span>
+
+<span class="sd">          f1 = convis.simple_filters.SoftSelectFilter(config={&#39;a&#39;: np.ones(input.shape[1:])})</span>
+<span class="sd">          f1.add_input(some_input,input=&#39;input_a&#39;)</span>
+<span class="sd">          f1.add_input(some_other_input,input=&#39;input_b&#39;)</span>
+
+<span class="sd">        Example of adding inputs in the constructor::</span>
+
+<span class="sd">          f1 = convis.simple_filters.SoftSelectFilter(</span>
+<span class="sd">                        config={&#39;a&#39;: np.ones(input.shape[1:])},</span>
+<span class="sd">                        inputs={</span>
+<span class="sd">                            &#39;input_a&#39;: retina1.ganglion_input_layers[0],</span>
+<span class="sd">                            &#39;input_b&#39;: retina1.ganglion_input_layers[1]</span>
+<span class="sd">                        })</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="p">{},</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            This gives the (spatial) maximum of the input for each time step.</span>
@@ -490,7 +521,7 @@
         <span class="c1">#raise NotImplementedError(&#39;Filter is not defined yet&#39;)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SoftSelectFilter</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">output_variable</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_type</span> <span class="o">=</span> <span class="s1">&#39;Soft Select Filter&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_description</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_description</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;&#39;</span></div>
 
 <span class="k">class</span> <span class="nc">RF_2d_kernel_filter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="p">{},</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -647,7 +678,6 @@
                                           <span class="n">outputs_info</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span><span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
                                           <span class="n">sequences</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">,</span><span class="n">_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">_b</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
                                           <span class="n">n_steps</span><span class="o">=</span><span class="n">_kx</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;forward_pass_&#39;</span><span class="o">+</span><span class="n">dim_str</span><span class="p">)</span>
-            <span class="nb">print</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span>
             <span class="n">result_backward</span><span class="p">,</span> <span class="n">updates_backward</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="n">smooth_function_backward</span><span class="p">,</span>
                                           <span class="n">outputs_info</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span><span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span><span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
                                           <span class="n">sequences</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">result_forward</span><span class="p">[</span><span class="mi">0</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">_a</span><span class="p">[</span><span class="mi">2</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">_a</span><span class="p">[</span><span class="mi">3</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">_b</span><span class="p">[</span><span class="mi">0</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">_b</span><span class="p">[</span><span class="mi">1</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
@@ -835,7 +865,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">convis 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">convis 0.3.0.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
