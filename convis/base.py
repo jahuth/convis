@@ -214,7 +214,7 @@ class GraphWrapper(object):
     def load_parameters_from_json(self,filename,strict=True):
         dat = io.load_dict_from_json(filename)
         if strict:
-            assert(set(dat.keys()) == set(self.parameters._all.__iterkeys__()), 'Entries do not match. Are you sure that the parameters are from the same subgraph?')
+            assert set(dat.keys()) == set(self.parameters._all.__iterkeys__()), 'Entries do not match. Are you sure that the parameters are from the same subgraph?'
         for p, param in self.parameters._all.__iteritems__():
             if p in dat.keys():
                 param.set_value(dat[p])
@@ -357,6 +357,9 @@ class Layer(GraphWrapper):
             if type(inputs) is list:
                 for inp in inputs:
                     self.add_input(inp)
+            elif type(inputs) is dict:
+                for inp in inputs.keys():
+                    self.add_input(inputs[inp],input=inp)
             else:
                 self.add_input(inputs)
     def create_input(self,n=1,name='input',sep='_'):
@@ -406,13 +409,18 @@ class Layer(GraphWrapper):
             return shared_parameter(f,
                                     O()(node=self,
                                         model=self.model,
-                                        resolution=self.model.resolution,
+                                        resolution=self.model.resolution if self.model is not None else variables.default_resolution,
                                         get_config=self.get_config,
                                         get_config_value=self.get_config_value,
                                         value_from_config=lambda: self.get_config_value(kwargs.get('config_key'),kwargs.get('config_default')),
                                         value_to_config=lambda v: self.set_config_value(kwargs.get('config_key'),v)),
-                                    name=name,**kwargs)
-        return shared_parameter(f,O()(node=self,model=self.model,get_config=self.get_config,get_config_value=self.get_config_value),name=name,**kwargs)
+                                        name=name,**kwargs)
+        return shared_parameter(f,O()(node=self,
+                                      model=self.model,
+                                      resolution=self.model.resolution if self.model is not None else variables.default_resolution,
+                                      get_config=self.get_config,
+                                      get_config_value=self.get_config_value),
+                                      name=name,**kwargs)
     def shape(self,input_shape):
         # unless this node does something special, the shape of the output should be identical to the input
         return input_shape
@@ -529,6 +537,9 @@ class Model(object):
     def parameters(self):
         return create_hierarchical_Ox(filter(is_shared_parameter,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
     @property
+    def inputs(self):
+        return create_hierarchical_Ox(filter(is_input,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
+    @property
     def states(self):
         return create_hierarchical_Ox(filter(is_state,theano_utils.get_named_variables_iter(self.outputs)),pi=len_parents(self))
     @property
@@ -539,7 +550,7 @@ class Model(object):
     def load_parameters_from_json(self,filename,strict=True):
         dat = io.load_dict_from_json(filename)
         if strict:
-            assert(set(dat.keys()) == set(self.parameters._all.__iterkeys__()), 'Entries do not match. Are you sure that the parameters are from the same model?')
+            assert set(dat.keys()) == set(self.parameters._all.__iterkeys__()), 'Entries do not match. Are you sure that the parameters are from the same model?'
         for p, param in self.parameters._all.__iteritems__():
             if p in dat.keys():
                 param.set_value(dat[p])
@@ -583,7 +594,7 @@ class Model(object):
             theano_utils._replace(get_convis_attribute(b,'node').output,b,a)
         else:
             raise Exception('This is not a node and not a variable with a node. Maybe the variable was not named?')
-    def create_function(self,updates=None,additional_inputs=[]):
+    def create_function(self,updates=None,additional_inputs=[],**kwargs):
         if self.debug is not True:
             # we disable warnings from theano gof because of the unresolved cache leak
             # TODO: fix the leak and re-enable warnings
@@ -601,9 +612,9 @@ class Model(object):
         for v in variables:
             if has_convis_attribute(v,'updates'):
                 if v in updates:
-                    updates[v] = T.sum([updates[v]]+[u for u in get_convis_attribute(v,'updates')],axis=0)
+                    updates[v] = T.mean([updates[v]]+[u for u in get_convis_attribute(v,'updates')],axis=0)
                 else:
-                    updates[v] = T.sum([u for u in get_convis_attribute(v,'updates')],axis=0)
+                    updates[v] = T.mean([u for u in get_convis_attribute(v,'updates')],axis=0)
         self.compute_input_order = unique_list(additional_inputs + filter(is_input,variables) + filter(is_input_parameter,variables))
         self.additional_inputs = additional_inputs
         self.compute_state_inits = []
@@ -630,7 +641,7 @@ class Model(object):
         self.compute = theano.function(inputs=self.compute_input_order, 
                                     outputs=self.compute_output_order, 
                                     updates=self.compute_updates_order,
-                                    givens=givens,on_unused_input='ignore')
+                                    givens=givens,on_unused_input='ignore',**kwargs)
         if self.debug is not True:
             import logging
             logging.getLogger("theano.gof.cmodule").setLevel(logging.WARNING) 
@@ -720,6 +731,8 @@ class Model(object):
         c.input = the_input
         c.model = self
         #c.config = self.config
+        assert type(additional_inputs) == list, 'additional_inputs must be a list!'
+        assert type(inputs) == dict, 'inputs must be a dictionary!'
         input_dict = {}
         input_dict.update(dict(zip(self.additional_inputs,additional_inputs)))
         for k,v in self.compute_input_dict.items():
@@ -804,41 +817,94 @@ class Model(object):
     def debugprint(self):
         theano.printing.debugprint(self.outputs)
     # methods for adding optimization methods easily
-    def add_target(self,variable,error_func= None,name='target',bcast=(True,True,True)):
+    def add_error(self,variable=None,error_func= None,always_create_new_target=False,error_name='error',new_input_name='target',bcast=(True,True,True)):
         """
-            Default error func: lambda x,y: T.mean((x-y)**2)
+            Creates a new input variable and an error term
+            to a previous output (by default the first).
+
+            By default, the input defined to be compared to 
+            a specific output will be reused for other 
+            error functions. If this is not intended and a new
+            input should be created, `always_create_new_target`
+            can be set to `True`.
+
+            Default error function is: lambda x,y: T.mean((x-y)**2)
         """
+        if type(variable) in [int]:
+            variable = self.outputs[variable]
+        if variable is None:
+            if len(self.outputs) == 0:
+                raise Exception('Target variable is not provided and the model has no outputs.')
+            variable = self.outputs[0]
+        var_obj = VariableAttributes(variable)
         if error_func is None:
             error_func = lambda x,y: T.mean((x-y)**2)
-        tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
-        v = as_input(tp(name),name=name)
-        er = error_func(variable,v)
-        set_convis_attribute(er,'name','output')
-        error_node = GraphWrapper(er,config={},model=self,name='ErrorNode',ignore=[variable])
-        e = self.outputs.append(error_node.output)
-        variable.__dict__['error_functions'] = variable.__dict__.get('error_functions',[])
-        variable.__dict__['error_functions'].append(e)
-        return v,er
-    def add_update(self,variable,error_term,opt_func = None):
+        target = None
+        if not always_create_new_target and has_convis_attribute(variable, 'targets'):
+            targets = get_convis_attribute(variable, 'targets')
+            target = targets[0]
+        if target is None:
+            tp = T.TensorType(variable.type.dtype, variable.type.broadcastable)
+            target = as_input(tp(new_input_name),name=new_input_name)
+            var_obj.targets = getattr(var_obj, 'targets', [])
+            var_obj.targets.append(target)
+        er = error_func(variable,target)
+        set_convis_attribute(er,'name',error_name)
+        self.outputs.append(er)
+        VariableAttributes(er).target = target
+        get_convis_attribute(target, 'targets')
+        var_obj.error_functions = getattr(var_obj, 'error_functions', [])
+        var_obj.error_functions.append({'target':target, 'error':er, 'error_func':error_func})
+        return target,er
+    add_target = add_error
+    def add_update(self,variable,update,name=None):
         """
             Default opt_func: lambda x,y: x-as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y
         """
+        if name is not None:
+            set_convis_attribute(update,'name',name)
+        var_obj = VariableAttributes(variable)
+        if not hasattr(var_obj, 'updates'):
+            var_obj.updates = []
+        var_obj.updates.append(opt_func(variable,g))
+    def add_gradient_descent(self,v_to_change,v_to_target=None,error_func=None,opt_func = None):
+        """
+            Adds updates to `v_to_change`, according to `opt_func`, a function
+            which takes two symbolic variables: the variable to change and the gradient
+            and has to return a symbolic variable of the new value.
+
+            The default `opt_func` is::
+
+                lambda x,y: x-as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y
+        """
+        g = self.gradient(v_to_change,v_to_target,error_func)
         if opt_func is None:
             opt_func = lambda x,y: x-as_parameter(theano.shared(0.001),name='learning_rate',initialized=True)*y
-        variable.__dict__['updates'] = variable.__dict__.get('error_functions',[])
-        g = T.grad(error_term,variable)
-        set_convis_attribute(g,'name','gradient')
-        self.outputs.append(opt_func(variable,g)) # instead we should also explore all updates :/
-        # but that means we have to explore all variables after we explored all varaibles etc.
-        variable.__dict__['updates'].append(opt_func(variable,g))
-    def add_gradient_descent(self,v_to_change,v_to_target=None,error_func=None,opt_func = None):
-        if v_to_target is None:
-            if len(self.outputs) > 1:
-                raise Exception('Target variable is not provided and the model has no outputs.')
-            v_to_target = self.graph
-        v,er = self.add_target(v_to_target,error_func=error_func)
-        self.add_update(v_to_change,er,opt_func=opt_func)
+        self.add_update(v_to_change,opt_func(v_to_change,g.gradient))
         return v
+    def gradient(self,variable,variable_to_target=None,error_func=None,name=None,error_reduction=T.mean,error=None):
+        """
+            Creates a gradient of `variable_to_target` (by default the first output)
+            with respect to `variable`.
+
+            See `add_target` about how a new input is created and the error function
+            is applied.
+        """
+        if error is not None:
+            er = error
+            v = VariableAttributes(er).target
+        else:
+            if variable_to_target is None:
+                if len(self.outputs) == 0:
+                    raise Exception('Target variable is not provided and the model has no outputs.')
+                variable_to_target = self.outputs[0]
+            v,er = self.add_target(variable_to_target,error_func=error_func)
+        g = T.grad(error_reduction(er),variable)
+        if name is not None:
+            set_convis_attribute(g,'name',name)
+        set_convis_attribute(g,'gradient_error',er)
+        set_convis_attribute(g,'gradient_input',v)
+        return O(target=v,error=er,gradient=g)
     def _repr_html_(self):
         s = ""
         s += "<h1>"+str(getattr(self,'name','(unnamed model)'))+"</h1>"

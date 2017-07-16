@@ -140,6 +140,58 @@ class ConfigParameter(object):
             self.var.set_value(self.type(default))
 
 
+
+class VariableAttributes(object):
+    __slots__ = ["_var","_info", "__weakref__","_convis_lookup"]
+    def __init__(self, obj):
+        """
+            A `convis.VariableAttributes` object wraps a theano variable
+            and provides direct access to its convis attributes
+            which are otherwise hidden.
+
+            Note: this object is not interchangeable with
+            theano variables. To access the theano variable use the `._var`
+            attribute.
+        """
+        object.__setattr__(self, "_var", obj)
+        #print obj, str(obj.owner)
+        object.__setattr__(self, "_convis_lookup", get_convis_key(obj))
+        object.__setattr__(self, "_info", get_convis_attribute_dict(obj))
+    def _as_TensorVariable(self):
+        return object.__getattribute__(self, "_var")
+    def __getattr__(self, name):
+        if name == 'name':
+            return getattr(object.__getattribute__(self, "_var"), name)
+        try:
+            return self._info[name]
+        except KeyError:
+            raise AttributeError
+    def get(self, name, default):
+        if name == 'name':
+            return getattr(object.__getattribute__(self, "_var"), name, default)
+        return self._info.get(name,default)
+    def __delattr__(self, name):
+        if name in object.__getattribute__(self, "_info").keys():
+            return object.__getattribute__(self, "_info").remove(name)
+    def __setattr__(self, name, value):
+        if name == 'name':
+            set_convis_attribute(object.__getattribute__(self, "_var"), name, value)
+        else:
+            self._info[name] = value
+    def __nonzero__(self):
+        return bool(object.__getattribute__(self, "_var"))
+    def __str__(self):
+        return 'Attributes of '+ str(object.__getattribute__(self, "_var"))
+    def __unicode__(self):
+        return 'Attributes of '+ unicode(object.__getattribute__(self, "_var"))
+    def __repr__(self):
+        return 'Attributes of '+ repr(object.__getattribute__(self, "_var"))
+    def __hash__(self):
+        return hash(object.__getattribute__(self, "_var"))
+    def __dir__(self):
+        my_convis_attributes = filter(lambda x: has_convis_attribute(self, x), convis_attributes)
+        return list(set(my_convis_attributes + object.__getattribute__(self, "_info").keys()))
+
 class Variable(object):
     __slots__ = ["_var","_info", "__weakref__","_convis_lookup"]
     def __init__(self, obj):
