@@ -1,10 +1,10 @@
 
-from base import GraphWrapper
+from .base import GraphWrapper
 from .imports import theano
 from .imports import T
 import numpy as np
-from misc_splines import create_splines_linspace, create_splines_logspace
-from variables import as_parameter, as_variable, default_resolution
+from .misc_splines import create_splines_linspace, create_splines_logspace
+from .variables import as_parameter, as_variable, default_resolution
 from . import theano_utils
 
 raise_on_mismatch = False

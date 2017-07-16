@@ -5,7 +5,10 @@ import numpy as np
 import matplotlib.pylab as plt
 from ..theano_utils import conv3d, conv2d
 import uuid
-from exceptions import NotImplementedError
+try:
+    from exceptions import NotImplementedError
+except ImportError:
+    pass
 
 from ..base import *
 from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad3_txy
@@ -627,7 +630,6 @@ class RecursiveLeakyHeatFilter(Layer):
                                           outputs_info = [L[0]/2.0, L[0]/2.0,L[0]],
                                           sequences = [L,_a[0],_a[1],_b[0],_b[1]],
                                           n_steps=_kx,name='forward_pass_'+dim_str)
-            print a,b
             result_backward, updates_backward = theano.scan(fn=smooth_function_backward,
                                           outputs_info = [L[-1],L[-1]/2.0,L[-1]/2.0,L[-1]],
                                           sequences = [L[::-1],result_forward[0][::-1],_a[2][::-1],_a[3][::-1],_b[0][::-1],_b[1][::-1]],

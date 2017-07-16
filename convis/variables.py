@@ -1,8 +1,7 @@
 import theano
-import new
-from debug import *
-from misc_utils import unique_list
-from o import O, Ox, save_name
+from .debug import *
+from .misc_utils import unique_list
+from .o import O, Ox, save_name
 from theano.tensor.var import TensorVariable
 from theano.tensor.sharedvar import ScalarSharedVariable
 import numpy as np

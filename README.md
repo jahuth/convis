@@ -23,6 +23,40 @@ plot(np.mean(out[1],(1,2)))
 
 An older version was published as <a href="https://github.com/jahuth/retina">the retina package</a>
 
+## Installation
+
+Installing `convis` and `theano` itself is not complicated. Both can be installed with `pip`, either from the PyPi releases, or directly from github.
+Requirements for the base installation are: Python 2.7 or Python 3.5, Numpy, SciPy and a BLAS library (either OpenBLAS (`openblas-dev` package) or MKL).
+
+```bash
+pip install convis
+```
+
+I recommend installing opencv, and jupyter notebook, if you do not already have it installed:
+
+```bash
+pip install convis notebook
+# eg. for ubuntu:
+sudo apt-get install python-opencv
+```
+
+This installation will run, but might lack GPU support.
+
+The GPU support in the current version of `theano` use `pygpuarray`. The recommandation of the `theano` team is to use `conda` (from anaconda or miniconda) to install `pygpuarray` and its binary dependencies ([see the pygpuarray website](http://deeplearning.net/software/libgpuarray/installation.html)).
+You will have to install a graphic card driver, CUDA, CudNN in appropriate versions before installing `pygpuarray`.
+
+```bash
+# optional: you can create a conda environment for certain versions of the dependencies:
+conda create -n convis_conda python=2.7
+source activate convis_conda
+conda install Theano notebook opencv
+pip install convis
+```
+
+A work around if you do not want to use `conda` is to either [compile `pygpuarray` yourself](http://deeplearning.net/software/libgpuarray/installation.html) or to use older `theano` versions (eg. `Theano==0.7`).
+
+
+
 ## Introduction
 
 `convis` provides a retina model which is identical to `VirtualRetina` and tools

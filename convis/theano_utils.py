@@ -1,3 +1,4 @@
+from __future__ import print_function
 import theano
 import theano.tensor as T
 
@@ -29,9 +30,12 @@ import numpy as np
 import matplotlib.pylab as plt
 import uuid
 from . import retina_base
-from misc_utils import unique_list, suppress
-from exceptions import NotImplementedError
-from variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, Variable, is_var
+from .misc_utils import unique_list, suppress
+try:
+    from exceptions import NotImplementedError
+except ImportError:
+    pass
+from .variables import get_convis_attribute, has_convis_attribute, set_convis_attribute, Variable, is_var
 
 
 dtensor5 = T.TensorType('float64', (False,)*5)
@@ -232,7 +236,7 @@ def replace(apply_node,old,new,depth=None):
 def _replace(apply_node,old,new,depth=300):
     """ replaces one variable in a graph with another one """
     if depth == 0:
-        print "Reached max depth!"
+        print("Reached max depth!")
         return
     if apply_node is None or not hasattr(apply_node,'owner'):
         return
@@ -241,10 +245,10 @@ def _replace(apply_node,old,new,depth=300):
     inputs = apply_node.owner.inputs
     for i in inputs:
         if i == old:
-            print apply_node.owner.inputs
-            print ">>> changing ",old,"to",new
+            print(apply_node.owner.inputs)
+            print(">>> changing ",old,"to",new)
             apply_node.owner.inputs = map(lambda x:new if x==old else x,inputs)
-            print apply_node.owner.inputs
+            print(apply_node.owner.inputs)
         else:
             _replace(i,old,new,depth-1)
     return

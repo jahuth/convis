@@ -7,8 +7,8 @@
 from types import ModuleType, FunctionType
 import re
 import numpy as np
-from o import save_name
-from variables import get_convis_attribute, has_convis_attribute, full_path
+from .o import save_name
+from .variables import get_convis_attribute, has_convis_attribute, full_path
 import inspect
 
 plotting_possible = False

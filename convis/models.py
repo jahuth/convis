@@ -2,7 +2,7 @@ from .base import Model
 from . import filters
 from .filters.simple import K_3d_kernel_filter, K_5d_kernel_filter, Nonlinearity, Nonlinearity_5d, Delay
 import numpy as np
-from variables import as_parameter, as_variable
+from .variables import as_parameter, as_variable
 
 class LN3d(Model):
     def __init__(self,config={},**kwargs):

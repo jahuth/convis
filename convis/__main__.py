@@ -1,3 +1,4 @@
+from __future__ import print_function
 import convis
 import sys
 import time
@@ -21,7 +22,7 @@ namespace['tmp_output'] = convis.streams.SequenceStream()
 def process_argument(arg,i,argv):
     global namespace
     if arg in ['help','--help','-h']:
-        print """
+        print("""
 Convis command line tool
 
     python -m convis.__main__ script.py run
@@ -36,7 +37,7 @@ Create a model from a json file and subsequently start a runner.
 
 Load an inr file and display it as an animation (slowed down by a factor of x10)
 
-"""
+""")
     if arg.endswith('.py') and not arg.endswith('__main__.py'):
         l = {}
         execfile(arg, {}, namespace)
@@ -97,7 +98,7 @@ Load an inr file and display it as an animation (slowed down by a factor of x10)
                 if key_press[0] == 'q':
                     break
             r.stop()
-            print 'Updating header of inr file...'
+            print('Updating header of inr file...')
             time.sleep(1.0)
     if arg == 'console' or arg == 'ipython':
         try:
@@ -132,6 +133,6 @@ for i,a in enumerate(sys.argv):
     process_argument(a,i=i,argv=sys.argv)
 
 convis.interactive_server.closing_down = True
-print '=='*10
-print namespace.get("model",None)
-print '=='*10
+print('=='*10)
+print(namespace.get("model",None))
+print('=='*10)

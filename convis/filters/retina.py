@@ -5,7 +5,10 @@ import numpy as np
 import matplotlib.pylab as plt
 from ..theano_utils import conv3d, conv2d
 import uuid
-from exceptions import NotImplementedError
+try:
+    from exceptions import NotImplementedError
+except ImportError:
+    pass
 
 from ..base import *
 from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad2_xy
