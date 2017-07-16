@@ -1,33 +1,32 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>convis &mdash; convis 0.1 documentation</title>
-    
+    <title>convis &#8212; convis 0.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="convis 0.1 documentation" href="index.html" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Build your own Model" href="buildyourown.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +39,7 @@
         <li class="right" >
           <a href="buildyourown.html" title="Build your own Model"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -80,7 +79,7 @@ variable, the same as if it was applied to the graph within the
 
 <dl class="attribute">
 <dt id="convis.base.GraphWrapper.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'label_variables': &lt;function label_variables at 0x2b1db0e128c0&gt;, '__dict__': &lt;attribute '__dict__' of 'GraphWrapper' objects&gt;, 'variables': &lt;property object at 0x2b1db0e372b8&gt;, 'shared_parameter': &lt;function shared_parameter at 0x2b1daeca68c0&gt;, 'replace': &lt;function replace at 0x2b1daeca6938&gt;, 'states': &lt;property object at 0x2b1db0e37260&gt;, 'filter_variables': &lt;function filter_variables at 0x2b1dad03f578&gt;, 'shape': &lt;property object at 0x2b1db0e1b1b0&gt;, '__rsub__': &lt;function __rsub__ at 0x2b1daeca6398&gt;, '__rdiv__': &lt;function __rdiv__ at 0x2b1daeca66e0&gt;, '__rmul__': &lt;function __rmul__ at 0x2b1daeca6aa0&gt;, '__weakref__': &lt;attribute '__weakref__' of 'GraphWrapper' objects&gt;, '__init__': &lt;function __init__ at 0x2b1daec9de60&gt;, 'add_input': &lt;function add_input at 0x2b1daeca6b90&gt;, 'wrap_scans': &lt;function wrap_scans at 0x2b1db0e12848&gt;, 'parameters': &lt;property object at 0x2b1db0e1b260&gt;, 'reshape': &lt;property object at 0x2b1db0e1b158&gt;, 'config_dict': None, 'params': &lt;property object at 0x2b1db0e1f3c0&gt;, '_as_TensorVariable': &lt;function _as_TensorVariable at 0x2b1dad03f500&gt;, 'config': &lt;property object at 0x2b1daec69aa0&gt;, '__doc__': '\n        `GraphWrapper` wraps a theano graph and provides\n        labeling to the named variables within.\n\n        The graph within the `GraphWrapper` is accessible through\n        the `.graph` attribute.\n        \n        If the graph has no inputs (only shared variables),\n        `.compute()` compiles the graph and gives its value.\n\n        `.add_input(var,input=i)` can be used to add `var` to an input\n        variable `i`. This will either add `var` to the input `i` if it is\n        a sum, or replace it with `var`. `i` can be the input variable \n        itself or its name or `None`. If `input=None`, the `default_input`\n        attribute of the `GraphWrapper` will be used.\n\n        A `GraphWrapper` (and also `N` layer objects) will try to behave \n        similar to a theano variable in many contexts.\n        Mathematical operations, such as `+`, `-`, etc. create a new theano\n        variable, the same as if it was applied to the graph within the\n        `GraphWrapper`.\n\n    ', 'load_parameters_from_json': &lt;function load_parameters_from_json at 0x2b1daeca6410&gt;, '__neg__': &lt;function __neg__ at 0x2b1daeca6758&gt;, 'expects_config': False, 'parent': None, 'node_description': '', 'debugprint': &lt;function debugprint at 0x2b1daeca6b18&gt;, 'get_config': &lt;function get_config at 0x2b1daec9ded8&gt;, 'save_parameters_to_json': &lt;function save_parameters_to_json at 0x2b1daeca69b0&gt;, '__add__': &lt;function __add__ at 0x2b1daeca6050&gt;, 'output': &lt;property object at 0x2b1db0e1b100&gt;, '__radd__': &lt;function __radd__ at 0x2b1daeca67d0&gt;, '__repr__': &lt;function __repr__ at 0x2b1daeca6500&gt;, 'compute': &lt;function compute at 0x2b1db0e20578&gt;, 'node_type': 'Node', '__iadd__': &lt;function __iadd__ at 0x2b1daeca6230&gt;, 'set_config': &lt;function set_config at 0x2b1daec9dde8&gt;, 'get_parents': &lt;function get_parents at 0x2b1db0e127d0&gt;, '__div__': &lt;function __div__ at 0x2b1daeca6a28&gt;, 'get_model': &lt;function get_model at 0x2b1daec9df50&gt;, '__mul__': &lt;function __mul__ at 0x2b1daeca6c08&gt;, '__floordiv__': &lt;function __floordiv__ at 0x2b1daeca6320&gt;, '__sub__': &lt;function __sub__ at 0x2b1daeca60c8&gt;})</em><a class="headerlink" href="#convis.base.GraphWrapper.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'label_variables': &lt;function label_variables&gt;, '__dict__': &lt;attribute '__dict__' of 'GraphWrapper' objects&gt;, 'variables': &lt;property object&gt;, 'shared_parameter': &lt;function shared_parameter&gt;, 'replace': &lt;function replace&gt;, 'states': &lt;property object&gt;, 'filter_variables': &lt;function filter_variables&gt;, 'shape': &lt;property object&gt;, '__rsub__': &lt;function __rsub__&gt;, '__rdiv__': &lt;function __rdiv__&gt;, '__rmul__': &lt;function __rmul__&gt;, '__weakref__': &lt;attribute '__weakref__' of 'GraphWrapper' objects&gt;, '__init__': &lt;function __init__&gt;, 'add_input': &lt;function add_input&gt;, 'wrap_scans': &lt;function wrap_scans&gt;, 'parameters': &lt;property object&gt;, 'reshape': &lt;property object&gt;, 'config_dict': {}, 'set_config_value': &lt;function set_config_value&gt;, 'params': &lt;property object&gt;, '_as_TensorVariable': &lt;function _as_TensorVariable&gt;, 'config': &lt;property object&gt;, '__doc__': '\n        `GraphWrapper` wraps a theano graph and provides\n        labeling to the named variables within.\n\n        The graph within the `GraphWrapper` is accessible through\n        the `.graph` attribute.\n        \n        If the graph has no inputs (only shared variables),\n        `.compute()` compiles the graph and gives its value.\n\n        `.add_input(var,input=i)` can be used to add `var` to an input\n        variable `i`. This will either add `var` to the input `i` if it is\n        a sum, or replace it with `var`. `i` can be the input variable \n        itself or its name or `None`. If `input=None`, the `default_input`\n        attribute of the `GraphWrapper` will be used.\n\n        A `GraphWrapper` (and also `N` layer objects) will try to behave \n        similar to a theano variable in many contexts.\n        Mathematical operations, such as `+`, `-`, etc. create a new theano\n        variable, the same as if it was applied to the graph within the\n        `GraphWrapper`.\n\n    ', 'load_parameters_from_json': &lt;function load_parameters_from_json&gt;, '__neg__': &lt;function __neg__&gt;, 'expects_config': False, 'parent': None, 'node_description': '', 'debugprint': &lt;function debugprint&gt;, 'get_config': &lt;function get_config&gt;, 'save_parameters_to_json': &lt;function save_parameters_to_json&gt;, '__add__': &lt;function __add__&gt;, 'output': &lt;property object&gt;, '__radd__': &lt;function __radd__&gt;, '__repr__': &lt;function __repr__&gt;, 'compute': &lt;function compute&gt;, 'get_config_value': &lt;function get_config_value&gt;, 'node_type': 'Node', '__iadd__': &lt;function __iadd__&gt;, 'set_config': &lt;function set_config&gt;, 'get_parents': &lt;function get_parents&gt;, '__div__': &lt;function __div__&gt;, 'get_model': &lt;function get_model&gt;, '__mul__': &lt;function __mul__&gt;, '__floordiv__': &lt;function __floordiv__&gt;, '__sub__': &lt;function __sub__&gt;})</em><a class="headerlink" href="#convis.base.GraphWrapper.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -179,7 +178,7 @@ We simply act as if we are the annotated graph that is stored inside.</p>
 
 <dl class="attribute">
 <dt id="convis.base.GraphWrapper.config_dict">
-<code class="descname">config_dict</code><em class="property"> = None</em><a class="headerlink" href="#convis.base.GraphWrapper.config_dict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">config_dict</code><em class="property"> = {}</em><a class="headerlink" href="#convis.base.GraphWrapper.config_dict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -199,7 +198,12 @@ We simply act as if we are the annotated graph that is stored inside.</p>
 
 <dl class="method">
 <dt id="convis.base.GraphWrapper.get_config">
-<code class="descname">get_config</code><span class="sig-paren">(</span><em>key=None</em>, <em>default=None</em>, <em>type_cast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_config" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.GraphWrapper.get_config_value">
+<code class="descname">get_config_value</code><span class="sig-paren">(</span><em>key=None</em>, <em>default=None</em>, <em>type_cast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_config_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_config_value" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -269,7 +273,12 @@ We simply act as if we are the annotated graph that is stored inside.</p>
 
 <dl class="method">
 <dt id="convis.base.GraphWrapper.set_config">
-<code class="descname">set_config</code><span class="sig-paren">(</span><em>key</em>, <em>v=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.set_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.set_config" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_config</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.set_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.set_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.GraphWrapper.set_config_value">
+<code class="descname">set_config_value</code><span class="sig-paren">(</span><em>key</em>, <em>v='__set_name__'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.set_config_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.set_config_value" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -306,12 +315,12 @@ We simply act as if we are the annotated graph that is stored inside.</p>
 a input (3d or 5d) and keeps its configuration.</p>
 <p>A simpler wrapper is <cite>GraphWrapper</cite>.</p>
 <p>Minimal Usage:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">A_New_Layer</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="p">{},</span><span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">A_New_Layer</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="p">{},</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="n">my_input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_input</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ANewLayer</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">my_input</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ANewLayer</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">my_input</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -340,8 +349,8 @@ a input (3d or 5d) and keeps its configuration.</p>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.get_config">
-<code class="descname">get_config</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em>, <em>type_cast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.get_config" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.get_config_value">
+<code class="descname">get_config_value</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em>, <em>type_cast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.get_config_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.get_config_value" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -382,7 +391,7 @@ a input (3d or 5d) and keeps its configuration.</p>
 <em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>size=(10</em>, <em>10)</em>, <em>pixel_per_degree=10.0</em>, <em>steps_per_second=1000.0</em>, <em>filter_epsilon=0.01</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a model that can compute a set of outputs.</p>
 <p>Minimal Usage:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">some_theano_variable_or_convis_layer</span><span class="p">)</span>
 <span class="n">some_output</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">)</span>
 </pre></div>
@@ -394,7 +403,7 @@ of parameters use <cite>create_function</cite>.</p>
 <p>Long input should be supplied to <cite>run_in_chunks</cite> instead of <cite>run</cite>.</p>
 <dl class="attribute">
 <dt id="convis.base.Model.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'pixel_to_degree': &lt;function pixel_to_degree at 0x2b1db0e368c0&gt;, '__module__': 'convis.base', 'clear_states': &lt;function clear_states at 0x2b1db0e36b90&gt;, 'variables': &lt;property object at 0x2b1db0e37470&gt;, 'draw_simple_diagram': &lt;function draw_simple_diagram at 0x2b1db0e36de8&gt;, 'states': &lt;property object at 0x2b1db0e37418&gt;, 'save_parameters_to_json': &lt;function save_parameters_to_json at 0x2b1db0e36758&gt;, 'run_in_chuncks': &lt;function run_in_chuncks at 0x2b1db0e36cf8&gt;, '__dict__': &lt;attribute '__dict__' of 'Model' objects&gt;, 'add_output': &lt;function add_output at 0x2b1db0e36a28&gt;, '_repr_html_': &lt;function _repr_html_ at 0x2b1db0e3b0c8&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Model' objects&gt;, '__init__': &lt;function __init__ at 0x2b1db0e36578&gt;, 'debugprint': &lt;function debugprint at 0x2b1db0e36e60&gt;, 'add_target': &lt;function add_target at 0x2b1db0e36ed8&gt;, 'parameters': &lt;property object at 0x2b1db0e373c0&gt;, 'steps_to_seconds': &lt;function steps_to_seconds at 0x2b1db0e369b0&gt;, 'reset_parameters': &lt;function reset_parameters at 0x2b1db0e36c08&gt;, 'add_update': &lt;function add_update at 0x2b1db0e36f50&gt;, 'run_in_chunks': &lt;function run_in_chunks at 0x2b1db0e36c80&gt;, 'run': &lt;function run at 0x2b1db0e36d70&gt;, 'degree_to_pixel': &lt;function degree_to_pixel at 0x2b1db0e36848&gt;, 'add_gradient_descent': &lt;function add_gradient_descent at 0x2b1db0e3b050&gt;, 'create_function': &lt;function create_function at 0x2b1db0e36b18&gt;, 'in_out': &lt;function in_out at 0x2b1db0e36aa0&gt;, '__doc__': '\n        M: The model class\n        ------------------\n\n        Creates a model that can compute a set of outputs.\n\n        Minimal Usage::\n\n            m = Model()\n            m.add_output(some_theano_variable_or_convis_layer)\n            some_output = m.run(some_input)\n\n        When calling `run` the first time, the graph attached to \n        `some_theano_variable_or_convis_layer` will be compiled.\n        To recompile the function or compile it with a certain order\n        of parameters use `create_function`.\n\n        Long input should be supplied to `run_in_chunks` instead of `run`.\n\n    ', 'load_parameters_from_json': &lt;function load_parameters_from_json at 0x2b1db0e367d0&gt;, 'seconds_to_steps': &lt;function seconds_to_steps at 0x2b1db0e36938&gt;})</em><a class="headerlink" href="#convis.base.Model.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'pixel_to_degree': &lt;function pixel_to_degree&gt;, '__module__': 'convis.base', 'clear_states': &lt;function clear_states&gt;, 'variables': &lt;property object&gt;, 'draw_simple_diagram': &lt;function draw_simple_diagram&gt;, 'states': &lt;property object&gt;, 'save_parameters_to_json': &lt;function save_parameters_to_json&gt;, 'run_in_chuncks': &lt;function run_in_chuncks&gt;, '__dict__': &lt;attribute '__dict__' of 'Model' objects&gt;, 'add_output': &lt;function add_output&gt;, '_repr_html_': &lt;function _repr_html_&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Model' objects&gt;, '__init__': &lt;function __init__&gt;, 'debugprint': &lt;function debugprint&gt;, 'add_target': &lt;function add_target&gt;, 'parameters': &lt;property object&gt;, 'steps_to_seconds': &lt;function steps_to_seconds&gt;, 'reset_parameters': &lt;function reset_parameters&gt;, 'add_update': &lt;function add_update&gt;, 'run_in_chunks': &lt;function run_in_chunks&gt;, 'run': &lt;function run&gt;, 'degree_to_pixel': &lt;function degree_to_pixel&gt;, 'add_gradient_descent': &lt;function add_gradient_descent&gt;, 'create_function': &lt;function create_function&gt;, 'in_out': &lt;function in_out&gt;, '__doc__': '\n        M: The model class\n        ------------------\n\n        Creates a model that can compute a set of outputs.\n\n        Minimal Usage::\n\n            m = Model()\n            m.add_output(some_theano_variable_or_convis_layer)\n            some_output = m.run(some_input)\n\n        When calling `run` the first time, the graph attached to \n        `some_theano_variable_or_convis_layer` will be compiled.\n        To recompile the function or compile it with a certain order\n        of parameters use `create_function`.\n\n        Long input should be supplied to `run_in_chunks` instead of `run`.\n\n    ', 'load_parameters_from_json': &lt;function load_parameters_from_json&gt;, 'seconds_to_steps': &lt;function seconds_to_steps&gt;})</em><a class="headerlink" href="#convis.base.Model.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -437,7 +446,7 @@ of parameters use <cite>create_function</cite>.</p>
 <dl class="method">
 <dt id="convis.base.Model.add_update">
 <code class="descname">add_update</code><span class="sig-paren">(</span><em>variable</em>, <em>error_term</em>, <em>opt_func=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.add_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.add_update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Default opt_func: lambda x,y: x-as_parameter(theano.shared(0.001),name=&#8217;learning_rate&#8217;,initialized=True)*y</p>
+<dd><p>Default opt_func: lambda x,y: x-as_parameter(theano.shared(0.001),name=’learning_rate’,initialized=True)*y</p>
 </dd></dl>
 
 <dl class="method">
@@ -467,12 +476,12 @@ of parameters use <cite>create_function</cite>.</p>
 <p>Note: This diagram only shows connections that were created between 
 <cite>N</cite> nodes by <cite>add_input</cite> (or <cite>+=</cite>).</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">draw_simple_diagram</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="s1">&#39; - &#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">draw_simple_diagram</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="s1">&#39; - &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>input - OPL - Bipolar - GanglionInputLayer_Parvocellular_On - GanglionSpikes__Parvocellular_On - output
-                      - GanglionInputLayer_Parvocellular_Off - GanglionSpikes__Parvocellular_Off - output
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-</span> <span class="n">OPL</span> <span class="o">-</span> <span class="n">Bipolar</span> <span class="o">-</span> <span class="n">GanglionInputLayer_Parvocellular_On</span> <span class="o">-</span> <span class="n">GanglionSpikes__Parvocellular_On</span> <span class="o">-</span> <span class="n">output</span>
+                      <span class="o">-</span> <span class="n">GanglionInputLayer_Parvocellular_Off</span> <span class="o">-</span> <span class="n">GanglionSpikes__Parvocellular_Off</span> <span class="o">-</span> <span class="n">output</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -590,7 +599,7 @@ complete time series has to be supplied for all inputs.</p>
 <em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Output</code><span class="sig-paren">(</span><em>outs</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="convis.base.Output.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '__getitem__': &lt;function __getitem__ at 0x2b1db0e36500&gt;, '__iter__': &lt;function __iter__ at 0x2b1db0e36488&gt;, '__len__': &lt;function __len__ at 0x2b1db0e36410&gt;, '__dict__': &lt;attribute '__dict__' of 'Output' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Output' objects&gt;, '__doc__': None, '__init__': &lt;function __init__ at 0x2b1db0e06d70&gt;})</em><a class="headerlink" href="#convis.base.Output.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '__getitem__': &lt;function __getitem__&gt;, '__iter__': &lt;function __iter__&gt;, '__len__': &lt;function __len__&gt;, '__dict__': &lt;attribute '__dict__' of 'Output' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Output' objects&gt;, '__doc__': None, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.Output.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -670,7 +679,7 @@ A -&gt; B -&gt; E -&gt; F -&gt; G</div></blockquote>
 <p>The configuration accepts one parameter:</p>
 <blockquote>
 <div><ul class="simple">
-<li>&#8216;tau__sec&#8217;: the time constant (in seconds relative to the model)</li>
+<li>‘tau__sec’: the time constant (in seconds relative to the model)</li>
 </ul>
 </div></blockquote>
 </dd></dl>
@@ -719,7 +728,7 @@ or supersampling.</p>
 <p>The configuration accepts one parameter:</p>
 <blockquote>
 <div><ul class="simple">
-<li>&#8216;tau__sec&#8217;: the time constant (in seconds relative to the model)</li>
+<li>‘tau__sec’: the time constant (in seconds relative to the model)</li>
 </ul>
 </div></blockquote>
 </dd></dl>
@@ -766,21 +775,18 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/docs.txt"
+      <li><a href="_sources/docs.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -799,12 +805,12 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
         <li class="right" >
           <a href="buildyourown.html" title="Build your own Model"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

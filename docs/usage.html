@@ -1,34 +1,33 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Usage &mdash; convis 0.1 documentation</title>
-    
+    <title>Usage &#8212; convis 0.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="convis 0.1 documentation" href="index.html" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Examples" href="examples.html" />
     <link rel="prev" title="Welcome to convis’s documentation!" href="index.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -44,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to convis’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -76,35 +75,35 @@ This is different for input parameters (see below for the difference between the
 different parameters, they act as attributes such that Tab completion (eg. in an ipython console
 or a ipython/jupyter notebook) gives you a list of all names.</p>
 <p>By default this list is categorized by layers (and sub-layers):</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>In[1]: retina = convis.retina.Retina()
-In[2]: retina.parameters.&lt;press tab&gt;
-            retina.parameters.Bipolar
-            retina.parameters.GanglionInputLayer_Parvocellular_Off
-            retina.parameters.GanglionInputLayer_Parvocellular_On
-            retina.parameters.GanglionSpikes__Parvocellular_Off
-            retina.parameters.GanglionSpikes__Parvocellular_On
-            retina.parameters.OPL
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Bipolar</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionInputLayer_Parvocellular_Off</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionInputLayer_Parvocellular_On</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionSpikes__Parvocellular_Off</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionSpikes__Parvocellular_On</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span>
 
-In[3]: retina.parameters.OPL.&lt;press tab&gt;
-            retina.parameters.OPL.center
-            retina.parameters.OPL.surround
-            retina.parameters.OPL.lambda_OPL
-            retina.parameters.OPL.w_OPL
-            retina.parameters.OPL.Reshape_C_S
+<span class="n">In</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">surround</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">lambda_OPL</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">w_OPL</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">Reshape_C_S</span>
 
-In[4]: retina.parameters.OPL.center.&lt;press tab&gt;
-            retina.parameters.OPL.center.E_n_C
-            retina.parameters.OPL.center.G_C
-            retina.parameters.OPL.center.Twu_Tu_C
+<span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">G_C</span>
+            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">Twu_Tu_C</span>
 </pre></div>
 </div>
 <p>To see all parameters in a flat list instead of the nested structure, use the special attribute <cite>_all</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>In[5]: retina.parameters._all.&lt;press tab&gt;
-            # a very long list of all parameters
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">_all</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
+            <span class="c1"># a very long list of all parameters</span>
 </pre></div>
 </div>
 <p>Since these names still might not give you an idea of what they do, you can let convis describe them:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>In [6]: convis.describe(retina.parameters.OPL.center.E_n_C)
+<div class="highlight-default"><div class="highlight"><pre><span></span>In [6]: convis.describe(retina.parameters.OPL.center.E_n_C)
 
 
 Out [6]: {&#39;doc&#39;: &#39;The n-fold cascaded exponential creates a low-pass characteristic.
@@ -123,19 +122,19 @@ Out [6]: {&#39;doc&#39;: &#39;The n-fold cascaded exponential creates a low-pass
 </div>
 <p>´describe´ will output a formatted table in an ipython notebook and a dictionary in a console.
 To verify that it is actually a shared parameter, we can ask for its type:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>In [7]: type(retina.parameters.OPL.center.E_n_C)
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="nb">type</span><span class="p">(</span><span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span><span class="p">)</span>
 
-Out [7]: theano.tensor.sharedvar.TensorSharedVariable
+<span class="n">Out</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">sharedvar</span><span class="o">.</span><span class="n">TensorSharedVariable</span>
 </pre></div>
 </div>
 <p>So what we learned is that <cite>retina.parameters.OPL.center.E_n_C</cite> is a convolution kernel and has some specific value. It is a theano share variable, which means that it represents both, a node in a computational graph as well as a portion of memory which is synchronized between RAM and GPU memory. To change the value we can use the method <cite>set_value()</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
-retina.parameters.OPL.center.E_n_C.set_value(k)
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_5d</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.02</span><span class="p">),</span><span class="n">resolution</span><span class="o">=</span><span class="n">retina</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
+<span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For parameters which are accessed through the <cite>M().parameters.</cite> attribute, there is also a shortcut for setting the value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
-retina.parameters.OPL.center.E_n_C = k
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_5d</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.02</span><span class="p">),</span><span class="n">resolution</span><span class="o">=</span><span class="n">retina</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
+<span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span> <span class="o">=</span> <span class="n">k</span>
 </pre></div>
 </div>
 </div>
@@ -147,7 +146,7 @@ retina.parameters.OPL.center.E_n_C = k
 <p>Layers typically expect a configuration dictionary that contains the initial values of their
 parameters.</p>
 <p>Initializing a convolution filter:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_5d</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_5d</span><span class="p">()</span>
 <span class="c1"># creates a 5 dimensional tensor with a 2d gaussian filter</span>
 <span class="c1"># in the x and y dimensions</span>
 <span class="n">gauss_filter_layer</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">K_5d_kernel_filter</span><span class="p">(</span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
@@ -156,7 +155,7 @@ parameters.</p>
 </pre></div>
 </div>
 <p><cite>K_5d_kernel_filter</cite> is a layer that computes a convolution of the input with a 5 dimensional
-kernel filter. The dimensions are &#8220;batch&#8221;, &#8220;time&#8221;, &#8220;channel&#8221;, &#8220;x&#8221;, &#8220;y&#8221;.</p>
+kernel filter. The dimensions are “batch”, “time”, “channel”, “x”, “y”.</p>
 <p>TODO: make a section for convolution filters</p>
 </div>
 <div class="section" id="connecting-layers">
@@ -164,7 +163,7 @@ kernel filter. The dimensions are &#8220;batch&#8221;, &#8220;time&#8221;, &#822
 <p>Layers can either be connected one by one by using <cite>add_input</cite> or in batch by using <cite>convis.connect</cite>.
 A shorthand for <cite>b.addinput(a)</cite> is <cite>b += a</cite>.
 The following is equivalent:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
 
 <span class="n">c</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 <span class="n">b</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -175,7 +174,7 @@ The following is equivalent:</p>
 </div>
 <p>Both will result in a graph in which only <cite>a</cite> has an open input. <cite>b</cite> recieves the output of <cite>a</cite> as input, <cite>c</cite> recieves the output of b.</p>
 <p>If more than one input or output are specified, a specific one can be set like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;input_0&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;input_0&#39;</span><span class="p">)</span>
 <span class="c1"># connects the first element of the</span>
 <span class="c1"># output of a to the input named &#39;input_0&#39; of b</span>
 <span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;input_1&#39;</span><span class="p">)</span>
@@ -184,7 +183,7 @@ The following is equivalent:</p>
 </div>
 <p>If two outputs are connected to the same input, their values will be added together.</p>
 <p>More complciated connectivity can be achieved in <cite>convis.connect</cite> by nesting lists:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,[</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,[</span><span class="n">d</span><span class="p">,</span><span class="n">e</span><span class="p">,</span><span class="n">f</span><span class="p">]],</span><span class="n">g</span><span class="p">])</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,[</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,[</span><span class="n">d</span><span class="p">,</span><span class="n">e</span><span class="p">,</span><span class="n">f</span><span class="p">]],</span><span class="n">g</span><span class="p">])</span>
 
 <span class="c1"># is equivalent to:</span>
 <span class="n">b</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -242,28 +241,25 @@ The following is equivalent:</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to convis&#8217;s documentation!</a></p>
+                        title="previous chapter">Welcome to convis’s documentation!</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="examples.html"
                         title="next chapter">Examples</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/usage.txt"
+      <li><a href="_sources/usage.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -285,12 +281,12 @@ The following is equivalent:</p>
         <li class="right" >
           <a href="index.html" title="Welcome to convis’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

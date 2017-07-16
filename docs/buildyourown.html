@@ -1,34 +1,33 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Build your own Model &mdash; convis 0.1 documentation</title>
-    
+    <title>Build your own Model &#8212; convis 0.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="convis 0.1 documentation" href="index.html" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="convis" href="docs.html" />
     <link rel="prev" title="Retina Model" href="retina.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -44,7 +43,7 @@
         <li class="right" >
           <a href="retina.html" title="Retina Model"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -57,15 +56,15 @@
 <span id="build-your-own"></span><h1>Build your own Model<a class="headerlink" href="#build-your-own-model" title="Permalink to this headline">¶</a></h1>
 <p>To run the examples, we assume that you ran a short preamble before
 to include modules and generate some sample input:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>%matplotlib inline
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
 
-import numpy as np
-import matplotlib.pylab as plt
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
 
-import convis
-v = 10.0
-the_input = np.concatenate([contrast * convis.samples.moving_bars(t=200, vt=20, vx=v*np.sin(phi), vy=v*np.cos(phi))
-                            for phi in np.linspace(0,360.0,30.0) for contrast in [0.0,1.0]], axis = 0)
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">v</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">the_input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">contrast</span> <span class="o">*</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_bars</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">vt</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">vx</span><span class="o">=</span><span class="n">v</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">vy</span><span class="o">=</span><span class="n">v</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">))</span>
+                            <span class="k">for</span> <span class="n">phi</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">360.0</span><span class="p">,</span><span class="mf">30.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">contrast</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">]],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="an-orientation-selective-ln-model">
@@ -73,7 +72,7 @@ the_input = np.concatenate([contrast * convis.samples.moving_bars(t=200, vt=20, 
 <p>This example creates a visual model with a two-dimensional receptive field which has the shape of a gabor patch.
 To discard anti-phase responses which would anihilate the mean response to the stimulus, the output is half-wave rectified and also squared to amphasize strong responses.</p>
 <p>Note that the non-linearity is not defined as its own layer here, but as a manipulation of the output of the previous layer (<cite>rf.graph</cite>).</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">rf</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rf</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
     <span class="p">{</span><span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">gabor_kernel</span><span class="p">(</span><span class="n">phi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="p">},</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ReceptiveField&#39;</span><span class="p">)</span>
 
@@ -84,11 +83,11 @@ To discard anti-phase responses which would anihilate the mean response to the s
 </pre></div>
 </div>
 <p>Then the model can be executed like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">the_input</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">the_input</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The plot shows that the model responds strongly to some orientations in the stimulus, but not to others:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="mi">10</span><span class="p">,:],</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="mi">10</span><span class="p">,:],</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -96,32 +95,31 @@ To discard anti-phase responses which would anihilate the mean response to the s
 <h2>Defining a new Layer<a class="headerlink" href="#defining-a-new-layer" title="Permalink to this headline">¶</a></h2>
 <p>To define a new layer, a few points have to be observed:</p>
 <blockquote>
-<div><ol class="arabic">
-<li><p class="first">the layer should inherit from the <cite>convis.base.N</cite> (or <cite>convis.N</cite>) class</p>
-</li>
+<div><ol class="arabic simple">
+<li>the layer should inherit from the <cite>convis.base.N</cite> (or <cite>convis.N</cite>) class</li>
 <li><dl class="first docutils">
 <dt>the layer should contain a <cite>default_input</cite> which is a sum of 3d or 5d tensors, so that inputs can be added to the layer</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>you can create such an input by invoking <cite>self.create_input()</cite> in your constructor</li>
-<li>or call <cite>self.create_input(&#8220;some_name&#8221;)</cite> to create named inputs if you want to expose more than one</li>
+<li>or call <cite>self.create_input(“some_name”)</cite> to create named inputs if you want to expose more than one</li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
 <dt>supply the <cite>graph</cite> ie. the overall output of your layer to the super constructor:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>if you have more than one output, put them in a list</li>
-<li>Replace &#8216;NameOfYourClass&#8217; with the name of your class in the expression: <cite>super(NameOfYourClass, self).__init__(graph, ...)</cite></li>
+<li>Replace ‘NameOfYourClass’ with the name of your class in the expression: <cite>super(NameOfYourClass, self).__init__(graph, …)</cite></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
 <dt>(optional) think about which configuration options you want to expose</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>if you do not need any configuration, set <cite>self.expects_config</cite> to False</li>
-<li>if you want to initialize a parameter from the configuration, follow the example of &#8216;b&#8217; in the code</li>
+<li>if you want to initialize a parameter from the configuration, follow the example of ‘b’ in the code</li>
 </ul>
 </dd>
 </dl>
@@ -129,7 +127,7 @@ To discard anti-phase responses which would anihilate the mean response to the s
 </ol>
 </div></blockquote>
 <p>Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">rf</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rf</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
     <span class="p">{</span><span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">gabor_kernel</span><span class="p">(</span><span class="n">phi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="p">},</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ReceptiveField&#39;</span><span class="p">)</span>
 
@@ -138,7 +136,7 @@ To discard anti-phase responses which would anihilate the mean response to the s
         <span class="n">a</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">shared_parameter</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">shared_parameter</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">config_key</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
         <span class="n">graph</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_input</span><span class="p">()</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Nonlinearity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Nonlinearity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <span class="n">nonlinearity</span> <span class="o">=</span> <span class="n">Nonlinearity</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span><span class="mf">2.0</span><span class="p">})</span>
 <span class="n">temporalfilter</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">ConvolutionFilter1d</span><span class="p">(</span>
@@ -156,7 +154,7 @@ To discard anti-phase responses which would anihilate the mean response to the s
 <h2>Subunit models<a class="headerlink" href="#subunit-models" title="Permalink to this headline">¶</a></h2>
 <p>In this model, convolutional filters are combined with a receptive
 field filter to create a single subunit model.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">receptors</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">receptors</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
     <span class="p">{</span><span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_2d</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">)</span> <span class="p">},</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ReceptorLayer&#39;</span><span class="p">)</span>
 <span class="n">horizontal_cells</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">ConvolutionFilter2d</span><span class="p">(</span>
@@ -176,13 +174,13 @@ field filter to create a single subunit model.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">1000</span><span class="p">,</span><span class="mi">10</span><span class="p">,:],</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;time (eg. ms)&#39;</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,:,:]</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">None</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,:,:]</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//buildyourown-1.py">Source code</a>)</p>
 <p>The structure of the model:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>input -&gt; ReceptorLayer -&gt; HorizontalLayer -&gt; output
-                       -&gt; ReceptiveField -&gt; output
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-&gt;</span> <span class="n">ReceptorLayer</span> <span class="o">-&gt;</span> <span class="n">HorizontalLayer</span> <span class="o">-&gt;</span> <span class="n">output</span>
+                       <span class="o">-&gt;</span> <span class="n">ReceptiveField</span> <span class="o">-&gt;</span> <span class="n">output</span>
 </pre></div>
 </div>
 </div>
@@ -213,21 +211,18 @@ field filter to create a single subunit model.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/buildyourown.txt"
+      <li><a href="_sources/buildyourown.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -249,12 +244,12 @@ field filter to create a single subunit model.</p>
         <li class="right" >
           <a href="retina.html" title="Retina Model"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

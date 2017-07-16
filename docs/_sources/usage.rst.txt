@@ -57,20 +57,21 @@ To see all parameters in a flat list instead of the nested structure, use the sp
 
 Since these names still might not give you an idea of what they do, you can let convis describe them::
 
-    In [5]: convis.describe(retina.parameters.OPL.center.E_n_C)
+    In [6]: convis.describe(retina.parameters.OPL.center.E_n_C)
 
 
-    Out [5]: {'doc': 'The n-fold cascaded exponential creates a low-pass characteristic. A filter can be created with `retina_base.m_en_filter`\n',
- 'name': 'E_n_C',
- 'node': [Node] center: ,
- 'simple_name': 'E_n_C',
- 'value': array([[[[[ 0.63214926]]],
-         [[[ 0.23255472]]],
-         [[[ 0.0855521 ]]],
-         [[[ 0.03147286]]],
-         [[[ 0.01157822]]],
-         [[[ 0.00425939]]],
-         [[[ 0.00156694]]]]])}
+    Out [6]: {'doc': 'The n-fold cascaded exponential creates a low-pass characteristic.
+                      A filter can be created with `retina_base.m_en_filter`\n',
+     'name': 'E_n_C',
+     'node': [Node] center: ,
+     'simple_name': 'E_n_C',
+     'value': array([[[[[ 0.63214926]]],
+             [[[ 0.23255472]]],
+             [[[ 0.0855521 ]]],
+             [[[ 0.03147286]]],
+             [[[ 0.01157822]]],
+             [[[ 0.00425939]]],
+             [[[ 0.00156694]]]]])}
 
 
 ´describe´ will output a formatted table in an ipython notebook and a dictionary in a console.
@@ -82,11 +83,13 @@ To verify that it is actually a shared parameter, we can ask for its type::
 
 So what we learned is that `retina.parameters.OPL.center.E_n_C` is a convolution kernel and has some specific value. It is a theano share variable, which means that it represents both, a node in a computational graph as well as a portion of memory which is synchronized between RAM and GPU memory. To change the value we can use the method `set_value()`::
 
-    retina.parameters.OPL.center.E_n_C.set_value(convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution))
+    k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
+    retina.parameters.OPL.center.E_n_C.set_value(k)
 
 For parameters which are accessed through the `M().parameters.` attribute, there is also a shortcut for setting the value::
 
-    retina.parameters.OPL.center.E_n_C = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
+    k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
+    retina.parameters.OPL.center.E_n_C = k
 
 .. note:
 
@@ -97,6 +100,27 @@ For parameters which are accessed through the `M().parameters.` attribute, there
 Creating a model from layers
 ----------------------------
 
+
+Initializing a Layer
+~~~~~~~~~~~~~~~~~~~~~~
+
+Layers typically expect a configuration dictionary that contains the initial values of their
+parameters.
+
+Initializing a convolution filter::
+
+    k = convis.numerical_filters.gauss_filter_5d()
+    # creates a 5 dimensional tensor with a 2d gaussian filter
+    # in the x and y dimensions
+    gauss_filter_layer = convis.filters.simple.K_5d_kernel_filter(config = {
+            'kernel': k
+        })
+
+
+`K_5d_kernel_filter` is a layer that computes a convolution of the input with a 5 dimensional 
+kernel filter. The dimensions are "batch", "time", "channel", "x", "y".
+
+TODO: make a section for convolution filters
 
 Connecting Layers
 ~~~~~~~~~~~~~~~~~~~~~~
