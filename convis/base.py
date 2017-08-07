@@ -56,6 +56,7 @@ class GraphWrapper(object):
 
     """
     parent = None
+    _model = None
     config_dict = {}
     node_type = 'Node'
     node_description = ''
@@ -80,6 +81,23 @@ class GraphWrapper(object):
         if self.follow_scan and scan_op is None:
             self.wrap_scans(self.graph)
         self.label_variables(self.graph)
+    @property
+    def model(self):
+        return self._model
+    @model.setter
+    def model(self,m):
+        if m is not None:
+            #if m.resolution is not default_resolution:
+            theano_utils.replace(self.graph,default_resolution.var_pixel_per_degree,m.resolution.var_pixel_per_degree)
+            theano_utils.replace(self.graph,default_resolution.var_steps_per_second,m.resolution.var_steps_per_second)
+            print('replacing variables')
+        self._model = m
+    @property
+    def resolution(self):
+        if self.model is not None:
+            return self.m.resolution
+        else:
+            return variables.default_resolution
     def get_model(self):
         if hasattr(self,'model'):
             return self.model
@@ -88,12 +106,12 @@ class GraphWrapper(object):
     def get_config(self):
         global debug
         if debug.do_debug:
-            print 'retrieving config dict'
+            print('retrieving config dict')
         return self.config_dict
     def get_config_value(self,key=None,default=None,type_cast=None):
         global debug
         if debug.do_debug:
-            print 'retrieving',key,'as',self.config.get(key,default)
+            print(['retrieving',key,'as',self.config.get(key,default)])
         if type_cast is not None:
             return type_cast(self.get_config_value(key,default))
         return self.config.get(key,default)
@@ -237,7 +255,7 @@ class GraphWrapper(object):
             if not callable(f):
                 raise Exception('Need to implement this!')
             if not hasattr(self,'model'):
-                print "WARNGING: using resolution of a non model!"
+                print("WARNGING: using resolution of a non model!")
             return shared_parameter(f,
                                     O()(node=self,
                                         model=getattr(self,'model',None),
@@ -446,7 +464,7 @@ def connect(list_of_lists):
             if len(last_outputs) > 0 and len(new_outputs) > 0:
                 for e1 in last_outputs:
                     for e2 in new_outputs:
-                        e2[0]+=e1[1]
+                        e2[0].add_input(e1[1])
             last_outputs = new_outputs
         return [l[0],l[-1]]
     def connect_in_parallel(l,last_outputs=[]):
