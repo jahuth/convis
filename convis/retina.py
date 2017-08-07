@@ -109,7 +109,7 @@ class Retina(Model):
             if kwargs.get('bipolar',True) == False:
                 self.add_output(self.opl)
                 if self.debug:
-                    print 'adding opl output'
+                    print('adding opl output')
         if kwargs.get('bipolar',True) != False:
             self.bipol = choose_class('bipolar',BipolarLayer)(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
             if kwargs.get('ganglion_input',True) == False:

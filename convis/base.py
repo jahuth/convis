@@ -90,14 +90,14 @@ class GraphWrapper(object):
     def model(self,m):
         if m is not None:
             #if m.resolution is not default_resolution:
-            theano_utils.replace(self.graph,default_resolution.var_pixel_per_degree,m.resolution.var_pixel_per_degree)
-            theano_utils.replace(self.graph,default_resolution.var_steps_per_second,m.resolution.var_steps_per_second)
-            print('replacing variables')
+            if hasattr(self,'graph'):
+                theano_utils.replace(self.graph,default_resolution.var_pixel_per_degree,m.resolution.var_pixel_per_degree)
+                theano_utils.replace(self.graph,default_resolution.var_steps_per_second,m.resolution.var_steps_per_second)
         self._model = m
     @property
     def resolution(self):
         if self.model is not None:
-            return self.m.resolution
+            return self.model.resolution
         else:
             return variables.default_resolution
     def get_model(self):
