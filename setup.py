@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
   name = 'convis',
   packages = ['convis','convis.filters','convis.patched_theano'],
-  version = '0.3.0.3',
+  version = '0.3.0.4',
   install_requires = ["matplotlib", "Theano", "litus"],
   description = 'Convolutional Vision Model',
   author = 'Jacob Huth',

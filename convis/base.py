@@ -1,4 +1,5 @@
-from misc_utils import unique_list, suppress
+from __future__ import print_function
+from .misc_utils import unique_list, suppress
 
 from .imports import theano
 from .imports import T
@@ -9,19 +10,20 @@ import uuid
 from . import retina_base
 from . import io
 from . import theano_utils
-from exceptions import NotImplementedError
-from variable_describe import describe, describe_dict, describe_html
+try:
+    from exceptions import NotImplementedError
+except ImportError:
+    pass
+from .variable_describe import describe, describe_dict, describe_html
 import warnings
 
-import debug
-reload(debug)
-from debug import *
+from . import debug
+from .debug import *
 
-import variables
-reload(variables)
-from variables import *
-import o
-from o import O, Ox, save_name
+from . import variables
+from .variables import *
+from . import o
+from .o import O, Ox, save_name
 from collections import OrderedDict
 
 ### Node and Model classes
@@ -34,21 +36,21 @@ def len_parents(n):
 class GraphWrapper(object):
     """
         `GraphWrapper` wraps a theano graph and provides
-        labeling to the named variables within.
+        labeling to the named variables within..
 
         The graph within the `GraphWrapper` is accessible through
-        the `.graph` attribute.
+        from . the `.graph` attribute.
         
-        If the graph has no inputs (only shared variables),
+        If th.e graph has no inputs (only shared variables),
         `.compute()` compiles the graph and gives its value.
 
-        `.add_input(var,input=i)` can be used to add `var` to an input
+        from . `.add_input(var,input=i)` can be used to add `var` to an input
         variable `i`. This will either add `var` to the input `i` if it is
-        a sum, or replace it with `var`. `i` can be the input variable 
-        itself or its name or `None`. If `input=None`, the `default_input`
-        attribute of the `GraphWrapper` will be used.
+        a sum., or replace it with `var`. `i` can be the input variable 
+        from . itself or its name or `None`. If `input=None`, the `default_input`
+        attri.bute of the `GraphWrapper` will be used.
 
-        A `GraphWrapper` (and also `N` layer objects) will try to behave 
+        A `GrphWrapper` (and also `N` layer objects) will try to behave 
         similar to a theano variable in many contexts.
         Mathematical operations, such as `+`, `-`, etc. create a new theano
         variable, the same as if it was applied to the graph within the
@@ -187,7 +189,7 @@ class GraphWrapper(object):
                 set_convis_attribute(v,'path', [self, v])
             global debug
             if debug.do_debug:
-                print 'labeled: ',get_convis_attribute(v,'path')
+                print('labeled: ',get_convis_attribute(v,'path'))
             if get_convis_attribute(v,'node',None) != None and get_convis_attribute(v,'node') != self:
                 if get_convis_attribute(v,'node').parent is None:
                     get_convis_attribute(v,'node').parent = self
@@ -281,7 +283,7 @@ class GraphWrapper(object):
             else:
                 raise Exception('Input "'+str(input)+'"" found in '+getattr(self,'name','[unnamed node]')+' inputs!')
         if do_debug:
-            print 'connecting',other.name,'to',getattr(self,'name','??'),''
+            print('connecting',other.name,'to',getattr(self,'name','??'),'')
         v = other
         if hasattr(other,'_as_TensorVariable'):
             v = other._as_TensorVariable()
@@ -300,7 +302,7 @@ class GraphWrapper(object):
             try:
                 theano_utils._replace(self.output,input,v)
             except:
-                print 'Something not found! ',other.variables,self.variables
+                print('Something not found! ',other.variables,self.variables)
     def __iadd__(self,other):
         self.add_input(other)
         return self
@@ -593,7 +595,7 @@ class Model(object):
         #self.map(b.var('input'),a.var('output'))
         if hasattr(a,'graph'):
             a = a.graph
-        print 'Replacing:',a,b
+        print('Replacing:',a,b)
         if issubclass(b.__class__, N):
             if has_convis_attribute(b.var('input'),'variable_type') and get_convis_attribute(b.var('input'),'variable_type') == 'input':
                 set_convis_attribute(b.var('input'),'variable_type','replaced_input')
@@ -604,7 +606,7 @@ class Model(object):
             try:
                 theano_utils._replace(b.output,b.variables.input,a)
             except:
-                print 'Something not found! ',a,b.variables
+                print('Something not found! ',a,b.variables)
         elif has_convis_attribute(b,'node'):
             if not has_convis_attribute(a, 'connects'):
                 set_convis_attribute(a,'connects',[])
@@ -649,12 +651,12 @@ class Model(object):
         self.compute_input_dict = dict((v,None) for v in self.compute_input_order)
         self.compute_state_dict = dict((v,None) for v in self.compute_output_order if is_out_state(v))
         if self.debug:# hasattr(retina, 'debug') and retina.debug:
-            print 'solving for:',outputs
-            print 'all variables:',len(variables)
-            print 'input:',filter(is_input,variables)
-            print 'parameters:',filter(is_input_parameter,variables)
-            print 'states:',state_variables
-            print 'updates:',self.compute_updates_order
+            print('solving for:',outputs)
+            print('all variables:',len(variables))
+            print('input:',filter(is_input,variables))
+            print('parameters:',filter(is_input_parameter,variables))
+            print('states:',state_variables)
+            print('updates:',self.compute_updates_order)
         self.reset_parameters()
         self.compute = theano.function(inputs=self.compute_input_order, 
                                     outputs=self.compute_output_order, 
@@ -701,7 +703,7 @@ class Model(object):
         t = 0
         while t < the_input.shape[0]:
             if self.debug:
-                print 'Chunk:', t, t+max_length
+                print('Chunk:', t, t+max_length)
             oo = self.run(the_input[t:(t+max_length)],
                           additional_inputs=[ai[t:(t+max_length)] for ai in additional_inputs],
                           inputs=dict([(k,i[t:(t+max_length)]) for k,i in inputs.items()]),
@@ -744,7 +746,7 @@ class Model(object):
             # todo: manage multiple functions
             self.create_function()
         if self.debug:
-            print "Using supplied inputs: ", inputs.keys()
+            print("Using supplied inputs: ", inputs.keys())
         c = O()
         c.input = the_input
         c.model = self

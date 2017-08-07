@@ -1,3 +1,4 @@
+from __future__ import print_function
 import socket
 import sys
 import StringIO
@@ -47,26 +48,26 @@ def png_server():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('localhost', 10000)
-    print >>sys.stderr, 'starting up on %s port %s' % server_address
+    print('starting up on %s port %s' % server_address, file=sys.stderr)
     sock.bind(server_address)
     sock.listen(1)
 
     while True:
         # Wait for a connection
-        print >>sys.stderr, 'waiting for a connection'
+        print('waiting for a connection', file=sys.stderr)
         connection, client_address = sock.accept()
         try:
-            print >>sys.stderr, 'connection from', client_address
+            print('connection from', client_address, file=sys.stderr)
 
             # Receive the data in small chunks and retransmit it
             while True:
                 data = connection.recv(16)
-                print >>sys.stderr, 'received "%s"' % data
+                print('received "%s"' % data, file=sys.stderr)
                 if data:
-                    print >>sys.stderr, 'sending data back to the client'
+                    print('sending data back to the client', file=sys.stderr)
                     connection.sendall(data)
                 else:
-                    print >>sys.stderr, 'no more data from', client_address
+                    print('no more data from', client_address, file=sys.stderr)
                     break
                 
         finally:
@@ -113,17 +114,17 @@ def test_png_file_client(filename):
 
     # Connect the socket to the port where the server is listening
     server_address = ('localhost', 10000)
-    print >>sys.stderr, 'connecting to %s port %s' % server_address
+    print('connecting to %s port %s' % server_address, file=sys.stderr)
     sock.connect(server_address)
     try:
         
         # Send data
         with open(filename,'rb') as f:
             message = f.read()
-        print >>sys.stderr, 'sending "%s"' % filename
+        print('sending "%s"' % filename, file=sys.stderr)
         sock.sendall(message)
     finally:
-        print >>sys.stderr, 'closing socket'
+        print('closing socket', file=sys.stderr)
         sock.close()
 
 def test_text_client(text):
@@ -135,13 +136,13 @@ def test_text_client(text):
 
     # Connect the socket to the port where the server is listening
     server_address = ('localhost', 10000)
-    print >>sys.stderr, 'connecting to %s port %s' % server_address
+    print('connecting to %s port %s' % server_address, file=sys.stderr)
     sock.connect(server_address)
     try:
         
         # Send data
         message = text
-        print >>sys.stderr, 'sending "%s"' % message
+        print('sending "%s"' % message, file=sys.stderr)
         sock.sendall(message)
 
         # Look for the response
@@ -151,10 +152,10 @@ def test_text_client(text):
         while amount_received < amount_expected:
             data = sock.recv(16)
             amount_received += len(data)
-            print >>sys.stderr, 'received "%s"' % data
+            print('received "%s"' % data, file=sys.stderr)
 
     finally:
-        print >>sys.stderr, 'closing socket'
+        print('closing socket', file=sys.stderr)
         sock.close()
 
 class ImageRecieverServer():
@@ -180,7 +181,7 @@ class ImageRecieverServer():
         # Create a TCP/IP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_address = ('localhost', self.port)
-        #print >>sys.stderr, 'starting up on %s port %s' % self.server_address
+        #print('starting up on %s port %s' % self.server_address, file=sys.stderr)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         #self.sock.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
         self.sock.bind(self.server_address)
@@ -190,17 +191,17 @@ class ImageRecieverServer():
             try:
                 connection, client_address = self.sock.accept()
                 if self.debug:
-                    print "Accepted connection."
+                    print("Accepted connection.")
                 thread.start_new_thread(self.serve,(connection, client_address))
             except Exception as e:
-                print e
+                print(e)
                 raise
         self.sock.close()
         self.closed = True
     def serve(self,connection, client_address):
         try:
             if self.debug:
-                print "Recieving Data."
+                print("Recieving Data.")
             dirty = False
             all_data = cStringIO.StringIO()
             last_data = b""
@@ -210,7 +211,7 @@ class ImageRecieverServer():
                 all_data.write(data)
                 if b"IEND" in last_data+data:
                     if self.debug:
-                        print "Recieved End of Image."
+                        print("Recieved End of Image.")
                     #print (last_data+data)
                     #print 'found IEND!'
                     self.last_buffer.append(all_data)
@@ -230,7 +231,7 @@ class ImageRecieverServer():
             #self.dirty = True # redraw the image
         finally:
             if self.debug:
-                print "Closing connection."
+                print("Closing connection.")
             connection.close()            
     def available(self):
         return len(self.last_buffer) > 0
@@ -305,12 +306,12 @@ def png_display():
                     #print 'port taken. starting up on %s port %s' % self.server_address
                     port = 10000 + np.random.randint(1000)
             self.root.title('%s:%s' % self.server_address)
-            print >>sys.stderr, 'starting up on %s port %s' % self.server_address
+            print('starting up on %s port %s' % self.server_address, file=sys.stderr)
             #self.sock.setblocking(0)
             self.sock.listen(10)
             while self.closed is False:
                 try:
-                    print 'waiting...'
+                    print('waiting...')
                     connection, client_address = self.sock.accept()
                     thread.start_new_thread(self.serve,(connection, client_address))
                 except:
@@ -341,7 +342,7 @@ def png_display():
                     if not data:
                         break
                 if dirty:
-                    print 'Cleaning up unclosed image...'
+                    print('Cleaning up unclosed image...')
                     self.last_buffer.append(all_data)
                 #self.dirty = True # redraw the image
             finally:
@@ -367,7 +368,7 @@ def png_display():
                     self.display = self.image1
                     refresh = self.image.info.get('refresh',refresh)
                 except Exception as e:
-                    print e
+                    print(e)
                     pass
             self.root.after(refresh, self.update_image)
 

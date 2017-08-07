@@ -10,5 +10,5 @@ else:
     import theano
     import theano.tensor as T
 
-from base import N,  Layer, M, Model, GraphWrapper, describe
-from variable_describe import describe
+from .base import N,  Layer, M, Model, GraphWrapper, describe
+from .variable_describe import describe

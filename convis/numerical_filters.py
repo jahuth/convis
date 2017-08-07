@@ -242,7 +242,6 @@ def sum_kernels(kernels):
         Sums numeric kernels and extends their size 
     """
     max_shape = np.max([k.shape for k in kernels],axis=0)
-    print max_shape
     new_k = np.zeros(max_shape)
     for k in kernels:
         x1 = np.floor((max_shape[0] - k.shape[0])/2.0)

@@ -1,34 +1,33 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Retina Model &mdash; convis 0.1 documentation</title>
-    
+    <title>Retina Model &#8212; convis 0.3.0.3 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.3.0.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="convis 0.1 documentation" href="index.html" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Build your own Model" href="buildyourown.html" />
     <link rel="prev" title="Filters" href="filters.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -44,7 +43,7 @@
         <li class="right" >
           <a href="filters.html" title="Filters"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -63,12 +62,12 @@
 <p>$$C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)$$
 $$S(x,y,t) = G * E * C(x,y,t)$$
 $$I_{OLP}(x,y,t) = lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$
-$$\\frac{dV_{Bip}}{dt} (x,y,t) = I_{OLP}(x,y,t) - g_{A}(x,y,t)dV_{Bip}(x,y,t)$$
+$$\frac{dV_{Bip}}{dt} (x,y,t) = I_{OLP}(x,y,t) - g_{A}(x,y,t)dV_{Bip}(x,y,t)$$
 $$g_{A}(x,y,t) = G * E * Q(V{Bip})(x,y,t)`with $Q(V{Bip}) = g_{A}^{0} + lambda_{A}V^2_{Bip}$$
 $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 <p>with <span class="math">\(N(V) = \\\\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)</p>
 <p>with <span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if  <span class="math">\(V &gt; v^0_G\)</span>)</p>
-<img alt="_static/dot_test_3.png" src="_static/dot_test_3.png" />
+<img alt="_images/dot_test_3.png" src="_images/dot_test_3.png" />
 </div>
 <div class="section" id="the-retina-model-class-and-configuration">
 <h2>The Retina Model class and Configuration<a class="headerlink" href="#the-retina-model-class-and-configuration" title="Permalink to this headline">¶</a></h2>
@@ -85,9 +84,9 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 <p>Does not currently care to parse an xml file, but can save/load in json instead.
 The defaults are equal to <cite>human.parvo.xml</cite>.</p>
 <p>Values can be changed either directly in the configuration dictionary, or with the <cite>set</cite> helperfunction:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">silver</span><span class="o">.</span><span class="n">glue</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">silver</span><span class="o">.</span><span class="n">glue</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
 <span class="n">config</span><span class="o">.</span><span class="n">retina_config</span><span class="p">[</span><span class="s1">&#39;retina&#39;</span><span class="p">][</span><span class="s1">&#39;input-luminosity-range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;basic-microsaccade-generator.enabled&#39;</span><span class="p">)</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;basic-microsaccade-generator.enabled&#39;</span><span class="p">)</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ganglion-layers.*.spiking-channel.sigma-V&#39;</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># for all layers</span>
 </pre></div>
 </div>
@@ -95,8 +94,8 @@ The defaults are equal to <cite>human.parvo.xml</cite>.</p>
 <dt id="convis.retina.RetinaConfiguration.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina.RetinaConfiguration.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves values from the configuration.</p>
-<p>conf.set(&#8220;ganglion-layers.*.spiking-channel.sigma-V&#8221;,None) # gets the value for all layers
-conf.set(&#8220;ganglion-layers.0&#8221;,{}) # gets the first layer</p>
+<p>conf.set(“ganglion-layers.*.spiking-channel.sigma-V”,None) # gets the value for all layers
+conf.set(“ganglion-layers.0”,{}) # gets the first layer</p>
 </dd></dl>
 
 <dl class="method">
@@ -111,17 +110,17 @@ conf.set(&#8220;ganglion-layers.0&#8221;,{}) # gets the first layer</p>
 <dd><p>shortcuts for frequent configuration values</p>
 <p>Knows where to put:</p>
 <blockquote>
-<div>&#8216;pixels-per-degree&#8217;, &#8216;size__deg&#8217; (if x and y are equal), &#8216;uniform-density__inv-deg&#8217;
+<div>‘pixels-per-degree’, ‘size__deg’ (if x and y are equal), ‘uniform-density__inv-deg’
 all attributes of linear-version
 all attributes of undershoot</div></blockquote>
 <p>Understands dot notation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">conf</span> <span class="o">=</span> <span class="n">silver</span><span class="o">.</span><span class="n">glue</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
-<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.2.enabled&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conf</span> <span class="o">=</span> <span class="n">silver</span><span class="o">.</span><span class="n">glue</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.2.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.*.spiking-channel.sigma-V&quot;</span><span class="p">,</span><span class="mf">0.101</span><span class="p">)</span> <span class="c1"># changes the value for all layers</span>
 </pre></div>
 </div>
 <p>But whole sub-tree dicitonaries can be set as well (they replace, not update):</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
                                     <span class="s1">&#39;bipolar-inert-leaks__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
                                     <span class="s1">&#39;adaptation-sigma__deg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
                                     <span class="s1">&#39;adaptation-tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>
@@ -130,13 +129,13 @@ all attributes of undershoot</div></blockquote>
 </pre></div>
 </div>
 <p>New dictionary keys are created automatically, new list elements can be created like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.=.enabled&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span> <span class="c1"># copies all values from the last element</span>
-<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.=1.enabled&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span> <span class="c1"># copies all values from list element 1</span>
-<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.+.enabled&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span> <span class="c1"># creates a new (empty) dictionary which is probably underspecified</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.=.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># copies all values from the last element</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.=1.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># copies all values from list element 1</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.+.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># creates a new (empty) dictionary which is probably underspecified</span>
 
 <span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.+&quot;</span><span class="p">,{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Parvocellular On&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
             <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.02</span><span class="p">,</span>
             <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">0.7</span><span class="p">,</span>
@@ -192,14 +191,14 @@ all attributes of undershoot</div></blockquote>
 <dt id="convis.filters.retina.BipolarLayerNode">
 <em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">BipolarLayerNode</code><span class="sig-paren">(</span><em>model=None</em>, <em>config=None</em>, <em>name=None</em>, <em>input_variable=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#BipolarLayerNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.BipolarLayerNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Example Configuration:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>&#39;contrast-gain-control&#39;: {
-    &#39;opl-amplification__Hz&#39;: 50, # for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ;
-                                               # `ampInputCurrent` in virtual retina
-    &#39;bipolar-inert-leaks__Hz&#39;: 50,             # `gLeak` in virtual retina
-    &#39;adaptation-sigma__deg&#39;: 0.2,              # `sigmaSurround` in virtual retina
-    &#39;adaptation-tau__sec&#39;: 0.005,              # `tauSurround` in virtual retina
-    &#39;adaptation-feedback-amplification__Hz&#39;: 0 # `ampFeedback` in virtual retina
-},
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="c1"># for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ;</span>
+                                               <span class="c1"># `ampInputCurrent` in virtual retina</span>
+    <span class="s1">&#39;bipolar-inert-leaks__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>             <span class="c1"># `gLeak` in virtual retina</span>
+    <span class="s1">&#39;adaptation-sigma__deg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>              <span class="c1"># `sigmaSurround` in virtual retina</span>
+    <span class="s1">&#39;adaptation-tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>              <span class="c1"># `tauSurround` in virtual retina</span>
+    <span class="s1">&#39;adaptation-feedback-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="c1"># `ampFeedback` in virtual retina</span>
+<span class="p">},</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -216,36 +215,36 @@ all attributes of undershoot</div></blockquote>
 <blockquote>
 <div><dl class="docutils">
 <dt>{</dt>
-<dd><p class="first">&#8216;name&#8217;: &#8216;Parvocellular Off&#8217;,
-&#8216;enabled&#8217;: True,
-&#8216;sign&#8217;: -1,
-&#8216;transient-tau__sec&#8217;:0.02,
-&#8216;transient-relative-weight&#8217;:0.7,
-&#8216;bipolar-linear-threshold&#8217;:0,
-&#8216;value-at-linear-threshold__Hz&#8217;:37,
-&#8216;bipolar-amplification__Hz&#8217;:100,
-&#8216;sigma-pool__deg&#8217;: 0.0,
-&#8216;spiking-channel&#8217;: {</p>
+<dd><p class="first">‘name’: ‘Parvocellular Off’,
+‘enabled’: True,
+‘sign’: -1,
+‘transient-tau__sec’:0.02,
+‘transient-relative-weight’:0.7,
+‘bipolar-linear-threshold’:0,
+‘value-at-linear-threshold__Hz’:37,
+‘bipolar-amplification__Hz’:100,
+‘sigma-pool__deg’: 0.0,
+‘spiking-channel’: {</p>
 <blockquote>
-<div>...</div></blockquote>
+<div>…</div></blockquote>
 <p class="last">}</p>
 </dd>
 </dl>
 <p>},
 {</p>
 <blockquote>
-<div><p>&#8216;name&#8217;: &#8216;Magnocellular On&#8217;,
-&#8216;enabled&#8217;: False,
-&#8216;sign&#8217;: 1,
-&#8216;transient-tau__sec&#8217;:0.03,
-&#8216;transient-relative-weight&#8217;:1.0,
-&#8216;bipolar-linear-threshold&#8217;:0,
-&#8216;value-at-linear-threshold__Hz&#8217;:80,
-&#8216;bipolar-amplification__Hz&#8217;:400,
-&#8216;sigma-pool__deg&#8217;: 0.1,
-&#8216;spiking-channel&#8217;: {</p>
+<div><p>‘name’: ‘Magnocellular On’,
+‘enabled’: False,
+‘sign’: 1,
+‘transient-tau__sec’:0.03,
+‘transient-relative-weight’:1.0,
+‘bipolar-linear-threshold’:0,
+‘value-at-linear-threshold__Hz’:80,
+‘bipolar-amplification__Hz’:400,
+‘sigma-pool__deg’: 0.1,
+‘spiking-channel’: {</p>
 <blockquote>
-<div>...</div></blockquote>
+<div>…</div></blockquote>
 <p>}</p>
 </div></blockquote>
 <p>},</p>
@@ -299,7 +298,7 @@ p.275</p>
 <li><code class="xref py py-obj docutils literal"><span class="pre">lambda_OPL</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">w_OPL</span></code> (scaling and weight parameters)</li>
 </ul>
 </div></blockquote>
-<p>Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don&#8217;t have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: &lt;a href=&#8221;<a class="reference external" href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d</a>&#8220;&gt;theano.tensor.nnet.conv&lt;/a&gt;), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.</p>
+<p>Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don’t have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: &lt;a href=”<a class="reference external" href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d</a>”&gt;theano.tensor.nnet.conv&lt;/a&gt;), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.</p>
 </dd></dl>
 
 <dl class="class">
@@ -325,7 +324,7 @@ p.275</p>
 <li><code class="xref py py-obj docutils literal"><span class="pre">lambda_OPL</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">w_OPL</span></code> (scaling and weight parameters)</li>
 </ul>
 </div></blockquote>
-<p>Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don&#8217;t have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: &lt;a href=&#8221;<a class="reference external" href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d</a>&#8220;&gt;theano.tensor.nnet.conv&lt;/a&gt;), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.</p>
+<p>Since we want to have some temporal and some spatial convolutions (some 1d, some 2d, but orthogonal to each other), we have to use 3d convolution (we don’t have to, but this way we never have to worry about which is which axis). 3d convolution uses 5-tensors (see: &lt;a href=”<a class="reference external" href="http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d">http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv3d2d.conv3d</a>”&gt;theano.tensor.nnet.conv&lt;/a&gt;), so we define all inputs, kernels and outputs to be 5-tensors with the unused dimensions (color channels and batch/kernel number) set to be length 1.</p>
 </dd></dl>
 
 </div>
@@ -356,21 +355,18 @@ p.275</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/retina.txt"
+      <li><a href="_sources/retina.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -392,12 +388,12 @@ p.275</p>
         <li class="right" >
           <a href="filters.html" title="Filters"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

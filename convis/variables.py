@@ -1,8 +1,11 @@
 import theano
-import new
-from debug import *
-from misc_utils import unique_list
-from o import O, Ox, save_name
+try:
+    import new
+except:
+    new = False
+from .debug import *
+from .misc_utils import unique_list
+from .o import O, Ox, save_name
 from theano.tensor.var import TensorVariable
 from theano.tensor.sharedvar import ScalarSharedVariable
 import numpy as np
@@ -538,8 +541,12 @@ def override_copy(v,actually_do_it=True):
         #    print v.type.v
         #    raise Exception("type already has a v!!")
         v.type.v = v
-        v.type.__call__ = new.instancemethod(type_call, v.type, None)
-        v.type.make_variable = new.instancemethod(type_make_variable, v.type, None)
+        if new is False:
+            v.type.__call__ = type_call
+            v.type.make_variable = type_make_variable
+        else:
+            v.type.__call__ = new.instancemethod(type_call, v.type, None)
+            v.type.make_variable = new.instancemethod(type_make_variable, v.type, None)
     v.type.v = v
     if actually_do_it:
         v.preserve_labels_on_copy = True

@@ -1,34 +1,33 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Examples &mdash; convis 0.1 documentation</title>
-    
+    <title>Examples &#8212; convis 0.3.0.3 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.3.0.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="convis 0.1 documentation" href="index.html" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Filters" href="filters.html" />
     <link rel="prev" title="Usage" href="usage.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -44,7 +43,7 @@
         <li class="right" >
           <a href="usage.html" title="Usage"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -58,7 +57,7 @@
 <div class="section" id="running-a-model">
 <h2>Running a Model<a class="headerlink" href="#running-a-model" title="Permalink to this headline">¶</a></h2>
 <p>An LN Filter:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
 <span class="n">the_input</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_bars</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
 
 <span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
@@ -66,26 +65,26 @@
 </pre></div>
 </div>
 <p>The premade retina model can be instanciated and executed like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
 <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">the_input</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To see the structure of the model:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">draw_simple_diagram</span><span class="p">()</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">m</span><span class="o">.</span><span class="n">draw_simple_diagram</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Will give the output:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>input -&gt; OPL -&gt; Bipolar -&gt; GanglionInputLayer_Parvocellular_On -&gt; GanglionSpikes__Parvocellular_On -&gt; output
-                        -&gt; GanglionInputLayer_Parvocellular_Off -&gt; GanglionSpikes__Parvocellular_Off -&gt; output
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-&gt;</span> <span class="n">OPL</span> <span class="o">-&gt;</span> <span class="n">Bipolar</span> <span class="o">-&gt;</span> <span class="n">GanglionInputLayer_Parvocellular_On</span> <span class="o">-&gt;</span> <span class="n">GanglionSpikes__Parvocellular_On</span> <span class="o">-&gt;</span> <span class="n">output</span>
+                        <span class="o">-&gt;</span> <span class="n">GanglionInputLayer_Parvocellular_Off</span> <span class="o">-&gt;</span> <span class="n">GanglionSpikes__Parvocellular_Off</span> <span class="o">-&gt;</span> <span class="n">output</span>
 </pre></div>
 </div>
 <p>If the input is very long, it can be broken into chunks:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">run_in_chunks</span><span class="p">(</span><span class="n">the_input</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span> <span class="c1"># takes 1000 timesteps at a time</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">run_in_chunks</span><span class="p">(</span><span class="n">the_input</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span> <span class="c1"># takes 1000 timesteps at a time</span>
 </pre></div>
 </div>
 <p>A runner runs in its own thread and consumes an input stream:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
 <span class="n">input_stream</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">RandomStream</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">))</span>
 <span class="n">output_stream</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">InrImageStreamWriter</span><span class="p">(</span><span class="s1">&#39;output.inr&#39;</span><span class="p">)</span>
@@ -94,19 +93,19 @@
 </pre></div>
 </div>
 <p>The input stream can be infinite in length (as eg. the <cite>RandomStream</cite>).</p>
-<p>More information specific to the retina model can be found <a class="reference internal" href="retina.html#retina"><span>here</span></a> .</p>
+<p>More information specific to the retina model can be found <a class="reference internal" href="retina.html#retina"><span class="std std-ref">here</span></a> .</p>
 </div>
 <div class="section" id="creating-a-simple-model">
 <h2>Creating a simple model<a class="headerlink" href="#creating-a-simple-model" title="Permalink to this headline">¶</a></h2>
-<p>More examples can be found at <a class="reference internal" href="buildyourown.html#build-your-own"><span>Build your own</span></a></p>
+<p>More examples can be found at <a class="reference internal" href="buildyourown.html#build-your-own"><span class="std std-ref">Build your own</span></a></p>
 </div>
 </div>
 <div class="section" id="indices">
 <h1>Indices<a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
 </ul>
 </div>
 
@@ -135,21 +134,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/examples.txt"
+      <li><a href="_sources/examples.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -171,12 +167,12 @@
         <li class="right" >
           <a href="usage.html" title="Usage"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,6 +1,3 @@
-
-MAX_LOG_ENTRIES = 10000
-
 """
 
 Testing the runner::
@@ -32,19 +29,23 @@ Visualize the computation vs real time::
     gcf().autofmt_xdate()
 
 """
+from __future__ import print_function
+
+MAX_LOG_ENTRIES = 10000
+
 
 _debug_runner_list = []
 def _debug_list_runners():
     for i,d in enumerate(_debug_runner_list):
         r = d()
         if r is not None:
-            print i,'stopped' if r.closed else 'running'
+            print(i,'stopped' if r.closed else 'running')
 def stopall():
     for i,d in enumerate(_debug_runner_list):
         r = d()
         if r is not None:
             r.stop()
-            print i,'stopped' if r.closed else 'running'
+            print(i,'stopped' if r.closed else 'running')
 
 class Runner(object):
     def __init__(self,func,input_stream,output_stream,realtime=False,strict_realtime=False,**kwargs):
@@ -146,10 +147,10 @@ class Runner(object):
             if self.realtime:
                 t_real = (datetime.datetime.now() - self.start_time).total_seconds()
                 if t_real < (self.t-self.t_zero) - self.max_realtime_advance:
-                    #print 'too fast, waiting for time to catch up',t_real, (self.t-self.t_zero)
+                    #print('too fast, waiting for time to catch up',t_real, (self.t-self.t_zero))
                     time.sleep((self.t-self.t_zero)-(t_real- self.max_realtime_advance))
                 if t_real > (self.t-self.t_zero) + self.max_realtime_deviation:
-                    #print 'too slow! Have to skip some computations!',t_real, (self.t-self.t_zero)
+                    #print('too slow! Have to skip some computations!',t_real, (self.t-self.t_zero))
                     if self.strict_realtime:
                         self.closed = True
                         raise Exception('Realtime could not be met!')
@@ -159,7 +160,7 @@ class Runner(object):
                 t_begin = (self.t-self.t_zero)
                 t_end = (self.t-self.t_zero) + self.dt*self.chunk_shape[0]
                 t_real_begin = (datetime.datetime.now() - self.start_time).total_seconds()
-                #print self.t
+                #print(self.t)
                 self.last_get_input_time = datetime.datetime.now()
                 inp = self.input_stream.get(self.chunk_shape[0])
                 self.last_start_computation_time = datetime.datetime.now()
@@ -184,7 +185,7 @@ class Runner(object):
                                           'now':         datetime.datetime.now()})
                 if len(self.time_log) > 2*MAX_LOG_ENTRIES:
                     self.time_log = self.time_log[-MAX_LOG_ENTRIES:]
-                #print "Processed input!"
+                #print("Processed input!")
                 time.sleep(max(self.refresh_rate-t_real_end,0.0))
                 if type(self.output_stream) == list:
                     for outs in self.output_stream:
@@ -196,5 +197,5 @@ class Runner(object):
                         while self.output_stream.buffered > self.chunk_shape[0]*3:
                             time.sleep(self.waiting_for_input_delay)
             else:
-                #print "Waiting for input..."
+                #print("Waiting for input...")
                 time.sleep(self.waiting_for_input_delay)

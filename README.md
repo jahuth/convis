@@ -23,6 +23,40 @@ plot(np.mean(out[1],(1,2)))
 
 An older version was published as <a href="https://github.com/jahuth/retina">the retina package</a>
 
+## Installation
+
+Installing `convis` and `theano` itself is not complicated. Both can be installed with `pip`, either from the PyPi releases, or directly from github.
+Requirements for the base installation are: Python 2.7 or Python 3.5, Numpy, SciPy and a BLAS library (either OpenBLAS (`openblas-dev` package) or MKL).
+
+```bash
+pip install convis
+```
+
+I recommend installing opencv, and jupyter notebook, if you do not already have it installed:
+
+```bash
+pip install convis notebook
+# eg. for ubuntu:
+sudo apt-get install python-opencv
+```
+
+This installation will run, but might lack GPU support.
+
+The GPU support in the current version of `theano` use `pygpuarray`. The recommandation of the `theano` team is to use `conda` (from anaconda or miniconda) to install `pygpuarray` and its binary dependencies ([see the pygpuarray website](http://deeplearning.net/software/libgpuarray/installation.html)).
+You will have to install a graphic card driver, CUDA, CudNN in appropriate versions before installing `pygpuarray`.
+
+```bash
+# optional: you can create a conda environment for certain versions of the dependencies:
+conda create -n convis_conda python=2.7
+source activate convis_conda
+conda install Theano notebook opencv
+pip install convis
+```
+
+A work around if you do not want to use `conda` is to either [compile `pygpuarray` yourself](http://deeplearning.net/software/libgpuarray/installation.html) or to use older `theano` versions (eg. `Theano==0.7`).
+
+
+
 ## Introduction
 
 `convis` provides a retina model which is identical to `VirtualRetina` and tools
@@ -37,10 +71,36 @@ A description of all parameters for the retina model can be obtained directly fr
 an instantiated model. This description contains doc strings for each parameter.
 ```python
 import convis
-ret = convis.retina.Retina()
-convis.describe(ret.parameters)
+retina = convis.retina.Retina()
+convis.describe(retina.parameters)
 ```
+
+Here is a graph of the model:
 <a href="retina_graph.png"><img src="retina_graph.png" widht="200"/></a>
+
+To use the model, supply a numpy array to the `run` (for short input) or `run_in_chunks` function:
+
+```python
+inp = np.ones((100,20,20))
+output = retina.run(inp)
+
+inp = np.ones((10000,20,20))
+output = retina.run_in_chunks(inp,200)
+```
+
+It will return an object containing all outputs of the model (the default for retina is two outputs: spikes of On and Off cells).
+
+```python
+convis.describe(output[0]) # will show information about this output
+```
+
+If instead of spikes, only the firing rate should be returned, the retina can be initialized without a spiking mechanism:
+
+```python
+retina_without_spikes = convis.retina.Retina(ganglion_spikes = False)
+```
+
+
 
 ## Examples
 
@@ -62,17 +122,17 @@ You can view them directly on github:
 
 
 ```python
-model = convis.M()
+model = convis.Model()
 A,B,C,D,E,F,G = convis.E('A"'),convis.E('B'),convis.E('C'),convis.E('D'),convis.E('E'),convis.E('F'),convis.E('G')
 convis.connect([A,B,[[C,D],[E,F],G])
 #or:
-B+=A
-C+=B
-D+=C
-E+=B
-F+=E
-G+=D
-G+=F
+B.add_input(A)
+C.add_input(B)
+D.add_input(C)
+E.add_input(B)
+F.add_input(E)
+G.add_input(D)
+G.add_input(F)
 model.outputs.append(G)
 ```
 
@@ -86,7 +146,7 @@ models `outputs`, eg. if its output is itself an output of the model.
 ```python
 import convis
 
-M = convis.M()
+M = convis.Model()
 E = convis.ConvolutionFilter1d({'size':10},'E',M) # 1d filter in time
 M.outputs.append(E.graph)
 
@@ -122,7 +182,7 @@ variables as belonging to this subgraph. This can be done hierarchically and eac
 variable tracks its depth in a `path` attribute, which gets longer each time it
 is wrapped in a subgraph.
 
-A node `N` is a `GraphWrapper` which also manages a the configuration of its
+A node `Layer` is a `GraphWrapper` which also manages a the configuration of its
 parameters.
 
 ### Variable types
@@ -170,7 +230,7 @@ and the new state is requested as an output.
 
 #### Inputs and Outputs
 
-Inputs and outputs work on the level of `N` nodes to connect subgraphs together.
+Inputs and outputs work on the level of `Layer` nodes to connect subgraphs together.
 They have no special attributes.
 
 #### Other Variables
@@ -180,7 +240,7 @@ These variables can be used for visualization or to add their value as an output
 Their only important attribute is their name and their html_name (for prettier typesetting).
 
 
-## How `M` Models and `N` Nodes compile a function
+## How `Model`s and `Layer`s compile a function
 
 In plain `theano`, a function can be created from a list of inputs and a desired
 output. If there is a tree<sup>*</sup> with all inputs as leaves and the ouput as root, the
@@ -190,7 +250,7 @@ the output if supplied with the matching number of numerical arguments.
 ```python
 %pylab inline
 import convis
-M = convis.M()
+M = convis.Model()
 E = convis.ConvolutionFilter1d({'kernel': 1.0/np.arange(1,10)},'E',M) # 1d filter in time
 M.outputs.append(E.graph)
 
@@ -205,7 +265,7 @@ to be computed only once.
 
 If the input is larger than the available memory on the device, the input has to
 be chunked up into smaller pieces.
-The `N` and `M` classes make this process easier by managing states, splitting
+The `Layer` and `Model` classes make this process easier by managing states, splitting
 input and combining outputs.
 
 ## Automatic Differentiation and Optimization
@@ -214,7 +274,7 @@ As an example, let's create a ground truth and try to find the parameter `tau`=0
 ```python
 import convis, theano
 import theano.tensor as T
-m = convis.M()
+m = convis.Model()
 E1 = convis.filters.simple.E_1d_recursive_filter({'tau__sec':0.00003},name="E1",model=m)
 m.outputs.append(E1.graph)
 m.create_function()
@@ -234,7 +294,7 @@ In three expressions, an optimization can be defined:
 
 ```python
 tau = 0.00001
-m2 = convis.M()
+m2 = convis.Model()
 E2 = convis.filters.simple.E_1d_recursive_filter(config={'tau__sec':tau},name="E2",model=m2)
 m2.outputs.append(E2.graph)
 error_term = (E2.graph.mean((1,2))-o_goal[0].mean((1,2)))**2
@@ -278,7 +338,7 @@ Or a momentum based approach:
 
 ```python
 tau = 0.00001
-m2 = convis.M()
+m2 = convis.Model()
 E2 = convis.filters.simple.E_1d_recursive_filter(config={'tau__sec':tau},name="E2",model=m2)
 m2.outputs.append(E2.graph)
 error_term = (E2.graph.mean((1,2))-o_goal[0].mean((1,2)))**2

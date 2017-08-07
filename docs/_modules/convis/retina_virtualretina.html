@@ -1,33 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>convis.retina_virtualretina &mdash; convis 0.1 documentation</title>
-    
+    <title>convis.retina_virtualretina &#8212; convis 0.3.0.3 documentation</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1',
+        VERSION:     '0.3.0.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="convis 0.1 documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -37,8 +35,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.3.0.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -53,7 +51,7 @@
 <span class="sd">This module is a compatibility layer between the Virtual Retina configurations and behaviour and the python implementation.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 
@@ -112,7 +110,7 @@
 <span class="c1">#only deep copy from this!</span>
 <span class="n">_default_config</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;basic-microsaccade-generator&#39;</span> <span class="p">:{</span>
-                <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="s1">&#39;pixels-per-degree&#39;</span><span class="p">:</span><span class="mi">200</span><span class="p">,</span>
                 <span class="s1">&#39;temporal-step__sec&#39;</span><span class="p">:</span><span class="mf">0.005</span><span class="p">,</span>
                 <span class="s1">&#39;angular-noise__pi-radians&#39;</span><span class="p">:</span><span class="mf">0.3</span><span class="p">,</span>
@@ -129,7 +127,7 @@
                 <span class="s1">&#39;pixels-per-degree&#39;</span><span class="p">:</span><span class="mf">5.0</span>
             <span class="p">},</span>
             <span class="s1">&#39;log-polar-scheme&#39;</span> <span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="s1">&#39;fovea-radius__deg&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
                 <span class="s1">&#39;scaling-factor-outside-fovea__inv-deg&#39;</span><span class="p">:</span> <span class="mf">1.0</span>
             <span class="p">},</span>
@@ -145,7 +143,7 @@
                         <span class="s1">&#39;opl-relative-weight&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                         <span class="s1">&#39;leaky-heat-equation&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                         <span class="s1">&#39;undershoot&#39;</span><span class="p">:</span> <span class="p">{</span>
-                            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                             <span class="s1">&#39;relative-weight&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
                             <span class="s1">&#39;tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.1</span>
                         <span class="p">}</span>                    
@@ -162,7 +160,7 @@
             <span class="s1">&#39;ganglion-layers&#39;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Parvocellular On&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                     <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.02</span><span class="p">,</span>
                     <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">0.7</span><span class="p">,</span>
@@ -185,7 +183,7 @@
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Parvocellular Off&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
                     <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.02</span><span class="p">,</span>
                     <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">0.7</span><span class="p">,</span>
@@ -208,7 +206,7 @@
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Magnocellular On&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                     <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.03</span><span class="p">,</span>
                     <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span>
@@ -229,7 +227,7 @@
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Magnocellular Off&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
                     <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.03</span><span class="p">,</span>
                     <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span>
@@ -253,8 +251,8 @@
 <span class="n">_config_info</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;basic-microsaccade-generator&#39;</span> <span class="p">:{</span>
                 <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">,</span> 
-                        <span class="s1">&#39;range&#39;</span><span class="p">:[</span><span class="bp">False</span><span class="p">,</span><span class="bp">True</span><span class="p">],</span>
+                        <span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> 
+                        <span class="s1">&#39;range&#39;</span><span class="p">:[</span><span class="kc">False</span><span class="p">,</span><span class="kc">True</span><span class="p">],</span>
                         <span class="s1">&#39;doc&#39;</span><span class="p">:</span> <span class="s2">&quot;The microsaccade generator is not implemented in convis.&quot;</span>
                         <span class="p">},</span>
                 <span class="s1">&#39;pixels-per-degree&#39;</span><span class="p">:{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">200</span> <span class="p">},</span>
@@ -273,7 +271,7 @@
                 <span class="s1">&#39;pixels-per-degree&#39;</span><span class="p">:{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mf">5.0</span> <span class="p">}</span>
             <span class="p">},</span>
             <span class="s1">&#39;log-polar-scheme&#39;</span> <span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">},</span>
+                <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
                 <span class="s1">&#39;fovea-radius__deg&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
                 <span class="s1">&#39;scaling-factor-outside-fovea__inv-deg&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
             <span class="p">},</span>
@@ -305,7 +303,7 @@
                             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">1</span>
                             <span class="p">},</span>
                         <span class="s1">&#39;undershoot&#39;</span><span class="p">:</span> <span class="p">{</span>
-                            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">},</span>
+                            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
                             <span class="s1">&#39;relative-weight&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">},</span>
                             <span class="s1">&#39;tau__sec&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">}</span>
                         <span class="p">}</span>                    
@@ -324,7 +322,7 @@
                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span> 
                         <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;Cell Layer&#39;</span> <span class="p">},</span>
                     <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="p">{</span> 
-                        <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">},</span>
+                        <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
                     <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="p">{</span> 
                         <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;On&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Off&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> 
                         <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">},</span>
@@ -409,7 +407,7 @@
 <span class="sd">        &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">_default_config</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_default_config</span><span class="p">)</span>
-<div class="viewcode-block" id="RetinaConfiguration.get"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.get"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Retrieves values from the configuration.</span>
 
@@ -435,7 +433,7 @@
             <span class="k">return</span> <span class="n">default</span>
 
         <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">default</span><span class="p">)</span></div>
-<div class="viewcode-block" id="RetinaConfiguration.set"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">layer_filter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.set"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">layer_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            shortcuts for frequent configuration values</span>
 
@@ -500,24 +498,24 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">[</span><span class="s1">&#39;outer-plexiform-layers&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;linear-version&#39;</span><span class="p">][</span><span class="s1">&#39;undershoot&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;size__deg&#39;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion-layers&#39;</span><span class="p">,[]):</span>
-                <span class="k">if</span> <span class="n">layer_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer_filter</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">layer_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer_filter</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
                     <span class="k">continue</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{})</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;square-array&#39;</span><span class="p">,{})</span>
-                <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;size-x__deg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;size-y__deg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;uniform-density__inv-deg&#39;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion-layers&#39;</span><span class="p">,[]):</span>
-                <span class="k">if</span> <span class="n">layer_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer_filter</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">layer_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer_filter</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
                     <span class="k">continue</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{})</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;square-array&#39;</span><span class="p">,{})</span>
-                <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;square-array&#39;</span><span class="p">][</span><span class="s1">&#39;uniform-density__inv-deg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;enabled&#39;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion-layers&#39;</span><span class="p">,[]):</span>
-                <span class="k">if</span> <span class="n">layer_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer_filter</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">layer_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer_filter</span> <span class="ow">in</span> <span class="n">l</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
                     <span class="k">continue</span>
                 <span class="n">l</span><span class="p">[</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
@@ -578,10 +576,10 @@
             <span class="c1"># if possible, extend the dictionary with the sub key of this element</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">tag_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_attributes</span><span class="p">(</span><span class="n">tag_name</span><span class="p">,</span><span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="p">))</span>
-                <span class="k">return</span> <span class="bp">True</span>
+                <span class="k">return</span> <span class="kc">True</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
         <span class="n">new_config</span> <span class="o">=</span> <span class="p">{}</span>
@@ -610,7 +608,7 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">units</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;all-units&#39;</span><span class="p">)</span>
                     <span class="n">gl_config</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">units</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;unit&#39;</span><span class="p">):</span>
                             <span class="c1"># we assume that all units have complete information or we fail</span>
                             <span class="n">gl_config</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
@@ -639,11 +637,11 @@
 
 <span class="sd">            Attributes that are not understood by the original Virtual Retina are removed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">add_element</span><span class="p">(</span><span class="n">tag_name</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">config_is_parent_config</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">add_element</span><span class="p">(</span><span class="n">tag_name</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">config_is_parent_config</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">config_is_parent_config</span><span class="p">:</span>
-                <span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tag_name</span><span class="p">,{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">})</span>
+                <span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tag_name</span><span class="p">,{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
             <span class="k">if</span> <span class="s1">&#39;enabled&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;enabled&#39;</span><span class="p">]:</span>
                 <span class="n">e</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -655,15 +653,15 @@
         <span class="n">retina</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;retina&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">)</span>
         <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;log-polar-scheme&#39;</span><span class="p">,</span> <span class="n">retina</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">layer_config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;outer-plexiform-layers&#39;</span><span class="p">,[]):</span>
-            <span class="n">opl_layer</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;outer-plexiform-layer&#39;</span><span class="p">,</span> <span class="n">retina</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
-            <span class="n">lin</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;linear-version&#39;</span><span class="p">,</span> <span class="n">opl_layer</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">opl_layer</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;outer-plexiform-layer&#39;</span><span class="p">,</span> <span class="n">retina</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">lin</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;linear-version&#39;</span><span class="p">,</span> <span class="n">opl_layer</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
             <span class="n">undershoot</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;undershoot&#39;</span><span class="p">,</span> <span class="n">lin</span><span class="p">,</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;linear-version&#39;</span><span class="p">,{}))</span>
         <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">,</span> <span class="n">retina</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">)</span>
         <span class="n">layer_start</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">layer_config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion-layers&#39;</span><span class="p">,[]):</span>
-            <span class="n">ganglion_layer</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;ganglion-layer&#39;</span><span class="p">,</span> <span class="n">retina</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">ganglion_layer</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;ganglion-layer&#39;</span><span class="p">,</span> <span class="n">retina</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">spiking_channel</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,</span> <span class="n">ganglion_layer</span><span class="p">,</span> <span class="n">layer_config</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">spiking_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="s1">&#39;units&#39;</span> <span class="ow">in</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{}):</span>
+            <span class="k">if</span> <span class="n">spiking_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;units&#39;</span> <span class="ow">in</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{}):</span>
                 <span class="n">all_units</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">spiking_channel</span><span class="p">,</span> <span class="s1">&#39;all-units&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">u</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,[])):</span>
                     <span class="n">unit</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">all_units</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">)</span>
@@ -671,21 +669,21 @@
                     <span class="n">unit</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;y-offset__deg&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span><span class="mf">0.0</span><span class="p">)))</span>
                     <span class="n">unit</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;mvaspike-id&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="n">layer_start</span><span class="p">)))</span>
                 <span class="n">layer_start</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,[]))</span>
-            <span class="n">square_array</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;square-array&#39;</span><span class="p">,</span> <span class="n">spiking_channel</span><span class="p">,</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">}))</span>
-            <span class="n">circular_array</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;circular-array&#39;</span><span class="p">,</span> <span class="n">spiking_channel</span><span class="p">,</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">}))</span>
+            <span class="n">square_array</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;square-array&#39;</span><span class="p">,</span> <span class="n">spiking_channel</span><span class="p">,</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}))</span>
+            <span class="n">circular_array</span> <span class="o">=</span> <span class="n">add_element</span><span class="p">(</span><span class="s1">&#39;circular-array&#39;</span><span class="p">,</span> <span class="n">spiking_channel</span><span class="p">,</span> <span class="n">layer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">,{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}))</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ET</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">))</span></div>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">copy</span>
-        <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">))</span>
-</div>
+        <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">))</span></div>
+
 <div class="viewcode-block" id="default_config"><a class="viewcode-back" href="../../retina.html#convis.retina.default_config">[docs]</a><span class="k">def</span> <span class="nf">default_config</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">()</span>
-</div>
+    <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">()</span></div>
+
 <div class="viewcode-block" id="random_config"><a class="viewcode-back" href="../../retina.html#convis.retina.random_config">[docs]</a><span class="k">def</span> <span class="nf">random_config</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">()</span>
-</div>
-<span class="k">def</span> <span class="nf">deriche_filter_density_map</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">sigma0</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Nx</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">Ny</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">()</span></div>
+
+<span class="k">def</span> <span class="nf">deriche_filter_density_map</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">sigma0</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Nx</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Ny</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a map of how strongly a point is to be blurred.</span>
 
@@ -707,18 +705,18 @@
 
 <span class="sd">        The output should be used with `retina_base.deriche_coefficients` to generate the coefficient maps for a Deriche filter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-    <span class="n">Ny</span> <span class="o">=</span> <span class="n">Nx</span> <span class="k">if</span> <span class="n">Ny</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Ny</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="n">Ny</span> <span class="o">=</span> <span class="n">Nx</span> <span class="k">if</span> <span class="n">Ny</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Ny</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Nx</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Ny</span><span class="p">))</span>
     <span class="n">midx</span> <span class="o">=</span> <span class="n">midy</span> <span class="o">=</span> <span class="n">Nx</span><span class="o">/</span><span class="mf">2.0</span>
     <span class="n">ratiopix</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">degree_to_pixel</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">midx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">midy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.001</span>
     <span class="n">density</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
     <span class="n">log_polar_config</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log-polar-scheme&#39;</span><span class="p">,{})</span>
-    <span class="k">if</span> <span class="n">log_polar_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">log_polar_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">log_polar_K</span> <span class="o">=</span> <span class="n">log_polar_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scaling-factor-outside-fovea__inv-deg&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
         <span class="n">log_polar_R0</span> <span class="o">=</span> <span class="n">log_polar_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fovea-radius__deg&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">log_polar_K</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">log_polar_K</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">log_polar_K</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">log_polar_K</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">log_polar_K</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">log_polar_R0</span>
         <span class="n">density</span> <span class="o">=</span> <span class="n">r</span>
         <span class="n">density</span><span class="p">[</span><span class="n">r</span><span class="o">&gt;</span><span class="n">log_polar_R0</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_polar_R0</span> <span class="o">+</span> <span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">log_polar_K</span><span class="o">*</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="n">r</span><span class="o">&gt;</span><span class="n">log_polar_R0</span><span class="p">]</span><span class="o">-</span><span class="n">log_polar_R0</span><span class="p">))</span><span class="o">/</span><span class="n">log_polar_K</span>
@@ -733,14 +731,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -756,13 +751,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.3.0.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

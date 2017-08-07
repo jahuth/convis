@@ -1,4 +1,4 @@
-import png
+from . import png
 
 class Input(object):
     def __init__(self, size=(50,50), pixel_per_degree=10):

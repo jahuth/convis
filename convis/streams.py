@@ -480,7 +480,7 @@ class StreamVisualizer():
         #global _started_tkinter_main_loop
         #if not _started_tkinter_main_loop:
         #    _started_tkinter_main_loop = True
-        #    print "Starting Tk main thread..."
+        #    print("Starting Tk main thread...")
 
     def on_closing(self):
         self.closed = True
@@ -494,7 +494,7 @@ class StreamVisualizer():
         if self.auto_scale_refresh_rate:
             self.last_batch_time = (datetime.datetime.now() - self._last_put).total_seconds()
             self.refresh_rate = self.last_batch_time/float(len(new_images))
-            #print self.refresh_rate
+            #print(self.refresh_rate)
         self._last_put = datetime.datetime.now()
         #if hasattr(self,'root'):
         #    self.root.title(str(len(self.last_buffer))+' Images buffered')
@@ -525,7 +525,7 @@ class StreamVisualizer():
                     self.decay_activity += image_buffer
                     #refresh = self.image.info.get('refresh',refresh)
                 except Exception as e:
-                    #print e
+                    #print(e)
                     raise
                     #pass
         function_lag = (datetime.datetime.now() - function_start).total_seconds()
@@ -553,7 +553,7 @@ class StreamVisualizer():
                 self.root.title(str(len(self.last_buffer))+' Images buffered')
                 self.display = self.image1
             except Exception as e:
-                #print e
+                #print(e)
                 raise
                 #pass
         self.root.after(int(50), self.update_image)
@@ -586,7 +586,7 @@ def _create_mainloop():
     _main_root.title('Hidden Display')
     _main_root.withdraw()
     _started_tkinter_main_loop = True
-    print "Starting Tk main thread..."
+    print("Starting Tk main thread...")
     _main_root.mainloop()    
 
 def run_visualizer():
@@ -638,7 +638,7 @@ class VideoReader(Stream):
         try:
             import cv2
         except:
-            print """ OpenCV has to be installed for video input """
+            print(""" OpenCV has to be installed for video input """)
             raise
         self.cv2_module = cv2
         self.size =size
@@ -694,7 +694,7 @@ class VideoWriter(Stream):
         try:
             import cv2
         except:
-            print """ OpenCV has to be installed for video output """
+            print(""" OpenCV has to be installed for video output """)
             raise
         fourcc = cv2.VideoWriter_fourcc(*codec)
         self.out = cv2.VideoWriter()

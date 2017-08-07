@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import matplotlib
 import matplotlib.pylab as plt
@@ -300,7 +301,7 @@ def start_server():
                             self.send_header('Content-length',str(tmpFile.len))
                             self.end_headers()
                             jpg.save(self.wfile,'JPEG')
-                            print e
+                            print(e)
                             break
                 else:
                     self.send_response(404)
@@ -406,7 +407,7 @@ def start_server():
                 self.wfile.write("Not a valid request!")
                 pass #SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
     httpd = SocketServer.ThreadingTCPServer(('localhost', PORT),CustomHandler)
-    print "serving at port", PORT
+    print("serving at port", PORT)
     import webbrowser
     webbrowser.open('http://localhost:'+str(PORT))
     httpd.serve_forever()

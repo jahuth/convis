@@ -1,5 +1,5 @@
-import base
-import theano_utils
+from . import base
+from . import theano_utils
 import theano
 import theano.tensor as T
 from . import numerical_filters
