@@ -32,13 +32,13 @@ def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
     kernel = exponential_filter_1d(tau=tau,n=n,normalize=normalize,resolution=resolution,amplification=amplification)
     return kernel.reshape((1,len(kernel),1,1,1))
 
-def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10):
+def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10,max_steps=100):
     if resolution is None:
         resolution = default_resolution
     tau_in_steps = resolution.seconds_to_steps(tau)
     if n == 0:
         a = amplification/tau_in_steps
-        length = max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps)
+        length = min(max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps),max_steps)
         if length <= 1:
             return np.ones(1)
         t = np.linspace(1.0,length,length)
