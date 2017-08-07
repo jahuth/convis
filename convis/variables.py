@@ -415,7 +415,7 @@ class ResolutionInfo(object):
             return default_resolution.steps_to_seconds(steps)
         return float(steps) / self.steps_per_second
 
-default_resolution = ResolutionInfo(10.0,1000.0,1.0)
+default_resolution = ResolutionInfo(10.0,1000.0,1.0,filter_epsilon=0.001)
 
 
 def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):

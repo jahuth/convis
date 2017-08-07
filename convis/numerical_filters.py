@@ -63,7 +63,7 @@ def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=Tr
         return np.ones(1)
     tau_in_steps = resolution.seconds_to_steps(tau)
     # we amplify the kernel to enforce greater precision
-    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=100.0*relative_weight)/100.0
+    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=relative_weight)
     return np.concatenate([[1], kernel],axis=0)
 
 def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
