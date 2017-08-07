@@ -338,7 +338,7 @@ class Variable(object):
         return ins
 
 class ResolutionInfo(object):
-    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0,filter_epsilon = 0.001):
+    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0,filter_epsilon = 0.0001):
         """
             A resolution object tells a model how the dimensions of a
             discreet filter relate to the input in terms of:
@@ -747,6 +747,7 @@ def create_context_O(var=None, **kwargs):
     node = get_convis_attribute(var,'node')
     model = None
     get_config = None
+    get_config_value = None
     if node is not None:
         model = node.get_model()
         get_config = node.get_config
