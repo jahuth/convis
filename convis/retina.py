@@ -101,18 +101,18 @@ class Retina(Model):
         def choose_class(key,default_class):
             if key == True:
                 return default_class
-            return kwargs.get(key, default_class)
+            return key
 
 
-        if kwargs.get('opl',True) != False:
-            self.opl = choose_class('opl',OPLLayer)(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
-            if kwargs.get('bipolar',True) == False:
+        if opl != False:
+            self.opl = choose_class(opl,OPLLayer)(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
+            if bipolar == False:
                 self.add_output(self.opl)
                 if self.debug:
                     print('adding opl output')
-        if kwargs.get('bipolar',True) != False:
-            self.bipol = choose_class('bipolar',BipolarLayer)(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
-            if kwargs.get('ganglion_input',True) == False:
+        if bipolar != False:
+            self.bipol = choose_class(bipolar,BipolarLayer)(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
+            if ganglion_input == False:
                 self.add_output(self.bipol)
                 if self.debug:
                     print('adding bipolar output')
@@ -123,8 +123,8 @@ class Retina(Model):
                 gl_name = ganglion_config.get('name','')
                 if gl_name != '':
                     gl_name = '_'+gl_name
-                if kwargs.get('ganglion_input',True) != False:
-                    gang_in = choose_class('ganglion_input',GanglionInputLayer)(name='GanglionInputLayer'+gl_name,model=self,config=ganglion_config)
+                if ganglion_input != False:
+                    gang_in = choose_class(ganglion_input,GanglionInputLayer)(name='GanglionInputLayer'+gl_name,model=self,config=ganglion_config)
                     self.ganglion_input_layers.append(gang_in)
                     if ganglion_spikes == False:
                         self.add_output(gang_in)
@@ -132,7 +132,7 @@ class Retina(Model):
                             print('adding ganglion input output')
                 if ganglion_spikes != False:
                     if 'spiking-channel' in ganglion_config and ganglion_config['spiking-channel'].get('enabled',True) != False:
-                        gang_spikes = choose_class('ganglion_spikes',GanglionSpikingLayer)(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
+                        gang_spikes = choose_class(ganglion_spikes,GanglionSpikingLayer)(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
                         if self.debug:
                             print('adding ganglion spikes output')

@@ -14,7 +14,7 @@ class TestConvis(unittest.TestCase):
         import numpy as np
         ret = convis.retina.Retina()
         ret.debug = True
-        stimulus = np.zeros((2000,50,50))
+        stimulus = np.zeros((2000,20,20))
         T,X,Y = np.meshgrid(np.arange(stimulus.shape[0]),
                             np.arange(stimulus.shape[1]),
                             np.arange(stimulus.shape[2]),indexing='ij')
@@ -42,11 +42,11 @@ class TestConvisFilters(unittest.TestCase):
         import convis
         import numpy as np
         tau = 0.1
-        resolution = convis.variables.ResolutionInfo()
-        f = convis.numerical_filters.exponential_filter_1d(tau,n=0)
-        self.assertTrue(np.abs(np.sum(f) - 1.0)<0.1,msg="Exponential filter is not normalized.")
-        f = convis.numerical_filters.exponential_filter_1d(tau,n=4)
-        self.assertTrue(np.abs(np.sum(f) - 1.0)<0.1,msg="Cascade exponential filter is not normalized.")
+        resolution = convis.variables.ResolutionInfo(pixel_per_degree=10.0,filter_epsilon = 0.0001)
+        f = convis.numerical_filters.exponential_filter_1d(tau,n=0,resolution=resolution)
+        self.assertTrue(np.abs(np.sum(f) - 1.0)<0.1,msg="Exponential filter is not normalized. %s"%str([np.abs(np.sum(f) - 1.0),0.1]))
+        f = convis.numerical_filters.exponential_filter_1d(tau,n=4,resolution=resolution)
+        self.assertTrue(np.abs(np.sum(f) - 1.0)<0.1,msg="Cascade exponential filter is not normalized. %s"%str([np.abs(np.sum(f) - 1.0),0.1]))
     def test_gaussians(self):
         import convis
         import numpy as np
