@@ -338,7 +338,7 @@ class Variable(object):
         return ins
 
 class ResolutionInfo(object):
-    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0,filter_epsilon = 0.001):
+    def __init__(self,pixel_per_degree=10.0,steps_per_second=1000.0,input_luminosity_range=1.0,filter_epsilon = 0.0001):
         """
             A resolution object tells a model how the dimensions of a
             discreet filter relate to the input in terms of:
@@ -415,7 +415,7 @@ class ResolutionInfo(object):
             return default_resolution.steps_to_seconds(steps)
         return float(steps) / self.steps_per_second
 
-default_resolution = ResolutionInfo(10.0,1000.0,1.0)
+default_resolution = ResolutionInfo(10.0,1000.0,1.0,filter_epsilon=0.001)
 
 
 def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
@@ -752,24 +752,25 @@ def create_context_O(var=None, **kwargs):
     node = get_convis_attribute(var,'node')
     model = None
     get_config = None
+    get_config_value = None
     if node is not None:
         model = node.get_model()
         get_config = node.get_config
         get_config_value = node.get_config_value
     config_key = get_convis_attribute(var,'config_key','')
     if has_convis_attribute(var, 'config_key') and hasattr(var,'get_value'):
-        return O(var=var,node=node,model=model,resolution=getattr(model,'resolution',default_resolution),
+        return O(var=var,node=node,model=model,resolution=getattr(node,'resolution',default_resolution),
                  get_config=get_config,
                  get_config_value=get_config_value,
                  value_from_config=lambda: node.get_config_value(config_key,get_convis_attribute(var,'config_default',var.get_value())),
                  value_to_config=lambda v: node.set_config_value(config_key,v))(**kwargs)
     elif has_convis_attribute(var, 'config_key') and has_convis_attribute(var, 'config_default'):
-        return O(var=var,node=node,model=model,resolution=getattr(model,'resolution',default_resolution),
+        return O(var=var,node=node,model=model,resolution=getattr(node,'resolution',default_resolution),
                  get_config=get_config,
                  get_config_value=get_config_value,
                  value_from_config=lambda: node.get_config_value(config_key,get_convis_attribute(var,'config_default',get_convis_attribute(var, 'config_default'))),
                  value_to_config=lambda v: node.set_config_value(config_key,v))(**kwargs)
-    return O(var=var,node=node,model=model,get_config_value=get_config_value,get_config=get_config,resolution=getattr(model,'resolution',default_resolution),
+    return O(var=var,node=node,model=model,get_config_value=get_config_value,get_config=get_config,resolution=getattr(node,'resolution',default_resolution),
              value_from_config=lambda: raise_exception(Exception('No config key and default value available. '+str(get_convis_attribute(var,'name'))+'\n')))(**kwargs)
 
 

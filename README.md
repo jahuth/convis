@@ -62,6 +62,9 @@ A work around if you do not want to use `conda` is to either [compile `pygpuarra
 `convis` provides a retina model which is identical to `VirtualRetina` and tools
 to create either simpler or more complex models.
 
+A preprint of a paper about `convis` is available at bioarxiv: 
+["Convis: A Toolbox To Fit and Simulate Filter-based Models of Early Visual Processing"](https://doi.org/10.1101/169284).
+
 ## The Retina model
 
 A description of all parameters for the retina model can be obtained directly from

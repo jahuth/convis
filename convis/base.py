@@ -63,6 +63,7 @@ class GraphWrapper(object):
 
     """
     parent = None
+    _model = None
     config_dict = {}
     node_type = 'Node'
     node_description = ''
@@ -87,6 +88,25 @@ class GraphWrapper(object):
         if self.follow_scan and scan_op is None:
             self.wrap_scans(self.graph)
         self.label_variables(self.graph)
+    @property
+    def model(self):
+        return self._model
+    @model.setter
+    def model(self,m):
+        if m is not None:
+            #if m.resolution is not default_resolution:
+            if hasattr(self,'graph') and hasattr(self,'_resolution'):
+                theano_utils.replace(self.graph,self._resolution.var_pixel_per_degree,m.resolution.var_pixel_per_degree)
+                theano_utils.replace(self.graph,self._resolution.var_steps_per_second,m.resolution.var_steps_per_second)
+        self._model = m
+    @property
+    def resolution(self):
+        if self.model is not None:
+            return self.model.resolution
+        else:
+            if not hasattr(self, '_resolution'):
+                self._resolution = variables.ResolutionInfo(filter_epsilon=0.01)
+            return self._resolution
     def get_model(self):
         if hasattr(self,'model'):
             return self.model
@@ -100,7 +120,7 @@ class GraphWrapper(object):
     def get_config_value(self,key=None,default=None,type_cast=None):
         global debug
         if debug.do_debug:
-            print('retrieving',key,'as',self.config.get(key,default))
+            print(['retrieving',key,'as',self.config.get(key,default)])
         if type_cast is not None:
             return type_cast(self.get_config_value(key,default))
         return self.config.get(key,default)
@@ -453,7 +473,7 @@ def connect(list_of_lists):
             if len(last_outputs) > 0 and len(new_outputs) > 0:
                 for e1 in last_outputs:
                     for e2 in new_outputs:
-                        e2[0]+=e1[1]
+                        e2[0].add_input(e1[1])
             last_outputs = new_outputs
         return [l[0],l[-1]]
     def connect_in_parallel(l,last_outputs=[]):

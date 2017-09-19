@@ -48,7 +48,7 @@ class Retina(Model):
             Each layer can be disabled or overwritten by a different class by 
             providing the keyword arguments for this layer::
 
-                Retina(config, opl=convis.filters.retina.OPLLayerLeakyHeatNode, bipolar=False, ganglion_input=SomeCustomClass)
+                Retina(config, opl=convis.filters.retina.OPLLayerLeakyHeat, bipolar=False, ganglion_input=SomeCustomClass)
 
             This example will disable the bipolar layer and replace opl and ganglion_input
             layers with other classes. By default, the outputs of one layer that should be
@@ -57,13 +57,13 @@ class Retina(Model):
 
             The changed model looks like this::
 
-                input ->        opl (convis.filters.retina.OPLLayerLeakyHeatNode)        -> output[0]
+                input ->        opl (convis.filters.retina.OPLLayerLeakyHeat)        -> output[0]
                 input -> [ ganglion_input (eg On, SomeCustomClass)  -> ganglion_spikes ] -> output[1] 
                 input -> [ ganglion_input (eg Off, SomeCustomClass) -> ganglion_spikes ] -> output[2]
 
             This can be changed like this::
 
-                retina = Retina(config, opl=convis.filters.retina.OPLLayerLeakyHeatNode, bipolar=False, ganglion_input=SomeCustomClass)
+                retina = Retina(config, opl=convis.filters.retina.OPLLayerLeakyHeat, bipolar=False, ganglion_input=SomeCustomClass)
                 for layer in retina.ganglion_input_layers:
                     # each ganglion_input recieves input from the opl
                     layer.add_input(retina.opl)
@@ -101,17 +101,17 @@ class Retina(Model):
         def choose_class(key,default_class):
             if key == True:
                 return default_class
-            return kwargs.get(key, default_class)
+            return key
 
 
         if opl != False:
-            self.opl = choose_class(opl,OPLLayerNode)(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
+            self.opl = choose_class(opl,OPLLayer)(name='OPL',model=self,config=self.config.retina_config['outer-plexiform-layers'][0]['linear-version'])
             if bipolar == False:
                 self.add_output(self.opl)
                 if self.debug:
                     print('adding opl output')
         if bipolar != False:
-            self.bipol = choose_class(bipolar,BipolarLayerNode)(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
+            self.bipol = choose_class(bipolar,BipolarLayer)(name='Bipolar',model=self,config=self.config.retina_config['contrast-gain-control'])
             if ganglion_input == False:
                 self.add_output(self.bipol)
                 if self.debug:
@@ -124,7 +124,7 @@ class Retina(Model):
                 if gl_name != '':
                     gl_name = '_'+gl_name
                 if ganglion_input != False:
-                    gang_in = choose_class(ganglion_input,GanglionInputLayerNode)(name='GanglionInputLayer'+gl_name,model=self,config=ganglion_config)
+                    gang_in = choose_class(ganglion_input,GanglionInputLayer)(name='GanglionInputLayer'+gl_name,model=self,config=ganglion_config)
                     self.ganglion_input_layers.append(gang_in)
                     if ganglion_spikes == False:
                         self.add_output(gang_in)
@@ -132,7 +132,7 @@ class Retina(Model):
                             print('adding ganglion input output')
                 if ganglion_spikes != False:
                     if 'spiking-channel' in ganglion_config and ganglion_config['spiking-channel'].get('enabled',True) != False:
-                        gang_spikes = choose_class(ganglion_spikes,GanglionSpikingLayerNode)(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
+                        gang_spikes = choose_class(ganglion_spikes,GanglionSpikingLayer)(name='GanglionSpikes_'+gl_name,model=self,config=ganglion_config['spiking-channel'])
                         self.outputs.append(gang_spikes.output)
                         if self.debug:
                             print('adding ganglion spikes output')
