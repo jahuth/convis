@@ -3,3 +3,4 @@ matplotlib
 Theano
 litus
 Pillow
+future
