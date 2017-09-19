@@ -138,7 +138,7 @@ def fake_filter(*actual_filters,**kwargs):
     shapes = np.array(np.sum([[aa-1 for aa in a.shape] for a in actual_filters],0) + np.ones(5),dtype=int)
     new_filter = np.zeros(shapes)
     if kwargs.get("centered",True):
-        new_filter[:,0,:,new_filter.shape[-2]/2,new_filter.shape[-1]/2] = 1
+        new_filter[:,0,:,int(new_filter.shape[-2]/2),int(new_filter.shape[-1]/2)] = 1
     else:
         new_filter[:,0,:,0,0] = 1
     return new_filter.reshape(shapes)

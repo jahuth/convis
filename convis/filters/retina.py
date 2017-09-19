@@ -405,7 +405,9 @@ class BipolarLayerNode(Layer):
             s1 = (inhibition_smoothing_kernel.shape[1]-1)/2
             s1end = preceding_V_bip.shape[1] + s1
             inhibition = as_variable((conv2d((lambda_amp*(preceding_V_bip)**2 * b_0 
-                                       - preceding_inhibition * a_1) / a_0, inhibition_smoothing_kernel, border_mode='full')[s0:s0end,s1:s1end]),'smoothed_inhibition')
+                                         - preceding_inhibition * a_1) / a_0, 
+                                      inhibition_smoothing_kernel,
+                                      border_mode='full')[T.cast(s0,'int32'):T.cast(s0end,'int32'),T.cast(s1,'int32'):T.cast(s1end,'int32')]),'smoothed_inhibition')
             # // # missing feature from Virtual Retina:
             # // ##if(gCoupling!=0)
             # // ##  leakyHeatFilter.radiallyVariantBlur( *targets ); //last_values...

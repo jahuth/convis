@@ -1,6 +1,7 @@
 import numpy as np
 import glob,litus
 import datetime
+from future.utils import iteritems as _iteritems
 
 """
 Test::
@@ -37,7 +38,7 @@ class InrImageStreamer(object):
         self.file = open(filename,'r')
         self.raw_header = self.file.read(256)
         self.header = dict([h.split('=') for h in self.raw_header.split('\n') if '=' in h])
-        self.header = dict([(k,litus._make_an_int_if_possible(v)) for k,v in self.header.iteritems()])
+        self.header = dict([(k,litus._make_an_int_if_possible(v)) for k,v in _iteritems(self.header)])
         self.z = z
         self.last_image = np.zeros((50,50))
         self.start_at = 0
@@ -133,7 +134,7 @@ class InrImageStreamWriter(object):
     def write_header(self):
         self.file.seek(0)
         self.header['VDIM'] = self.image_i
-        header = "#INRIMAGE-4#{\n"+"\n".join([str(k) +'='+str(v) for k,v in self.header.iteritems()])
+        header = "#INRIMAGE-4#{\n"+"\n".join([str(k) +'='+str(v) for k,v in _iteritems(self.header)])
         header = header + ('\n' * (252 - len(header))) + "##}"
         self.file.write(header)
     def __enter__(self):

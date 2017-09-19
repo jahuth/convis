@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from future.utils import iteritems as _iteritems
 
 def _var_to_json_safe(v):
     if hasattr(v,'get_value'):
@@ -21,7 +22,7 @@ def save_dict_to_json(filename,d):
         arrays to a json file.
     """
     with open(filename,'w') as fp:
-        dat = [(p,_var_to_json_safe(param)) for (p,param) in d.iteritems()]
+        dat = [(p,_var_to_json_safe(param)) for (p,param) in _iteritems(d)]
         json.dump(dict(dat), fp)
 def load_dict_from_json(filename):
     """
@@ -31,5 +32,5 @@ def load_dict_from_json(filename):
     with open(filename,'r') as fp:
         dat = json.load(fp)
         assert(type(dat) == dict)
-        dat = dict([(p,_json_safe_to_value(param)) for (p,param) in dat.iteritems()])
+        dat = dict([(p,_json_safe_to_value(param)) for (p,param) in _iteritems(dat)])
     return dat

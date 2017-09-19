@@ -26,6 +26,11 @@ from . import o
 from .o import O, Ox, save_name
 from collections import OrderedDict
 
+try:
+    from functools import reduce
+except:
+    pass
+
 ### Node and Model classes
 
 def len_parents(n):
@@ -159,7 +164,7 @@ class GraphWrapper(object):
             if get_convis_attribute(v,'name') is None:
                 set_convis_attribute(v,'name','scan_output_'+str(i))
             as_output(v)
-        for v in my_named_vars + [v for v in my_scan_vars if v.owner.op != self.scan_op]:
+        for v in list(my_named_vars) + list([v for v in my_scan_vars if v.owner.op != self.scan_op]):
             if not get_convis_attribute(v,'path',None) is None:
                 if get_convis_attribute(v,'path')[0] == self:
                     continue # we already are the owner of this variable
@@ -795,7 +800,10 @@ class Model(object):
             for c in get_convis_attribute(v,'connects'):
                 node_dict.setdefault(c[1],[]).append(c[0])
         possible_start_nodes = node_dict.keys()
-        possible_end_nodes = reduce(lambda x,y: x+y, node_dict.values())
+        try:
+            possible_end_nodes = reduce(lambda x,y: x+y, node_dict.values())
+        except:
+            possible_end_nodes = []
         true_start_nodes = []
         for e in possible_start_nodes:
             if not e in possible_end_nodes:

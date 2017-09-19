@@ -9,6 +9,7 @@ import socket
 import sys, os
 import thread
 import numpy as np
+from future.utils import iteritems as _iteritems
 
 def pngsave(A, file, info={}):
     """
@@ -21,7 +22,7 @@ def pngsave(A, file, info={}):
     im = Image.fromarray(256.0*A).convert('RGB')
     reserved = ('interlace', 'gamma', 'dpi', 'transparency', 'aspect')
     meta = PngImagePlugin.PngInfo()
-    for k,v in info.iteritems():
+    for k,v in _iteritems(info):
         if k in reserved: continue
         meta.add_text(k, v, 0)
     im.save(file, "PNG", pnginfo=meta)
@@ -93,7 +94,7 @@ def png_client(images,info={},port=10000,host='localhost',compress_level=0,resiz
             output = StringIO.StringIO()
             meta = PngImagePlugin.PngInfo()
             reserved = ('interlace', 'gamma', 'dpi', 'transparency', 'aspect')
-            for k,v in info.iteritems():
+            for k,v in _iteritems(info):
                 if k in reserved:
                     continue
                 meta.add_text(str(k), str(v), 0)

@@ -6,9 +6,10 @@ This module is a compatibility layer between the Virtual Retina configurations a
 import xml.etree.ElementTree as ET
 import collections
 import copy
+from future.utils import iteritems as _iteritems
 
 def dict_recursive_update(d, u):
-    for k, v in u.iteritems():
+    for k, v in _iteritems(u):
         if isinstance(v, collections.Mapping):
             r = dict_recursive_update(d.get(k, {}), v)
             d[k] = r

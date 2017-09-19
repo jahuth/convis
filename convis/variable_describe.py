@@ -10,6 +10,7 @@ import numpy as np
 from .o import save_name
 from .variables import get_convis_attribute, has_convis_attribute, full_path
 import inspect
+from future.utils import iteritems as _iteritems
 
 plotting_possible = False
 plotting_exceptions = []
@@ -327,13 +328,13 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     if type(v) in [dict] or hasattr(v,'__iteritems__'):
         uid = uuid.uuid4().hex
         s = "<div class='convis_description list'>"
-        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
+        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else _iteritems(v)
         s += "<b id="+uid+" "+on_click_toggle+" >+</b>&nbsp;"
         for (k,vv) in iteration:
             s += '| <a style="text-decoration: none; font-size: 8pt;" href="#'+uid+save_name(k)+'">'+str(k)+'</a> '
         s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
         s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;'>"
-        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else v.iteritems()
+        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else _iteritems(v)
         for (k,vv) in iteration:
             s += "<div class='convis_description dict_item'><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b> <a style=\"text-decoration: none;\" href='#"+uid+"''>&#8617;</a>"
             s += "<div class='description_content_replacer' style='border-left: 0px solid #ddd; padding-left: 5px; display: none;'>(&#8230;)</div>"

@@ -21,7 +21,7 @@
     to avoid name conflicts: All attributes/methods *without* a leading underscrore
     are user supplied!
 
-        a_new_o.__iteritems__() # is the same as a_new.__dict__.iteritems()
+        a_new_o.__iteritems__() # is the same as a_new.__dict__.iteritems() or .items() in Python 3
 
     The `Ox` object is an *extended* version of an `O` object. It converts
     lists, dictionaries and tuples *recursively*. Also it provides the special
@@ -37,6 +37,7 @@
     This can be used to switch between a parameterized and a dense kernel.
 
 """
+from future.utils import iteritems as _iteritems
 
 var_name_counter = 0
 def save_name(n):
@@ -140,7 +141,7 @@ class O(object):
     def __iterkeys__(self):
         return iter([k for (k,v) in self.__dict__.items() if not k.startswith('_')])
     def __iteritems__(self):
-        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_')])
+        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_')]) 
     def __setattr__(self, name, value):
         if name in self.__dict__.keys():
             var_to_replace = getattr(self, name)
@@ -310,7 +311,7 @@ class Ox(O):
 
     """
     def __init__(self,**kwargs):
-        for k,v in kwargs.iteritems():
+        for k,v in _iteritems(kwargs):
             if not k.startswith('_'):
                 self.__dict__[save_name(k)]= self.__make_Ox(v)
             else:

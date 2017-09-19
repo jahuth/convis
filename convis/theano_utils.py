@@ -334,24 +334,25 @@ def pad5(ar,N,axis=3,mode='mirror',c=0.0):
     ar = make_nd(ar,5)
     if N == 0:
         return ar
-    N1,N2 = (N/2),N-(N/2)
+    N1,N2 = T.cast((N/2), 'int32'),T.cast(N-(N/2), 'int32')
+    Nint = T.cast(N, 'int32')
     if mode == 'mirror':
         if axis == 1:
-            return T.concatenate([ar[:,N:0:-1,:,:,:],ar],axis=1)
+            return T.concatenate([ar[:,Nint:0:-1,:,:,:],ar],axis=1)
         if axis == 3:
             return T.concatenate([ar[:,:,:,N1:0:-1,:],ar,ar[:,:,:,-1:-(N2+1):-1,:]],axis=3)
         if axis ==4:
             return T.concatenate([ar[:,:,:,:,N1:0:-1],ar,ar[:,:,:,:,-1:-(N2+1):-1]],axis=4)
     if mode == 'border':
         if axis == 1:
-            return T.concatenate([ar[:,:1,:,:,:]]*N+[ar],axis=1)
+            return T.concatenate([ar[:,:1,:,:,:]]*Nint+[ar],axis=1)
         if axis == 3:
             return T.concatenate([ar[:,:,:,:1,:]]*N1+[ar]+[ar[:,:,:,-1:,:]]*N2,axis=3)
         if axis ==4:
             return T.concatenate([ar[:,:,:,:,:1]]*N1+[ar]+[ar[:,:,:,:,-1:]]*N2,axis=4)
     if mode == 'const':
         if axis == 1:
-            return T.concatenate([c*T.ones_like(ar[:,N:0:-1,:,:,:]),ar],axis=1)
+            return T.concatenate([c*T.ones_like(ar[:,Nint:0:-1,:,:,:]),ar],axis=1)
         if axis == 3:
             return T.concatenate([c*T.ones_like(ar[:,:,:,N1:0:-1,:]),ar,c*T.ones_like(ar[:,:,:,-1:-(N2+1):-1,:])],axis=3)
         if axis ==4:

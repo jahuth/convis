@@ -664,7 +664,12 @@ def as_parameter(v,init=None,name=None,**kwargs):
             self.set_value(new_val)
             set_convis_attribute(self,'initialized',True)
             return self
-        set_convis_attribute(v,'update',new.instancemethod(update, v, None))
+        if new is False:
+            # new is a module that can create instancemethods for Python 2
+            from types import MethodType as instancemethod
+            v.update = instancemethod(update,v)
+        else:
+            set_convis_attribute(v,'update',new.instancemethod(update, v, None))
     override_copy(v)
     return add_kwargs_to_v(v,**kwargs)
 
