@@ -11,8 +11,8 @@ If you discover unexpected behaviour, please leave an Issue on github.
 
 Also there are two mailing lists for people interested in Convis:
 
- * To recieve announcements of changes, please subsribe to: convis-users@googlegroups.com
- * If you want to participate in the development, please subscribe to: convis-dev@googlegroups.com 
+ * To recieve announcements of changes, please subsribe to: [convis-users@googlegroups.com](https://groups.google.com/forum/#!forum/convis-users)
+ * If you want to participate in the development, please subscribe to: [convis-dev@googlegroups.com](https://groups.google.com/forum/#!forum/convis-dev)
 
 
 
