@@ -2,23 +2,32 @@
 
 This python package provides an implementation of the [Virtual Retina](http://www-sop.inria.fr/neuromathcomp/public/software/virtualretina/) developed by Adrien Wohrer. It uses `theano` to simulate spike trains of retinal ganglion cells by directing the input through a number of computation nodes. Each node might do linear or nonlinear computations, eg. convolve the inpute with a spatio-temporal kernel or apply gain control.
 
-
 TravisCI on the master branch: [![Build Status](https://travis-ci.org/jahuth/convis.svg?branch=master)](https://travis-ci.org/jahuth/convis) 
+
+We are supporting Python 2.7 right now, but are aiming to support Python 3 as well at some point.
+
+Convis is under development and some features might not work in the current master branch or the PyPi releases.
+If you discover unexpected behaviour, please leave an Issue on github.
+
+Also there are two mailing lists for people interested in Convis:
+
+ * To recieve announcements of changes, please subsribe to: convis-users@googlegroups.com
+ * If you want to participate in the development, please subscribe to: convis-dev@googlegroups.com 
+
+
 
 Usage Example:
 
 ```python
 import convis
 
-c = convis.retina.RetinaConfiguration()
-ret = convis.retina.Retina(c)
-ret.create_function()
+ret = convis.retina.Retina()
 inp = np.zeros((200,50,50))
 inp[:,20:30,20:30] = 255.0*(rand(*inp[:,20:30,20:30].shape)<0.2)
 out = ret.run(inp)
 
-plot(np.mean(out[0],(1,2)))
-plot(np.mean(out[1],(1,2)))
+plot(np.mean(out[0],(1,2))) # On cells
+plot(np.mean(out[1],(1,2))) # Off cells
 ```
 
 An older version was published as <a href="https://github.com/jahuth/retina">the retina package</a>
@@ -31,6 +40,21 @@ Requirements for the base installation are: Python 2.7 or Python 3.5, Numpy, Sci
 ```bash
 pip install convis
 ```
+
+or install the latest version from github:
+
+```bash
+pip install git+https://github.com/jahuth/convis.git
+```
+
+or clone the repository and install it locally:
+
+```bash
+git clone https://github.com/jahuth/convis.git
+# change something in the source code
+pip install -e convis
+```
+
 
 I recommend installing opencv, and jupyter notebook, if you do not already have it installed:
 
