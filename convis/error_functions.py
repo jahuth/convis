@@ -1,7 +1,4 @@
 from . import base
-from . import theano_utils
-import theano
-import theano.tensor as T
 from . import numerical_filters
 
 def simple_difference(a,b,name='error'):

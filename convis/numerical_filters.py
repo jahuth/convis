@@ -1,19 +1,10 @@
-import theano
-import theano.tensor as T
 import numpy as np
 import matplotlib.pylab as plt
-from .theano_utils import conv3d, conv2d
 from .variables import default_resolution
 
 
-dtensor5 = T.TensorType('float64', (False,)*5)
-
-__A = dtensor5('A')
-__B = dtensor5('B')
-__C = conv3d(__A,__B)
-_conv_func = theano.function(inputs=[__A,__B], outputs=__C)
-
 def conv(a,b,padding_things_equal=[1,3,4],padding_things_tail=[1],*args,**kwargs):
+    raise Exception("Needs reimplementation!")
     a_ = a.copy()
     b_ = b.copy()
     a_ = np.pad(a_,[(s-1,s-1) for si,s in enumerate(b_.shape)],mode='constant')

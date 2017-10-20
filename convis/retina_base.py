@@ -6,26 +6,9 @@ This module contains base classes and useful functions for the retina module.
 
 
 import litus
-from .imports import theano
-from .imports import T
 import numpy as np
 import matplotlib.pylab as plt
-from .theano_utils import conv3d, conv2d
 import uuid 
-
-dtensor5 = T.TensorType('float64', (False,)*5)
-
-A = dtensor5('A')
-B = dtensor5('B')
-C = conv3d(A,B)
-_conv_func = theano.function(inputs=[A,B], outputs=C)
-
-def conv(a,b,padding_things_equal=[1,3,4],padding_things_tail=[1],*args,**kwargs):
-    a_ = a.copy()
-    b_ = b.copy()
-    a_ = np.pad(a_,[(s-1,s-1) for si,s in enumerate(b_.shape)],mode='constant')
-    return _conv_func(a_,b_)
-
 
 ### Functions to create filters 
 #

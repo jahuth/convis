@@ -1,9 +1,6 @@
 import litus
-from ..imports import theano
-from ..imports import T
 import numpy as np
 import matplotlib.pylab as plt
-from ..theano_utils import conv3d, conv2d
 import uuid
 try:
     from exceptions import NotImplementedError
@@ -11,7 +8,6 @@ except ImportError:
     pass
 
 from ..base import *
-from ..theano_utils import make_nd, dtensor5, pad5, pad5_txy, pad3_txy
 from .. import retina_base
 from .. import variables
 from .. import numerical_filters

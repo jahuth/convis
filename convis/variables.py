@@ -1,4 +1,3 @@
-import theano
 try:
     import new
 except:
@@ -6,8 +5,6 @@ except:
 from .debug import *
 from .misc_utils import unique_list
 from .o import O, Ox, save_name
-from theano.tensor.var import TensorVariable
-from theano.tensor.sharedvar import ScalarSharedVariable
 import numpy as np
 replaceable_theano_vars = []#[TensorVariable,ScalarSharedVariable]
 
@@ -374,10 +371,10 @@ class ResolutionInfo(object):
         self._steps_per_second = steps_per_second
         self.input_luminosity_range = input_luminosity_range
         self.filter_epsilon = filter_epsilon
-        self.var_pixel_per_degree = theano.shared(float(self.pixel_per_degree))
-        self.var_steps_per_second = theano.shared(float(self.steps_per_second))
-        self.var_input_luminosity_range = theano.shared(float(self.input_luminosity_range))
-        self.var_filter_epsilon = theano.shared(self.filter_epsilon)
+        self.var_pixel_per_degree = (float(self.pixel_per_degree))
+        self.var_steps_per_second = (float(self.steps_per_second))
+        self.var_input_luminosity_range = (float(self.input_luminosity_range))
+        self.var_filter_epsilon = (self.filter_epsilon)
     @property
     def pixel_per_degree(self):
         if self._pixel_per_degree is None:
@@ -611,6 +608,7 @@ def as_output(v,name=None,**kwargs):
     return add_kwargs_to_v(v,**kwargs)
 
 def as_parameter(v,init=None,name=None,**kwargs):
+    import theano
     cparm = None
     if type(v) in [int, float, np.ndarray, np.float, np.float16, np.float32, np.float64, np.float128,
     np.int, np.int0, np.int8, np.int16, np.int32, np.int64]:
@@ -709,6 +707,7 @@ def is_scalar(v):
     return False
 
 def shared_parameter(fun,init_object=None,**kwargs):
+    import theano
     if callable(fun):
         if init_object is None:
             init_object = create_context_O()
