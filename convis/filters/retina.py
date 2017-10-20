@@ -11,6 +11,21 @@ from ..base import *
 from .. import retina_base
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 
+"""
+Todo:
+
+ - [ ] transient filters
+ - [ ] filter inits
+ - [ ] transient filter for Ganglion Input
+ - [ ] sign for Ganglion Input
+ - [ ] Automatic padding!
+ - [ ] parsing config
+
+
+"""
+
+
+
 class SeperatableOPLFilter(Layer):
     def __init__(self):
         super(SeperatableOPLFilter, self).__init__()
@@ -100,7 +115,7 @@ class OPL(Layer):
      * :py:obj:`lambda_OPL`, :py:obj:`w_OPL` (scaling and weight parameters)
 
     """
-    def __init__(self):
+    def __init__(self,**kwargs):
         super(OPL, self).__init__()
         self.opl_filter = SeperatableOPLFilter()
     @property
@@ -122,7 +137,7 @@ class Bipolar(Layer):
             'adaptation-feedback-amplification__Hz': 0 # `ampFeedback` in virtual retina
         },
     """
-    def __init__(self):
+    def __init__(self,**kwargs):
         super(Bipolar, self).__init__()
         self.lambda_amp = as_parameter(50.0,init=lambda x: float(x.node.config.get('adaptation-feedback-amplification__Hz',50)),
                                                  name="lambda_amp")
@@ -236,7 +251,7 @@ class GanglionInput(Layer):
             },
 
     """
-    def __init__(self):
+    def __init__(self,**kwargs):
         super(GanglionInput, self).__init__()
         self.i_0 = Parameter(37.0, retina_config_name='value-at-linear-threshold__Hz')
         self.v_0 = Parameter(0.0, retina_config_name='bipolar-linear-threshold')
@@ -263,7 +278,7 @@ class GanglionSpiking(Layer):
 
     Otherwise it is set to 0.
     """
-    def __init__(self):
+    def __init__(self,**kwargs):
         super(GanglionSpiking, self).__init__()
         # parameters
         self.refr_mu = Parameter(0.003,

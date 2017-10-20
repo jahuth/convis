@@ -15,8 +15,8 @@ class Conv3d(nn.Conv3d):
             self.weight.data = torch.Tensor(w)
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
-    def exponential(self):
-        self.set_weight(nf.exponential_filter_5d(),normalize=False)
+    def exponential(self,*args,**kwargs):
+        self.set_weight(nf.exponential_filter_5d(*args,**kwargs),normalize=False)
     def gaussian(self,sig):
         self.set_weight(nf.gauss_filter_5d(sig,sig),normalize=False)
 
@@ -57,5 +57,5 @@ class Conv1d(nn.Conv1d):
             self.weight.data = torch.Tensor(w)
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
-    def exponential(self):
-        self.set_weight(nf.exponential_filter_1d(),normalize=False)
+    def exponential(self,*args,**kwargs):
+        self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)

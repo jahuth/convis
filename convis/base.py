@@ -40,7 +40,7 @@ def len_parents(n):
     if hasattr(n,'parent') and n.parent != n:
         return len_parents(n.parent)+1
     return 0
-    
+
 class Variable(torch.autograd.Variable):
     _is_convis_variable = True
     def __new__(self,x, **kwargs):
@@ -134,6 +134,11 @@ class Layer(torch.nn.Module):
     def cpu(self):
         self._use_cuda = False
         super(Layer, self).cpu()
+    @property
+    def params(self):
+        # see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py
+        # for full example on how to find parameters
+        return Ox(opl.named_parameters())
     def _apply(self, fn):
         for module in self.children():
             module._apply(fn)
