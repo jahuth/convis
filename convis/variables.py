@@ -100,12 +100,14 @@ class Variable(torch.autograd.Variable):
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
             x = np.array([x])
+        self.__dict__.update(kwargs)
         return super(Variable, self).__new__(self,torch.Tensor(x))
     def __init__(self,x, **kwargs):
         self.__dict__.update(kwargs)
 
 class State(Variable):
     def __new__(self,x, **kwargs):
+        self.__dict__.update(kwargs)
         return super(State, self).__new__(self,x)
     def __init__(self,x, **kwargs):
         self.__dict__.update(kwargs)
@@ -114,6 +116,7 @@ class Parameter(torch.nn.Parameter,Variable):
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
             x = np.array([x])
+        self.__dict__.update(kwargs)
         return super(Parameter, self).__new__(self,torch.Tensor(x))
     def __init__(self,x,default=None, **kwargs):
         #if type(x) in [int,float]:
