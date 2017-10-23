@@ -34,51 +34,14 @@ try:
 except:
     pass
 
+from .variables import Variable, State, Parameter, as_parameter, is_variable
+
 ### Node and Model classes
 
 def len_parents(n):
     if hasattr(n,'parent') and n.parent != n:
         return len_parents(n.parent)+1
     return 0
-
-class Variable(torch.autograd.Variable):
-    _is_convis_variable = True
-    def __new__(self,x, **kwargs):
-        if type(x) in [int, float]:
-            x = np.array([x])
-        return super(Variable, self).__new__(self,torch.Tensor(x))
-    def __init__(self,x, **kwargs):
-        self.__dict__.update(kwargs)
-
-class State(Variable):
-    def __new__(self,x, **kwargs):
-        return super(State, self).__new__(self,x)
-    def __init__(self,x, **kwargs):
-        self.__dict__.update(kwargs)
-
-class Parameter(torch.nn.Parameter,Variable):
-    def __new__(self,x, **kwargs):
-        if type(x) in [int, float]:
-            x = np.array([x])
-        return super(Parameter, self).__new__(self,torch.Tensor(x))
-    def __init__(self,x,default=None, **kwargs):
-        #if type(x) in [int,float]:
-        #    x = np.array([x])
-        #super(Parameter, self).__init__(torch.Tensor(x))
-        if default is not None:
-            self.default = default
-        else:
-            self.default = np.copy(x)
-        self.__dict__.update(kwargs)
-    @property
-    def shape(self):
-        return self.data.shape
-
-def as_parameter(x,**kwargs):
-    return Parameter(x, **kwargs)
-
-def is_variable(x):
-    return hasattr(x,'_is_convis_variable')
 
 class Output(object):
     def __init__(self,outs,keys=None):
