@@ -10,6 +10,7 @@ except ImportError:
 from ..base import *
 from .. import retina_base
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
+from .. import variables
 
 """
 Todo:
@@ -32,11 +33,14 @@ class SeperatableOPLFilter(Layer):
         self.center_G = Conv3d(1, 1, (1,10,10))
         self.center_G.set_weight(1.0)
         self.center_G.gaussian(0.05)
+        self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg')
         self.center_E = Conv3d(1, 1, (20,1,1))
         self.center_E.weight.data[0,0,-5,0,0] = 1.0
         self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9))
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
+        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg')
+        self.sigma_surround.set(0.05)
         self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0))
         self.surround_E.bias.data[0] = 0.0
         self.surround_E.weight.data[0,0,2,0,0] = 1.0

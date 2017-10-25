@@ -101,7 +101,7 @@ class Layer(torch.nn.Module):
     def params(self):
         # see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py
         # for full example on how to find parameters
-        return Ox(opl.named_parameters())
+        return Ox(self.named_parameters())
     def _apply(self, fn):
         for module in self.children():
             module._apply(fn)

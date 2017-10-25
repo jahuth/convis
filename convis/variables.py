@@ -16,6 +16,13 @@ if '__convis_global_lookup_table' in globals():
 else:
     globals()['__convis_global_lookup_table'] = global_lookup_table
 
+def get_convis_attribute(o,k,default):
+    return getattr(o,k,default)
+def has_convis_attribute(o,k):
+    return hasattr(o,k)
+def set_convis_attribute(o,k,v):
+    setattr(o,k,v)
+
 def full_path(v):
     return '_'.join([save_name(p) for p in get_convis_attribute(v,'path',[v])])
 
@@ -46,8 +53,8 @@ class ResolutionInfo(object):
                 new_value_in_pixel = value_in_degree * res.var_pixel_per_degree
 
 
-            Please note: The plural of pixel used for naming these functions 
-            is "pixel" and never "pixels". But to be compatible with
+            Please note: The singular of pixel is used for naming these functions:
+            "pixel" and not "pixels". But to be compatible with
             VirtualRetina, there is one exception: The configuration value
             in VirtualRetina Configuration objects is named `pixels-per-degree`.
 
@@ -100,23 +107,23 @@ class Variable(torch.autograd.Variable):
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
             x = np.array([x])
-        self.__dict__.update(kwargs)
+        for k,v in kwargs.items():
+            setattr(self,k,v)
         return super(Variable, self).__new__(self,torch.Tensor(x))
     def __init__(self,x, **kwargs):
-        self.__dict__.update(kwargs)
+        for k,v in kwargs.items():
+            setattr(self,k,v)
 
 class State(Variable):
     def __new__(self,x, **kwargs):
-        self.__dict__.update(kwargs)
         return super(State, self).__new__(self,x)
     def __init__(self,x, **kwargs):
-        self.__dict__.update(kwargs)
+        super(State, self).__init__(x,**kwargs)
 
 class Parameter(torch.nn.Parameter,Variable):
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
             x = np.array([x])
-        self.__dict__.update(kwargs)
         return super(Parameter, self).__new__(self,torch.Tensor(x))
     def __init__(self,x,default=None, **kwargs):
         #if type(x) in [int,float]:
@@ -126,7 +133,7 @@ class Parameter(torch.nn.Parameter,Variable):
             self.default = default
         else:
             self.default = np.copy(x)
-        self.__dict__.update(kwargs)
+        super(Parameter, self).__init__(x,**kwargs)
     @property
     def shape(self):
         return self.data.shape
@@ -295,3 +302,72 @@ class CallbackParameter(object):
             self.call.set()
     def get(self):
         return self.value
+
+
+class VirtualParameter(object):
+    """
+        VirtualParameters can generate parameter values
+        from a dependency structure of other parameters.
+        
+        Example::
+        
+            a = VirtualParameter(float,value=0.1)
+            b = VirtualParameter(int,value=0)
+            v = VirtualParameter(convis2.numerical_filters.exponential_filter_5d).set_callback_arguments(tau=a,n=b)
+            a.set(0.01) # updating this parameter causes the function of v to be reevaluated 
+            plot(v.get()[0,:,0,0,0])
+            b.set(2) # the function is reevaluated again
+            plot(v.get()[0,:,0,0,0])
+        
+    """
+    _is_convis_variable = True
+    def __init__(self,func=None,var=None,call=None,value=None,dependencies=[],kwargs_dependencies={},**kwargs):
+        self.func = func
+        self.name = ''
+        self.var = var
+        self.callbacks = []
+        self.value = value
+        self.dependencies = dependencies
+        for d in self.dependencies:
+            if is_callback(d):
+                d.callbacks.append(self)
+        self.kwargs_dependencies = kwargs_dependencies
+        for d in self.kwargs_dependencies.values():
+            if is_callback(d):
+                d.callbacks.append(self)
+        for k,v in kwargs.items():
+            setattr(self,k,v)
+    def __repr__(self):
+        return 'VirtualParameter('+str(self.func)+(
+            ' with variable '+str(self.var) if self.var is not None else '')+')'
+    def set_callback_arguments(self,*dependencies,**kwargs_dependencies):
+        self.dependencies = dependencies
+        for d in self.dependencies:
+            if is_callback(d):
+                d.callbacks.append(self)
+        self.kwargs_dependencies = kwargs_dependencies
+        for d in self.kwargs_dependencies.values():
+            if is_callback(d):
+                d.callbacks.append(self)
+        return self
+    def set_variable(v):
+        self.var = v
+    def set(self,v):
+        if self.func is not None:
+            self.value = self.func(v)
+        else:
+            self.value = v
+        for c in self.callbacks:
+            if hasattr(c,'update'):
+                c.update()
+            else:
+                c()
+        if self.var is not None:
+            self.var.set(self.value)
+    def get(self):
+        return self.value
+    def update(self):
+        self.value = self.func(*[get_if_callback(d) for d in self.dependencies],
+                               **dict([(k,get_if_callback(v)) for (k,v) in self.kwargs_dependencies.items()]))
+        if self.var is not None:
+            self.var.set(self.value)
