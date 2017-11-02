@@ -114,7 +114,7 @@ class Layer(torch.nn.Module):
                     if len(a.data.shape) == 5:
                         a = a[0,0,:,:,:]
             new_args.append(a)
-        o = super(Layer, self).__init__(*new_args,**kwargs)
+        o = super(Layer, self).__call__(*new_args,**kwargs)
         return o
     @property
     def params(self):
