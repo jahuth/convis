@@ -90,6 +90,7 @@ class Layer(torch.nn.Module):
     def __init__(self):
         super(Layer, self).__init__()
         self._variables = []
+        self._named_variables= {}
         self._use_cuda = False
     def cuda(self):
         self._use_cuda = True
@@ -149,9 +150,17 @@ class Layer(torch.nn.Module):
     def __setattr__(self, name, value):
         if is_variable(value):
             self._variables.append(value)
+            self._named_variables[name] = value
             self.__dict__[name] = value
         else:
             super(Layer, self).__setattr__(name, value)
+    def parse_config(self,config,prefix='',key='retina_config_key'):
+        def f(a):
+            if hasattr(a,'_variables'):
+                for v in a._variables:
+                    if hasattr(v,'retina_config_key'):
+                        v.set(config.get(prefix+v.retina_config_key))
+        self.apply(f)
 
 class Model(object):
     """

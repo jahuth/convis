@@ -50,6 +50,13 @@ class Retina(Layer):
             (['I2'], self.gang_1_input, ['I2']),
             (['I2'], self.gang_1_spikes, ['I2'])
         ]
+    def parse_config(self,config,prefix='',key='retina_config_key'):
+        self.opl.parse_config(config,prefix='outer-plexiform-layers.0.linear-version.',key=key)
+        self.bipolar.parse_config(config,prefix='contrast-gain-control.',key=key)
+        self.gang_0_input.parse_config(config,prefix='ganglion-layers.0.',key=key)
+        self.gang_0_spikes.parse_config(config,prefix='ganglion-layers.0.spiking-channel.',key=key)
+        self.gang_1_input.parse_config(config,prefix='ganglion-layers.1.',key=key)
+        self.gang_1_spikes.parse_config(config,prefix='ganglion-layers.1.spiking-channel.',key=key)
     def forward(self,inp):
         io_buffers = {'I1':inp}
         for b_out,f,b_in in self.commands:

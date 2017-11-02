@@ -23,7 +23,7 @@ def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
     kernel = exponential_filter_1d(tau=tau,n=n,normalize=normalize,resolution=resolution,amplification=amplification)
     return kernel.reshape((1,len(kernel),1,1,1))
 
-def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10):
+def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10,even=None):
     if resolution is None:
         resolution = default_resolution
     tau_in_steps = resolution.seconds_to_steps(tau)
@@ -32,6 +32,10 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
         length = max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps)
         if length <= 1:
             return np.ones(1)
+        if even is False and length%2 == 0:
+            length += 1
+        if even is True and length%2 == 1:
+            length += 1
         t = np.linspace(1.0,length,length)
         kernel =  np.exp(-np.linspace(0.4,length-0.6,length)/float(tau_in_steps))
         if normalize:
@@ -43,6 +47,10 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
             length = max_length
         if length <= 1:
             return np.ones(1)
+        if even is False and length%2 == 0:
+            length += 1
+        if even is True and length%2 == 1:
+            length += 1
         t = np.linspace(1.0,n*length,n*length)
         kernel = amplification * (n*t)**n * np.exp(-n*t/tau_in_steps) / (np.math.factorial(n-1) * tau_in_steps**(n+1))
     if np.any(np.array(kernel.shape) == 0):

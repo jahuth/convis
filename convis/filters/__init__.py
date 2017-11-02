@@ -12,11 +12,20 @@ class Conv3d(nn.Conv3d):
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape) * w
         else:
+            if len(w.shape) == 1:
+                w = w[None,None,:,None,None]
+            if len(w.shape) == 2:
+                w = w[None,None,None,:,:]
+            if len(w.shape) == 3:
+                w = w[None,None,:,:,:]
             self.weight.data = torch.Tensor(w)
+            self.kernel_size = self.weight.data.shape[2:]
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
     def exponential(self,*args,**kwargs):
-        self.set_weight(nf.exponential_filter_5d(*args,**kwargs),normalize=False)
+        self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)
+    def highpass_exponential(self,*args,**kwargs):
+        self.set_weight(nf.exponential_highpass_filter_1d(*args,**kwargs),normalize=False)
     def gaussian(self,sig):
         self.set_weight(nf.gauss_filter_5d(sig,sig),normalize=False)
 
