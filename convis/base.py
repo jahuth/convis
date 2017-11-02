@@ -97,6 +97,24 @@ class Layer(torch.nn.Module):
     def cpu(self):
         self._use_cuda = False
         super(Layer, self).cpu()
+    def __call__(self,*args,**kwargs):
+        new_args = []
+        for a in args:
+            if not hasattr(a, 'data'):
+                if not hasattr(a, 'numpy'):
+                    a = torch.autograd.Variable(a)
+                else:
+                    a = torch.autograd.Variable(torch.Tensor(a))
+            if hasattr(self,'dims'):
+                if self.dims == 5:
+                    if len(a.data.shape) == 3:
+                        a = a[None,None,:,:,:]
+                if self.dims == 3:
+                    if len(a.data.shape) == 5:
+                        a = a[0,0,:,:,:]
+            new_args.append(a)
+        o = super(Layer, self).__init__(*new_args,**kwargs)
+        return o
     @property
     def params(self):
         # see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py

@@ -30,6 +30,7 @@ Todo:
 class SeperatableOPLFilter(Layer):
     def __init__(self):
         super(SeperatableOPLFilter, self).__init__()
+        self.dims = 5
         self.center_G = Conv3d(1, 1, (1,10,10))
         self.center_G.set_weight(1.0)
         self.center_G.gaussian(0.05)
@@ -81,6 +82,7 @@ class SeperatableOPLFilter(Layer):
 class FullConvolutionOPLFilter(Layer):
     def __init__(self):
         super(FullConvolutionOPLFilter, self).__init__()
+        self.dims = 5
         self.conv = nn.Conv3d(1, 1, (20,10,10))
         self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0
@@ -121,6 +123,7 @@ class OPL(Layer):
     """
     def __init__(self,**kwargs):
         super(OPL, self).__init__()
+        self.dims = 5
         self.opl_filter = SeperatableOPLFilter()
     @property
     def filter_length(self):
@@ -143,6 +146,7 @@ class Bipolar(Layer):
     """
     def __init__(self,**kwargs):
         super(Bipolar, self).__init__()
+        self.dims = 5
         self.lambda_amp = as_parameter(50.0,init=lambda x: float(x.node.config.get('adaptation-feedback-amplification__Hz',50)),
                                                  name="lambda_amp")
         self.g_leak = as_parameter(50.0,init=lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)),
@@ -257,6 +261,7 @@ class GanglionInput(Layer):
     """
     def __init__(self,**kwargs):
         super(GanglionInput, self).__init__()
+        self.dims = 5
         self.i_0 = Parameter(37.0, retina_config_name='value-at-linear-threshold__Hz')
         self.v_0 = Parameter(0.0, retina_config_name='bipolar-linear-threshold')
         self.lambda_G = Parameter(100.0, retina_config_name='bipolar-amplification__Hz')
@@ -284,6 +289,7 @@ class GanglionSpiking(Layer):
     """
     def __init__(self,**kwargs):
         super(GanglionSpiking, self).__init__()
+        self.dims = 5
         # parameters
         self.refr_mu = Parameter(0.003,
                             retina_config_name='refr-mean__sec',
