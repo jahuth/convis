@@ -101,12 +101,14 @@ class Layer(torch.nn.Module):
     def __call__(self,*args,**kwargs):
         new_args = []
         for a in args:
-            if not hasattr(a, 'data'):
+            if type(a) is not torch.autograd.Variable:
                 if hasattr(a, 'numpy'):
                     # its hopefully a torch.Tensor
                     a = torch.autograd.Variable(a)
                 else:
                     a = torch.autograd.Variable(torch.Tensor(a))
+                if self._use_cuda:
+                    a = a.cuda()
             if hasattr(self,'dims'):
                 if self.dims == 5:
                     if len(a.data.shape) == 3:
@@ -159,7 +161,12 @@ class Layer(torch.nn.Module):
             if hasattr(a,'_variables'):
                 for v in a._variables:
                     if hasattr(v,'retina_config_key'):
-                        v.set(config.get(prefix+v.retina_config_key))
+                        if v.retina_config_key.startswith('--'):
+                            continue
+                        if hasattr(v,'set'):
+                            v.set(config.get(prefix+v.retina_config_key))
+                        else:
+                            print ('has no set:',v)
         self.apply(f)
 
 class Model(object):

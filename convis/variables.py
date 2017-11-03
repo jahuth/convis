@@ -137,6 +137,17 @@ class Parameter(torch.nn.Parameter,Variable):
     @property
     def shape(self):
         return self.data.shape
+    def set(self,v):
+        if type(v) is None:
+            return
+        if type(v) is str:
+            if '.' in v:
+                v = float(v)
+            else:
+                v = int(v)
+        if type(v) in [int, float]:
+            v = np.array([v])
+        self.data = torch.Tensor(v)
 
 def as_parameter(x,**kwargs):
     return Parameter(x, **kwargs)
@@ -263,7 +274,7 @@ def update(var,**kwargs):
 """
 
 def is_callback(v):
-    return type(v) == CallbackParameter
+    return type(v) in [CallbackParameter,VirtualParameter]
 def get_if_callback(v):
     if is_callback(v):
         return v.get()
@@ -303,6 +314,13 @@ class CallbackParameter(object):
     def get(self):
         return self.value
 
+class FakeTensor(object):
+    def __init__(self):
+        pass
+    def cuda(self,x=None):
+        return self
+    def cpu(self,x=None):
+        return self
 
 class VirtualParameter(object):
     """
@@ -321,8 +339,10 @@ class VirtualParameter(object):
         
     """
     _is_convis_variable = True
+    data = FakeTensor()
     def __init__(self,func=None,var=None,call=None,value=None,dependencies=[],kwargs_dependencies={},**kwargs):
         self.func = func
+        self._grad = None
         self.name = ''
         self.var = var
         self.callbacks = []
