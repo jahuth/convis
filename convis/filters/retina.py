@@ -34,27 +34,27 @@ class SeperatableOPLFilter(Layer):
         self.center_G = Conv3d(1, 1, (1,10,10))
         self.center_G.set_weight(1.0)
         self.center_G.gaussian(0.05)
-        self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg')
+        self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
         self.center_E = Conv3d(1, 1, (5,1,1))
         self.center_undershoot = Conv3d(1, 1, (5,1,1))
         self.center_E.weight.data[0,0,-5,0,0] = 1.0
         self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec')
         self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
-        self.f_exp_center = variables.VirtualParameter(self.center_E.exponential).set_callback_arguments(tau=self.tau_center,n=self.n_center)
+        self.f_exp_center = variables.VirtualParameter(self.center_E.exponential).set_callback_arguments(tau=self.tau_center,n=self.n_center,resolution=variables.default_resolution)
         self.undershoot_tau_center = variables.VirtualParameter(self.center_undershoot.highpass_exponential,
                                                                     value=0.1,retina_config_key='undershoot.tau__sec')
         self.undershoot_relative_weight_center = variables.VirtualParameter(self.center_undershoot.highpass_exponential,
                                                                     value=0.8,retina_config_key='undershoot.relative-weight')
-        self.f_undershoot = variables.VirtualParameter(self.center_undershoot.highpass_exponential).set_callback_arguments(tau=self.undershoot_tau_center,relative_weight=self.undershoot_relative_weight_center)
+        self.f_undershoot = variables.VirtualParameter(self.center_undershoot.highpass_exponential).set_callback_arguments(tau=self.undershoot_tau_center,relative_weight=self.undershoot_relative_weight_center,resolution=variables.default_resolution)
         self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9))
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
-        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg')
+        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
         self.sigma_surround.set(0.05)
         self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0))
         self.surround_E.bias.data[0] = 0.0
         self.surround_E.weight.data[0,0,2,0,0] = 1.0
-        self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True)
+        self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,resolution=variables.default_resolution)
         self.input_state = State(torch.zeros((1,1,1,1,1)))
     @property
     def filter_length(self):

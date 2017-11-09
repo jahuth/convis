@@ -101,7 +101,7 @@ class Layer(torch.nn.Module):
     def __call__(self,*args,**kwargs):
         new_args = []
         for a in args:
-            if not hasattr(a, 'data'):
+            if not type(a) is torch.autograd.Variable:
                 if hasattr(a, 'numpy'):
                     # its hopefully a torch.Tensor
                     a = torch.autograd.Variable(a)
