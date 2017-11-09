@@ -40,12 +40,21 @@ class SeperatableOPLFilter(Layer):
         self.center_E.weight.data[0,0,-5,0,0] = 1.0
         self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec')
         self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
-        self.f_exp_center = variables.VirtualParameter(self.center_E.exponential).set_callback_arguments(tau=self.tau_center,n=self.n_center,resolution=variables.default_resolution)
-        self.undershoot_tau_center = variables.VirtualParameter(self.center_undershoot.highpass_exponential,
-                                                                    value=0.1,retina_config_key='undershoot.tau__sec')
-        self.undershoot_relative_weight_center = variables.VirtualParameter(self.center_undershoot.highpass_exponential,
-                                                                    value=0.8,retina_config_key='undershoot.relative-weight')
-        self.f_undershoot = variables.VirtualParameter(self.center_undershoot.highpass_exponential).set_callback_arguments(tau=self.undershoot_tau_center,relative_weight=self.undershoot_relative_weight_center,resolution=variables.default_resolution)
+        self.f_exp_center = variables.VirtualParameter(
+            self.center_E.exponential).set_callback_arguments(tau=self.tau_center,n=self.n_center,resolution=variables.default_resolution)
+        self.undershoot_tau_center = variables.VirtualParameter(
+            float,
+            value=0.1,
+            retina_config_key='undershoot.tau__sec')
+        self.undershoot_relative_weight_center = variables.VirtualParameter(
+            float,
+            value=0.8,
+            retina_config_key='undershoot.relative-weight').set_callback_arguments(resolution=variables.default_resolution)
+        self.f_undershoot = variables.VirtualParameter(
+            self.center_undershoot.highpass_exponential).set_callback_arguments(
+                tau=self.undershoot_tau_center,
+                relative_weight=self.undershoot_relative_weight_center,
+                resolution=variables.default_resolution)
         self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9))
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
@@ -54,8 +63,9 @@ class SeperatableOPLFilter(Layer):
         self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0))
         self.surround_E.bias.data[0] = 0.0
         self.surround_E.weight.data[0,0,2,0,0] = 1.0
-        self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,resolution=variables.default_resolution)
+        self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,adjust_padding=False,resolution=variables.default_resolution)
         self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
     @property
     def filter_length(self):
         return self.center_E.weight.data.shape[TIME_DIMENSION] + self.center_undershoot.weight.data.shape[TIME_DIMENSION] - 2
@@ -76,19 +86,27 @@ class SeperatableOPLFilter(Layer):
         if not (self.input_state.data.shape[TIME_DIMENSION] == 2*self.filter_length and
             self.input_state.data.shape[3] == x.data.shape[3] and
             self.input_state.data.shape[4] == x.data.shape[4]):
-            self.input_state = x[:,:,:2*self.filter_length,:,:]
+            self.input_state = torch.autograd.Variable(torch.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
+            x_init = x[:,:,:2*self.filter_length,:,:]
+            self.input_state[:,:,(-x_init.data.shape[2]):,:,:] = x_init
             #torch.zeros((1,1,self.filter_length,x.data.shape[3],x.data.shape[4]))
-        #print self.input_state, x
-        x_pad = torch.cat([self.input_state, x], dim=TIME_DIMENSION)
+        if self._use_cuda:
+            self.input_state = self.input_state.cuda()
+            x_pad = torch.cat([self.input_state.cuda(), x.cuda()], dim=TIME_DIMENSION)
+        else:
+            self.input_state = self.input_state.cpu()
+            #print self.input_state, x
+            x_pad = torch.cat([self.input_state.cpu(), x.cpu()], dim=TIME_DIMENSION)
         y = self.center_G(nn.functional.pad(x_pad,self.filter_padding_2d,'replicate'))
         y = self.center_E(y)
         y = self.center_undershoot(y)
         s = self.surround_G(y)
-        s = self.surround_E(y)
-        # torch.autograd.Variable(torch.from_numpy(np.array(1.0,dtype='float32'))) *
-        y = y - 0.2 * s
-        self.input_state = x[:,:,-(2*self.filter_length):,:,:]
-        return y[:,:,(self.filter_length+1):,:,:]
+        s = self.surround_E(nn.functional.pad(y,((0,0,0,0,len(self.surround_E),0)),'replicate'))
+        # torch.autograd.Variable(torch.f rom_numpy(np.array(1.0,dtype='float32'))) *
+        y = y - self.relative_weight * s[:,:,-y.data.shape[TIME_DIMENSION]:,:,:]
+        self.input_state = x_pad[:,:,-(2*self.filter_length):,:,:]
+        #return y[:,:,(self.filter_length/2):-(self.filter_length/2),:,:]
+        return y[:,:,self.filter_length:,:,:]
 
 class FullConvolutionOPLFilter(Layer):
     def __init__(self):
@@ -158,17 +176,22 @@ class Bipolar(Layer):
     def __init__(self,**kwargs):
         super(Bipolar, self).__init__()
         self.dims = 5
-        self.lambda_amp = as_parameter(50.0,init=lambda x: float(x.node.config.get('adaptation-feedback-amplification__Hz',50)),
-                                                 name="lambda_amp")
+        self.lambda_amp = as_parameter(50.0,
+                                        name="lambda_amp",
+                                        retina_config_key='adaptation-feedback-amplification__Hz')
         self.g_leak = as_parameter(50.0,init=lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)),
-                                    name="g_leak")
+                                    name="g_leak",
+                                    retina_config_key='bipolar-inert-leaks__Hz')
         self.input_amp = as_parameter(50.0,
                                        init=lambda x: float(x.node.config.get('opl-amplification__Hz',100)),
-                                       name="input_amp")
-        self.inputNernst_inhibition = as_parameter(0.0,init=lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
-                                                    name="inputNernst_inhibition")
+                                       name="input_amp",
+                                       retina_config_key='opl-amplification__Hz')
+        self.inputNernst_inhibition = 0.0
+                                    #as_parameter(0.0,init=lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
+                                    #               name="inputNernst_inhibition",
+                                    #               retina_config_key='inhibition_nernst')
         self.tau = as_parameter(1.0,init=lambda x: x.resolution.seconds_to_steps(float(x.get_config_value('adaptation-tau__sec',0.00001))),
-                           name = 'tau')
+                           name = 'tau', retina_config_key='adaptation-tau__sec')
         self.steps = Variable(0.001)
         self.a_0 = Variable(1.0)
         self.a_1 = -(-self.steps/self.tau).exp()
@@ -273,20 +296,50 @@ class GanglionInput(Layer):
     def __init__(self,**kwargs):
         super(GanglionInput, self).__init__()
         self.dims = 5
-        self.i_0 = Parameter(37.0, retina_config_name='value-at-linear-threshold__Hz')
-        self.v_0 = Parameter(0.0, retina_config_name='bipolar-linear-threshold')
-        self.lambda_G = Parameter(100.0, retina_config_name='bipolar-amplification__Hz')
+        self.sign = Parameter(1.0, retina_config_key='sign')
+        self.transient = Conv3d(1, 1, (5,1,1))
+        self.transient_tau_center = variables.VirtualParameter(
+            float,
+            value=0.03,
+            retina_config_key='transient-tau__sec')
+        self.transient_relative_weight_center = variables.VirtualParameter(
+            float,
+            value=0.7,
+            retina_config_key='transient-relative-weight').set_callback_arguments(resolution=variables.default_resolution)
+        self.f_transient = variables.VirtualParameter(
+            self.transient.highpass_exponential).set_callback_arguments(
+                tau=self.transient_tau_center,
+                relative_weight=self.transient_relative_weight_center,
+                resolution=variables.default_resolution,
+                adjust_padding=False)
+        self.i_0 = Parameter(37.0, retina_config_key='value-at-linear-threshold__Hz')
+        self.v_0 = Parameter(0.0, retina_config_key='bipolar-linear-threshold')
+        self.lambda_G = Parameter(100.0, retina_config_key='bipolar-amplification__Hz')
         #self.high_pass = nn.Conv1d()
-        self.spatial_pooling = Conv2d(1,1,(9,9),padding=(4,4)) #'sigma-pool__deg'
-        self.spatial_pooling.gaussian(0.1)
+        self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.spatial_pooling = Conv3d(1,1,(1,9,9))
+        self.sigma_surround = variables.VirtualParameter(
+            self.spatial_pooling.gaussian,
+            value=0.0,
+            retina_config_key='sigma-pool__deg').set_callback_arguments(
+                adjust_padding=True,
+                resolution=variables.default_resolution)
+    @property
+    def filter_length(self):
+        return self.transient.weight.data.shape[TIME_DIMENSION] - 1 
     def forward(self, x):
-        #x = self.highpass(x)
-        
+        if not (self.input_state.data.shape[TIME_DIMENSION] == 2*self.filter_length and
+            self.input_state.data.shape[3] == x.data.shape[3] and
+            self.input_state.data.shape[4] == x.data.shape[4]):
+            self.input_state = State(torch.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
+        x_pad = torch.cat([self.input_state, x], dim=TIME_DIMENSION)
+        x = self.sign * self.transient(x_pad)[:,:,self.filter_length:,:,:]
         n = (self.i_0/(1-self.lambda_G*(x-self.v_0)/self.i_0))
         n_greater = (self.i_0 + self.lambda_G*(x-self.v_0))
         cond = x > self.v_0
         n.masked_scatter_(cond,n_greater.masked_select(cond)) # pytorch docs should have an example about this
-        return n
+        self.input_state = x_pad[:,:,-2*self.filter_length:,:,:]
+        return self.spatial_pooling(n)
 
 class GanglionSpiking(Layer):
     """
@@ -303,19 +356,19 @@ class GanglionSpiking(Layer):
         self.dims = 5
         # parameters
         self.refr_mu = Parameter(0.003,
-                            retina_config_name='refr-mean__sec',
+                            retina_config_key='refr-mean__sec',
                             doc='The mean of the distribution of random refractory times (in seconds).')
         self.refr_sigma = Parameter(0.001,
-                            retina_config_name='refr-stdev__sec',
+                            retina_config_key='refr-stdev__sec',
                             doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')
         self.noise_sigma = Parameter(0.1,
-                            retina_config_name='sigma-V',
+                            retina_config_key='sigma-V',
                             doc='Amount of noise added to the membrane potential.')
         self.g_L = Parameter(50.0,
-                            retina_config_name='g-leak__Hz',
+                            retina_config_key='g-leak__Hz',
                             doc='Leak current (in Hz or dimensionless firing rate).')
         self.tau = Parameter(0.001,
-                            retina_config_name='--should be inherited',
+                            retina_config_key='--should be inherited',
                             doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.')
     def init_states(self,input_shape):
         self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))

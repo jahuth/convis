@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import math
 from .. import numerical_filters as nf
 TIME_DIMENSION = 2
 
@@ -22,12 +23,24 @@ class Conv3d(nn.Conv3d):
             self.kernel_size = self.weight.data.shape[2:]
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
-    def exponential(self,*args,**kwargs):
-        self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)
-    def highpass_exponential(self,*args,**kwargs):
-        self.set_weight(nf.exponential_highpass_filter_1d(*args,**kwargs),normalize=False)
-    def gaussian(self,sig):
+    def adjust_padding(self):
+        self.padding = (int(math.ceil((self.kernel_size[0])/2)),
+                        int(math.ceil((self.kernel_size[1])/2)),
+                        int(math.ceil((self.kernel_size[1])/2)))
+    def exponential(self,adjust_padding=False,*args,**kwargs):
+        self.set_weight(nf.exponential_filter_1d(*args,**kwargs)[::-1],normalize=False)
+        if adjust_padding:
+            self.adjust_padding()
+    def highpass_exponential(self,adjust_padding=False,*args,**kwargs):
+        self.set_weight(nf.exponential_highpass_filter_1d(*args,**kwargs)[::-1],normalize=False)
+        if adjust_padding:
+            self.adjust_padding()
+    def gaussian(self,sig,adjust_padding=False):
         self.set_weight(nf.gauss_filter_5d(sig,sig),normalize=False)
+        if adjust_padding:
+            self.adjust_padding()
+    def __len__(self):
+        return self.kernel_size[0]*self.kernel_size[1]*self.kernel_size[2]
 
 class Conv2d(nn.Conv2d):
     def __init__(self,*args,**kwargs):
