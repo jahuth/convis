@@ -1,16 +1,20 @@
 import torch
 from torch import nn
+import numpy as np
 import math
 from .. import numerical_filters as nf
 TIME_DIMENSION = 2
 
 class Conv3d(nn.Conv3d):
     def __init__(self,*args,**kwargs):
+        self.do_adjust_padding = kwargs.get('adjust_padding',False)
+        if 'adjust_padding' in kwargs.keys():
+            del kwargs['adjust_padding']
         super(Conv3d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
-    def set_weight(self,w,normalize=True):
+    def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape) * w
         else:
@@ -24,10 +28,21 @@ class Conv3d(nn.Conv3d):
             self.kernel_size = self.weight.data.shape[2:]
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
+        if self.do_adjust_padding:
+            self.adjust_padding()
     def adjust_padding(self):
         self.padding = (int(math.ceil((self.kernel_size[0])/2)),
                         int(math.ceil((self.kernel_size[1])/2)),
                         int(math.ceil((self.kernel_size[1])/2)))
+    @property
+    def kernel_padding(self):
+        k = np.array(self.weight.data.shape[2:])
+        return (int(math.ceil(k[1]/2.0))-1,
+                int(math.ceil(k[1]))-int(math.ceil((k[1])/2))-1,
+                int(math.ceil((k[2])/2.0))-1,
+                int(math.ceil(k[2]))-int(math.ceil((k[2])/2))-1,
+                int(math.ceil((k[0])/2.0))-1,
+                int(math.ceil(k[0]))-int(math.ceil((k[0])/2))-1)
     def exponential(self,adjust_padding=False,*args,**kwargs):
         self.set_weight(nf.exponential_filter_1d(*args,**kwargs)[::-1],normalize=False)
         if adjust_padding:
@@ -49,7 +64,7 @@ class Conv2d(nn.Conv2d):
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
-    def set_weight(self,w,normalize=True):
+    def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape) * w
         else:
@@ -75,7 +90,7 @@ class Conv1d(nn.Conv1d):
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
-    def set_weight(self,w,normalize=True):
+    def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape) * w
         else:

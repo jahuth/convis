@@ -62,7 +62,7 @@ def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=Tr
         return np.ones(1)
     tau_in_steps = resolution.seconds_to_steps(tau)
     # we amplify the kernel to enforce greater precision
-    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=100.0*relative_weight)/100.0
+    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=1.0*relative_weight)/1.0
     return np.concatenate([[1], kernel],axis=0)
 
 def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
@@ -227,12 +227,12 @@ def deriche_coefficients(density):
     """
     alpha = 1.695 * density
     ema = np.exp(-alpha)
-    ek = (1-ema)*(1-ema) / (1+2*alpha*ema - ema*ema)
+    ek = (1.0-ema)*(1.0-ema) / (1.0+2.0*alpha*ema - ema*ema)
     A1 = ek
     A2 = ek * ema * (alpha-1.0)
     A3 = ek * ema * (alpha+1.0)
     A4 = -ek*ema*ema
-    B1 = 2*ema
+    B1 = 2.0*ema
     B2 = -ema*ema
     return {'A1':A1, 'A2':A2, 'A3':A3, 'A4':A4, 'B1':B1, 'B2':B2 }
 

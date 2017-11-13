@@ -383,7 +383,23 @@ class VirtualParameter(object):
             else:
                 c()
         if self.var is not None:
-            self.var.set(self.value)
+            if hasattr(self.var,'set'):
+                self.var.set(self.value)
+            elif hasattr(self.var,'data'):
+                if not hasattr(self.value,'shape'):
+                    self.var.data[0] = self.value
+                elif len(self.var.data.shape) == 1:
+                    self.var.data[:] = self.value
+                elif len(self.var.data.shape) == 2:
+                    self.var.data[:,:] = self.value
+                elif len(self.var.data.shape) == 3:
+                    self.var.data[:,:,:] = self.value
+                elif len(self.var.data.shape) == 4:
+                    self.var.data[:,:,:,:] = self.value
+                elif len(self.var.data.shape) == 5:
+                    self.var.data[:,:,:,:,:] = self.value
+                else:
+                    raise Exception('Do not know how to set variable '+str(self.var)+' with value '+str(self.value))
     def get(self):
         return self.value
     def update(self):

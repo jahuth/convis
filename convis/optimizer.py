@@ -1,5 +1,7 @@
 from torch.optim.optimizer import Optimizer
 from collections import defaultdict
+import numpy as np
+import torch
 
 class FiniteDifferenceGradientOptimizer(Optimizer):
     def __init__(self, params, **kwargs):

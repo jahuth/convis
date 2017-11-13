@@ -66,6 +66,8 @@ class Retina(Layer):
             else:
                 #print b_in, f, b_out
                 o = f(*[io_buffers[i] for i in b_in])
+                if type(o) is Output:
+                    o = o[0] # we can only use the first output
                 for oi,oo in enumerate(b_out):
                     io_buffers[oo] = o
         return Output([io_buffers['I1'],io_buffers['I2']],keys=['ganglion_spikes_ON','ganglion_spikes_OFF'])

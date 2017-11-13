@@ -36,6 +36,8 @@ except:
 
 from .variables import Variable, State, Parameter, as_parameter, is_variable
 
+TIME_DIMENSION = 2
+
 ### Node and Model classes
 
 def len_parents(n):
@@ -67,7 +69,7 @@ class Output(object):
             self._out_dict = OrderedDict(zip(keys,outs))
             self._out_dict_by_full_names = OrderedDict([(full_path(k),o) for (k,o) in zip(keys,outs)])
             self._out_dict_by_short_names = OrderedDict([(save_name(get_convis_attribute(k,'name')),o) for (k,o) in zip(keys,outs) if has_convis_attribute(k,'name') and type(get_convis_attribute(k,'name')) is str])
-        self.__dict__.update(self._out_dict_by_full_names)
+        self.__dict__.update(self._out_dict)
     def __len__(self):
         return len(self._outs)
     def __iter__(self):
@@ -101,7 +103,7 @@ class Layer(torch.nn.Module):
     def __call__(self,*args,**kwargs):
         new_args = []
         for a in args:
-            if type(a) is not torch.autograd.Variable:
+            if not type(a) is torch.autograd.Variable:
                 if hasattr(a, 'numpy'):
                     # its hopefully a torch.Tensor
                     a = torch.autograd.Variable(a)
@@ -117,8 +119,37 @@ class Layer(torch.nn.Module):
                     if len(a.data.shape) == 5:
                         a = a[0,0,:,:,:]
             new_args.append(a)
-        o = super(Layer, self).__call__(*new_args,**kwargs)
+        o0 = o = super(Layer, self).__call__(*new_args,**kwargs)
+        if hasattr(self, 'outputs'):
+            o = Output([o] + [getattr(self,k) for k in self.outputs], keys = ['output']+self.outputs)
         return o
+    def run_in_chunks(self,the_input,dt=100,t=0):
+        """
+            Runs the model over the_input in chunks of length dt.
+            
+            TODO: the_input has to be 3d!
+
+        """
+        chunked_output = []
+        keys = ['output']
+        while t < the_input.shape[0]:
+            oo = self(the_input[None,None,t:(t+dt),:,:])
+            if type(oo) is not Output:
+                oo = [oo]
+            else:
+                keys=oo.keys
+            for i,o in enumerate(oo):
+                while len(chunked_output) < i+1:
+                    chunked_output.append([])
+                chunked_output[i].append(o)
+            t += dt
+        outs = []
+        for co in chunked_output:
+            try:
+                outs.append(torch.cat(co,dim=TIME_DIMENSION))
+            except:
+                outs.append(np.array(co))
+        return Output(outs,keys=keys)
     @property
     def params(self):
         # see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py
@@ -151,6 +182,8 @@ class Layer(torch.nn.Module):
         return self
     def __setattr__(self, name, value):
         if is_variable(value):
+            if type(value) == Parameter:
+                self._parameters[name] = value
             self._variables.append(value)
             self._named_variables[name] = value
             self.__dict__[name] = value
