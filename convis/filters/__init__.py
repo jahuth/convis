@@ -7,7 +7,8 @@ TIME_DIMENSION = 2
 class Conv3d(nn.Conv3d):
     def __init__(self,*args,**kwargs):
         super(Conv3d, self).__init__(*args,**kwargs)
-        self.bias.data[0] = 0.0
+        if hasattr(self,'bias') and self.bias is not None:
+            self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
     def set_weight(self,w,normalize=True):
         if type(w) in [int,float]:
@@ -45,7 +46,8 @@ class Conv3d(nn.Conv3d):
 class Conv2d(nn.Conv2d):
     def __init__(self,*args,**kwargs):
         super(Conv2d, self).__init__(*args,**kwargs)
-        self.bias.data[0] = 0.0
+        if hasattr(self,'bias') and self.bias is not None:
+            self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
     def set_weight(self,w,normalize=True):
         if type(w) in [int,float]:
@@ -70,7 +72,8 @@ class Conv2d(nn.Conv2d):
 class Conv1d(nn.Conv1d):
     def __init__(self,*args,**kwargs):
         super(Conv1d, self).__init__(*args,**kwargs)
-        self.bias.data[0] = 0.0
+        if hasattr(self,'bias') and self.bias is not None:
+            self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
     def set_weight(self,w,normalize=True):
         if type(w) in [int,float]:
