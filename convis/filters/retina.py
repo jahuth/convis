@@ -11,6 +11,7 @@ from ..base import *
 from .. import retina_base
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 from .. import variables
+from ..filters.simple import TemporalLowPassFilterRecursive, TemporalHighPassFilterRecursive
 
 """
 Todo:
@@ -103,10 +104,75 @@ class SeperatableOPLFilter(Layer):
         s = self.surround_G(y)
         s = self.surround_E(nn.functional.pad(y,((0,0,0,0,len(self.surround_E),0)),'replicate'))
         # torch.autograd.Variable(torch.f rom_numpy(np.array(1.0,dtype='float32'))) *
+
         y = y - self.relative_weight * s[:,:,-y.data.shape[TIME_DIMENSION]:,:,:]
         self.input_state = x_pad[:,:,-(2*self.filter_length):,:,:]
         #return y[:,:,(self.filter_length/2):-(self.filter_length/2),:,:]
         return y[:,:,self.filter_length:,:,:]
+
+class HalfRecursiveOPLFilter(Layer):
+    def __init__(self):
+        super(HalfRecursiveOPLFilter, self).__init__()
+        self.dims = 5
+        self.center_G = Conv3d(1, 1, (1,10,10))
+        self.center_G.set_weight(1.0)
+        self.center_G.gaussian(0.05)
+        self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
+        self.center_E = TemporalLowPassFilterRecursive()
+        self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec',var=self.center_E.tau)
+        self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
+        self.center_undershoot = TemporalHighPassFilterRecursive()
+        self.undershoot_tau_center = variables.VirtualParameter(
+            float,
+            value=0.1,
+            retina_config_key='undershoot.tau__sec',
+            var=self.center_undershoot.tau)
+        self.undershoot_relative_weight_center = variables.VirtualParameter(
+            float,
+            value=0.8,
+            retina_config_key='undershoot.relative-weight',
+            var=self.center_undershoot.k)
+        self.surround_G = Conv3d(1, 1, (1,19,19), adjust_padding=False)
+        self.surround_G.set_weight(1.0)
+        self.surround_G.gaussian(0.15)
+        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
+        self.sigma_surround.set(0.05)
+        self.surround_E = TemporalLowPassFilterRecursive()
+        self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec',var=self.surround_E.tau)
+        self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
+        self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
+    def clear(self):
+        self.center_E.clear()
+        self.center_undershoot.clear()
+        self.surround_E.clear()
+    @property
+    def filter_width(self):
+        return self.center_G.weight.data.shape[-2] - 1
+    @property
+    def filter_height(self):
+        return self.center_G.weight.data.shape[-1] - 1
+    @property
+    def filter_padding_2d(self):
+        return (self.filter_width/2,
+                self.filter_width - self.filter_width/2,
+                self.filter_height/2,
+                self.filter_height - self.filter_height/2,
+                0,0)
+    def forward(self, x):
+        if self._use_cuda:
+            x = x.cuda()
+        else:
+            x = x.cpu()
+        y = self.center_G(nn.functional.pad(x,self.filter_padding_2d,'replicate')) * self.lambda_opl
+        y = self.center_E(y)
+        y = self.center_undershoot(y)
+        s = self.surround_G(nn.functional.pad(y,self.surround_G.kernel_padding,'replicate'))
+        s = self.surround_E(s)
+        self.center_signal = y
+        self.surround_signal = s
+        y = y - self.relative_weight * s[:,:,:,:,:]
+        return y
 
 class FullConvolutionOPLFilter(Layer):
     def __init__(self):
@@ -153,7 +219,7 @@ class OPL(Layer):
     def __init__(self,**kwargs):
         super(OPL, self).__init__()
         self.dims = 5
-        self.opl_filter = SeperatableOPLFilter()
+        self.opl_filter = HalfRecursiveOPLFilter()
     @property
     def filter_length(self):
         return self.opl_filter.filter_length
@@ -377,26 +443,34 @@ class GanglionSpiking(Layer):
                             torch.autograd.Variable(
                                 torch.randn((input_shape[3],input_shape[4])))
                            )
+        self.noise_prev = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
     def forward(self, I_gang):
+        g_infini = 50.0 # apparently?
         if not hasattr(self,'V'):
             self.init_states(I_gang.data.shape)
         if self._use_cuda:
-            y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cuda()
+            #y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cuda()
             self.V = self.V.cuda()
             self.refr = self.refr.cuda()
             self.zeros = self.zeros.cuda()
+            self.noise_prev = self.noise_prev.cuda()
         else:
-            y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cpu()
+            #y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cpu()
             self.V = self.V.cpu()
             self.refr = self.refr.cpu()
             self.zeros = self.zeros.cpu()
+            self.noise_prev = self.noise_prev.cpu()
+        all_spikes = []
         for t, I in enumerate(I_gang.squeeze(0).squeeze(0)):
             #print I.data.shape, self.V.data.shape,torch.randn(I.data.shape).shape
             if self._use_cuda:
                 noise = torch.autograd.Variable(torch.randn(I.data.shape)).cuda()
             else:
                 noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
-            V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise)*self.tau
+            V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
+            #noise_now = 
+            #V += (self.noise_prev - noise_now)*self.tau
+            #self.noise_prev = noise_now
             if self._use_cuda:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
                                     torch.autograd.Variable(torch.randn(I.data.shape)).cuda())
@@ -410,5 +484,5 @@ class GanglionSpiking(Layer):
             V.masked_scatter_(self.refr >= 0.5, self.zeros)
             V.masked_scatter_(spikes, self.zeros)
             self.V = V
-            y[0,0,t,:,:] = spikes
-        return y
+            all_spikes.append(spikes[None,:,:])
+        return torch.cat(all_spikes,dim=0)[None,None,:,:,:]
