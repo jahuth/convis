@@ -22,7 +22,6 @@ from collections import OrderedDict
 
 import torch
 import numpy as np
-from torch.autograd import grad
 from torch import nn
 
 try:
