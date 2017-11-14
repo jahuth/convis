@@ -12,9 +12,6 @@ except ImportError:
 from .variable_describe import describe, describe_dict, describe_html
 import warnings
 
-from . import debug
-from .debug import *
-
 from . import variables
 from .variables import *
 from . import o
