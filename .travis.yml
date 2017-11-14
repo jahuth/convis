@@ -18,6 +18,8 @@ before_install:
   - pip install -U pip
 # command to install dependencies
 install: 
+  - wget -q http://download.pytorch.org/whl/cu75/torch-0.1.11.post5-cp27-none-linux_x86_64.whl
+  - travis_retry pip install torch-0.1.11.post5-cp27-none-linux_x86_64.whl
   - travis_wait travis_retry pip install -r $REQUIREMENTS
 # command to run tests
 script: python -m convis.tests
