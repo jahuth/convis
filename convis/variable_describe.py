@@ -11,6 +11,12 @@ from .o import save_name
 #from .variables import get_convis_attribute, has_convis_attribute, full_path
 import inspect
 from future.utils import iteritems as _iteritems
+import torch
+
+def has_convis_attribute(o,k):
+    return hasattr(o,k)
+def get_convis_attribute(o,k,default=None):
+    return getattr(o,k,default)
 
 plotting_possible = False
 plotting_exceptions = []
@@ -278,6 +284,20 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         return HTML(s)
     elif hasattr(v,'__array__'):
         s = _tensor_to_html(v.__array__(),**kwargs)
+        if not wrap_in_html:
+            return s
+        return HTML(s)
+    if isinstance(v, torch.nn.Module):
+        uid = uuid.uuid4().hex
+        s = """<div class='convis_description torch_module'><b """+on_click_toggle+""">"""+getattr(v.__class__,'__name__','(nameless module)')+"""</b>"""
+        #s += describe_html(dict(list(v.named_parameters())[:2]), wrap_in_html=False, **kwargs)
+        for pk,pv in v.named_parameters():
+            s += "<div> - <b>"+str(pk)+"</b> "+str(type(pv))
+            if hasattr(pv,'data'):
+                if hasattr(pv.data,'shape'):
+                    s += 'shape: '+str(pv.data.shape)
+            s += "</div>"
+        s += """</div>"""
         if not wrap_in_html:
             return s
         return HTML(s)

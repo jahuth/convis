@@ -25,11 +25,11 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 """
 from __future__ import print_function
 from .base import Layer, Model,Output
-
+from .retina_virtualretina import RetinaConfiguration
 from .filters import retina as rf
 
 class Retina(Layer):
-    def __init__(self):
+    def __init__(self,opl=True,bipolar=True,gang=True,spikes=True):
         super(Retina,self).__init__()
         self.opl = rf.OPL()
         self.bipolar = rf.Bipolar()
@@ -41,15 +41,21 @@ class Retina(Layer):
             return x+y
 
         # Ix = f(Iy,Iz,...)
-        self.commands = [
-            (['I1'], self.opl, ['I1']),
-            (['I1','I2'], self.bipolar, ['I1']),
-            #(['I2'], 'copy', ['I1']),
-            (['I1'], self.gang_0_input, ['I1']),
-            (['I1'], self.gang_0_spikes, ['I1']),
-            (['I2'], self.gang_1_input, ['I2']),
-            (['I2'], self.gang_1_spikes, ['I2'])
-        ]
+        self.commands = []
+        if opl:
+            self.commands.append((['I1'], self.opl, ['I1']))
+        if bipolar:
+            self.commands.append((['I1','I2'], self.bipolar, ['I1']))
+        else:
+            self.commands.append((['I1','I2'], 'copy', ['I1']))
+        if gang:
+            self.commands.append((['I1'], self.gang_0_input, ['I1']))
+        if spikes:
+            self.commands.append((['I1'], self.gang_0_spikes, ['I1']))
+        if gang:
+            self.commands.append((['I2'], self.gang_1_input, ['I2']))
+        if spikes:
+            self.commands.append((['I2'], self.gang_1_spikes, ['I2']))
     def parse_config(self,config,prefix='',key='retina_config_key'):
         self.opl.parse_config(config,prefix='outer-plexiform-layers.0.linear-version.',key=key)
         self.bipolar.parse_config(config,prefix='contrast-gain-control.',key=key)
