@@ -8,7 +8,6 @@ except ImportError:
     pass
 
 from ..base import *
-from .. import retina_base
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 from .. import variables
 from ..filters.simple import TemporalLowPassFilterRecursive, TemporalHighPassFilterRecursive
