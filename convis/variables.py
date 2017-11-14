@@ -2,7 +2,6 @@ try:
     import new
 except:
     new = False
-from .debug import *
 from .misc_utils import unique_list
 from .o import O, Ox, save_name
 import numpy as np
