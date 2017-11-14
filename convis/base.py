@@ -4,7 +4,6 @@ from .misc_utils import unique_list, suppress
 import numpy as np
 import matplotlib.pylab as plt
 import uuid
-from . import retina_base
 from . import io
 try:
     from exceptions import NotImplementedError
