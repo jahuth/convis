@@ -1,4 +1,5 @@
 numpy
 matplotlib
-Theano==0.8.2
+Theano
 litus
+Pillow

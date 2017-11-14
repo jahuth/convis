@@ -1,6 +1,6 @@
 numpy
 matplotlib
-Theano
+PyTorch
 litus
 Pillow
 future

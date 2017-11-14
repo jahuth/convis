@@ -1,19 +1,10 @@
-import theano
-import theano.tensor as T
 import numpy as np
 import matplotlib.pylab as plt
-from .theano_utils import conv3d, conv2d
 from .variables import default_resolution
 
 
-dtensor5 = T.TensorType('float64', (False,)*5)
-
-__A = dtensor5('A')
-__B = dtensor5('B')
-__C = conv3d(__A,__B)
-_conv_func = theano.function(inputs=[__A,__B], outputs=__C)
-
 def conv(a,b,padding_things_equal=[1,3,4],padding_things_tail=[1],*args,**kwargs):
+    raise Exception("Needs reimplementation!")
     a_ = a.copy()
     b_ = b.copy()
     a_ = np.pad(a_,[(s-1,s-1) for si,s in enumerate(b_.shape)],mode='constant')
@@ -32,7 +23,7 @@ def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
     kernel = exponential_filter_1d(tau=tau,n=n,normalize=normalize,resolution=resolution,amplification=amplification)
     return kernel.reshape((1,len(kernel),1,1,1))
 
-def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10,max_steps=500):
+def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10,even=None):
     if resolution is None:
         resolution = default_resolution
     tau_in_steps = resolution.seconds_to_steps(tau)
@@ -41,6 +32,10 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
         length = min(max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps),max_steps)
         if length <= 1:
             return np.ones(1)
+        if even is False and length%2 == 0:
+            length += 1
+        if even is True and length%2 == 1:
+            length += 1
         t = np.linspace(1.0,length,length)
         kernel =  np.exp(-np.linspace(0.4,length-0.6,length)/float(tau_in_steps))
         if normalize:
@@ -52,6 +47,10 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
             length = max_length
         if length <= 1:
             return np.ones(1)
+        if even is False and length%2 == 0:
+            length += 1
+        if even is True and length%2 == 1:
+            length += 1
         t = np.linspace(1.0,n*length,n*length)
         kernel = amplification * (n*t)**n * np.exp(-n*t/tau_in_steps) / (np.math.factorial(n-1) * tau_in_steps**(n+1))
     if np.any(np.array(kernel.shape) == 0):
@@ -63,7 +62,7 @@ def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=Tr
         return np.ones(1)
     tau_in_steps = resolution.seconds_to_steps(tau)
     # we amplify the kernel to enforce greater precision
-    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=relative_weight)
+    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=1.0*relative_weight)/1.0
     return np.concatenate([[1], kernel],axis=0)
 
 def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
@@ -228,12 +227,12 @@ def deriche_coefficients(density):
     """
     alpha = 1.695 * density
     ema = np.exp(-alpha)
-    ek = (1-ema)*(1-ema) / (1+2*alpha*ema - ema*ema)
+    ek = (1.0-ema)*(1.0-ema) / (1.0+2.0*alpha*ema - ema*ema)
     A1 = ek
     A2 = ek * ema * (alpha-1.0)
     A3 = ek * ema * (alpha+1.0)
     A4 = -ek*ema*ema
-    B1 = 2*ema
+    B1 = 2.0*ema
     B2 = -ema*ema
     return {'A1':A1, 'A2':A2, 'A3':A3, 'A4':A4, 'B1':B1, 'B2':B2 }
 
