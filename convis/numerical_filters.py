@@ -29,7 +29,7 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
     tau_in_steps = resolution.seconds_to_steps(tau)
     if n == 0:
         a = amplification/tau_in_steps
-        length = min(max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps),max_steps)
+        length = min(max(int(-tau_in_steps*np.log(resolution.filter_epsilon/a))+1.0,min_steps),max_length)
         if length <= 1:
             return np.ones(1)
         if even is False and length%2 == 0:
