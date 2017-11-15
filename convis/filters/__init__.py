@@ -8,8 +8,12 @@ TIME_DIMENSION = 2
 class Conv3d(nn.Conv3d):
     def __init__(self,*args,**kwargs):
         self.do_adjust_padding = kwargs.get('adjust_padding',False)
+        self.autopad = kwargs.get('autopad',False)
+        self.autopad_mode = 'replicate'
         if 'adjust_padding' in kwargs.keys():
             del kwargs['adjust_padding']
+        if 'autopad' in kwargs.keys():
+            del kwargs['autopad']
         super(Conv3d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
@@ -37,10 +41,10 @@ class Conv3d(nn.Conv3d):
     @property
     def kernel_padding(self):
         k = np.array(self.weight.data.shape[2:])
-        return (int(math.ceil(k[1]/2.0))-1,
-                int(math.ceil(k[1]))-int(math.ceil((k[1])/2))-1,
-                int(math.ceil((k[2])/2.0))-1,
-                int(math.ceil(k[2]))-int(math.ceil((k[2])/2))-1,
+        return (int(math.floor((k[2])/2.0))-1,
+                int(math.ceil(k[2]))-int(math.floor((k[2])/2.0)),
+                int(math.floor((k[1])/2.0))-1,
+                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
                 int(math.ceil((k[0])/2.0))-1,
                 int(math.ceil(k[0]))-int(math.ceil((k[0])/2))-1)
     def exponential(self,adjust_padding=False,*args,**kwargs):
@@ -57,6 +61,10 @@ class Conv3d(nn.Conv3d):
             self.adjust_padding()
     def __len__(self):
         return self.kernel_size[0]*self.kernel_size[1]*self.kernel_size[2]
+    def forward(self,x):
+        if self.autopad:
+            x = torch.nn.functional.pad(x,self.kernel_padding, self.autopad_mode)
+        return super(Conv3d, self).forward(x)
 
 class Conv2d(nn.Conv2d):
     def __init__(self,*args,**kwargs):

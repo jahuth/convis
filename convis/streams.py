@@ -282,8 +282,9 @@ class Stream(object):
         return 0
 
 class RandomStream(Stream):
-    def __init__(self, size=(50,50), pixel_per_degree=10, level=1.0):
+    def __init__(self, size=(50,50), pixel_per_degree=10, level=1.0, mean=0.0):
         self.level = level
+        self.mean = mean
         self.size = list(size)
         self.pixel_per_degree = pixel_per_degree
     def __iter__(self):
@@ -292,20 +293,20 @@ class RandomStream(Stream):
     def available(self,l=1):
         return True
     def get_image(self):
-        return np.random.rand(*(self.size))
+        return self.mean + self.level * np.random.rand(*(self.size))
     def get(self,i):
-        return self.level * np.random.rand(*([i]+self.size))
+        return self.mean + self.level * np.random.rand(*([i]+self.size))
     def put(self,s):
         raise Exception("Not implemented for basic stream.")
 
 class SequenceStream(Stream):
     """ 3d Numpy array that represents a sequence of images"""
-    def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10):
+    def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10, max_frames = 5000):
         self.size = sequence.shape[1:]
         self.pixel_per_degree = pixel_per_degree
         self.sequence = sequence
         self.i = 0
-        self.max_frames = 50
+        self.max_frames = max_frames
     def __iter__(self):
         while len(self.sequence) < self.i:
             self.i += 1
@@ -535,7 +536,9 @@ class StreamVisualizer():
         from PIL import Image, ImageTk
         if self.decay_activity is not None:
             try:
-                im = self.decay_activity/max(np.max(self.decay_activity),1.0)
+                da = self.decay_activity
+                da = da + np.min(da)
+                im = da/max(np.max(da),1.0)
                 im = im.clip(0.0,1.0)
                 if im.shape[0] < 50:
                     im = np.repeat(im,10,axis=0)
@@ -610,17 +613,61 @@ class StreamToNetwork(Stream):
         from . import png
         png.png_client(s,info={},port=self.port,host=self.host,compress_level=self.compress_level,resize=self.resize)
 
-class HDF5InputStream(Stream):
+try:
+    import h5py
+    class HDF5Reader(Stream):
+        def __init__(self,filename,data_set_name='images'):
+            self.file = h5py.File(filename, "r") 
+            self.data_set_name = data_set_name
+            self.dset = self.file[data_set_name]
+            self.i = 0
+        def get(self,i=1):
+            d = self.dset[self.i:self.i+i]
+            self.i += i
+            return d
+    class HDF5Writer(Stream):
+        def __init__(self,filename,data_set_name='images',size=None):
+            self.filename = filename
+            #self.file = h5py.File(filename, "r+") 
+            self.data_set_name = data_set_name
+            if size is not None:
+                with h5py.File(self.filename, "r+") as f:
+                    self.dset = self.file.create_dataset(data_set_name, 
+                                (0,size[0],size[1]), 
+                                compression="gzip",
+                                chunks=(100,size[0],size[1]),
+                                maxshape=(None,s.shape[1],s.shape[2]),
+                                dtype='f')
+        def put(self,s):
+            with h5py.File(self.filename, "r+") as f:
+                print set(f.keys())
+                if not self.data_set_name in set(f.keys()):
+                    self.dset = f.create_dataset(self.data_set_name, 
+                                (0,s.shape[1],s.shape[2]),
+                                compression="gzip",
+                                chunks=(200,s.shape[1],s.shape[2]),
+                                maxshape=(None,s.shape[1],s.shape[2]),
+                                dtype='f')
+                else:
+                    self.dset = f[self.data_set_name]
+                assert len(s.shape) == 3
+                assert s.shape[1] == self.dset.shape[1]
+                assert s.shape[2] == self.dset.shape[2]
+                self.dset.resize(self.dset.shape[0] + s.shape[0],axis=0)
+                self.dset[-s.shape[0]:,:,:] = s
+except:
+    class HDF5Reader(Stream):
+        def __init__(self,*args,**kwargs):
+            raise Exception('h5py needs to be installed!')
+
+    class HDF5Writer(Stream):
+        def __init__(self,*args,**kwargs):
+            raise Exception('h5py needs to be installed!')
+
+class NumpyReader(Stream):
     pass
 
-class HDF5OutputStream(Stream):
-    pass
-
-
-class NumpyInputStream(Stream):
-    pass
-
-class NumpyOutputStream(Stream):
+class NumpyWriter(Stream):
     pass
 
 

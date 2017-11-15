@@ -33,7 +33,7 @@ def sparse_input(t=2000,x=20,y=20,p=0.01):
         the_input = np.random.rand(t,x,y) < p
         return the_input
 
-def moving_bars(t=2000,x=20,y=20,vt=1.0/200.0,vx=3.0,vy=2.0,p=0.01):
+def moving_grating(t=2000,x=20,y=20,vt=1.0/200.0,vx=3.0,vy=2.0,p=0.01):
     T,X,Y = np.meshgrid(np.linspace(0.0,t,t),np.linspace(-1.0,1.0,x),np.linspace(-1.0,1.0,y), indexing='ij')
     return np.sin(vt*T+vx*X+vy*Y) 
 
