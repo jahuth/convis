@@ -4,180 +4,184 @@ Usage
 Running a model
 -----------------
 
-
-.. note::
-
-    The size of images and the length of time you can process in one go will depend on your system and specifically on the amount of continouus memory available on your graphics card. If theano can not find enough continouus memory, the python code running the model will fail and until this python process is restarted it might hold some GPU memory as unusable.
-    For now there is no good way to fix this other than restarting the process and choosing a smaller chunk size.
-
-Changing Parameters
-~~~~~~~~~~~~~~~~~~~~~~
-
-There are two ways that parameters of a model can be changed.
-One involves changing the ´config´ of a specific layer, the other is to directly access the parameter variables in the graph.
-
-When creating a new model from an xml or json configuration, the easiest way is to change this configuration. But once the model is created, it is easier to directly access the variables.
-
-.. note::
-
-    Updating shared variables in an existing model from a changed configuration is not implemented right now. So changing the values directly is the only option when the model is already created.
-    This is different for input parameters (see below for the difference between them).
-
-Since no one should be forced to remember the fairly arbitrary names of the 
-different parameters, they act as attributes such that Tab completion (eg. in an ipython console
-or a ipython/jupyter notebook) gives you a list of all names.
-
-By default this list is categorized by layers (and sub-layers)::
-
-    In[1]: retina = convis.retina.Retina()
-    In[2]: retina.parameters.<press tab>
-                retina.parameters.Bipolar 
-                retina.parameters.GanglionInputLayer_Parvocellular_Off
-                retina.parameters.GanglionInputLayer_Parvocellular_On
-                retina.parameters.GanglionSpikes__Parvocellular_Off
-                retina.parameters.GanglionSpikes__Parvocellular_On
-                retina.parameters.OPL
-
-    In[3]: retina.parameters.OPL.<press tab>
-                retina.parameters.OPL.center
-                retina.parameters.OPL.surround
-                retina.parameters.OPL.lambda_OPL
-                retina.parameters.OPL.w_OPL
-                retina.parameters.OPL.Reshape_C_S
-
-    In[4]: retina.parameters.OPL.center.<press tab>
-                retina.parameters.OPL.center.E_n_C
-                retina.parameters.OPL.center.G_C
-                retina.parameters.OPL.center.Twu_Tu_C
-
-To see all parameters in a flat list instead of the nested structure, use the special attribute `_all`::
-
-    In[5]: retina.parameters._all.<press tab>
-		# a very long list of all parameters
-
-Since these names still might not give you an idea of what they do, you can let convis describe them::
-
-    In [6]: convis.describe(retina.parameters.OPL.center.E_n_C)
+Example::
 
 
-    Out [6]: {'doc': 'The n-fold cascaded exponential creates a low-pass characteristic.
-                      A filter can be created with `retina_base.m_en_filter`\n',
-     'name': 'E_n_C',
-     'node': [Node] center: ,
-     'simple_name': 'E_n_C',
-     'value': array([[[[[ 0.63214926]]],
-             [[[ 0.23255472]]],
-             [[[ 0.0855521 ]]],
-             [[[ 0.03147286]]],
-             [[[ 0.01157822]]],
-             [[[ 0.00425939]]],
-             [[[ 0.00156694]]]]])}
+    import convis
+    retina = convis.retina.Retina()
+    retina(some_short_input)
+    retina.run(some_input,dt=100)
+
+Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling `Layer.run(input,dt=..)` with `dt` set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
+`.run` also accepts numpy arrays as input, which will be converted into PyTorch `Tensor`s and packaged as a `Variable`.
 
 
-´describe´ will output a formatted table in an ipython notebook and a dictionary in a console.
-To verify that it is actually a shared parameter, we can ask for its type::
+Switching between CPU and GPU usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    In [7]: type(retina.parameters.OPL.center.E_n_C)
+PyTorch objects can move between GPU memory and RAM by calling `.cuda()` and `.cpu()` methods respectively. This can be done on a single Tensor or on an entire model.
 
-    Out [7]: theano.tensor.sharedvar.TensorSharedVariable
 
-So what we learned is that `retina.parameters.OPL.center.E_n_C` is a convolution kernel and has some specific value. It is a theano share variable, which means that it represents both, a node in a computational graph as well as a portion of memory which is synchronized between RAM and GPU memory. To change the value we can use the method `set_value()`::
+Using Runner objects
+~~~~~~~~~~~~~~~~~~~~
 
-    k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
-    retina.parameters.OPL.center.E_n_C.set_value(k)
+Runner objects can execute a model on a fixed set of input and output streams. 
+The execution can also happen in a separate thread::
 
-For parameters which are accessed through the `M().parameters.` attribute, there is also a shortcut for setting the value::
+    import convis, time
+    import numpy as np
 
-    k = convis.numerical_filters.exponential_filter_5d(tau=0.02),resolution=retina.resolution)
-    retina.parameters.OPL.center.E_n_C = k
+    inp = convis.streams.RandomStream(size=(10,10),pixel_per_degree=1.0,level=100.2,mean=128.0)
+    out1 = convis.streams.SequenceStream(sequence=np.ones((0,10,10)), max_frames=10000)
+    ​
+    retina = convis.retina.Retina()
+    runner = convis.base.Runner(retina, input = inp, output = out1)
+    runner.start()
+    time.sleep(5) # let thread run for 5 seconds or longer
+    plot(out1.sequence.mean((1,2)))
+    # some time later
+    runner.stop()
+    ​
 
-.. note:
 
-    This will only work if the parameter is accessd through the `parameter` attribute structure. If the reference of the theano variable is eg. saved to a python variable, using `some_var = new_value` will not change the value of the thenao variable!
+Optimizing a Model
+--------------------
+
+One way to optimize a model is by using the `.set_optimizer` attribute and the `.optimize` method::
+
+
+    l = convis.models.LN()
+    l.set_optimizer.SGD(lr=0.001) # selects an optimizer with arguments
+    l.optimize(some_inp, desired_outp) # does the optimization with the selected optimizer
+
+
+A full example::
+
+    import numpy as np
+    import matplotlib.pylab as plt
+    import convis
+    import torch
+    l_goal = convis.models.LN()
+    k_goal = np.random.randn(5,5,5)
+    l_goal.conv.set_weight(k_goal)
+    plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
+    plt.matshow(l_goal.conv.weight.data.cpu().numpy().mean((0,1,2)))
+    plt.colorbar()
+    l = convis.models.LN()
+    l.conv.set_weight(np.ones((5,5,5)),normalize=True)
+    l.set_optimizer.LBFGS()
+    l.cuda()
+    l_goal.cuda()
+    inp = 1.0*(np.random.randn(200,10,10))
+    inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
+    outp = l_goal(inp[None,None,:,:,:])
+    plt.figure()
+    plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),'--',color='red')
+    for i in range(50):
+        l.optimize(inp[None,None,:,:,:],outp)
+        if i%10 == 2:
+            plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
+    plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))
+    plt.colorbar()
+    plt.figure()
+    h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)
 
 
 
-Creating a model from layers
-----------------------------
+
+.. plot::
+
+    import numpy as np
+    import matplotlib.pylab as plt
+    import convis
+    import torch
+    l_goal = convis.models.LN()
+    k_goal = np.random.randn(5,5,5)
+    l_goal.conv.set_weight(k_goal)
+    plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
+    plt.matshow(l_goal.conv.weight.data.cpu().numpy().mean((0,1,2)))
+    plt.colorbar()
+    l = convis.models.LN()
+    l.conv.set_weight(np.ones((5,5,5)),normalize=True)
+    l.set_optimizer.LBFGS()
+    l.cuda()
+    l_goal.cuda()
+    inp = 1.0*(np.random.randn(200,10,10))
+    inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
+    outp = l_goal(inp[None,None,:,:,:])
+    plt.figure()
+    plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),'--',color='red')
+    for i in range(50):
+        l.optimize(inp[None,None,:,:,:],outp)
+        if i%10 == 2:
+            plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
+    plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))
+    plt.colorbar()
+    plt.figure()
+    h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)
 
 
-Initializing a Layer
-~~~~~~~~~~~~~~~~~~~~~~
+When selecting an Optimizer, the full list of available Optimizers can be seen by tab-completion.
 
-Layers typically expect a configuration dictionary that contains the initial values of their
-parameters.
+Some interesting optimizers are:
 
-Initializing a convolution filter::
+  * SGD: Stochastic Gradient Descent - one of the simplest possible methods, can also take a momentum term as an option
+  * Adagrad/Adadelta/Adam/etc.: Accelerated Gradient Descent methods - adapt the learning rate
+  * LBFGS: Broyden-Fletcher–Goldfarb-Shanno (Quasi-Newton) method - very fast for many almost linear parameters
 
-    k = convis.numerical_filters.gauss_filter_5d()
-    # creates a 5 dimensional tensor with a 2d gaussian filter
-    # in the x and y dimensions
-    gauss_filter_layer = convis.filters.simple.K_5d_kernel_filter(config = {
-            'kernel': k
-        })
+Using an Optimizer by Hand
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The normal PyTorch way to call Optimizers is (see also http://pytorch.org/docs/master/optim.html )::
 
-`K_5d_kernel_filter` is a layer that computes a convolution of the input with a 5 dimensional 
-kernel filter. The dimensions are "batch", "time", "channel", "x", "y".
+    import numpy as np
+    import convis
+    import torch
+    l_goal = convis.models.LN()
+    k_goal = np.random.randn(5,5,5)
+    l_goal.conv.set_weight(k_goal)
+    inp = 1.0*(np.random.randn(200,10,10))
+    inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
+    outp = l_goal(inp[None,None,:,:,:])
+    #
 
-TODO: make a section for convolution filters
+    l = convis.models.LN()
+    l.conv.set_weight(np.ones((5,5,5)),normalize=True)
+    optimizer = torch.optim.SGD(l.parameters(), lr=0.01)
+    for i in range(50):
+        # first the gradient buffer have to be set to 0
+        optimizer.zero_grad()
+        # then the computation is done
+        o = l(inp)
+        # and some loss measure is used to compare the output to the goal
+        loss = ((outp-o)**2).mean() # eg. mean square error
+        # applying the backward computation fills all gradient buffers with the corresponding gradients
+        loss.backward(retain_graph=True)
+        # now that the gradients have the correct values, the optimizer can perform one optimization step
+        optimizer.step()
 
-Connecting Layers
-~~~~~~~~~~~~~~~~~~~~~~
+Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values::
 
-Layers can either be connected one by one by using `add_input` or in batch by using `convis.connect`.
-A shorthand for `b.addinput(a)` is `b += a`.
-The following is equivalent::
+    l = convis.models.LN()
+    l.conv.set_weight(np.ones((5,5,5)),normalize=True)
+    optimizer = torch.optim.LBFGS(lr=0.01)
 
-    convis.connect([a,b,c])
+    def closure():
+        optimizer.zero_grad()
+        o = l(inp)
+        loss = ((outp-o)**2).mean()
+        loss.backward(retain_graph=True)
+        return loss
 
-    c.add_input(b)
-    b.add_input(a)
-
-    c += b # if c and b are convis Layers
-    b += a
-    
-Both will result in a graph in which only `a` has an open input. `b` recieves the output of `a` as input, `c` recieves the output of b.
-
-If more than one input or output are specified, a specific one can be set like this::
-
-    b.add_output(a.graph[0],'input_0') 
-    # connects the first element of the 
-    # output of a to the input named 'input_0' of b
-    b.add_output(a.graph[1],'input_1')
-    b.add_output(a.graph[2],'input_2')
-
-If two outputs are connected to the same input, their values will be added together.
-
-More complciated connectivity can be achieved in `convis.connect` by nesting lists::
-
-    convis.connect([a,[b,c,[d,e,f]],g])
-    
-    # is equivalent to:
-    b.add_input(a) 
-            # the second nested level is even, 
-            # so connected in parallel
-    c.add_input(a)
-    d.add_input(a)
-    e.add_input(d) 
-            # the third nested level is odd, 
-            # so again connected in sequence
-    f.add_input(e) 
-    g.add_input(b) 
-            # after a parallel nesting is closed, 
-            # the inputs are all summed 
-            # in the next layer
-    g.add_input(c)
-    g.add_input(f)
+    for i in range(50):
+        optimizer.step(closure)
 
 
+The `.optimize` method of `convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions::
 
-Creating a layer from a graph
------------------------------
+    l = convis.models.LN()
+    l.conv.set_weight(np.ones((5,5,5)),normalize=True)
+    opt2 = torch.optim.LBFGS(l.parameters())
+    l.optimize(inp[None,None,:,:,:],outp, optimizer=opt2, loss_fn = lambda x,y: (x-y).abs().sum()) # using LBFGS (without calling .set_optimizer) and another loss function
 
-
-
-Two kinds of parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
+`.set_optimizer.*()` will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument. 

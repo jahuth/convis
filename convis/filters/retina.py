@@ -467,9 +467,15 @@ class GanglionSpiking(Layer):
             else:
                 noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
             V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
-            #noise_now = 
-            #V += (self.noise_prev - noise_now)*self.tau
-            #self.noise_prev = noise_now
+            # canonical form: 
+            #
+            # V = V + (E_L - V + R*I)*dt/tau 
+            #      + self.noise_sigma*noise*torch.sqrt(2.0*dt/tau)
+            # with dt = self.tau
+            #      tau = 1/self.g_L
+            #      R = tau
+            #      E_L = 0
+            #
             if self._use_cuda:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
                                     torch.autograd.Variable(torch.randn(I.data.shape)).cuda())

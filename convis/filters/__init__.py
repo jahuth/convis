@@ -45,8 +45,16 @@ class Conv3d(nn.Conv3d):
                 int(math.ceil(k[2]))-int(math.floor((k[2])/2.0)),
                 int(math.floor((k[1])/2.0))-1,
                 int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
-                int(math.ceil((k[0])/2.0))-1,
-                int(math.ceil(k[0]))-int(math.ceil((k[0])/2))-1)
+                0,0)
+    @property
+    def kernel_padding_all(self):
+        k = np.array(self.weight.data.shape[2:])
+        return (int(math.floor((k[2])/2.0))-1,
+                int(math.ceil(k[2]))-int(math.floor((k[2])/2.0)),
+                int(math.floor((k[1])/2.0))-1,
+                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
+                int(math.floor((k[0])/2.0))-1,
+                int(math.ceil(k[0]))-int(math.floor((k[0])/2)))
     def exponential(self,adjust_padding=False,*args,**kwargs):
         self.set_weight(nf.exponential_filter_1d(*args,**kwargs)[::-1],normalize=False)
         if adjust_padding:

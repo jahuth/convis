@@ -29,18 +29,10 @@ The premade retina model can be instanciated and executed like this::
     m = convis.retina.Retina()
     m.run(the_input)
 
-To see the structure of the model::
-
-    print m.draw_simple_diagram()
-
-Will give the output::
-
-    input -> OPL -> Bipolar -> GanglionInputLayer_Parvocellular_On -> GanglionSpikes__Parvocellular_On -> output
-                            -> GanglionInputLayer_Parvocellular_Off -> GanglionSpikes__Parvocellular_Off -> output
 
 If the input is very long, it can be broken into chunks::
 
-    m.run_in_chunks(the_input,1000) # takes 1000 timesteps at a time
+    m.run(the_input,dt=1000) # takes 1000 timesteps at a time
 
 A runner runs in its own thread and consumes an input stream::
 
@@ -48,17 +40,12 @@ A runner runs in its own thread and consumes an input stream::
     model = convis.retina.Retina()
     input_stream = convis.streams.RandomStream(size=(50,50))
     output_stream = convis.streams.InrImageStreamWriter('output.inr')
-    runner = convis.runner.Runner(model,input_stream,output_stream)
+    runner = convis.Runner(model,input_stream,output_stream)
     runner.start()
 
 The input stream can be infinite in length (as eg. the `RandomStream`).
 
-More information specific to the retina model can be found :ref:`here <retina>` .
-
-Creating a simple model
------------------------
-
-More examples can be found at :ref:`Build your own<build-your-own>`
+More information specific to the retina model can be found :ref:`here <retina>`.
 
 
 Indices

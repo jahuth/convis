@@ -15,6 +15,7 @@ import warnings
 from . import variables
 from .variables import *
 from . import o
+from . import optimizer
 from .o import O, Ox, save_name
 from collections import OrderedDict
 
@@ -83,13 +84,60 @@ class Output(object):
         if str(k) != save_name(k):
             raise IndexError('Key not found: '+str(k)+' / '+save_name(k))
         raise IndexError('Key not found: '+str(k))
-        
+
+class _OptimizerSelection(object):
+    """
+        A single optimizer option that can be called to set this optimizer for the model.
+        The doc string of the original optimizer is available by calling `help()` on this object.
+    """
+    def __init__(self, model, opt):
+        self._model = model
+        self._opt = opt
+        self.__doc__ = self._opt.__doc__
+    def __call__(self,*args,**kwargs):
+        self._model.set_optimizer(self._opt,*args,**kwargs)
+
+class _OptimizerSelector(object):
+    """
+        Enables tab completion to set optimizers for a model.
+        Includes all Optimizers found in `torch.nn.optim` and
+        `convis.optimizer`.
+
+        If optimizers are added to torch during runtime,
+        you can call `._reload()` to add all available options.
+    """
+    def __init__(self, model):
+        self._model = model
+        for o in dir(torch.optim):
+            if type(getattr(torch.optim, o)) is type and issubclass(getattr(torch.optim, o),torch.optim.Optimizer):
+                setattr(self, o, _OptimizerSelection(self._model,getattr(torch.optim, o)))
+        for o in dir(optimizer):
+            if type(getattr(optimizer, o)) is type and issubclass(getattr(optimizer, o),torch.optim.Optimizer):
+                setattr(self, o, _OptimizerSelection(self._model,getattr(optimizer, o)))
+    def _reload(self):
+        for o in dir(torch.optim):
+            if type(getattr(torch.optim, o)) is type and issubclass(getattr(torch.optim, o),torch.optim.Optimizer):
+                setattr(self, o, _OptimizerSelection(self._model,getattr(torch.optim, o)))
+        for o in dir(optimizer):
+            if type(getattr(optimizer, o)) is type and issubclass(getattr(optimizer, o),torch.optim.Optimizer):
+                setattr(self, o, _OptimizerSelection(self._model,getattr(optimizer, o)))
+    def __call__(self, opt, *args, **kwargs):
+        if len(args) == 0 or (type(args[0]) is not list and not isinstance(args[0], types.GeneratorType)):
+            args = list(args)
+            args.insert(0,self._model.parameters())
+        if issubclass(opt,torch.optim.Optimizer):
+            self._model._optimizer = opt(*args,**kwargs)
+        if type(opt) is str and issubclass(getattr(torch.optim, opt),torch.optim.Optimizer):
+            self(getattr(torch.optim, opt),*args,**kwargs)
+
 class Layer(torch.nn.Module):
     def __init__(self):
         super(Layer, self).__init__()
         self._variables = []
         self._named_variables= {}
         self._use_cuda = False
+        self._optimizer = None
+        self.set_optimizer = _OptimizerSelector(self)
     def cuda(self):
         self._use_cuda = True
         super(Layer, self).cuda()
@@ -202,6 +250,18 @@ class Layer(torch.nn.Module):
                         else:
                             print ('has no set:',v)
         self.apply(f)
+    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).mean()):
+        if optimizer is None:
+            assert self._optimizer is not None, 'Optimizer has to be set! Use .set_optimizer.<tab>'
+            optimizer = self._optimizer
+        def closure():
+            optimizer.zero_grad()
+            o = self(inp)
+            loss = closure.loss_fn(outp,o)
+            loss.backward(retain_graph=True)
+            return loss
+        closure.loss_fn = loss_fn
+        optimizer.step(closure)
 
 Model = Layer
 
