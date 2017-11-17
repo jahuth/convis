@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis &#8212; convis 0.3.0.3 documentation</title>
+    <title>convis &#8212; convis 0.5.0.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.3.0.3',
+        VERSION:     '0.5.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Build your own Model" href="buildyourown.html" /> 
+    <link rel="prev" title="PyTorch Basics and Extensions" href="pytorch_basics.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,9 +37,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="buildyourown.html" title="Build your own Model"
+          <a href="pytorch_basics.html" title="PyTorch Basics and Extensions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -54,278 +54,47 @@
 <div class="section" id="module-convis.base">
 <span id="convis-base"></span><h1><cite>convis.base</cite><a class="headerlink" href="#module-convis.base" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="convis.base.GraphWrapper">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">GraphWrapper</code><span class="sig-paren">(</span><em>graph</em>, <em>name</em>, <em>m=None</em>, <em>parent=None</em>, <em>ignore=[]</em>, <em>scan_op=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper" title="Permalink to this definition">¶</a></dt>
-<dd><p><cite>GraphWrapper</cite> wraps a theano graph and provides
-labeling to the named variables within..</p>
-<p>The graph within the <cite>GraphWrapper</cite> is accessible through
-from . the <cite>.graph</cite> attribute.</p>
-<p>If th.e graph has no inputs (only shared variables),
-<cite>.compute()</cite> compiles the graph and gives its value.</p>
-<p>from . <cite>.add_input(var,input=i)</cite> can be used to add <cite>var</cite> to an input
-variable <cite>i</cite>. This will either add <cite>var</cite> to the input <cite>i</cite> if it is
-a sum., or replace it with <cite>var</cite>. <cite>i</cite> can be the input variable 
-from . itself or its name or <cite>None</cite>. If <cite>input=None</cite>, the <cite>default_input</cite>
-attri.bute of the <cite>GraphWrapper</cite> will be used.</p>
-<p>A <cite>GrphWrapper</cite> (and also <cite>N</cite> layer objects) will try to behave 
-similar to a theano variable in many contexts.
-Mathematical operations, such as <cite>+</cite>, <cite>-</cite>, etc. create a new theano
-variable, the same as if it was applied to the graph within the
-<cite>GraphWrapper</cite>.</p>
+<dt id="convis.base.DummyModel">
+<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">DummyModel</code><a class="reference internal" href="_modules/convis/base.html#DummyModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.DummyModel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="convis.base.DummyModel.__dict__">
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'run': &lt;function run&gt;, '__dict__': &lt;attribute '__dict__' of 'DummyModel' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'DummyModel' objects&gt;, '__doc__': None, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.DummyModel.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
-<dt id="convis.base.GraphWrapper.__add__">
-<code class="descname">__add__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__add__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__add__" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.DummyModel.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#DummyModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.DummyModel.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="convis.base.GraphWrapper.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'label_variables': &lt;function label_variables&gt;, '__dict__': &lt;attribute '__dict__' of 'GraphWrapper' objects&gt;, 'variables': &lt;property object&gt;, 'shared_parameter': &lt;function shared_parameter&gt;, 'replace': &lt;function replace&gt;, 'states': &lt;property object&gt;, 'filter_variables': &lt;function filter_variables&gt;, 'shape': &lt;property object&gt;, '__rsub__': &lt;function __rsub__&gt;, '__rdiv__': &lt;function __rdiv__&gt;, '__rmul__': &lt;function __rmul__&gt;, '__weakref__': &lt;attribute '__weakref__' of 'GraphWrapper' objects&gt;, '__init__': &lt;function __init__&gt;, 'add_input': &lt;function add_input&gt;, 'wrap_scans': &lt;function wrap_scans&gt;, 'parameters': &lt;property object&gt;, 'reshape': &lt;property object&gt;, 'config_dict': {}, 'set_config_value': &lt;function set_config_value&gt;, 'params': &lt;property object&gt;, '_as_TensorVariable': &lt;function _as_TensorVariable&gt;, 'config': &lt;property object&gt;, '__doc__': '\n        `GraphWrapper` wraps a theano graph and provides\n        labeling to the named variables within..\n\n        The graph within the `GraphWrapper` is accessible through\n        from . the `.graph` attribute.\n        \n        If th.e graph has no inputs (only shared variables),\n        `.compute()` compiles the graph and gives its value.\n\n        from . `.add_input(var,input=i)` can be used to add `var` to an input\n        variable `i`. This will either add `var` to the input `i` if it is\n        a sum., or replace it with `var`. `i` can be the input variable \n        from . itself or its name or `None`. If `input=None`, the `default_input`\n        attri.bute of the `GraphWrapper` will be used.\n\n        A `GrphWrapper` (and also `N` layer objects) will try to behave \n        similar to a theano variable in many contexts.\n        Mathematical operations, such as `+`, `-`, etc. create a new theano\n        variable, the same as if it was applied to the graph within the\n        `GraphWrapper`.\n\n    ', 'load_parameters_from_json': &lt;function load_parameters_from_json&gt;, '__neg__': &lt;function __neg__&gt;, 'expects_config': False, 'parent': None, 'node_description': '', 'debugprint': &lt;function debugprint&gt;, 'get_config': &lt;function get_config&gt;, 'save_parameters_to_json': &lt;function save_parameters_to_json&gt;, '__add__': &lt;function __add__&gt;, 'output': &lt;property object&gt;, '__radd__': &lt;function __radd__&gt;, '__repr__': &lt;function __repr__&gt;, 'compute': &lt;function compute&gt;, 'get_config_value': &lt;function get_config_value&gt;, 'node_type': 'Node', '__iadd__': &lt;function __iadd__&gt;, 'set_config': &lt;function set_config&gt;, 'get_parents': &lt;function get_parents&gt;, '__div__': &lt;function __div__&gt;, 'get_model': &lt;function get_model&gt;, '__mul__': &lt;function __mul__&gt;, '__floordiv__': &lt;function __floordiv__&gt;, '__sub__': &lt;function __sub__&gt;})</em><a class="headerlink" href="#convis.base.GraphWrapper.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__div__">
-<code class="descname">__div__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__div__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__div__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__floordiv__">
-<code class="descname">__floordiv__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__floordiv__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__floordiv__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__iadd__">
-<code class="descname">__iadd__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__iadd__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__iadd__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>graph</em>, <em>name</em>, <em>m=None</em>, <em>parent=None</em>, <em>ignore=[]</em>, <em>scan_op=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__init__" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.DummyModel.__module__">
+<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.DummyModel.__module__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="convis.base.GraphWrapper.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.GraphWrapper.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__mul__">
-<code class="descname">__mul__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__mul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__mul__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__neg__">
-<code class="descname">__neg__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__neg__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__neg__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__radd__">
-<code class="descname">__radd__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__radd__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__radd__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__rdiv__">
-<code class="descname">__rdiv__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__rdiv__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__rdiv__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__repr__">
-<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__repr__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__rmul__">
-<code class="descname">__rmul__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__rmul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__rmul__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__rsub__">
-<code class="descname">__rsub__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__rsub__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__rsub__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.__sub__">
-<code class="descname">__sub__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.__sub__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.__sub__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.GraphWrapper.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.DummyModel.__weakref__">
+<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.DummyModel.__weakref__" title="Permalink to this definition">¶</a></dt>
 <dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="convis.base.GraphWrapper._as_TensorVariable">
-<code class="descname">_as_TensorVariable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper._as_TensorVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper._as_TensorVariable" title="Permalink to this definition">¶</a></dt>
-<dd><p>When theano uses an object as a variable it will first check if it supports this function.
-We simply act as if we are the annotated graph that is stored inside.</p>
-<p>Note from theano source: # TODO: pass name and ndim arguments</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.add_input">
-<code class="descname">add_input</code><span class="sig-paren">(</span><em>other</em>, <em>replace_inputs=True</em>, <em>input=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.add_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.add_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.compute">
-<code class="descname">compute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.compute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.compute" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.config">
-<code class="descname">config</code><a class="headerlink" href="#convis.base.GraphWrapper.config" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.config_dict">
-<code class="descname">config_dict</code><em class="property"> = {}</em><a class="headerlink" href="#convis.base.GraphWrapper.config_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.debugprint">
-<code class="descname">debugprint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.debugprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.debugprint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.expects_config">
-<code class="descname">expects_config</code><em class="property"> = False</em><a class="headerlink" href="#convis.base.GraphWrapper.expects_config" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.filter_variables">
-<code class="descname">filter_variables</code><span class="sig-paren">(</span><em>filter_func=&lt;function is_input&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.filter_variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.filter_variables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.get_config">
-<code class="descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_config" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.get_config_value">
-<code class="descname">get_config_value</code><span class="sig-paren">(</span><em>key=None</em>, <em>default=None</em>, <em>type_cast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_config_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_config_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.get_model">
-<code class="descname">get_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_model" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.get_parents">
-<code class="descname">get_parents</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.get_parents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.get_parents" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.label_variables">
-<code class="descname">label_variables</code><span class="sig-paren">(</span><em>g</em>, <em>follow_scan=True</em>, <em>max_depth=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.label_variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.label_variables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.load_parameters_from_json">
-<code class="descname">load_parameters_from_json</code><span class="sig-paren">(</span><em>filename</em>, <em>strict=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.load_parameters_from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.load_parameters_from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.node_description">
-<code class="descname">node_description</code><em class="property"> = ''</em><a class="headerlink" href="#convis.base.GraphWrapper.node_description" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.node_type">
-<code class="descname">node_type</code><em class="property"> = 'Node'</em><a class="headerlink" href="#convis.base.GraphWrapper.node_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.output">
-<code class="descname">output</code><a class="headerlink" href="#convis.base.GraphWrapper.output" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.parameters">
-<code class="descname">parameters</code><a class="headerlink" href="#convis.base.GraphWrapper.parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.params">
-<code class="descname">params</code><a class="headerlink" href="#convis.base.GraphWrapper.params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.parent">
-<code class="descname">parent</code><em class="property"> = None</em><a class="headerlink" href="#convis.base.GraphWrapper.parent" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.replace">
-<code class="descname">replace</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.replace" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.reshape">
-<code class="descname">reshape</code><a class="headerlink" href="#convis.base.GraphWrapper.reshape" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.save_parameters_to_json">
-<code class="descname">save_parameters_to_json</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.save_parameters_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.save_parameters_to_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.set_config">
-<code class="descname">set_config</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.set_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.set_config" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.set_config_value">
-<code class="descname">set_config_value</code><span class="sig-paren">(</span><em>key</em>, <em>v='__set_name__'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.set_config_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.set_config_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.shape">
-<code class="descname">shape</code><a class="headerlink" href="#convis.base.GraphWrapper.shape" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.shared_parameter">
-<code class="descname">shared_parameter</code><span class="sig-paren">(</span><em>f=&lt;function &lt;lambda&gt;&gt;</em>, <em>name=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.shared_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.shared_parameter" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.states">
-<code class="descname">states</code><a class="headerlink" href="#convis.base.GraphWrapper.states" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.GraphWrapper.variables">
-<code class="descname">variables</code><a class="headerlink" href="#convis.base.GraphWrapper.variables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.GraphWrapper.wrap_scans">
-<code class="descname">wrap_scans</code><span class="sig-paren">(</span><em>g</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#GraphWrapper.wrap_scans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.GraphWrapper.wrap_scans" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.DummyModel.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>chunk_size=20</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#DummyModel.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.DummyModel.run" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.base.Layer">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Layer</code><span class="sig-paren">(</span><em>graph</em>, <em>name=None</em>, <em>m=None</em>, <em>parent=None</em>, <em>config=None</em>, <em>inputs=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Layer is a wrapper around a theano graph that has to contain
-a input (3d or 5d) and keeps its configuration.</p>
-<p>A simpler wrapper is <cite>GraphWrapper</cite>.</p>
-<p>Minimal Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">A_New_Layer</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="p">{},</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-        <span class="n">my_input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_input</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ANewLayer</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">my_input</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-</pre></div>
-</div>
+<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Layer</code><a class="reference internal" href="_modules/convis/base.html#Layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="convis.base.Layer.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__call__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="convis.base.Layer.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>graph</em>, <em>name=None</em>, <em>m=None</em>, <em>parent=None</em>, <em>config=None</em>, <em>inputs=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -334,304 +103,57 @@ a input (3d or 5d) and keeps its configuration.</p>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.create_input">
-<code class="descname">create_input</code><span class="sig-paren">(</span><em>n=1</em>, <em>name='input'</em>, <em>sep='_'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.create_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.create_input" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.__setattr__">
+<code class="descname">__setattr__</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__setattr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__setattr__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.create_input_5d">
-<code class="descname">create_input_5d</code><span class="sig-paren">(</span><em>n=1</em>, <em>name='input'</em>, <em>sep='_'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.create_input_5d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.create_input_5d" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Layer.expects_config">
-<code class="descname">expects_config</code><em class="property"> = False</em><a class="headerlink" href="#convis.base.Layer.expects_config" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer._apply">
+<code class="descname">_apply</code><span class="sig-paren">(</span><em>fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer._apply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer._apply" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.get_config_value">
-<code class="descname">get_config_value</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em>, <em>type_cast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.get_config_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.get_config_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Layer.inputs">
-<code class="descname">inputs</code><em class="property"> = OrderedDict()</em><a class="headerlink" href="#convis.base.Layer.inputs" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.cpu">
+<code class="descname">cpu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.cpu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.cpu" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.shape">
-<code class="descname">shape</code><span class="sig-paren">(</span><em>input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.shape" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.cuda">
+<code class="descname">cuda</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.cuda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.cuda" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.shared_parameter">
-<code class="descname">shared_parameter</code><span class="sig-paren">(</span><em>f=&lt;function &lt;lambda&gt;&gt;</em>, <em>name=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.shared_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.shared_parameter" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="convis.base.Layer.state_initializers">
-<code class="descname">state_initializers</code><em class="property"> = {}</em><a class="headerlink" href="#convis.base.Layer.state_initializers" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.params">
+<code class="descname">params</code><a class="headerlink" href="#convis.base.Layer.params" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="convis.base.Layer.states">
-<code class="descname">states</code><em class="property"> = {}</em><a class="headerlink" href="#convis.base.Layer.states" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="convis.base.Layer.parse_config">
+<code class="descname">parse_config</code><span class="sig-paren">(</span><em>config</em>, <em>prefix=''</em>, <em>key='retina_config_key'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.parse_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.parse_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>the_input</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.run_in_chunks">
+<code class="descname">run_in_chunks</code><span class="sig-paren">(</span><em>the_input</em>, <em>dt=100</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.run_in_chunks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.run_in_chunks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the model over the_input in chunks of length dt.</p>
+<p>TODO: the_input has to be 3d!</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="attribute">
-<dt id="convis.base.M">
-<code class="descclassname">convis.base.</code><code class="descname">M</code><a class="headerlink" href="#convis.base.M" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#convis.base.Model" title="convis.base.Model"><code class="xref py py-class docutils literal"><span class="pre">Model</span></code></a></p>
-</dd></dl>
-
-<dl class="class">
 <dt id="convis.base.Model">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>size=(10</em>, <em>10)</em>, <em>pixel_per_degree=10.0</em>, <em>steps_per_second=1000.0</em>, <em>filter_epsilon=0.01</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a model that can compute a set of outputs.</p>
-<p>Minimal Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
-<span class="n">m</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">some_theano_variable_or_convis_layer</span><span class="p">)</span>
-<span class="n">some_output</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>When calling <cite>run</cite> the first time, the graph attached to 
-<cite>some_theano_variable_or_convis_layer</cite> will be compiled.
-To recompile the function or compile it with a certain order
-of parameters use <cite>create_function</cite>.</p>
-<p>Long input should be supplied to <cite>run_in_chunks</cite> instead of <cite>run</cite>.</p>
-<dl class="attribute">
-<dt id="convis.base.Model.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'pixel_to_degree': &lt;function pixel_to_degree&gt;, 'inputs': &lt;property object&gt;, '__module__': 'convis.base', 'clear_states': &lt;function clear_states&gt;, 'variables': &lt;property object&gt;, 'draw_simple_diagram': &lt;function draw_simple_diagram&gt;, 'states': &lt;property object&gt;, 'save_parameters_to_json': &lt;function save_parameters_to_json&gt;, 'run_in_chuncks': &lt;function run_in_chuncks&gt;, '__dict__': &lt;attribute '__dict__' of 'Model' objects&gt;, 'add_output': &lt;function add_output&gt;, '_repr_html_': &lt;function _repr_html_&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Model' objects&gt;, '__init__': &lt;function __init__&gt;, 'add_error': &lt;function add_error&gt;, 'debugprint': &lt;function debugprint&gt;, 'add_target': &lt;function add_error&gt;, 'parameters': &lt;property object&gt;, 'steps_to_seconds': &lt;function steps_to_seconds&gt;, 'gradient': &lt;function gradient&gt;, 'reset_parameters': &lt;function reset_parameters&gt;, 'add_update': &lt;function add_update&gt;, 'run_in_chunks': &lt;function run_in_chunks&gt;, 'run': &lt;function run&gt;, 'degree_to_pixel': &lt;function degree_to_pixel&gt;, 'add_gradient_descent': &lt;function add_gradient_descent&gt;, 'create_function': &lt;function create_function&gt;, 'in_out': &lt;function in_out&gt;, '__doc__': '\n        M: The model class\n        ------------------\n\n        Creates a model that can compute a set of outputs.\n\n        Minimal Usage::\n\n            m = Model()\n            m.add_output(some_theano_variable_or_convis_layer)\n            some_output = m.run(some_input)\n\n        When calling `run` the first time, the graph attached to \n        `some_theano_variable_or_convis_layer` will be compiled.\n        To recompile the function or compile it with a certain order\n        of parameters use `create_function`.\n\n        Long input should be supplied to `run_in_chunks` instead of `run`.\n\n    ', 'load_parameters_from_json': &lt;function load_parameters_from_json&gt;, 'seconds_to_steps': &lt;function seconds_to_steps&gt;})</em><a class="headerlink" href="#convis.base.Model.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>size=(10</em>, <em>10)</em>, <em>pixel_per_degree=10.0</em>, <em>steps_per_second=1000.0</em>, <em>filter_epsilon=0.01</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Model.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.Model.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Model.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.Model.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model._repr_html_">
-<code class="descname">_repr_html_</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model._repr_html_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model._repr_html_" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.add_error">
-<code class="descname">add_error</code><span class="sig-paren">(</span><em>variable=None</em>, <em>error_func=None</em>, <em>always_create_new_target=False</em>, <em>error_name='error'</em>, <em>new_input_name='target'</em>, <em>bcast=(True</em>, <em>True</em>, <em>True)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.add_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.add_error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new input variable and an error term
-to a previous output (by default the first).</p>
-<p>By default, the input defined to be compared to 
-a specific output will be reused for other 
-error functions. If this is not intended and a new
-input should be created, <cite>always_create_new_target</cite>
-can be set to <cite>True</cite>.</p>
-<p>Default error function is: lambda x,y: T.mean((x-y)**2)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.add_gradient_descent">
-<code class="descname">add_gradient_descent</code><span class="sig-paren">(</span><em>v_to_change</em>, <em>v_to_target=None</em>, <em>error_func=None</em>, <em>opt_func=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.add_gradient_descent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.add_gradient_descent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds updates to <cite>v_to_change</cite>, according to <cite>opt_func</cite>, a function
-which takes two symbolic variables: the variable to change and the gradient
-and has to return a symbolic variable of the new value.</p>
-<p>The default <cite>opt_func</cite> is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">-</span><span class="n">as_parameter</span><span class="p">(</span><span class="n">theano</span><span class="o">.</span><span class="n">shared</span><span class="p">(</span><span class="mf">0.001</span><span class="p">),</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;learning_rate&#39;</span><span class="p">,</span><span class="n">initialized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">*</span><span class="n">y</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.add_output">
-<code class="descname">add_output</code><span class="sig-paren">(</span><em>a</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.add_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.add_output" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.add_target">
-<code class="descname">add_target</code><span class="sig-paren">(</span><em>variable=None</em>, <em>error_func=None</em>, <em>always_create_new_target=False</em>, <em>error_name='error'</em>, <em>new_input_name='target'</em>, <em>bcast=(True</em>, <em>True</em>, <em>True)</em><span class="sig-paren">)</span><a class="headerlink" href="#convis.base.Model.add_target" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new input variable and an error term
-to a previous output (by default the first).</p>
-<p>By default, the input defined to be compared to 
-a specific output will be reused for other 
-error functions. If this is not intended and a new
-input should be created, <cite>always_create_new_target</cite>
-can be set to <cite>True</cite>.</p>
-<p>Default error function is: lambda x,y: T.mean((x-y)**2)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.add_update">
-<code class="descname">add_update</code><span class="sig-paren">(</span><em>variable</em>, <em>update</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.add_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.add_update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Default opt_func: lambda x,y: x-as_parameter(theano.shared(0.001),name=’learning_rate’,initialized=True)*y</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.clear_states">
-<code class="descname">clear_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.clear_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.clear_states" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.create_function">
-<code class="descname">create_function</code><span class="sig-paren">(</span><em>updates=None</em>, <em>additional_inputs=[]</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.create_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.create_function" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.debugprint">
-<code class="descname">debugprint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.debugprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.debugprint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.degree_to_pixel">
-<code class="descname">degree_to_pixel</code><span class="sig-paren">(</span><em>degree</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.degree_to_pixel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.degree_to_pixel" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.draw_simple_diagram">
-<code class="descname">draw_simple_diagram</code><span class="sig-paren">(</span><em>connector=' -&gt; '</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.draw_simple_diagram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.draw_simple_diagram" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prints a very simple horizontal tree diagram of the connected <cite>N</cite> nodes.</p>
-<p>Note: This diagram only shows connections that were created between 
-<cite>N</cite> nodes by <cite>add_input</cite> (or <cite>+=</cite>).</p>
-<p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">draw_simple_diagram</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="s1">&#39; - &#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Output:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-</span> <span class="n">OPL</span> <span class="o">-</span> <span class="n">Bipolar</span> <span class="o">-</span> <span class="n">GanglionInputLayer_Parvocellular_On</span> <span class="o">-</span> <span class="n">GanglionSpikes__Parvocellular_On</span> <span class="o">-</span> <span class="n">output</span>
-                      <span class="o">-</span> <span class="n">GanglionInputLayer_Parvocellular_Off</span> <span class="o">-</span> <span class="n">GanglionSpikes__Parvocellular_Off</span> <span class="o">-</span> <span class="n">output</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.gradient">
-<code class="descname">gradient</code><span class="sig-paren">(</span><em>variable</em>, <em>variable_to_target=None</em>, <em>error_func=None</em>, <em>name=None</em>, <em>error_reduction=&lt;function mean&gt;</em>, <em>error=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.gradient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a gradient of <cite>variable_to_target</cite> (by default the first output)
-with respect to <cite>variable</cite>.</p>
-<p>See <cite>add_target</cite> about how a new input is created and the error function
-is applied.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.in_out">
-<code class="descname">in_out</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.in_out"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.in_out" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Model.inputs">
-<code class="descname">inputs</code><a class="headerlink" href="#convis.base.Model.inputs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.load_parameters_from_json">
-<code class="descname">load_parameters_from_json</code><span class="sig-paren">(</span><em>filename</em>, <em>strict=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.load_parameters_from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.load_parameters_from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Model.parameters">
-<code class="descname">parameters</code><a class="headerlink" href="#convis.base.Model.parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.pixel_to_degree">
-<code class="descname">pixel_to_degree</code><span class="sig-paren">(</span><em>pixel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.pixel_to_degree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.pixel_to_degree" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.reset_parameters">
-<code class="descname">reset_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.reset_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.reset_parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>the_input</em>, <em>additional_inputs=[]</em>, <em>inputs={}</em>, <em>run_after=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the model</p>
-<blockquote>
-<div><p><cite>the_input</cite> is the main input to the model. All inputs that were not
-set explicitly, will recieve this value!</p>
-<p><cite>inputs</cite> is a dictionary mapping input variables to their values</p>
-<p><cite>additional_inputs</cite> is a list of input values that has to match
-the order of <cite>additional_inputs</cite> supplied to <cite>create_function</cite>.
-If you did not use <cite>additional_inputs</cite> when you created the function
-or you do not remember the order, use the <cite>input</cite> dictionary
-instead!</p>
-<p><cite>run_after</cite> is None or a 2 argument python function that will 
-be executed after the computation finishes. It will recieve the output as 
-a first argument and the model as a second argument.</p>
-</div></blockquote>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.run_in_chuncks">
-<code class="descname">run_in_chuncks</code><span class="sig-paren">(</span><em>the_input</em>, <em>max_length</em>, <em>additional_inputs=[]</em>, <em>inputs={}</em>, <em>run_after=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.run_in_chuncks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.run_in_chuncks" title="Permalink to this definition">¶</a></dt>
-<dd><p>typo</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.run_in_chunks">
-<code class="descname">run_in_chunks</code><span class="sig-paren">(</span><em>the_input</em>, <em>max_length</em>, <em>additional_inputs=[]</em>, <em>inputs={}</em>, <em>run_after=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.run_in_chunks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.run_in_chunks" title="Permalink to this definition">¶</a></dt>
-<dd><p>To run a simulation that is longer than your memory is large,
-the input has to be chunked into smaller pieces.</p>
-<p>This function computes chunks of <cite>max_length</cite> at a time and 
-returns the concatenated output (scalar outputs will be a vector 
-of return values, one for each chunk).</p>
-<p><cite>additional_inputs</cite>, <cite>inputs</cite> and <cite>run_after</cite> will be forwarded
-to the run function.</p>
-<blockquote>
-<div><p><cite>inputs</cite> is a dictionary mapping input variables to their values</p>
-<p><cite>additional_inputs</cite> is a list of input values that has to match
-the order of <cite>additional_inputs</cite> supplied to <cite>create_function</cite>.
-If you did not use <cite>additional_inputs</cite> when you created the function
-or you do not remember the order, use the <cite>input</cite> dictionary
-instead!</p>
-<p><cite>run_after</cite> is None or a 2 argument python function that will 
-be executed after each chunk. It will recieve the output as 
-a first argument and the model as a second argument.</p>
-</div></blockquote>
-<p>All inputs will be truncated according  to the current chunk, so the
-complete time series has to be supplied for all inputs.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.save_parameters_to_json">
-<code class="descname">save_parameters_to_json</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.save_parameters_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.save_parameters_to_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.seconds_to_steps">
-<code class="descname">seconds_to_steps</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.seconds_to_steps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.seconds_to_steps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Model.states">
-<code class="descname">states</code><a class="headerlink" href="#convis.base.Model.states" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Model.steps_to_seconds">
-<code class="descname">steps_to_seconds</code><span class="sig-paren">(</span><em>steps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Model.steps_to_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Model.steps_to_seconds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Model.variables">
-<code class="descname">variables</code><a class="headerlink" href="#convis.base.Model.variables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.N">
-<code class="descclassname">convis.base.</code><code class="descname">N</code><a class="headerlink" href="#convis.base.N" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">convis.base.</code><code class="descname">Model</code><a class="headerlink" href="#convis.base.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <a class="reference internal" href="#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-class docutils literal"><span class="pre">Layer</span></code></a></p>
 </dd></dl>
 
@@ -684,124 +206,139 @@ allowing for tab completion.</p>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="convis.base.connect">
-<code class="descclassname">convis.base.</code><code class="descname">connect</code><span class="sig-paren">(</span><em>list_of_lists</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Connects nodes alternatingly in sequence and parallel:</p>
-<p>[A,B,[[C,D],[E,F],G] will results in two paths:</p>
-<blockquote>
-<div>A -&gt; B -&gt; C -&gt; D -&gt; G
-A -&gt; B -&gt; E -&gt; F -&gt; G</div></blockquote>
+<dl class="class">
+<dt id="convis.base.Runner">
+<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Runner</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="convis.base.Runner.__dict__">
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'start': &lt;function start&gt;, '__module__': 'convis.base', 'run': &lt;function run&gt;, 'thread': &lt;function thread&gt;, '__dict__': &lt;attribute '__dict__' of 'Runner' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Runner' objects&gt;, 'stop': &lt;function stop&gt;, '__doc__': None, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.Runner.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Runner.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base.Runner.__module__">
+<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.Runner.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base.Runner.__weakref__">
+<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.Runner.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Runner.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>length=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Runner.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Runner.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Runner.thread">
+<code class="descname">thread</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.thread" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.base._OptimizerSelection">
+<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">_OptimizerSelection</code><span class="sig-paren">(</span><em>model</em>, <em>opt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A single optimizer option that can be called to set this optimizer for the model.
+The doc string of the original optimizer is available by calling <cite>help()</cite> on this object.</p>
+<dl class="method">
+<dt id="convis.base._OptimizerSelection.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelection.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelection.__call__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base._OptimizerSelection.__dict__">
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '__dict__': &lt;attribute '__dict__' of '_OptimizerSelection' objects&gt;, '__call__': &lt;function __call__&gt;, '__weakref__': &lt;attribute '__weakref__' of '_OptimizerSelection' objects&gt;, '__doc__': '\n        A single optimizer option that can be called to set this optimizer for the model.\n        The doc string of the original optimizer is available by calling `help()` on this object.\n    ', '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base._OptimizerSelection.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base._OptimizerSelection.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>model</em>, <em>opt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelection.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelection.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base._OptimizerSelection.__module__">
+<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base._OptimizerSelection.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base._OptimizerSelection.__weakref__">
+<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base._OptimizerSelection.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.base._OptimizerSelector">
+<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">_OptimizerSelector</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables tab completion to set optimizers for a model.
+Includes all Optimizers found in <cite>torch.nn.optim</cite> and
+<cite>convis.optimizer</cite>.</p>
+<p>If optimizers are added to torch during runtime,
+you can call <cite>._reload()</cite> to add all available options.</p>
+<dl class="method">
+<dt id="convis.base._OptimizerSelector.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>opt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector.__call__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base._OptimizerSelector.__dict__">
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '_reload': &lt;function _reload&gt;, '__dict__': &lt;attribute '__dict__' of '_OptimizerSelector' objects&gt;, '__call__': &lt;function __call__&gt;, '__weakref__': &lt;attribute '__weakref__' of '_OptimizerSelector' objects&gt;, '__doc__': '\n        Enables tab completion to set optimizers for a model.\n        Includes all Optimizers found in `torch.nn.optim` and\n        `convis.optimizer`.\n\n        If optimizers are added to torch during runtime,\n        you can call `._reload()` to add all available options.\n    ', '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base._OptimizerSelector.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="convis.base._OptimizerSelector.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base._OptimizerSelector.__module__">
+<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base._OptimizerSelector.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base._OptimizerSelector.__weakref__">
+<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base._OptimizerSelector.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base._OptimizerSelector._reload">
+<code class="descname">_reload</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector._reload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector._reload" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.base.get_next">
+<code class="descclassname">convis.base.</code><code class="descname">get_next</code><span class="sig-paren">(</span><em>stream</em>, <em>l=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#get_next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.get_next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="convis.base.len_parents">
 <code class="descclassname">convis.base.</code><code class="descname">len_parents</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#len_parents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.len_parents" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
-<dt id="convis.base.make_model">
-<code class="descclassname">convis.base.</code><code class="descname">make_model</code><span class="sig-paren">(</span><em>outputs</em>, <em>name='Model'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#make_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.make_model" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </div>
 <div class="section" id="module-convis.filters.simple">
 <span id="simple-convis-filters"></span><h1>Simple <cite>convis.filters</cite><a class="headerlink" href="#module-convis.filters.simple" title="Permalink to this headline">¶</a></h1>
-<dl class="attribute">
-<dt id="convis.filters.simple.E">
-<code class="descclassname">convis.filters.simple.</code><code class="descname">E</code><a class="headerlink" href="#convis.filters.simple.E" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#convis.filters.simple.E_1d_recursive_filter" title="convis.filters.simple.E_1d_recursive_filter"><code class="xref py py-class docutils literal"><span class="pre">E_1d_recursive_filter</span></code></a></p>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.simple.E_1d_recursive_filter">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">E_1d_recursive_filter</code><span class="sig-paren">(</span><em>config</em>, <em>name=None</em>, <em>model=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#E_1d_recursive_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.E_1d_recursive_filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>This node implements temporal exponential filtering.</p>
-<p>The configuration accepts one parameter:</p>
-<blockquote>
-<div><ul class="simple">
-<li>‘tau__sec’: the time constant (in seconds relative to the model)</li>
-</ul>
-</div></blockquote>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.simple.FullConnection">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">FullConnection</code><span class="sig-paren">(</span><em>config={}</em>, <em>name=None</em>, <em>model=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#FullConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.FullConnection" title="Permalink to this definition">¶</a></dt>
-<dd><p>This node implements a full connection between the input and the output
-using a 4 dimensional connectivity matrix <cite>w</cite>.</p>
-<p>The size of the input and output can be different, resulting in zooming
-or supersampling.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.simple.Nonlinearity">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">Nonlinearity</code><span class="sig-paren">(</span><em>config={}</em>, <em>name=None</em>, <em>model=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#Nonlinearity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.Nonlinearity" title="Permalink to this definition">¶</a></dt>
-<dd><p><span class="math">\(output = N(eT * V_{Bip})\)</span>
-<span class="math">\(N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)
-<span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if <span class="math">\(V &gt; v^0_G\)</span>)</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.simple.Nonlinearity_5d">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">Nonlinearity_5d</code><span class="sig-paren">(</span><em>config={}</em>, <em>name=None</em>, <em>model=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#Nonlinearity_5d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.Nonlinearity_5d" title="Permalink to this definition">¶</a></dt>
-<dd><p><span class="math">\(output = N(eT * V_{Bip})\)</span>
-<span class="math">\(N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)
-<span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if <span class="math">\(V &gt; v^0_G\)</span>)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="convis.filters.simple.RecursiveFilter1dExponential">
-<code class="descclassname">convis.filters.simple.</code><code class="descname">RecursiveFilter1dExponential</code><a class="headerlink" href="#convis.filters.simple.RecursiveFilter1dExponential" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#convis.filters.simple.E_1d_recursive_filter" title="convis.filters.simple.E_1d_recursive_filter"><code class="xref py py-class docutils literal"><span class="pre">E_1d_recursive_filter</span></code></a></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="convis.filters.simple.RecursiveFilter1dExponentialHighPass">
-<code class="descclassname">convis.filters.simple.</code><code class="descname">RecursiveFilter1dExponentialHighPass</code><a class="headerlink" href="#convis.filters.simple.RecursiveFilter1dExponentialHighPass" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#convis.filters.simple.T_1d_filter_with_sigma_param" title="convis.filters.simple.T_1d_filter_with_sigma_param"><code class="xref py py-class docutils literal"><span class="pre">T_1d_filter_with_sigma_param</span></code></a></p>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.simple.SoftSelectFilter">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">SoftSelectFilter</code><span class="sig-paren">(</span><em>config={}</em>, <em>name=None</em>, <em>model=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#SoftSelectFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.SoftSelectFilter" title="Permalink to this definition">¶</a></dt>
-<dd><p>A SoftSelect filter combines two inputs (‘input_a’ and ‘input_b’)
-into one output by combining the values at each pixel using a
-matrix <cite>a</cite>. A value of 1 in <cite>a</cite> will used the value from ‘input_a’
-while a value of 0 will use ‘input_b’ and values in between will
-give a weighted sum.</p>
-<p>Parameters:</p>
-<blockquote>
-<div>a: the spatial map</div></blockquote>
-<p>Example of adding inputs after instanciation:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">simple_filters</span><span class="o">.</span><span class="n">SoftSelectFilter</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])})</span>
-<span class="n">f1</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="nb">input</span><span class="o">=</span><span class="s1">&#39;input_a&#39;</span><span class="p">)</span>
-<span class="n">f1</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">some_other_input</span><span class="p">,</span><span class="nb">input</span><span class="o">=</span><span class="s1">&#39;input_b&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Example of adding inputs in the constructor:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">simple_filters</span><span class="o">.</span><span class="n">SoftSelectFilter</span><span class="p">(</span>
-              <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])},</span>
-              <span class="n">inputs</span><span class="o">=</span><span class="p">{</span>
-                  <span class="s1">&#39;input_a&#39;</span><span class="p">:</span> <span class="n">retina1</span><span class="o">.</span><span class="n">ganglion_input_layers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                  <span class="s1">&#39;input_b&#39;</span><span class="p">:</span> <span class="n">retina1</span><span class="o">.</span><span class="n">ganglion_input_layers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-              <span class="p">})</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.simple.T_1d_filter_with_sigma_param">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">T_1d_filter_with_sigma_param</code><span class="sig-paren">(</span><em>config</em>, <em>name=None</em>, <em>model=None</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#T_1d_filter_with_sigma_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.T_1d_filter_with_sigma_param" title="Permalink to this definition">¶</a></dt>
-<dd><p>This node implements temporal exponential filtering.</p>
-<p>The configuration accepts one parameter:</p>
-<blockquote>
-<div><ul class="simple">
-<li>‘tau__sec’: the time constant (in seconds relative to the model)</li>
-</ul>
-</div></blockquote>
-</dd></dl>
-
 </div>
 <div class="section" id="module-convis.retina">
 <span id="virtual-retina-simulator"></span><h1>Virtual Retina Simulator<a class="headerlink" href="#module-convis.retina" title="Permalink to this headline">¶</a></h1>
@@ -839,8 +376,8 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="buildyourown.html"
-                        title="previous chapter">Build your own Model</a></p>
+  <p class="topless"><a href="pytorch_basics.html"
+                        title="previous chapter">PyTorch Basics and Extensions</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -872,9 +409,9 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="buildyourown.html" title="Build your own Model"
+          <a href="pytorch_basics.html" title="PyTorch Basics and Extensions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

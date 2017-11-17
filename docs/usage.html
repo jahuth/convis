@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Usage &#8212; convis 0.3.0.3 documentation</title>
+    <title>Usage &#8212; convis 0.5.0.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.3.0.3',
+        VERSION:     '0.5.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="next" title="Retina Model" href="retina.html" />
     <link rel="prev" title="Welcome to convis’s documentation!" href="index.html" /> 
   </head>
   <body>
@@ -38,12 +38,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="Examples"
+          <a href="retina.html" title="Retina Model"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to convis’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -56,159 +56,164 @@
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="running-a-model">
 <h2>Running a model<a class="headerlink" href="#running-a-model" title="Permalink to this headline">¶</a></h2>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The size of images and the length of time you can process in one go will depend on your system and specifically on the amount of continouus memory available on your graphics card. If theano can not find enough continouus memory, the python code running the model will fail and until this python process is restarted it might hold some GPU memory as unusable.
-For now there is no good way to fix this other than restarting the process and choosing a smaller chunk size.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="n">retina</span><span class="p">(</span><span class="n">some_short_input</span><span class="p">)</span>
+<span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="changing-parameters">
-<h3>Changing Parameters<a class="headerlink" href="#changing-parameters" title="Permalink to this headline">¶</a></h3>
-<p>There are two ways that parameters of a model can be changed.
-One involves changing the ´config´ of a specific layer, the other is to directly access the parameter variables in the graph.</p>
-<p>When creating a new model from an xml or json configuration, the easiest way is to change this configuration. But once the model is created, it is easier to directly access the variables.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Updating shared variables in an existing model from a changed configuration is not implemented right now. So changing the values directly is the only option when the model is already created.
-This is different for input parameters (see below for the difference between them).</p>
+<p>Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling <cite>Layer.run(input,dt=..)</cite> with <cite>dt</cite> set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
+<cite>.run</cite> also accepts numpy arrays as input, which will be converted into PyTorch <cite>Tensor`s and packaged as a `Variable</cite>.</p>
+<div class="section" id="switching-between-cpu-and-gpu-usage">
+<h3>Switching between CPU and GPU usage<a class="headerlink" href="#switching-between-cpu-and-gpu-usage" title="Permalink to this headline">¶</a></h3>
+<p>PyTorch objects can move between GPU memory and RAM by calling <cite>.cuda()</cite> and <cite>.cpu()</cite> methods respectively. This can be done on a single Tensor or on an entire model.</p>
 </div>
-<p>Since no one should be forced to remember the fairly arbitrary names of the
-different parameters, they act as attributes such that Tab completion (eg. in an ipython console
-or a ipython/jupyter notebook) gives you a list of all names.</p>
-<p>By default this list is categorized by layers (and sub-layers):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
-<span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Bipolar</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionInputLayer_Parvocellular_Off</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionInputLayer_Parvocellular_On</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionSpikes__Parvocellular_Off</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">GanglionSpikes__Parvocellular_On</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span>
+<div class="section" id="using-runner-objects">
+<h3>Using Runner objects<a class="headerlink" href="#using-runner-objects" title="Permalink to this headline">¶</a></h3>
+<p>Runner objects can execute a model on a fixed set of input and output streams.
+The execution can also happen in a separate thread:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>import convis, time
+import numpy as np
 
-<span class="n">In</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">surround</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">lambda_OPL</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">w_OPL</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">Reshape_C_S</span>
+inp = convis.streams.RandomStream(size=(10,10),pixel_per_degree=1.0,level=100.2,mean=128.0)
+out1 = convis.streams.SequenceStream(sequence=np.ones((0,10,10)), max_frames=10000)
+​
+retina = convis.retina.Retina()
+runner = convis.base.Runner(retina, input = inp, output = out1)
+runner.start()
+time.sleep(5) # let thread run for 5 seconds or longer
+plot(out1.sequence.mean((1,2)))
+# some time later
+runner.stop()
+​
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="optimizing-a-model">
+<h2>Optimizing a Model<a class="headerlink" href="#optimizing-a-model" title="Permalink to this headline">¶</a></h2>
+<p>One way to optimize a model is by using the <cite>.set_optimizer</cite> attribute and the <cite>.optimize</cite> method:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> <span class="c1"># selects an optimizer with arguments</span>
+<span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">some_inp</span><span class="p">,</span> <span class="n">desired_outp</span><span class="p">)</span> <span class="c1"># does the optimization with the selected optimizer</span>
+</pre></div>
+</div>
+<p>A full example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">l_goal</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">l_goal</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:],</span><span class="n">outp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">10</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">((</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">-</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">bins</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//usage-1.py">Source code</a>)</p>
+<div class="figure" id="id3">
+<img alt="_images/usage-1_00.png" src="_images/usage-1_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_00.png">png</a>, <a class="reference external" href=".//usage-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id4">
+<img alt="_images/usage-1_01.png" src="_images/usage-1_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_01.png">png</a>, <a class="reference external" href=".//usage-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_01.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id5">
+<img alt="_images/usage-1_02.png" src="_images/usage-1_02.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_02.png">png</a>, <a class="reference external" href=".//usage-1_02.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_02.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id6">
+<img alt="_images/usage-1_03.png" src="_images/usage-1_03.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_03.png">png</a>, <a class="reference external" href=".//usage-1_03.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_03.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id7">
+<img alt="_images/usage-1_04.png" src="_images/usage-1_04.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_04.png">png</a>, <a class="reference external" href=".//usage-1_04.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_04.pdf">pdf</a>)</span></p>
+</div>
+<p>When selecting an Optimizer, the full list of available Optimizers can be seen by tab-completion.</p>
+<p>Some interesting optimizers are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>SGD: Stochastic Gradient Descent - one of the simplest possible methods, can also take a momentum term as an option</li>
+<li>Adagrad/Adadelta/Adam/etc.: Accelerated Gradient Descent methods - adapt the learning rate</li>
+<li>LBFGS: Broyden-Fletcher–Goldfarb-Shanno (Quasi-Newton) method - very fast for many almost linear parameters</li>
+</ul>
+</div></blockquote>
+<div class="section" id="using-an-optimizer-by-hand">
+<h3>Using an Optimizer by Hand<a class="headerlink" href="#using-an-optimizer-by-hand" title="Permalink to this headline">¶</a></h3>
+<p>The normal PyTorch way to call Optimizers is (see also [the pytorch docs](<a class="reference external" href="http://pytorch.org/docs/master/optim.html">http://pytorch.org/docs/master/optim.html</a>)):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">l_goal</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:])</span>
+<span class="c1">#</span>
 
-<span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">G_C</span>
-            <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">Twu_Tu_C</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="c1"># first the gradient buffer have to be set to 0</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="c1"># then the computation is done</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="c1"># and some loss measure is used to compare the output to the goal</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">outp</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="c1"># eg. mean square error</span>
+    <span class="c1"># applying the backward computation fills all gradient buffers with the corresponding gradients</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># now that the gradients have the correct values, the optimizer can perform one optimization step</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>To see all parameters in a flat list instead of the nested structure, use the special attribute <cite>_all</cite>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">_all</span><span class="o">.&lt;</span><span class="n">press</span> <span class="n">tab</span><span class="o">&gt;</span>
-            <span class="c1"># a very long list of all parameters</span>
-</pre></div>
-</div>
-<p>Since these names still might not give you an idea of what they do, you can let convis describe them:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>In [6]: convis.describe(retina.parameters.OPL.center.E_n_C)
+<p>Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
 
+<span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">outp</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span>
 
-Out [6]: {&#39;doc&#39;: &#39;The n-fold cascaded exponential creates a low-pass characteristic.
-                  A filter can be created with `retina_base.m_en_filter`\n&#39;,
- &#39;name&#39;: &#39;E_n_C&#39;,
- &#39;node&#39;: [Node] center: ,
- &#39;simple_name&#39;: &#39;E_n_C&#39;,
- &#39;value&#39;: array([[[[[ 0.63214926]]],
-         [[[ 0.23255472]]],
-         [[[ 0.0855521 ]]],
-         [[[ 0.03147286]]],
-         [[[ 0.01157822]]],
-         [[[ 0.00425939]]],
-         [[[ 0.00156694]]]]])}
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>´describe´ will output a formatted table in an ipython notebook and a dictionary in a console.
-To verify that it is actually a shared parameter, we can ask for its type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="nb">type</span><span class="p">(</span><span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span><span class="p">)</span>
-
-<span class="n">Out</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">sharedvar</span><span class="o">.</span><span class="n">TensorSharedVariable</span>
+<p>The <cite>.optimize</cite> method of <a href="#id1"><span class="problematic" id="id2">`</span></a>convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">opt2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:],</span><span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">opt2</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="c1"># using LBFGS (without calling .set_optimizer) and another loss function</span>
 </pre></div>
 </div>
-<p>So what we learned is that <cite>retina.parameters.OPL.center.E_n_C</cite> is a convolution kernel and has some specific value. It is a theano share variable, which means that it represents both, a node in a computational graph as well as a portion of memory which is synchronized between RAM and GPU memory. To change the value we can use the method <cite>set_value()</cite>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_5d</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.02</span><span class="p">),</span><span class="n">resolution</span><span class="o">=</span><span class="n">retina</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
-<span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>For parameters which are accessed through the <cite>M().parameters.</cite> attribute, there is also a shortcut for setting the value:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_5d</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.02</span><span class="p">),</span><span class="n">resolution</span><span class="o">=</span><span class="n">retina</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
-<span class="n">retina</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">OPL</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">E_n_C</span> <span class="o">=</span> <span class="n">k</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="creating-a-model-from-layers">
-<h2>Creating a model from layers<a class="headerlink" href="#creating-a-model-from-layers" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="initializing-a-layer">
-<h3>Initializing a Layer<a class="headerlink" href="#initializing-a-layer" title="Permalink to this headline">¶</a></h3>
-<p>Layers typically expect a configuration dictionary that contains the initial values of their
-parameters.</p>
-<p>Initializing a convolution filter:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_5d</span><span class="p">()</span>
-<span class="c1"># creates a 5 dimensional tensor with a 2d gaussian filter</span>
-<span class="c1"># in the x and y dimensions</span>
-<span class="n">gauss_filter_layer</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">K_5d_kernel_filter</span><span class="p">(</span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="n">k</span>
-    <span class="p">})</span>
-</pre></div>
-</div>
-<p><cite>K_5d_kernel_filter</cite> is a layer that computes a convolution of the input with a 5 dimensional
-kernel filter. The dimensions are “batch”, “time”, “channel”, “x”, “y”.</p>
-<p>TODO: make a section for convolution filters</p>
-</div>
-<div class="section" id="connecting-layers">
-<h3>Connecting Layers<a class="headerlink" href="#connecting-layers" title="Permalink to this headline">¶</a></h3>
-<p>Layers can either be connected one by one by using <cite>add_input</cite> or in batch by using <cite>convis.connect</cite>.
-A shorthand for <cite>b.addinput(a)</cite> is <cite>b += a</cite>.
-The following is equivalent:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
-
-<span class="n">c</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-<span class="n">b</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-
-<span class="n">c</span> <span class="o">+=</span> <span class="n">b</span> <span class="c1"># if c and b are convis Layers</span>
-<span class="n">b</span> <span class="o">+=</span> <span class="n">a</span>
-</pre></div>
-</div>
-<p>Both will result in a graph in which only <cite>a</cite> has an open input. <cite>b</cite> recieves the output of <cite>a</cite> as input, <cite>c</cite> recieves the output of b.</p>
-<p>If more than one input or output are specified, a specific one can be set like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;input_0&#39;</span><span class="p">)</span>
-<span class="c1"># connects the first element of the</span>
-<span class="c1"># output of a to the input named &#39;input_0&#39; of b</span>
-<span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;input_1&#39;</span><span class="p">)</span>
-<span class="n">b</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;input_2&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If two outputs are connected to the same input, their values will be added together.</p>
-<p>More complciated connectivity can be achieved in <cite>convis.connect</cite> by nesting lists:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">connect</span><span class="p">([</span><span class="n">a</span><span class="p">,[</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">,[</span><span class="n">d</span><span class="p">,</span><span class="n">e</span><span class="p">,</span><span class="n">f</span><span class="p">]],</span><span class="n">g</span><span class="p">])</span>
-
-<span class="c1"># is equivalent to:</span>
-<span class="n">b</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="c1"># the second nested level is even,</span>
-        <span class="c1"># so connected in parallel</span>
-<span class="n">c</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">e</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-        <span class="c1"># the third nested level is odd,</span>
-        <span class="c1"># so again connected in sequence</span>
-<span class="n">f</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-        <span class="c1"># after a parallel nesting is closed,</span>
-        <span class="c1"># the inputs are all summed</span>
-        <span class="c1"># in the next layer</span>
-<span class="n">g</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="creating-a-layer-from-a-graph">
-<h2>Creating a layer from a graph<a class="headerlink" href="#creating-a-layer-from-a-graph" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="two-kinds-of-parameters">
-<h3>Two kinds of parameters<a class="headerlink" href="#two-kinds-of-parameters" title="Permalink to this headline">¶</a></h3>
+<p><cite>.set_optimizer.*()</cite> will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument.</p>
 </div>
 </div>
 </div>
@@ -223,16 +228,12 @@ The following is equivalent:</p>
   <ul>
 <li><a class="reference internal" href="#">Usage</a><ul>
 <li><a class="reference internal" href="#running-a-model">Running a model</a><ul>
-<li><a class="reference internal" href="#changing-parameters">Changing Parameters</a></li>
+<li><a class="reference internal" href="#switching-between-cpu-and-gpu-usage">Switching between CPU and GPU usage</a></li>
+<li><a class="reference internal" href="#using-runner-objects">Using Runner objects</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#creating-a-model-from-layers">Creating a model from layers</a><ul>
-<li><a class="reference internal" href="#initializing-a-layer">Initializing a Layer</a></li>
-<li><a class="reference internal" href="#connecting-layers">Connecting Layers</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#creating-a-layer-from-a-graph">Creating a layer from a graph</a><ul>
-<li><a class="reference internal" href="#two-kinds-of-parameters">Two kinds of parameters</a></li>
+<li><a class="reference internal" href="#optimizing-a-model">Optimizing a Model</a><ul>
+<li><a class="reference internal" href="#using-an-optimizer-by-hand">Using an Optimizer by Hand</a></li>
 </ul>
 </li>
 </ul>
@@ -243,8 +244,8 @@ The following is equivalent:</p>
   <p class="topless"><a href="index.html"
                         title="previous chapter">Welcome to convis’s documentation!</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="examples.html"
-                        title="next chapter">Examples</a></p>
+  <p class="topless"><a href="retina.html"
+                        title="next chapter">Retina Model</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -276,12 +277,12 @@ The following is equivalent:</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="Examples"
+          <a href="retina.html" title="Retina Model"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to convis’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.3.0.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

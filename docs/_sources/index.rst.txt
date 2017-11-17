@@ -6,16 +6,21 @@
 Welcome to convis's documentation!
 **********************************
 
+Convis lets you build vision models using PyTorch.
+
+
+
+
+
 Contents:
 
 .. toctree::
    :maxdepth: 5
 
    usage
-   examples
-   filters
    retina
-   buildyourown
+   examples
+   pytorch_basics
    docs
 
 

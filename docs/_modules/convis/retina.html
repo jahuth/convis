@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.retina &#8212; convis 0.3.0.3 documentation</title>
+    <title>convis.retina &#8212; convis 0.5.0.0 documentation</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.0.3',
+        VERSION:     '0.5.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.3.0.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -72,131 +72,59 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">.misc_utils</span> <span class="k">import</span> <span class="n">suppress</span>
-<span class="kn">from</span> <span class="nn">.retina_virtualretina</span> <span class="k">import</span> <span class="n">RetinaConfiguration</span><span class="p">,</span> <span class="n">default_config</span><span class="p">,</span> <span class="n">random_config</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">retina_virtualretina</span>
-<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">GraphWrapper</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span><span class="n">Output</span>
+<span class="kn">from</span> <span class="nn">.retina_virtualretina</span> <span class="k">import</span> <span class="n">RetinaConfiguration</span>
+<span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">retina</span> <span class="k">as</span> <span class="n">rf</span>
 
-<span class="kn">from</span> <span class="nn">.filters.retina</span> <span class="k">import</span> <span class="o">*</span>
+<div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../retina.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bipolar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gang</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Retina</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">OPL</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">Bipolar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionInput</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionSpiking</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionInput</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionSpiking</span><span class="p">()</span>
+        <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span>
 
-
-<div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../retina.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            This class instantiates a model similar to the Virtual Retina simulator.</span>
-
-<span class="sd">            It is comprised of an opl and a bipolar layer and N ganglion input and </span>
-<span class="sd">            ganglion spiking layers.</span>
-
-<span class="sd">            The layers are connected like this::</span>
-
-<span class="sd">                input -&gt; opl -&gt; bipol -&gt; [ ganglion_input (eg On)  -&gt; ganglion_spikes ] -&gt; output[0] </span>
-<span class="sd">                                         [ ganglion_input (eg Off) -&gt; ganglion_spikes ] -&gt; output[1]</span>
-
-<span class="sd">            Each layer can be disabled or overwritten by a different class by </span>
-<span class="sd">            providing the keyword arguments for this layer::</span>
-
-<span class="sd">                Retina(config, opl=convis.filters.retina.OPLLayerLeakyHeatNode, bipolar=False, ganglion_input=SomeCustomClass)</span>
-
-<span class="sd">            This example will disable the bipolar layer and replace opl and ganglion_input</span>
-<span class="sd">            layers with other classes. By default, the outputs of one layer that should be</span>
-<span class="sd">            fed into a layer that was disabled are added to the model outputs and layers</span>
-<span class="sd">            that would have recieved input from a layer that was disabled expose their input.</span>
-
-<span class="sd">            The changed model looks like this::</span>
-
-<span class="sd">                input -&gt;        opl (convis.filters.retina.OPLLayerLeakyHeatNode)        -&gt; output[0]</span>
-<span class="sd">                input -&gt; [ ganglion_input (eg On, SomeCustomClass)  -&gt; ganglion_spikes ] -&gt; output[1] </span>
-<span class="sd">                input -&gt; [ ganglion_input (eg Off, SomeCustomClass) -&gt; ganglion_spikes ] -&gt; output[2]</span>
-
-<span class="sd">            This can be changed like this::</span>
-
-<span class="sd">                retina = Retina(config, opl=convis.filters.retina.OPLLayerLeakyHeatNode, bipolar=False, ganglion_input=SomeCustomClass)</span>
-<span class="sd">                for layer in retina.ganglion_input_layers:</span>
-<span class="sd">                    # each ganglion_input recieves input from the opl</span>
-<span class="sd">                    layer.add_input(retina.opl)</span>
-<span class="sd">                # also we can remove the opl from the model output</span>
-<span class="sd">                del retina.outputs[0]</span>
-
-
-
-<span class="sd">            Note: Handeling the config is still a mess</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Retina Model&#39;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
-            <span class="c1"># if the configuration is an Ox dictionary, only use the dictionary</span>
-            <span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">_</span>
-        <span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">steps_per_second</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">input_luminosity_range</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="s1">&#39;debug&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-            <span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;retina&#39;</span><span class="p">,{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pixels-per-degree&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">))</span>
-        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-            <span class="n">steps_per_second</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;retina&#39;</span><span class="p">,{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;temporal-step__sec&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">))</span>
-        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-            <span class="n">input_luminosity_range</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;retina&#39;</span><span class="p">,{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input-luminosity-range&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">))</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Retina</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pixel_per_degree</span><span class="o">=</span><span class="n">pixel_per_degree</span><span class="p">,</span><span class="n">steps_per_second</span><span class="o">=</span><span class="n">steps_per_second</span><span class="p">,</span><span class="n">input_luminosity_range</span><span class="o">=</span><span class="n">input_luminosity_range</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">RetinaConfiguration</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">input_luminosity_range</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;retina.input-luminosity-range&#39;</span><span class="p">,</span><span class="mf">255.0</span><span class="p">))</span>
-
-
-        <span class="k">def</span> <span class="nf">choose_class</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">default_class</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">default_class</span>
-            <span class="k">return</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default_class</span><span class="p">)</span>
-
-
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;opl&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">choose_class</span><span class="p">(</span><span class="s1">&#39;opl&#39;</span><span class="p">,</span><span class="n">OPLLayerNode</span><span class="p">)(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;OPL&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">retina_config</span><span class="p">[</span><span class="s1">&#39;outer-plexiform-layers&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;linear-version&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bipolar&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;adding opl output&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bipolar&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bipol</span> <span class="o">=</span> <span class="n">choose_class</span><span class="p">(</span><span class="s1">&#39;bipolar&#39;</span><span class="p">,</span><span class="n">BipolarLayerNode</span><span class="p">)(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bipolar&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">retina_config</span><span class="p">[</span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion_input&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bipol</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;adding bipolar output&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ganglion_input_layers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ganglion_spiking_layers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">ganglion_config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">retina_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion-layers&#39;</span><span class="p">,[]):</span>
-            <span class="k">if</span> <span class="n">ganglion_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">):</span>
-                <span class="n">gl_name</span> <span class="o">=</span> <span class="n">ganglion_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">gl_name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-                    <span class="n">gl_name</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">gl_name</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion_input&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-                    <span class="n">gang_in</span> <span class="o">=</span> <span class="n">choose_class</span><span class="p">(</span><span class="s1">&#39;ganglion_input&#39;</span><span class="p">,</span><span class="n">GanglionInputLayerNode</span><span class="p">)(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GanglionInputLayer&#39;</span><span class="o">+</span><span class="n">gl_name</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="n">ganglion_config</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ganglion_input_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gang_in</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion_spikes&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">gang_in</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;adding ganglion input output&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion_spikes&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="s1">&#39;spiking-channel&#39;</span> <span class="ow">in</span> <span class="n">ganglion_config</span> <span class="ow">and</span> <span class="n">ganglion_config</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-                        <span class="n">gang_spikes</span> <span class="o">=</span> <span class="n">choose_class</span><span class="p">(</span><span class="s1">&#39;ganglion_spikes&#39;</span><span class="p">,</span><span class="n">GanglionSpikingLayerNode</span><span class="p">)(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GanglionSpikes_&#39;</span><span class="o">+</span><span class="n">gl_name</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="n">ganglion_config</span><span class="p">[</span><span class="s1">&#39;spiking-channel&#39;</span><span class="p">])</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gang_spikes</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;adding ganglion spikes output&#39;</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion_input&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">):</span>
-                            <span class="n">gang_spikes</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">gang_in</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;connecting ganglion input to ganglion spikes&#39;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">ganglion_spiking_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gang_spikes</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bipolar&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ganglion_input&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-                    <span class="n">gang_in</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bipol</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;connecting bipolar to ganglion input&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;opl&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bipolar&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bipol</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;connecting opl and bipolar&#39;</span><span class="p">)</span></div>
+        <span class="c1"># Ix = f(Iy,Iz,...)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commands</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">opl</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I1&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">bipolar</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I1&#39;</span><span class="p">,</span><span class="s1">&#39;I2&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I1&#39;</span><span class="p">,</span><span class="s1">&#39;I2&#39;</span><span class="p">],</span> <span class="s1">&#39;copy&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">gang</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I1&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">spikes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I1&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">gang</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I2&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I2&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">spikes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="s1">&#39;I2&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;I2&#39;</span><span class="p">]))</span>
+    <span class="k">def</span> <span class="nf">parse_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;retina_config_key&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;outer-plexiform-layers.0.linear-version.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;contrast-gain-control.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.0.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.0.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inp</span><span class="p">):</span>
+        <span class="n">io_buffers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;I1&#39;</span><span class="p">:</span><span class="n">inp</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">b_out</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">b_in</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">==</span><span class="s1">&#39;copy&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">oi</span><span class="p">,</span><span class="n">oo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_out</span><span class="p">):</span>
+                    <span class="n">io_buffers</span><span class="p">[</span><span class="n">oo</span><span class="p">]</span> <span class="o">=</span> <span class="n">io_buffers</span><span class="p">[</span><span class="n">b_in</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#print b_in, f, b_out</span>
+                <span class="n">o</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">io_buffers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">b_in</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Output</span><span class="p">:</span>
+                    <span class="n">o</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># we can only use the first output</span>
+                <span class="k">for</span> <span class="n">oi</span><span class="p">,</span><span class="n">oo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_out</span><span class="p">):</span>
+                    <span class="n">io_buffers</span><span class="p">[</span><span class="n">oo</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span>
+        <span class="k">return</span> <span class="n">Output</span><span class="p">([</span><span class="n">io_buffers</span><span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">],</span><span class="n">io_buffers</span><span class="p">[</span><span class="s1">&#39;I2&#39;</span><span class="p">]],</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ganglion_spikes_ON&#39;</span><span class="p">,</span><span class="s1">&#39;ganglion_spikes_OFF&#39;</span><span class="p">])</span></div>
 </pre></div>
 
           </div>
@@ -227,7 +155,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.3.0.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
