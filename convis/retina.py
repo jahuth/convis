@@ -57,6 +57,10 @@ class Retina(Layer):
         if spikes:
             self.commands.append((['I2'], self.gang_1_spikes, ['I2']))
     def parse_config(self,config,prefix='',key='retina_config_key'):
+        if type(config) is str:
+            config_file = config
+            config = RetinaConfiguration()
+            config.read_xml(config_file)
         self.opl.parse_config(config,prefix='outer-plexiform-layers.0.linear-version.',key=key)
         self.bipolar.parse_config(config,prefix='contrast-gain-control.',key=key)
         self.gang_0_input.parse_config(config,prefix='ganglion-layers.0.',key=key)

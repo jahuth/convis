@@ -68,7 +68,7 @@ class SeperatableOPLFilter(Layer):
         self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
     @property
     def filter_length(self):
-        return self.center_E.weight.data.shape[TIME_DIMENSION] + self.center_undershoot.weight.data.shape[TIME_DIMENSION] - 2
+        return int(self.center_E.weight.data.shape[TIME_DIMENSION] + self.center_undershoot.weight.data.shape[TIME_DIMENSION] - 2)
     @property
     def filter_width(self):
         return self.center_G.weight.data.shape[-2] - 1
@@ -78,9 +78,9 @@ class SeperatableOPLFilter(Layer):
     @property
     def filter_padding_2d(self):
         return (self.filter_width/2,
-                self.filter_width - self.filter_width/2,
-                self.filter_height/2,
-                self.filter_height - self.filter_height/2,
+                int(self.filter_width - self.filter_width/2),
+                int(self.filter_height/2),
+                int(self.filter_height - self.filter_height/2),
                 0,0)
     def forward(self, x):
         if not (self.input_state.data.shape[TIME_DIMENSION] == 2*self.filter_length and
@@ -153,10 +153,10 @@ class HalfRecursiveOPLFilter(Layer):
         return self.center_G.weight.data.shape[-1] - 1
     @property
     def filter_padding_2d(self):
-        return (self.filter_width/2,
-                self.filter_width - self.filter_width/2,
-                self.filter_height/2,
-                self.filter_height - self.filter_height/2,
+        return (int(self.filter_width/2),
+                int(self.filter_width - self.filter_width/2),
+                int(self.filter_height/2),
+                int(self.filter_height - self.filter_height/2),
                 0,0)
     def forward(self, x):
         if self._use_cuda:
@@ -397,6 +397,8 @@ class GanglionInput(Layer):
             self.input_state.data.shape[3] == x.data.shape[3] and
             self.input_state.data.shape[4] == x.data.shape[4]):
             self.input_state = State(torch.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
+            if self._use_cuda:
+                self.input_state = self.input_state.cuda()
         x_pad = torch.cat([self.input_state, x], dim=TIME_DIMENSION)
         x = self.sign * self.transient(x_pad)[:,:,self.filter_length:,:,:]
         n = (self.i_0/(1-self.lambda_G*(x-self.v_0)/self.i_0))
@@ -438,10 +440,12 @@ class GanglionSpiking(Layer):
     def init_states(self,input_shape):
         self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
         self.V = 0.5+0.2*torch.autograd.Variable(torch.rand((input_shape[3],input_shape[4]))) # membrane potential
-        self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
-                            torch.autograd.Variable(
-                                torch.randn((input_shape[3],input_shape[4])))
-                           )
+        if self._use_cuda:
+            self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
+                                torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))).cuda())
+        else:
+            self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
+                                torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))).cpu())
         self.noise_prev = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
     def forward(self, I_gang):
         g_infini = 50.0 # apparently?
@@ -481,7 +485,7 @@ class GanglionSpiking(Layer):
                                     torch.autograd.Variable(torch.randn(I.data.shape)).cuda())
             else:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
-                                    torch.autograd.Variable(torch.randn(I.data.shape)))
+                                    torch.autograd.Variable(torch.randn(I.data.shape)).cpu())
             spikes = V > 1.0
             self.refr.masked_scatter_(spikes, refr_noise)
             self.refr.masked_scatter_(self.refr < 0.0, self.zeros)

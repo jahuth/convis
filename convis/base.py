@@ -130,6 +130,33 @@ class _OptimizerSelector(object):
         if type(opt) is str and issubclass(getattr(torch.optim, opt),torch.optim.Optimizer):
             self(getattr(torch.optim, opt),*args,**kwargs)
 
+def prepare_input(a, dims= 5, cuda=False):
+    if not type(a) is torch.autograd.Variable:
+        if hasattr(a, 'numpy'):
+            # its hopefully a torch.Tensor
+            a = torch.autograd.Variable(a)
+        else:
+            a = torch.autograd.Variable(torch.Tensor(a))
+    if dims is not None:
+        if dims == 5:
+            if len(a.data.shape) == 3:
+                a = a[None,None,:,:,:]
+        if dims == 3:
+            if len(a.data.shape) == 5:
+                a = a[0,0,:,:,:]
+    if cuda:
+        return a.cuda()
+    else:
+        return a.cpu()
+
+def shape(x):
+    if hasattr(x,'shape'):
+        return x.shape
+    if hasattr(x,'data'):
+        if hasattr(x.data,'shape'):
+            return x.data.shape
+    raise Exception('No shape found for '+str(x)+'!')
+
 class Layer(torch.nn.Module):
     def __init__(self):
         super(Layer, self).__init__()
@@ -162,7 +189,10 @@ class Layer(torch.nn.Module):
                 if self.dims == 3:
                     if len(a.data.shape) == 5:
                         a = a[0,0,:,:,:]
-            new_args.append(a)
+            if self._use_cuda:
+                new_args.append(a.cuda())
+            else:
+                new_args.append(a.cpu())
         o0 = o = super(Layer, self).__call__(*new_args,**kwargs)
         if hasattr(self, 'outputs'):
             o = Output([o] + [getattr(self,k) for k in self.outputs], keys = ['output']+self.outputs)
@@ -181,8 +211,10 @@ class Layer(torch.nn.Module):
         """
         chunked_output = []
         keys = ['output']
-        while t < the_input.shape[0]:
-            oo = self(the_input[None,None,t:(t+dt),:,:])
+        if len(shape(the_input)) == 3:
+            the_input = the_input[None,None,:,:,:]
+        while t < shape(the_input)[2]:
+            oo = self(the_input[:,:,t:(t+dt),:,:])
             if type(oo) is not Output:
                 oo = [oo]
             else:
@@ -246,9 +278,12 @@ class Layer(torch.nn.Module):
                         if v.retina_config_key.startswith('--'):
                             continue
                         if hasattr(v,'set'):
-                            v.set(config.get(prefix+v.retina_config_key))
+                            try:
+                                v.set(config.get(prefix+v.retina_config_key))
+                            except:
+                                pass
                         else:
-                            print ('has no set:',v)
+                            print('has no set:',v)
         self.apply(f)
     def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).mean()):
         if optimizer is None:
@@ -261,7 +296,7 @@ class Layer(torch.nn.Module):
             loss.backward(retain_graph=True)
             return loss
         closure.loss_fn = loss_fn
-        optimizer.step(closure)
+        return optimizer.step(closure)
 
 Model = Layer
 

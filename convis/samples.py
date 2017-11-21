@@ -37,11 +37,11 @@ def moving_grating(t=2000,x=20,y=20,vt=1.0/200.0,vx=3.0,vy=2.0,p=0.01):
     T,X,Y = np.meshgrid(np.linspace(0.0,t,t),np.linspace(-1.0,1.0,x),np.linspace(-1.0,1.0,y), indexing='ij')
     return np.sin(vt*T+vx*X+vy*Y) 
 
-def gabor_kernel(phi=2.0,size=16,resolution=2.0,f=10.0, sigma_x=1, sigma_y=1):
+def gabor_kernel(phi=2.0,size=16,resolution=2.0,f=10.0, phase=0.0, sigma_x=1, sigma_y=1):
     vals = np.linspace(-0.5*size/resolution,0.5*size/resolution, size)    
     xgrid, ygrid = np.meshgrid(vals,vals)       
     the_gaussian = np.exp(-(sigma_x*xgrid/2.0)**2-(sigma_y*ygrid/2.0)**2)
-    the_sine = np.sin(np.sin(phi) * xgrid/(2.0*np.pi / f) + np.cos(phi) * ygrid/(2.0*np.pi / f))
+    the_sine = np.sin(np.sin(phi) * xgrid/(2.0*np.pi / f) + np.cos(phi) * ygrid/(2.0*np.pi / f) + phase)
     the_gabor = the_gaussian * the_sine  
     return the_gabor
 

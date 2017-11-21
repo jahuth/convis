@@ -16,9 +16,15 @@ else:
     globals()['__convis_global_lookup_table'] = global_lookup_table
 
 def get_convis_attribute(o,k,default):
-    return getattr(o,k,default)
+    try:
+        return getattr(o,k,default)
+    except:
+        return default
 def has_convis_attribute(o,k):
-    return hasattr(o,k)
+    try:
+        return hasattr(o,k)
+    except:
+        return False
 def set_convis_attribute(o,k,v):
     setattr(o,k,v)
 
@@ -152,7 +158,10 @@ def as_parameter(x,**kwargs):
     return Parameter(x, **kwargs)
 
 def is_variable(x):
-    return hasattr(x,'_is_convis_variable')
+    try:
+        return hasattr(x,'_is_convis_variable')
+    except:
+        return False
 
 def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
     """

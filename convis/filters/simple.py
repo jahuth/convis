@@ -41,6 +41,8 @@ class TemporalLowPassFilterRecursive(Layer):
             del self.last_y
     def forward(self, x):
         steps = variables.Parameter(1.0/variables.default_resolution.steps_per_second,requires_grad=False)
+        if self._use_cuda:
+            steps = steps.cuda()
         a_0 = 1.0
         a_1 = -torch.exp(-steps/self.tau)
         b_0 = 1.0 - a_1
@@ -48,6 +50,8 @@ class TemporalLowPassFilterRecursive(Layer):
             y = self.last_y
         else:
             y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
+            if self._use_cuda:
+                y = y.cuda()
         o = []
         for i in range(x.data.shape[TIME_DIMENSION]):
             y = (x[:,:,i,:,:] * b_0 - y * a_1) / a_0
@@ -69,6 +73,8 @@ class TemporalHighPassFilterRecursive(Layer):
             del self.last_y
     def forward(self, x):
         steps = variables.Parameter(1.0/variables.default_resolution.steps_per_second,requires_grad=False)
+        if self._use_cuda:
+            steps = steps.cuda()
         a_0 = 1.0
         a_1 = -torch.exp(-steps/self.tau)
         b_0 = 1.0 - a_1
@@ -76,6 +82,8 @@ class TemporalHighPassFilterRecursive(Layer):
             y = self.last_y
         else:
             y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
+            if self._use_cuda:
+                y = y.cuda()
         o = []
         x1 = x[:,:,0,:,:] 
         for i in range(x.data.shape[TIME_DIMENSION]):
