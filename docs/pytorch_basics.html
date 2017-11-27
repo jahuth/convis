@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>PyTorch Basics and Extensions &#8212; convis 0.5.0.0 documentation</title>
+    <title>PyTorch Basics &#8212; convis 0.5.0.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="convis" href="docs.html" />
-    <link rel="prev" title="Examples" href="examples.html" /> 
+    <link rel="next" title="Retina Model" href="retina.html" />
+    <link rel="prev" title="Filters and Layers" href="filters.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,10 +38,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="docs.html" title="convis"
+          <a href="retina.html" title="Retina Model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="Examples"
+          <a href="filters.html" title="Filters and Layers"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
@@ -52,8 +52,48 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pytorch-basics-and-extensions">
-<h1>PyTorch Basics and Extensions<a class="headerlink" href="#pytorch-basics-and-extensions" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="pytorch-basics">
+<h1>PyTorch Basics<a class="headerlink" href="#pytorch-basics" title="Permalink to this headline">¶</a></h1>
+<p>PyTorch is a computing library with a focus on deep learning.
+It provides three mayor submodules to make deep learning easy:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A high performance tensor computing package <cite>torch.tensor</cite></li>
+<li>A computational graph that is built while you do your computations <cite>torch.autograd</cite></li>
+<li>Classes to package computations into modules and collect parameters hierarchically <cite>torch.nn</cite></li>
+</ul>
+</div></blockquote>
+<div class="section" id="tensor-computing-with-torch-tensor">
+<h2>Tensor computing with <cite>torch.tensor</cite><a class="headerlink" href="#tensor-computing-with-torch-tensor" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="automated-differentiation-with-torch-autograd">
+<h2>Automated differentiation with <cite>torch.autograd</cite><a class="headerlink" href="#automated-differentiation-with-torch-autograd" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="model-building-with-torch-nn">
+<h2>Model building with <cite>torch.nn</cite><a class="headerlink" href="#model-building-with-torch-nn" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+<div class="section" id="pytorch-extensions-in-convis">
+<h1>PyTorch Extensions in Convis<a class="headerlink" href="#pytorch-extensions-in-convis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="layer">
+<h2>Layer<a class="headerlink" href="#layer" title="Permalink to this headline">¶</a></h2>
+<p>Layers are extensions of <a href="#id1"><span class="problematic" id="id2">`</span></a>torch.nn.Module`s. They behave very similarly, but have a few additional features:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a Layer knows if it accepts 1d, 3d, or 5d time sequence input and can broadcast the input accordingly if it has too few dimensions</li>
+<li>instead of running the model on the complete time series, the input can be automatically chunked by using the <cite>.run(.., dt=chunk_length)</cite> method instead of calling the Layer directly.</li>
+<li>a Layer can create its own optimizer</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>A class that collects all outputs of a Layer for Layers that have more than one output.</p>
+</div>
+<div class="section" id="conv3d">
+<h2>Conv3d<a class="headerlink" href="#conv3d" title="Permalink to this headline">¶</a></h2>
+<p>The extended Conv3d operation can automatically pad input in x and y dimension.</p>
+</div>
 </div>
 
 
@@ -62,12 +102,28 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyTorch Basics</a><ul>
+<li><a class="reference internal" href="#tensor-computing-with-torch-tensor">Tensor computing with <cite>torch.tensor</cite></a></li>
+<li><a class="reference internal" href="#automated-differentiation-with-torch-autograd">Automated differentiation with <cite>torch.autograd</cite></a></li>
+<li><a class="reference internal" href="#model-building-with-torch-nn">Model building with <cite>torch.nn</cite></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a><ul>
+<li><a class="reference internal" href="#layer">Layer</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
+<li><a class="reference internal" href="#conv3d">Conv3d</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="examples.html"
-                        title="previous chapter">Examples</a></p>
+  <p class="topless"><a href="filters.html"
+                        title="previous chapter">Filters and Layers</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="docs.html"
-                        title="next chapter">convis</a></p>
+  <p class="topless"><a href="retina.html"
+                        title="next chapter">Retina Model</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -99,10 +155,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="docs.html" title="convis"
+          <a href="retina.html" title="Retina Model"
              >next</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="Examples"
+          <a href="filters.html" title="Filters and Layers"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>

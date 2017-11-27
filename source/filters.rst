@@ -10,6 +10,7 @@ It can dynamically pad the input in `x` and `y` dimensions to keep the output th
 The time dimension has to be padded by another operation.
 
 .. code::
+
     conv = covnis.filters.Conv3d(in_channels=1,out_channels=1,kernel_size=(10,20,20),bias=False,)
     print(conv.weight) # the weight parameter
     print(conv.bias)   # the bias parameter
@@ -19,6 +20,7 @@ The time dimension has to be padded by another operation.
 
 
 .. warning::
+
     Currently, the nd convolution operation is leaking memory!
 
 .. autoclass:: convis.filters.Conv3d
@@ -27,23 +29,15 @@ The time dimension has to be padded by another operation.
 Spatial gaussian filters and temporal exponential filters can be generated with functions from the `convis.numerical_filters` submodule.
 
 .. plot::
+    :include-source:
 
     import convis
     import numpy as np
     import matplotlib.pylab as plt
     plt.figure()
     plt.imshow(convis.numerical_filters.gauss_filter_2d(4.0,4.0))
-    plt.show()
-
-
-.. plot::
-
-    import convis
-    import numpy as np
-    import matplotlib.pylab as plt
     plt.figure()
     plt.plot(convis.numerical_filters.exponential_filter_1d(tau=0.01))
-    plt.show()
 
 Recursive Temporal Filters
 -------------------------
@@ -55,6 +49,8 @@ However, the temporal filter is also more simplified and might not be able to fi
 `TemporalLowPassFilterRecursive` is an exponential filter that cuts off high frequencies, while `TemporalHighPassFilterRecursive` is the inverse (a 1, followed by a negative exponential) and cuts off low frequencies.
 
 .. plot::
+    :include-source:
+
     import matplotlib.pyplot as plt
     import numpy as np
     import convis
@@ -67,22 +63,25 @@ However, the temporal filter is also more simplified and might not be able to fi
     f2 = convis.filters.simple.TemporalHighPassFilterRecursive()
     f2.tau.data[0] = 0.005
     f2.k.data[0] = 1.0
-    plt.plot(signal)
-    plt.plot(f2(signal[None,None,:,None,None]).data.numpy().mean((0,1,3,4)).flatten())
-    plt.plot(f1(signal[None,None,:,None,None]).data.numpy().mean((0,1,3,4)).flatten())
-    signal_f = np.fft.fft(signal)
     o1 = f1(signal[None,None,:,None,None]).data.numpy().mean((0,1,3,4)).flatten()
     o2 = f2(signal[None,None,:,None,None]).data.numpy().mean((0,1,3,4)).flatten()
+    plt.plot(signal,label='Signal')
+    plt.plot(o2,label='High Pass Filter')
+    plt.plot(o1,label='Low Pass Filter')
+    signal_f = np.fft.fft(signal)
     o1_f = np.fft.fft(o1)
     o2_f = np.fft.fft(o2)
+    plt.legend()
     plt.figure()
-    plt.plot(np.abs(o1_f)[:2500]/np.abs(signal_f)[:2500])
-    plt.plot(np.abs(o2_f)[:2500]/np.abs(signal_f)[:2500])
+    plt.plot(0,0)
+    plt.plot(np.abs(o2_f)[:2500]/np.abs(signal_f)[:2500],label='High Pass Filter')
+    plt.plot(np.abs(o1_f)[:2500]/np.abs(signal_f)[:2500],label='Low Pass Filter')
     plt.xlabel('Frequency')
     plt.ylabel('Gain')
     plt.title('Transfer Functions of Filters')
     plt.gca().set_xscale('log')
-    plt.legend(['Low Pass Filter', 'High Pass Filter'])
+    plt.ylim(-0.1,1.25)
+    plt.legend()
 
 .. automodule:: convis.filters.simple
    :members:

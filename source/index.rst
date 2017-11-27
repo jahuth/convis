@@ -19,9 +19,10 @@ Contents:
 
    installation
    usage
+   filters
+   pytorch_basics
    retina
    examples
-   pytorch_basics
    docs
 
 

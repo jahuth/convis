@@ -6,7 +6,6 @@ Running a model
 
 Example::
 
-
     import convis
     retina = convis.retina.Retina()
     retina(some_short_input)
@@ -26,14 +25,14 @@ Using Runner objects
 ~~~~~~~~~~~~~~~~~~~~
 
 Runner objects can execute a model on a fixed set of input and output streams. 
-The execution can also happen in a separate thread::
+The execution can also happen in a separate thread:
 
+.. code-block:: python
     import convis, time
     import numpy as np
 
     inp = convis.streams.RandomStream(size=(10,10),pixel_per_degree=1.0,level=100.2,mean=128.0)
     out1 = convis.streams.SequenceStream(sequence=np.ones((0,10,10)), max_frames=10000)
-    ​
     retina = convis.retina.Retina()
     runner = convis.base.Runner(retina, input = inp, output = out1)
     runner.start()
@@ -41,22 +40,22 @@ The execution can also happen in a separate thread::
     plot(out1.sequence.mean((1,2)))
     # some time later
     runner.stop()
-    ​
 
 
 Optimizing a Model
 --------------------
 
-One way to optimize a model is by using the `.set_optimizer` attribute and the `.optimize` method::
+One way to optimize a model is by using the `.set_optimizer` attribute and the `.optimize` method:
 
-
+.. code-block:: python
     l = convis.models.LN()
     l.set_optimizer.SGD(lr=0.001) # selects an optimizer with arguments
     l.optimize(some_inp, desired_outp) # does the optimization with the selected optimizer
 
 
-A full example::
+A full example:
 
+.. code-block:: python
     import numpy as np
     import matplotlib.pylab as plt
     import convis
@@ -90,7 +89,6 @@ A full example::
 
 
 .. plot::
-
     import numpy as np
     import matplotlib.pylab as plt
     import convis
@@ -132,8 +130,9 @@ Some interesting optimizers are:
 Using an Optimizer by Hand
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The normal PyTorch way to call Optimizers is (see also [the pytorch docs](http://pytorch.org/docs/master/optim.html))::
+The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling `.step()` (see also http://pytorch.org/docs/master/optim.html ).
 
+.. code-block:: python
     import numpy as np
     import convis
     import torch
@@ -143,8 +142,6 @@ The normal PyTorch way to call Optimizers is (see also [the pytorch docs](http:/
     inp = 1.0*(np.random.randn(200,10,10))
     inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
     outp = l_goal(inp[None,None,:,:,:])
-    #
-
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)
     optimizer = torch.optim.SGD(l.parameters(), lr=0.01)
@@ -160,8 +157,9 @@ The normal PyTorch way to call Optimizers is (see also [the pytorch docs](http:/
         # now that the gradients have the correct values, the optimizer can perform one optimization step
         optimizer.step()
 
-Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values::
+Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values:
 
+.. code-block:: python
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)
     optimizer = torch.optim.LBFGS(lr=0.01)
@@ -177,8 +175,9 @@ Or using a closure function, which is necessary for advanced optimizers that nee
         optimizer.step(closure)
 
 
-The `.optimize` method of `convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions::
+The `.optimize` method of `convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions:
 
+.. code-block:: python
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)
     opt2 = torch.optim.LBFGS(l.parameters())

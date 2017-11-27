@@ -17,10 +17,12 @@ Contents:
 .. toctree::
    :maxdepth: 5
 
+   installation
    usage
+   filters
+   pytorch_basics
    retina
    examples
-   pytorch_basics
    docs
 
 

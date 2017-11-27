@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Layers &#8212; convis 0.5.0.0 documentation</title>
+    <title>Filters and Layers &#8212; convis 0.5.0.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,7 +23,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyTorch Basics" href="pytorch_basics.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,6 +37,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="pytorch_basics.html" title="PyTorch Basics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="usage.html" title="Usage"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
@@ -44,10 +52,200 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="layers">
-<h1>Layers<a class="headerlink" href="#layers" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="filters-and-layers">
+<h1>Filters and Layers<a class="headerlink" href="#filters-and-layers" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="convolution-filters">
+<h2>Convolution Filters<a class="headerlink" href="#convolution-filters" title="Permalink to this headline">¶</a></h2>
+<p><cite>covnis.filters.Conv3d</cite> is the basic 3d convolution filter and based on <cite>torch.nn.Conv3d</cite>.
+It can dynamically pad the input in <cite>x</cite> and <cite>y</cite> dimensions to keep the output the same size as the input.
+The time dimension has to be padded by another operation.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">conv</span> <span class="o">=</span> <span class="n">covnis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">out_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span><span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span> <span class="c1"># the weight parameter</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>   <span class="c1"># the bias parameter</span>
+<span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">some_output</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">some_input</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Currently, the nd convolution operation is leaking memory!</p>
+</div>
+<dl class="class">
+<dt id="convis.filters.Conv3d">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv3d</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Spatial gaussian filters and temporal exponential filters can be generated with functions from the <cite>convis.numerical_filters</cite> submodule.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_2d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_1d</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>(<a class="reference external" href=".//filters-1.py">Source code</a>)</p>
+<div class="figure" id="id1">
+<img alt="_images/filters-1_00.png" src="_images/filters-1_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-1_00.png">png</a>, <a class="reference external" href=".//filters-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-1_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id2">
+<img alt="_images/filters-1_01.png" src="_images/filters-1_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-1_01.png">png</a>, <a class="reference external" href=".//filters-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-1_01.pdf">pdf</a>)</span></p>
+</div>
+</div>
+<div class="section" id="recursive-temporal-filters">
+<h2>Recursive Temporal Filters<a class="headerlink" href="#recursive-temporal-filters" title="Permalink to this headline">¶</a></h2>
+<p>There are two filters available that perform recursive temporal filtering.
+The advantage over convolutional filtering is that it uses a lot less memory and is a lot faster to compute.
+However, the temporal filter is also more simplified and might not be able to fit a specific temporal profile well.</p>
+<p><cite>TemporalLowPassFilterRecursive</cite> is an exponential filter that cuts off high frequencies, while <cite>TemporalHighPassFilterRecursive</cite> is the inverse (a 1, followed by a negative exponential) and cuts off low frequencies.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="c1"># random amplitudes and phases for a range of frequencies</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+                 <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">136</span><span class="p">)],</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">f1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">TemporalLowPassFilterRecursive</span><span class="p">()</span>
+<span class="n">f1</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.005</span>
+<span class="n">f2</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">TemporalHighPassFilterRecursive</span><span class="p">()</span>
+<span class="n">f2</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.005</span>
+<span class="n">f2</span><span class="o">.</span><span class="n">k</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">o1</span> <span class="o">=</span> <span class="n">f1</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,:,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">])</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">o2</span> <span class="o">=</span> <span class="n">f2</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,:,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">])</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Signal&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;High Pass Filter&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o1</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Low Pass Filter&#39;</span><span class="p">)</span>
+<span class="n">signal_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+<span class="n">o1_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">o1</span><span class="p">)</span>
+<span class="n">o2_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">o2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">o2_f</span><span class="p">)[:</span><span class="mi">2500</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">signal_f</span><span class="p">)[:</span><span class="mi">2500</span><span class="p">],</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;High Pass Filter&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">o1_f</span><span class="p">)[:</span><span class="mi">2500</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">signal_f</span><span class="p">)[:</span><span class="mi">2500</span><span class="p">],</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Low Pass Filter&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Gain&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Transfer Functions of Filters&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">1.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>(<a class="reference external" href=".//filters-2.py">Source code</a>)</p>
+<div class="figure" id="id3">
+<img alt="_images/filters-2_00.png" src="_images/filters-2_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-2_00.png">png</a>, <a class="reference external" href=".//filters-2_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-2_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id4">
+<img alt="_images/filters-2_01.png" src="_images/filters-2_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-2_01.png">png</a>, <a class="reference external" href=".//filters-2_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-2_01.pdf">pdf</a>)</span></p>
+</div>
+<span class="target" id="module-convis.filters.simple"></span></div>
+<div class="section" id="module-convis.filters.retina">
+<span id="retina-layers"></span><h2>Retina Layers<a class="headerlink" href="#module-convis.filters.retina" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.filters.retina.Bipolar">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">Bipolar</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#Bipolar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.Bipolar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Example Configuration:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="c1"># for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ;</span>
+                                               <span class="c1"># `ampInputCurrent` in virtual retina</span>
+    <span class="s1">&#39;bipolar-inert-leaks__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>             <span class="c1"># `gLeak` in virtual retina</span>
+    <span class="s1">&#39;adaptation-sigma__deg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>              <span class="c1"># `sigmaSurround` in virtual retina</span>
+    <span class="s1">&#39;adaptation-tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>              <span class="c1"># `tauSurround` in virtual retina</span>
+    <span class="s1">&#39;adaptation-feedback-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="c1"># `ampFeedback` in virtual retina</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.GanglionInput">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">GanglionInput</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#GanglionInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.GanglionInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>The input current to the ganglion cells is filtered through a gain function.</p>
+<p><span class="math">\(I_{Gang}(x,y,t) = G * N(eT * V_{Bip})\)</span></p>
+<p><span class="math">\(N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)</p>
+<p><span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if <span class="math">\(V &gt; v^0_G\)</span>)</p>
+<blockquote>
+<div><p>Example configuration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><p class="first">‘name’: ‘Parvocellular Off’,
+‘enabled’: True,
+‘sign’: -1,
+‘transient-tau__sec’:0.02,
+‘transient-relative-weight’:0.7,
+‘bipolar-linear-threshold’:0,
+‘value-at-linear-threshold__Hz’:37,
+‘bipolar-amplification__Hz’:100,
+‘sigma-pool__deg’: 0.0,
+‘spiking-channel’: {</p>
+<blockquote>
+<div>…</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>‘name’: ‘Magnocellular On’,
+‘enabled’: False,
+‘sign’: 1,
+‘transient-tau__sec’:0.03,
+‘transient-relative-weight’:1.0,
+‘bipolar-linear-threshold’:0,
+‘value-at-linear-threshold__Hz’:80,
+‘bipolar-amplification__Hz’:400,
+‘sigma-pool__deg’: 0.1,
+‘spiking-channel’: {</p>
+<blockquote>
+<div>…</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.GanglionSpiking">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">GanglionSpiking</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#GanglionSpiking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.GanglionSpiking" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ganglion cells recieve the gain controlled input and produce spikes.</p>
+<p>When the cell is not refractory, <span class="math">\(V\)</span> moves as:</p>
+<p>$$ \dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + eta_v(t)$$</p>
+<p>Otherwise it is set to 0.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.OPL">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">OPL</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#OPL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.OPL" title="Permalink to this definition">¶</a></dt>
+<dd><p>The OPL current is a filtered version of the luminance input with spatial and temporal kernels.</p>
+<p>$$I_{OLP}(x,y,t) = lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$</p>
+<p>with:</p>
+<p><span class="math">\(C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)\)</span></p>
+<p><span class="math">\(S(x,y,t) = G * E * C(x,y,t)\)</span></p>
+<p>In the case of leaky heat equation:</p>
+<p><span class="math">\(C(x,y,t) = T(wu,Tu) * K(sigma_C,Tau_C) * L (x,y,t)\)</span></p>
+<p><span class="math">\(S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)\)</span>
+p.275</p>
+<p>To keep all dimensions similar, a <em>fake kernel</em> has to be used on the center output that contains a single 1 but has the shape of the filters used on the surround, such that the surround can be subtracted from the center.</p>
+<p>The inputs of the function are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="xref py py-obj docutils literal"><span class="pre">L</span></code> (the luminance input),</li>
+<li><code class="xref py py-obj docutils literal"><span class="pre">E_n_C</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">TwuTu_C</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">G_C</span></code> (the center filters),</li>
+<li><code class="xref py py-obj docutils literal"><span class="pre">E_S</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">G_S</span></code> (the surround filters),</li>
+<li><code class="xref py py-obj docutils literal"><span class="pre">Reshape_C_S</span></code> (the fake filter),</li>
+<li><code class="xref py py-obj docutils literal"><span class="pre">lambda_OPL</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">w_OPL</span></code> (scaling and weight parameters)</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -56,6 +254,22 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Filters and Layers</a><ul>
+<li><a class="reference internal" href="#convolution-filters">Convolution Filters</a></li>
+<li><a class="reference internal" href="#recursive-temporal-filters">Recursive Temporal Filters</a></li>
+<li><a class="reference internal" href="#module-convis.filters.retina">Retina Layers</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="usage.html"
+                        title="previous chapter">Usage</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pytorch_basics.html"
+                        title="next chapter">PyTorch Basics</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -86,6 +300,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="pytorch_basics.html" title="PyTorch Basics"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="usage.html" title="Usage"
+             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>

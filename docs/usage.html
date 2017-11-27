@@ -24,8 +24,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Retina Model" href="retina.html" />
-    <link rel="prev" title="Welcome to convis’s documentation!" href="index.html" /> 
+    <link rel="next" title="Filters and Layers" href="filters.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -38,10 +38,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="retina.html" title="Retina Model"
+          <a href="filters.html" title="Filters and Layers"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to convis’s documentation!"
+          <a href="installation.html" title="Installation"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
@@ -73,84 +73,12 @@
 <h3>Using Runner objects<a class="headerlink" href="#using-runner-objects" title="Permalink to this headline">¶</a></h3>
 <p>Runner objects can execute a model on a fixed set of input and output streams.
 The execution can also happen in a separate thread:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>import convis, time
-import numpy as np
-
-inp = convis.streams.RandomStream(size=(10,10),pixel_per_degree=1.0,level=100.2,mean=128.0)
-out1 = convis.streams.SequenceStream(sequence=np.ones((0,10,10)), max_frames=10000)
-​
-retina = convis.retina.Retina()
-runner = convis.base.Runner(retina, input = inp, output = out1)
-runner.start()
-time.sleep(5) # let thread run for 5 seconds or longer
-plot(out1.sequence.mean((1,2)))
-# some time later
-runner.stop()
-​
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="optimizing-a-model">
 <h2>Optimizing a Model<a class="headerlink" href="#optimizing-a-model" title="Permalink to this headline">¶</a></h2>
 <p>One way to optimize a model is by using the <cite>.set_optimizer</cite> attribute and the <cite>.optimize</cite> method:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> <span class="c1"># selects an optimizer with arguments</span>
-<span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">some_inp</span><span class="p">,</span> <span class="n">desired_outp</span><span class="p">)</span> <span class="c1"># does the optimization with the selected optimizer</span>
-</pre></div>
-</div>
 <p>A full example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">convis</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="n">l_goal</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-<span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span>
-<span class="n">l</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">l_goal</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
-    <span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:],</span><span class="n">outp</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">10</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">h</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">((</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">-</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">bins</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>(<a class="reference external" href=".//usage-1.py">Source code</a>)</p>
-<div class="figure" id="id3">
-<img alt="_images/usage-1_00.png" src="_images/usage-1_00.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_00.png">png</a>, <a class="reference external" href=".//usage-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_00.pdf">pdf</a>)</span></p>
-</div>
-<div class="figure" id="id4">
-<img alt="_images/usage-1_01.png" src="_images/usage-1_01.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_01.png">png</a>, <a class="reference external" href=".//usage-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_01.pdf">pdf</a>)</span></p>
-</div>
-<div class="figure" id="id5">
-<img alt="_images/usage-1_02.png" src="_images/usage-1_02.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_02.png">png</a>, <a class="reference external" href=".//usage-1_02.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_02.pdf">pdf</a>)</span></p>
-</div>
-<div class="figure" id="id6">
-<img alt="_images/usage-1_03.png" src="_images/usage-1_03.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_03.png">png</a>, <a class="reference external" href=".//usage-1_03.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_03.pdf">pdf</a>)</span></p>
-</div>
-<div class="figure" id="id7">
-<img alt="_images/usage-1_04.png" src="_images/usage-1_04.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_04.png">png</a>, <a class="reference external" href=".//usage-1_04.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_04.pdf">pdf</a>)</span></p>
-</div>
 <p>When selecting an Optimizer, the full list of available Optimizers can be seen by tab-completion.</p>
 <p>Some interesting optimizers are:</p>
 <blockquote>
@@ -162,57 +90,9 @@ runner.stop()
 </div></blockquote>
 <div class="section" id="using-an-optimizer-by-hand">
 <h3>Using an Optimizer by Hand<a class="headerlink" href="#using-an-optimizer-by-hand" title="Permalink to this headline">¶</a></h3>
-<p>The normal PyTorch way to call Optimizers is (see also [the pytorch docs](<a class="reference external" href="http://pytorch.org/docs/master/optim.html">http://pytorch.org/docs/master/optim.html</a>)):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">convis</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="n">l_goal</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:])</span>
-<span class="c1">#</span>
-
-<span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
-    <span class="c1"># first the gradient buffer have to be set to 0</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-    <span class="c1"># then the computation is done</span>
-    <span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-    <span class="c1"># and some loss measure is used to compare the output to the goal</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">outp</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="c1"># eg. mean square error</span>
-    <span class="c1"># applying the backward computation fills all gradient buffers with the corresponding gradients</span>
-    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="c1"># now that the gradients have the correct values, the optimizer can perform one optimization step</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling <cite>.step()</cite> (see also <a class="reference external" href="http://pytorch.org/docs/master/optim.html">http://pytorch.org/docs/master/optim.html</a> ).</p>
 <p>Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-    <span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">outp</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">loss</span>
-
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>The <cite>.optimize</cite> method of <a href="#id1"><span class="problematic" id="id2">`</span></a>convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">opt2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
-<span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:],</span><span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">opt2</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="c1"># using LBFGS (without calling .set_optimizer) and another loss function</span>
-</pre></div>
-</div>
 <p><cite>.set_optimizer.*()</cite> will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument.</p>
 </div>
 </div>
@@ -241,11 +121,11 @@ runner.stop()
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to convis’s documentation!</a></p>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="retina.html"
-                        title="next chapter">Retina Model</a></p>
+  <p class="topless"><a href="filters.html"
+                        title="next chapter">Filters and Layers</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -277,10 +157,10 @@ runner.stop()
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="retina.html" title="Retina Model"
+          <a href="filters.html" title="Filters and Layers"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to convis’s documentation!"
+          <a href="installation.html" title="Installation"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>

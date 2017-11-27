@@ -24,7 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="PyTorch Basics and Extensions" href="pytorch_basics.html" /> 
+    <link rel="prev" title="Examples" href="examples.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,7 +37,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pytorch_basics.html" title="PyTorch Basics and Extensions"
+          <a href="examples.html" title="Examples"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
@@ -124,7 +124,7 @@
 
 <dl class="method">
 <dt id="convis.base.Layer.optimize">
-<code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -336,6 +336,16 @@ you can call <cite>._reload()</cite> to add all available options.</p>
 <code class="descclassname">convis.base.</code><code class="descname">len_parents</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#len_parents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.len_parents" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt id="convis.base.prepare_input">
+<code class="descclassname">convis.base.</code><code class="descname">prepare_input</code><span class="sig-paren">(</span><em>a</em>, <em>dims=5</em>, <em>cuda=False</em>, <em>volatile=False</em>, <em>requires_grad=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#prepare_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.prepare_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="convis.base.shape">
+<code class="descclassname">convis.base.</code><code class="descname">shape</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.shape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-convis.filters.simple">
 <span id="simple-convis-filters"></span><h1>Simple <cite>convis.filters</cite><a class="headerlink" href="#module-convis.filters.simple" title="Permalink to this headline">¶</a></h1>
@@ -376,8 +386,8 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="pytorch_basics.html"
-                        title="previous chapter">PyTorch Basics and Extensions</a></p>
+  <p class="topless"><a href="examples.html"
+                        title="previous chapter">Examples</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -409,7 +419,7 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pytorch_basics.html" title="PyTorch Basics and Extensions"
+          <a href="examples.html" title="Examples"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
       </ul>
