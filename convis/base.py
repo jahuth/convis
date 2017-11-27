@@ -130,13 +130,13 @@ class _OptimizerSelector(object):
         if type(opt) is str and issubclass(getattr(torch.optim, opt),torch.optim.Optimizer):
             self(getattr(torch.optim, opt),*args,**kwargs)
 
-def prepare_input(a, dims= 5, cuda=False):
+def prepare_input(a, dims= 5, cuda=False, volatile=False, requires_grad = False):
     if not type(a) is torch.autograd.Variable:
         if hasattr(a, 'numpy'):
             # its hopefully a torch.Tensor
-            a = torch.autograd.Variable(a)
+            a = torch.autograd.Variable(a, volatile=volatile, requires_grad=requires_grad)
         else:
-            a = torch.autograd.Variable(torch.Tensor(a))
+            a = torch.autograd.Variable(torch.Tensor(a), volatile=volatile, requires_grad=requires_grad)
     if dims is not None:
         if dims == 5:
             if len(a.data.shape) == 3:
@@ -144,10 +144,11 @@ def prepare_input(a, dims= 5, cuda=False):
         if dims == 3:
             if len(a.data.shape) == 5:
                 a = a[0,0,:,:,:]
-    if cuda:
-        return a.cuda()
-    else:
-        return a.cpu()
+    if cuda is not None:
+        if cuda:
+            return a.cuda()
+        else:
+            return a.cpu()
 
 def shape(x):
     if hasattr(x,'shape'):
@@ -174,25 +175,8 @@ class Layer(torch.nn.Module):
     def __call__(self,*args,**kwargs):
         new_args = []
         for a in args:
-            if not type(a) is torch.autograd.Variable:
-                if hasattr(a, 'numpy'):
-                    # its hopefully a torch.Tensor
-                    a = torch.autograd.Variable(a)
-                else:
-                    a = torch.autograd.Variable(torch.Tensor(a))
-                if self._use_cuda:
-                    a = a.cuda()
-            if hasattr(self,'dims'):
-                if self.dims == 5:
-                    if len(a.data.shape) == 3:
-                        a = a[None,None,:,:,:]
-                if self.dims == 3:
-                    if len(a.data.shape) == 5:
-                        a = a[0,0,:,:,:]
-            if self._use_cuda:
-                new_args.append(a.cuda())
-            else:
-                new_args.append(a.cpu())
+            a = prepare_input(a, dims=getattr(self,'dims',None), cuda=self._use_cuda)
+            new_args.append(a)
         o0 = o = super(Layer, self).__call__(*new_args,**kwargs)
         if hasattr(self, 'outputs'):
             o = Output([o] + [getattr(self,k) for k in self.outputs], keys = ['output']+self.outputs)
@@ -285,18 +269,32 @@ class Layer(torch.nn.Module):
                         else:
                             print('has no set:',v)
         self.apply(f)
-    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).mean()):
+    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).mean(), dt=None, t=0):
         if optimizer is None:
             assert self._optimizer is not None, 'Optimizer has to be set! Use .set_optimizer.<tab>'
             optimizer = self._optimizer
         def closure():
             optimizer.zero_grad()
-            o = self(inp)
-            loss = closure.loss_fn(outp,o)
+            o = self(closure.inp)
+            loss = closure.loss_fn(closure.outp,o)
             loss.backward(retain_graph=True)
             return loss
-        closure.loss_fn = loss_fn
-        return optimizer.step(closure)
+        inp = prepare_input(inp, dims=getattr(self,'dims',None), cuda=self._use_cuda)
+        outp = prepare_input(outp, dims=getattr(self,'dims',None), cuda=self._use_cuda)
+        if dt is not None:
+            steps = []
+            while t < shape(inp)[TIME_DIMENSION]:
+                closure.inp = inp[:,:,t:(t+dt),:,:]
+                closure.outp = outp[:,:,t:(t+dt),:,:]
+                t += dt
+                closure.loss_fn = loss_fn
+                steps.append(optimizer.step(closure))
+            return steps
+        else:
+            closure.inp = inp
+            closure.outp = outp
+            closure.loss_fn = loss_fn
+            return optimizer.step(closure)
 
 Model = Layer
 

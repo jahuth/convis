@@ -56,6 +56,20 @@ class Retina(Layer):
             self.commands.append((['I2'], self.gang_1_input, ['I2']))
         if spikes:
             self.commands.append((['I2'], self.gang_1_spikes, ['I2']))
+    def cuda(self, *args, **kwargs):
+        # for now, the modules are not collected!
+        super(Retina,self).cuda(*args, **kwargs)
+        self.opl.opl_filter.cuda(*args, **kwargs)
+        self.opl.opl_filter.center_E.cuda(*args, **kwargs)
+        self.opl.opl_filter.surround_E.cuda(*args, **kwargs)
+        self.opl.opl_filter.center_G.cuda(*args, **kwargs)
+        self.opl.opl_filter.surround_G.cuda(*args, **kwargs)
+        self.opl.opl_filter.center_undershoot.cuda(*args, **kwargs)
+        self.bipolar.cuda(*args, **kwargs)
+        self.gang_0_input.cuda(*args, **kwargs)
+        self.gang_0_spikes.cuda(*args, **kwargs)
+        self.gang_1_input.cuda(*args, **kwargs)
+        self.gang_1_spikes.cuda(*args, **kwargs)
     def parse_config(self,config,prefix='',key='retina_config_key'):
         if type(config) is str:
             config_file = config
