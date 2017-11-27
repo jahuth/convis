@@ -17,6 +17,7 @@ Contents:
 .. toctree::
    :maxdepth: 5
 
+   installation
    usage
    retina
    examples
