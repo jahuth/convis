@@ -3,7 +3,7 @@ setup(
   name = 'convis',
   packages = ['convis','convis.filters'],
   version = '0.5',
-  install_requires = ["matplotlib", "PyTorch", "litus"],
+  install_requires = ["matplotlib", "litus", "numpy", "future"],
   description = 'Convolutional Vision Model',
   author = 'Jacob Huth',
   author_email = 'jahuth@uos.de',
