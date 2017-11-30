@@ -241,7 +241,7 @@ class Bipolar(Layer):
     def __init__(self,**kwargs):
         super(Bipolar, self).__init__()
         self.dims = 5
-        self.lambda_amp = as_parameter(50.0,
+        self.lambda_amp = as_parameter(0.0,
                                         name="lambda_amp",
                                         retina_config_key='adaptation-feedback-amplification__Hz')
         self.g_leak = as_parameter(50.0,init=lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)),
@@ -255,7 +255,7 @@ class Bipolar(Layer):
                                     #as_parameter(0.0,init=lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
                                     #               name="inputNernst_inhibition",
                                     #               retina_config_key='inhibition_nernst')
-        self.tau = as_parameter(1.0,init=lambda x: x.resolution.seconds_to_steps(float(x.get_config_value('adaptation-tau__sec',0.00001))),
+        self.tau = as_parameter(5.0,init=lambda x: x.resolution.seconds_to_steps(float(x.get_config_value('adaptation-tau__sec',0.005))),
                            name = 'tau', retina_config_key='adaptation-tau__sec')
         self.steps = Variable(0.001)
         self.a_0 = Variable(1.0)
@@ -365,7 +365,7 @@ class GanglionInput(Layer):
         self.transient = Conv3d(1, 1, (5,1,1))
         self.transient_tau_center = variables.VirtualParameter(
             float,
-            value=0.03,
+            value=0.02,
             retina_config_key='transient-tau__sec')
         self.transient_relative_weight_center = variables.VirtualParameter(
             float,
