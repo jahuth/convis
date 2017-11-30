@@ -56,6 +56,8 @@ class Retina(Layer):
             self.commands.append((['I2'], self.gang_1_input, ['I2']))
         if spikes:
             self.commands.append((['I2'], self.gang_1_spikes, ['I2']))
+        conf = RetinaConfiguration()
+        self.parse_config(conf)
     def cuda(self, *args, **kwargs):
         # for now, the modules are not collected!
         super(Retina,self).cuda(*args, **kwargs)
