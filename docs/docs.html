@@ -87,7 +87,31 @@
 <dl class="class">
 <dt id="convis.base.Layer">
 <em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Layer</code><a class="reference internal" href="_modules/convis/base.html#Layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Base class for modules, layers and models.</p>
+<p><cite>convis.Layer</cite> is a <cite>torch.nn.Module</cite> with some added functionality:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+       <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+       <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Just as <cite>Module`s, `Layer`s can include other `Layer`s or `Module`s (ie. its `sublayers</cite>).
+<cite>Variable`s, `Parameter`s and `State`s that are attributes of a Layer or
+its `sublayers</cite> will be registered and can be collected according to their
+class.</p>
+<p>All registered Variables (including Parameters and States), will be moved to the
+corresponding device when calling <cite>.cuda()</cite> or <cite>.cpu()</cite>.</p>
+<p>In contrast to many methods of torch.Tensors, Layer methods are always
+in-place! Using <cite>.cuda()</cite> or <cite>.float()</cite> will return a reference to the 
+original model and not a copy.</p>
+<dl class="method">
 <dt id="convis.base.Layer.__call__">
 <code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__call__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -115,17 +139,33 @@
 <dl class="method">
 <dt id="convis.base.Layer.cpu">
 <code class="descname">cpu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.cpu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.cpu" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Moves the model to the CPU and returns the model itself.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Layer.cuda">
-<code class="descname">cuda</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.cuda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.cuda" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">cuda</code><span class="sig-paren">(</span><em>device=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.cuda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.cuda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves the model to the GPU (optionally with number <cite>device</cite>).
+returns the model itself.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Layer.optimize">
 <code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Runs an Optimizer to fit the models parameters such that the output
+of the model when presented <cite>inp</cite> approximates <cite>outp</cite>.</p>
+<p>To use this function, an Optimizer has to be selected:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">set_optimizer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span> <span class="c1"># uses optimizers from torch.optim</span>
+<span class="n">model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is important to specify a chunk length <cite>dt</cite>, if the complete input does not fit into memory.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="convis.base.Layer.params">
@@ -135,12 +175,27 @@
 <dl class="method">
 <dt id="convis.base.Layer.parse_config">
 <code class="descname">parse_config</code><span class="sig-paren">(</span><em>config</em>, <em>prefix=''</em>, <em>key='retina_config_key'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.parse_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.parse_config" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Loads parameter values from a configuration (RetinaConfiguration or dict).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.pop_state">
+<code class="descname">pop_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.pop_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.pop_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieves the values of all State variables and from a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.push_state">
+<code class="descname">push_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.push_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.push_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>collects all State variables and pushes they values onto a stack</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Layer.run">
 <code class="descname">run</code><span class="sig-paren">(</span><em>the_input</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.run" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Runs the model either once, or multiple times to process chunks of size <cite>dt</cite>.</p>
+<p>Returns an <cite>Output</cite> object.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Layer.run_in_chunks">
@@ -208,15 +263,21 @@ allowing for tab completion.</p>
 
 <dl class="class">
 <dt id="convis.base.Runner">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Runner</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Runner</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em>, <em>goal=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeps track of the input and output of a model
+and can run or optimize it in a separate thread.</p>
+<p><cite>model</cite> has to be a <cite>convis.Layer</cite></p>
+<p><cite>input</cite> should be a <cite>convis.streams.Stream</cite> that contains input data
+<cite>output</cite> should be a <cite>convis.streams.Stream</cite> that accepts new data
+when using optimize, <cite>goal</cite> has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</p>
+<dl class="attribute">
 <dt id="convis.base.Runner.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'start': &lt;function start&gt;, '__module__': 'convis.base', 'run': &lt;function run&gt;, 'thread': &lt;function thread&gt;, '__dict__': &lt;attribute '__dict__' of 'Runner' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Runner' objects&gt;, 'stop': &lt;function stop&gt;, '__doc__': None, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.Runner.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'run': &lt;function run&gt;, 'thread': &lt;function thread&gt;, 'stop': &lt;function stop&gt;, '__doc__': '\n        Keeps track of the input and output of a model\n        and can run or optimize it in a separate thread.\n\n        `model` has to be a `convis.Layer`\n\n        `input` should be a `convis.streams.Stream` that contains input data\n        `output` should be a `convis.streams.Stream` that accepts new data\n        when using optimize, `goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)\n\n    ', 'start': &lt;function start&gt;, '__dict__': &lt;attribute '__dict__' of 'Runner' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Runner' objects&gt;, 'optimize': &lt;function optimize&gt;, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.Runner.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Runner.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em>, <em>goal=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -229,6 +290,11 @@ allowing for tab completion.</p>
 <code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.Runner.__weakref__" title="Permalink to this definition">¶</a></dt>
 <dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Runner.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.optimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Runner.run">
@@ -339,12 +405,23 @@ you can call <cite>._reload()</cite> to add all available options.</p>
 <dl class="function">
 <dt id="convis.base.prepare_input">
 <code class="descclassname">convis.base.</code><code class="descname">prepare_input</code><span class="sig-paren">(</span><em>a</em>, <em>dims=5</em>, <em>cuda=False</em>, <em>volatile=False</em>, <em>requires_grad=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#prepare_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.prepare_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Utility function to broadcast input to 5 dimensions, make it a Tensor,
+wrap it in a Variable and optionally move it to the GPU.</p>
+<p>Short hand for:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">a_var</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:]),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">convis.base</span> <span class="k">import</span> <span class="n">prepare_input</span>
+<span class="n">a_var</span> <span class="o">=</span> <span class="n">prepare_input</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="function">
 <dt id="convis.base.shape">
 <code class="descclassname">convis.base.</code><code class="descname">shape</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.shape" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the shape of a Tensor or Variable containing a Tensor.</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-convis.filters.simple">

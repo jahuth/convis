@@ -131,6 +131,19 @@ class _OptimizerSelector(object):
             self(getattr(torch.optim, opt),*args,**kwargs)
 
 def prepare_input(a, dims= 5, cuda=False, volatile=False, requires_grad = False):
+    """
+        Utility function to broadcast input to 5 dimensions, make it a Tensor,
+        wrap it in a Variable and optionally move it to the GPU.
+
+        Short hand for::
+
+            import torch
+            a_var = torch.autograd.Variable(torch.Tensor(a[None,None,:,:,:]), requires_grad=True).cuda()
+
+            from convis.base import prepare_input
+            a_var = prepare_input(a, cuda=True, requires_grad=True)
+
+    """
     if not type(a) is torch.autograd.Variable:
         if hasattr(a, 'numpy'):
             # its hopefully a torch.Tensor
@@ -151,6 +164,9 @@ def prepare_input(a, dims= 5, cuda=False, volatile=False, requires_grad = False)
             return a.cpu()
 
 def shape(x):
+    """
+        Return the shape of a Tensor or Variable containing a Tensor.
+    """
     if hasattr(x,'shape'):
         return x.shape
     if hasattr(x,'data'):
@@ -159,6 +175,36 @@ def shape(x):
     raise Exception('No shape found for '+str(x)+'!')
 
 class Layer(torch.nn.Module):
+    """
+        Base class for modules, layers and models.
+
+        `convis.Layer` is a `torch.nn.Module` with some added functionality::
+
+            import convis
+            import torch.nn.functional as F
+
+            class Model(convis.Layer):
+                def __init__(self):
+                    super(Model, self).__init__()
+                    self.conv1 = convis.filters.Conv3d(1, (20,1,1))
+                    self.conv2 = convis.filters.Conv3d(1, (1,10,10))
+                def forward(self, x):
+                   x = F.relu(self.conv1(x))
+                   return F.relu(self.conv2(x))
+
+        Just as `Module`s, `Layer`s can include other `Layer`s or `Module`s (ie. its `sublayers`).
+        `Variable`s, `Parameter`s and `State`s that are attributes of a Layer or
+        its `sublayers` will be registered and can be collected according to their
+        class.
+        
+        All registered Variables (including Parameters and States), will be moved to the
+        corresponding device when calling `.cuda()` or `.cpu()`.
+
+        In contrast to many methods of torch.Tensors, Layer methods are always
+        in-place! Using `.cuda()` or `.float()` will return a reference to the 
+        original model and not a copy.
+
+    """
     def __init__(self):
         super(Layer, self).__init__()
         self._variables = []
@@ -166,12 +212,19 @@ class Layer(torch.nn.Module):
         self._use_cuda = False
         self._optimizer = None
         self.set_optimizer = _OptimizerSelector(self)
-    def cuda(self):
+    def cuda(self, device=None):
+        """
+            Moves the model to the GPU (optionally with number `device`).
+            returns the model itself.
+        """
         self._use_cuda = True
-        super(Layer, self).cuda()
+        return super(Layer, self).cuda(device=device)
     def cpu(self):
+        """
+            Moves the model to the CPU and returns the model itself.
+        """
         self._use_cuda = False
-        super(Layer, self).cpu()
+        return super(Layer, self).cpu()
     def __call__(self,*args,**kwargs):
         new_args = []
         for a in args:
@@ -182,6 +235,11 @@ class Layer(torch.nn.Module):
             o = Output([o] + [getattr(self,k) for k in self.outputs], keys = ['output']+self.outputs)
         return o
     def run(self,the_input,dt=None,t=0):
+        """
+            Runs the model either once, or multiple times to process chunks of size `dt`.
+
+            Returns an `Output` object.
+        """
         if dt is not None:
             return self.run_in_chunks(the_input,dt=dt,t=t)
         else:
@@ -255,6 +313,9 @@ class Layer(torch.nn.Module):
         else:
             super(Layer, self).__setattr__(name, value)
     def parse_config(self,config,prefix='',key='retina_config_key'):
+        """
+            Loads parameter values from a configuration (RetinaConfiguration or dict).
+        """
         def f(a):
             if hasattr(a,'_variables'):
                 for v in a._variables:
@@ -270,10 +331,28 @@ class Layer(torch.nn.Module):
                             print('has no set:',v)
         self.apply(f)
     def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).mean(), dt=None, t=0):
+        """
+            Runs an Optimizer to fit the models parameters such that the output
+            of the model when presented `inp` approximates `outp`.
+
+            To use this function, an Optimizer has to be selected::
+
+                model.set_optimizer(torch.optim.SGD(lr=0.01))
+                model.optimize(x,y, dt=100)
+
+            or::
+
+                model.set_optimizer.SGD(lr=0.01) # uses optimizers from torch.optim
+                model.optimize(x,y, dt=100)
+
+            It is important to specify a chunk length `dt`, if the complete input does not fit into memory.
+
+        """
         if optimizer is None:
             assert self._optimizer is not None, 'Optimizer has to be set! Use .set_optimizer.<tab>'
             optimizer = self._optimizer
         def closure():
+            self.pop_state()
             optimizer.zero_grad()
             o = self(closure.inp)
             loss = closure.loss_fn(closure.outp,o)
@@ -281,6 +360,7 @@ class Layer(torch.nn.Module):
             return loss
         inp = prepare_input(inp, dims=getattr(self,'dims',None), cuda=self._use_cuda)
         outp = prepare_input(outp, dims=getattr(self,'dims',None), cuda=self._use_cuda)
+        self.push_state()
         if dt is not None:
             steps = []
             while t < shape(inp)[TIME_DIMENSION]:
@@ -295,6 +375,16 @@ class Layer(torch.nn.Module):
             closure.outp = outp
             closure.loss_fn = loss_fn
             return optimizer.step(closure)
+    def push_state(self):
+        """
+            collects all State variables and pushes they values onto a stack
+        """
+        pass # we can't recognize state variables right now :(
+    def pop_state(self):
+        """
+            retrieves the values of all State variables and from a stack
+        """
+        pass
 
 Model = Layer
 
@@ -322,10 +412,22 @@ class DummyModel(object):
         return Output(inps.values(),keys=inps.keys())
         
 class Runner(object):
-    def __init__(self, model=None, input=None, output=None):
+    """
+        Keeps track of the input and output of a model
+        and can run or optimize it in a separate thread.
+
+        `model` has to be a `convis.Layer`
+
+        `input` should be a `convis.streams.Stream` that contains input data
+        `output` should be a `convis.streams.Stream` that accepts new data
+        when using optimize, `goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)
+
+    """
+    def __init__(self, model=None, input=None, output=None, goal=None):
         self.model = model
         self.input = input
         self.output = output
+        self.goal = goal
         self.chunk_size = 20
         self.closed = True
     def stop(self):
@@ -357,3 +459,10 @@ class Runner(object):
             else:
                 self.output.put(o.data.cpu().numpy()[0,0])
             return o
+    def optimize(self):
+        o = self.model.optimize(get_next(self.input), get_next(self.goal))
+        if hasattr(o,'keys'):
+            self.output.put(o[0].data.cpu().numpy()[0,0])
+        else:
+            self.output.put(o.data.cpu().numpy()[0,0])
+        return o
