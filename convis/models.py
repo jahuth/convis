@@ -1,3 +1,11 @@
+"""
+Convis Models
+--------------
+
+These models are ready to run.
+
+"""
+
 import numpy as np
 import uuid
 from torch import nn
@@ -8,6 +16,11 @@ from .filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 from . import variables
 
 class L(Layer):
+    """
+        A linear model with a convolution filter.
+
+        Pads input automatically to produce output of the same size as the input.
+    """
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
         super(L, self).__init__()
@@ -38,6 +51,11 @@ class L(Layer):
 
 
 class LN(Layer):
+    """
+        A linear-nonlinear model with a convolution filter.
+
+        Pads input automatically to produce output of the same size as the input.
+    """
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0)
@@ -51,6 +69,11 @@ class LN(Layer):
 
 
 class LNLN(Layer):
+    """
+        A linear-nonlinear cascade model with two convolution filters.
+
+        Pads input automatically to produce output of the same size as the input.
+    """
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0)

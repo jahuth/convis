@@ -1,8 +1,8 @@
-## Describing Variables 
-#
-# as dict, str or HTML
-#
-### Helper functions to deal with annotated variables
+"""
+Describing Variables 
+----------------------
+
+"""
 
 from types import ModuleType, FunctionType
 import re

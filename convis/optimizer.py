@@ -4,6 +4,10 @@ import numpy as np
 import torch
 
 class FiniteDifferenceGradientOptimizer(Optimizer):
+    """
+        Quasi-Newton method with a finite difference approximation
+        of 2nd order gradient.
+    """
     def __init__(self, params, **kwargs):
         defaults = kwargs
         self.grads = defaultdict(list)

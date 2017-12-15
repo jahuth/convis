@@ -1,3 +1,12 @@
+"""
+Convis base classes
+----------------------
+
+Convis extends PyTorch by adding some methods to `torch.nn.Module` and calling it a Layer.
+
+
+
+"""
 from __future__ import print_function
 from .misc_utils import unique_list, suppress
 
@@ -43,20 +52,20 @@ def len_parents(n):
     return 0
 
 class Output(object):
+    """
+        This object provides a container for output numpy arrays which are labeled with theano variables.
+
+        The outputs can be queried either by sorted order (like a simple list),
+        by the theano variable which represents this output, the name of this variable
+        or the full path of the variable.
+        To make this meaningfull, provide a name to your output variables.
+
+        In the case of name collisions, the behavior of OrderedDict will use the last variable added.
+
+        The full path names of all variables are also added to this objects __dict__,
+        allowing for tab completion.
+    """
     def __init__(self,outs,keys=None):
-        """
-            This object provides a container for output numpy arrays which are labeled with theano variables.
-
-            The outputs can be queried either by sorted order (like a simple list),
-            by the theano variable which represents this output, the name of this variable
-            or the full path of the variable.
-            To make this meaningfull, provide a name to your output variables.
-
-            In the case of name collisions, the behavior of OrderedDict will use the last variable added.
-
-            The full path names of all variables are also added to this objects __dict__,
-            allowing for tab completion.
-        """
         self._out_dict = OrderedDict({})
         self._out_dict_by_full_names = OrderedDict({})
         self._out_dict_by_short_names = OrderedDict({})
@@ -404,7 +413,7 @@ def get_next(stream,l=100):
     else:
         return stream
 
-class DummyModel(object):
+class _DummyModel(object):
     def __init__(self):
         pass
     def run(self, chunk_size=20, **kwargs):
