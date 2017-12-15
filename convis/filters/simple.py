@@ -31,11 +31,11 @@ class LN(Layer):
         return self.conv(x).clamp(min=0.0)
 
 class TemporalLowPassFilterRecursive(Layer):
-    def __init__(self,kernel_dim=(1,1,1)):
+    def __init__(self,kernel_dim=(1,1,1),requires_grad=True):
         self.dim = 5
         super(TemporalLowPassFilterRecursive, self).__init__()
         #self.tau = Parameter(0.01,requires_grad=True)
-        self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=True)
+        self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
     def clear(self):
         if hasattr(self,'last_y'):
             del self.last_y
@@ -50,24 +50,24 @@ class TemporalLowPassFilterRecursive(Layer):
             y = self.last_y
         else:
             y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
-            if self._use_cuda:
-                y = y.cuda()
+        if self._use_cuda:
+            y = y.cuda()
         o = []
         for i in range(x.data.shape[TIME_DIMENSION]):
             y = (x[:,:,i,:,:] * b_0 - y * a_1) / a_0
             o.append(y)
-        self.last_y = y
+        self.last_y = y.detach()
         norm = 2.0*self.tau/steps#(self.tau/(self.tau+0.5))*steps
         return torch.cat(o,dim=TIME_DIMENSION)/norm
 
 
 class TemporalHighPassFilterRecursive(Layer):
-    def __init__(self,kernel_dim=(1,1,1)):
+    def __init__(self,kernel_dim=(1,1,1),requires_grad=True):
         self.dim = 5
         super(TemporalHighPassFilterRecursive, self).__init__()
         #self.tau = Parameter(0.01,requires_grad=True)
-        self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=True)
-        self.k = torch.nn.Parameter(torch.Tensor([0.5]),requires_grad=True)
+        self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
+        self.k = torch.nn.Parameter(torch.Tensor([0.5]),requires_grad=requires_grad)
     def clear(self):
         if hasattr(self,'last_y'):
             del self.last_y
@@ -82,8 +82,8 @@ class TemporalHighPassFilterRecursive(Layer):
             y = self.last_y
         else:
             y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
-            if self._use_cuda:
-                y = y.cuda()
+        if self._use_cuda:
+            y = y.cuda()
         o = []
         x1 = x[:,:,0,:,:] 
         for i in range(x.data.shape[TIME_DIMENSION]):

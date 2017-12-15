@@ -23,6 +23,7 @@ import warnings
 
 from . import variables
 from .variables import *
+from . import utils
 from . import o
 from . import optimizer
 from .o import O, Ox, save_name
@@ -66,6 +67,13 @@ class Output(object):
         allowing for tab completion.
     """
     def __init__(self,outs,keys=None):
+        """
+            The full path names of all variables are also added to this objects __dict__,
+            allowing for tab completion.
+
+            By default returns a numpy array when used with square brackets, the 
+            Variable when accessed over `._outs[n]`.
+        """
         self._out_dict = OrderedDict({})
         self._out_dict_by_full_names = OrderedDict({})
         self._out_dict_by_short_names = OrderedDict({})
@@ -80,6 +88,10 @@ class Output(object):
         return len(self._outs)
     def __iter__(self):
         return iter(self._outs)
+    def plot(self,k=0):
+        utils.plot(self[k])
+    def array(self,k=0):
+        return np.array(self[k])
     def __getitem__(self,k):
         if type(k) is int:
             return self._outs[k]
@@ -131,6 +143,7 @@ class _OptimizerSelector(object):
             if type(getattr(optimizer, o)) is type and issubclass(getattr(optimizer, o),torch.optim.Optimizer):
                 setattr(self, o, _OptimizerSelection(self._model,getattr(optimizer, o)))
     def __call__(self, opt, *args, **kwargs):
+        import types
         if len(args) == 0 or (type(args[0]) is not list and not isinstance(args[0], types.GeneratorType)):
             args = list(args)
             args.insert(0,self._model.parameters())
@@ -227,12 +240,21 @@ class Layer(torch.nn.Module):
             returns the model itself.
         """
         self._use_cuda = True
-        return super(Layer, self).cuda(device=device)
+        for m in self.modules():
+            if m is not self:
+                m.cuda()
+        if device is not None:
+            return super(Layer, self).cuda(device=device)
+        else:
+            return super(Layer, self).cuda()
     def cpu(self):
         """
             Moves the model to the CPU and returns the model itself.
         """
         self._use_cuda = False
+        for m in self.modules():
+            if m is not self:
+                m.cpu()
         return super(Layer, self).cpu()
     def __call__(self,*args,**kwargs):
         new_args = []
@@ -279,7 +301,7 @@ class Layer(torch.nn.Module):
         for co in chunked_output:
             try:
                 outs.append(torch.cat(co,dim=TIME_DIMENSION))
-            except:
+            except Exception as e:
                 outs.append(np.array(co))
         return Output(outs,keys=keys)
     @property
@@ -339,7 +361,7 @@ class Layer(torch.nn.Module):
                         else:
                             print('has no set:',v)
         self.apply(f)
-    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).mean(), dt=None, t=0):
+    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).sum(), dt=None, t=0):
         """
             Runs an Optimizer to fit the models parameters such that the output
             of the model when presented `inp` approximates `outp`.
