@@ -74,6 +74,7 @@ class Conv3d(nn.Conv3d):
             x = torch.nn.functional.pad(x,self.kernel_padding, self.autopad_mode)
         return super(Conv3d, self).forward(x)
 
+
 class Conv2d(nn.Conv2d):
     def __init__(self,*args,**kwargs):
         super(Conv2d, self).__init__(*args,**kwargs)
