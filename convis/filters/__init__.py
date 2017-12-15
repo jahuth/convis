@@ -3,6 +3,7 @@ from torch import nn
 import numpy as np
 import math
 from .. import numerical_filters as nf
+from ..base import Layer
 TIME_DIMENSION = 2
 
 class Conv3d(nn.Conv3d):
@@ -116,3 +117,40 @@ class Conv1d(nn.Conv1d):
             self.weight.data = self.weight.data / self.weight.data.sum()
     def exponential(self,*args,**kwargs):
         self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)
+
+
+class TimePadding(Layer):
+    """
+        Remembers references to previous time slices
+        and prepends the input with `length` many
+        time steps from previous calls.
+        
+        If the size of the image is changed without
+        removing the state first, an Exception is
+        raised.
+    
+    """
+    def __init__(self,length=0):
+        self.dim = 5
+        self.length = length
+        super(TimePadding, self).__init__()
+        self.register_state('saved_inputs',[])
+        self.saved_inputs = []
+    @property
+    def available_length(self):
+        return np.sum([i.size()[TIME_DIMENSION] for i in self.saved_inputs])
+    def forward(self, x):
+        if len(self.saved_inputs) > 0:
+            if x.size()[-2:] != self.saved_inputs[-1].size()[-2:]:
+                raise Exception('input size does not match state size!')
+        while self.available_length < self.length:
+            self.saved_inputs.append(x)
+        print self.available_length
+        if self._use_cuda:
+            x_pad = torch.cat([i.cuda().detach() for i in self.saved_inputs] + [x.cuda()], dim=TIME_DIMENSION)
+        else:
+            x_pad = torch.cat([i.cpu().detach() for i in self.saved_inputs] +[x.cpu()], dim=TIME_DIMENSION)
+        while self.available_length > self.length + x.size(TIME_DIMENSION):
+            self.saved_inputs.pop(0)
+        self.saved_inputs.append(x)
+        return x_pad[:,:,-(self.length + x.size(TIME_DIMENSION)):,:,:]

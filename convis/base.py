@@ -227,13 +227,22 @@ class Layer(torch.nn.Module):
         original model and not a copy.
 
     """
+    _state = OrderedDict()
     def __init__(self):
+        self._state = OrderedDict()
+        self._default_state = OrderedDict()
         super(Layer, self).__init__()
         self._variables = []
         self._named_variables= {}
         self._use_cuda = False
         self._optimizer = None
         self.set_optimizer = _OptimizerSelector(self)
+    def register_state(self,name,val=None):
+        if hasattr(self,name) and val is None:
+            self._state[name] = getattr(self,name)
+        else:
+            self._state[name] = val
+        self._default_state[name] = val
     def cuda(self, device=None):
         """
             Moves the model to the GPU (optionally with number `device`).
@@ -334,7 +343,15 @@ class Layer(torch.nn.Module):
                 self._buffers[key] = fn(buf)
 
         return self
+    def __dir__(self):
+        if hasattr(self,'_state'):
+            return self._state.keys() + self.__dict__.keys() + super(Layer, self).__dir__()
+        return self.__dict__.keys() + super(Layer, self).__dir__()
     def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super(Layer, self).__setattr__(name, value)
+        if name in self._state.keys():
+            self._state[name] = value
         if is_variable(value):
             if type(value) == Parameter:
                 self._parameters[name] = value
@@ -343,6 +360,13 @@ class Layer(torch.nn.Module):
             self.__dict__[name] = value
         else:
             super(Layer, self).__setattr__(name, value)
+    def __getattr__(self, name):
+        if name.startswith('_'):
+            return super(Layer, self).__getattr__(name)
+        if name in self._state.keys():
+            return self._state[name]
+        else:
+            return super(Layer, self).__getattr__(name)
     def parse_config(self,config,prefix='',key='retina_config_key'):
         """
             Loads parameter values from a configuration (RetinaConfiguration or dict).
@@ -406,16 +430,75 @@ class Layer(torch.nn.Module):
             closure.outp = outp
             closure.loss_fn = loss_fn
             return optimizer.step(closure)
+    def state(self):
+        """
+            collects the state and returns an
+            OrderedDict 
+        """
+        def rec(model):
+            o = OrderedDict()
+            if hasattr(model,'_state'):
+                for s_name in model._state.keys():
+                    o[s_name] = getattr(model, s_name)
+            for mod_name,mod in list(model.named_modules()):
+                if mod is model:
+                    continue
+                for s_name,s in rec(mod).items():
+                    o[mod_name+'.'+s_name] = s
+            return o
+        return rec(self)
+    def set_state(self, state_dict):
+        """
+            collects the state and returns an
+            OrderedDict 
+        """
+        def rec(model, sub_state_dict):
+            if hasattr(model,'_state'):
+                for s_name,s in model._state.items():
+                    setattr(model, s_name, sub_state_dict[s_name])
+            for mod_name,mod in list(model.named_modules()):
+                if mod is model:
+                    continue
+                new_sub_state_dict = OrderedDict()
+                for s_name,s in sub_state_dict.items():
+                    s_name_split = s_name.split('.')
+                    if s_name_split[0] == mod_name:
+                        new_sub_state_dict['.'.join(s_name_split[1:])] = s
+                rec(mod, new_sub_state_dict)
+        return rec(self, state_dict)
+    def clear_state(self):
+        """
+            resets the state to default values
+        """
+        def rec(model):
+            o = OrderedDict()
+            if hasattr(model,'_state'):
+                for s_name,s in model._state.items():
+                    if hasattr(model,'_default_state'):
+                        setattr(model,s_name, model._default_state.get(s_name, None))
+                    else:
+                        setattr(model,s_name, None)
+            for mod_name,mod in list(model.named_modules()):
+                if mod is model:
+                    continue
+                for s_name,s in rec(mod).items():
+                    o[mod_name+'.'+s_name] = s
+            return o
+        return rec(self)
     def push_state(self):
         """
             collects all State variables and pushes they values onto a stack
         """
-        pass # we can't recognize state variables right now :(
+        if not hasattr(self, '_state_stack'):
+            self._state_stack = []
+        self._state_stack.append(self.state())
     def pop_state(self):
         """
             retrieves the values of all State variables and from a stack
         """
-        pass
+        if not hasattr(self, '_state_stack'):
+            raise Exception('No state was pushed to the stack!')
+        self.set_state(self._state_stack.pop())
 
 Model = Layer
 
