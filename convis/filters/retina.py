@@ -28,6 +28,58 @@ Todo:
 
 
 class SeperatableOPLFilter(Layer):
+    """
+        A fullly convolutional OPL implementation.
+
+        All filters are implemented as convolutions which
+        makes this layer a lot slower than :py:class:`HalfRecursiveOPLFilter`.
+
+        The following virtual parameters set the corresponding
+        tensors with convolution filters. Eg. they turn 
+        the standard deviation of the gaussian into a
+        numerical, circular gaussian.
+
+        You can set them to a value via `.set(value)` which will
+        trigger them to re-calculate the filters.
+
+        Attributes
+        ---------------------
+
+        sigma_center : virtual parameter
+            Size of the center receptive field
+        tau_center : virtual parameter
+            Time constant of the center receptive field
+        n_center : virtual parameter
+            number of cascading exponential filters
+        undershoot_tau_center : virtual parameter
+            time constant of the high pass filter
+        undershoot_relative_weight_center : virtual parameter
+            relative weight of the high pass filter
+        sigma_surround : virtual parameter
+            Size of the surround receptive field
+        tau_surround : virtual parameter
+            Time constant of the surround receptive field
+        relative_weight : virtual parameter
+            relative weight between center and surround
+        center_G
+            Spatial convolution filter for the center receptive field
+        center_E
+            recursive temporal filter for the center receptive field
+        surround_G
+            Spatial convolution filter for the surround receptive field
+        surround_E
+            recursive temporal filter for the surround receptive field
+
+        See Also
+        --------
+
+        Retina
+        OPL
+        HalfRecursiveOPLFilter
+        FullConvolutionOPLFilter
+
+
+    """
     def __init__(self):
         super(SeperatableOPLFilter, self).__init__()
         self.dims = 5
@@ -110,6 +162,58 @@ class SeperatableOPLFilter(Layer):
         return y[:,:,self.filter_length:,:,:]
 
 class HalfRecursiveOPLFilter(Layer):
+    """
+        The default OPL implementation.
+
+        Temporal filters are implemented recursively and
+        spatial filters are convolution filters.
+
+        The following virtual parameters set the corresponding
+        tensors with convolution filters. Eg. they turn 
+        the standard deviation of the gaussian into a
+        numerical, circular gaussian.
+
+        You can set them to a value via `.set(value)` which will
+        trigger them to re-calculate the filters.
+
+        Attributes
+        --------------------
+
+        sigma_center : virtual parameter
+            Size of the center receptive field
+        tau_center : virtual parameter
+            Time constant of the center receptive field
+        n_center : virtual parameter
+            number of cascading exponential filters
+        undershoot_tau_center : virtual parameter
+            time constant of the high pass filter
+        undershoot_relative_weight_center : virtual parameter
+            relative weight of the high pass filter
+        sigma_surround : virtual parameter
+            Size of the surround receptive field
+        tau_surround : virtual parameter
+            Time constant of the surround receptive field
+        relative_weight : virtual parameter
+            relative weight between center and surround
+        center_G : Conv3d
+            Spatial convolution filter for the center receptive field
+        center_E : Recursive Filter
+            recursive temporal filter for the center receptive field
+        surround_G : Conv3d
+            Spatial convolution filter for the surround receptive field
+        surround_E : Recursive Filter
+            recursive temporal filter for the surround receptive field
+
+
+        See Also
+        --------
+
+        Retina
+        OPL
+        SeperatableOPLFilter
+        FullConvolutionOPLFilter
+
+    """
     def __init__(self):
         super(HalfRecursiveOPLFilter, self).__init__()
         self.dims = 5
@@ -174,6 +278,18 @@ class HalfRecursiveOPLFilter(Layer):
         return y
 
 class FullConvolutionOPLFilter(Layer):
+    """
+        
+
+        See Also
+        --------
+
+        Retina
+        OPL
+        HalfRecursiveOPLFilter
+        SeperatableOPLFilter
+
+    """
     def __init__(self):
         super(FullConvolutionOPLFilter, self).__init__()
         self.dims = 5
@@ -204,16 +320,25 @@ class OPL(Layer):
     :math:`S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)`
     p.275
 
-    To keep all dimensions similar, a *fake kernel* has to be used on the center output that contains a single 1 but has the shape of the filters used on the surround, such that the surround can be subtracted from the center.
+    This Layer can use one of multiple implementations. :py:class:`HalfRecursiveOPLFilter`
+    and :py:class:`SeperatableOPLFilter` both accept the same configuration attributes.
+    Or :py:class:`FullConvolutionOPLFilter` which does not accept the
+    parameters, but offers a single, non-separable convolution filter.
 
-    The inputs of the function are: 
+    Attributes
+    ----------
 
-     * :py:obj:`L` (the luminance input), 
-     * :py:obj:`E_n_C`, :py:obj:`TwuTu_C`, :py:obj:`G_C` (the center filters), 
-     * :py:obj:`E_S`, :py:obj:`G_S` (the surround filters), 
-     * :py:obj:`Reshape_C_S` (the fake filter), 
-     * :py:obj:`lambda_OPL`, :py:obj:`w_OPL` (scaling and weight parameters)
+    opl_filter : Layer
+        The OPL filter that is used.
+        Either :py:class:`HalfRecursiveOPLFilter`, :py:class:`SeperatableOPLFilter` or :py:class:`FullConvolutionOPLFilter`.
+    
+    See Also
+    --------
 
+    Retina
+    HalfRecursiveOPLFilter
+    SeperatableOPLFilter
+    FullConvolutionOPLFilter
     """
     def __init__(self,**kwargs):
         super(OPL, self).__init__()
@@ -237,6 +362,26 @@ class Bipolar(Layer):
             'adaptation-tau__sec': 0.005,              # `tauSurround` in virtual retina
             'adaptation-feedback-amplification__Hz': 0 # `ampFeedback` in virtual retina
         },
+
+    Attributes
+    ----------
+        opl-amplification__Hz : 50
+            for linear OPL: ampOPL = relative_ampOPL / fatherRetina->input_luminosity_range ;
+            `ampInputCurrent` in virtual retina
+        bipolar-inert-leaks__Hz: 50
+            `gLeak` in virtual retina
+        adaptation-sigma__deg: 0.2
+            `sigmaSurround` in virtual retina
+        adaptation-tau__sec: 0.005
+            `tauSurround` in virtual retina
+        adaptation-feedback-amplification__Hz: 0
+            `ampFeedback` in virtual retina
+
+    See Also
+    --------
+
+    Retina
+    
     """
     def __init__(self,**kwargs):
         super(Bipolar, self).__init__()

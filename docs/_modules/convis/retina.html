@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.retina &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <title>convis.retina &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -26,25 +26,20 @@
     <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis.retina</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <h1>Source code for convis.retina</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -76,7 +71,30 @@
 <span class="kn">from</span> <span class="nn">.retina_virtualretina</span> <span class="k">import</span> <span class="n">RetinaConfiguration</span>
 <span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">retina</span> <span class="k">as</span> <span class="n">rf</span>
 
-<div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../retina.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../docs.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    opl</span>
+<span class="sd">    bipolar</span>
+<span class="sd">    gang_0_input</span>
+<span class="sd">    gang_0_spikes</span>
+<span class="sd">    gang_1_input</span>
+<span class="sd">    gang_1_spikes</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    convis.base.Layer : The Layer base class, providing chunking and optimization</span>
+<span class="sd">    convis.filters.retina.OPL : The outer plexiform layer performs luminance to contrast conversion</span>
+<span class="sd">    convis.filters.retina.Bipolar : provides contrast gain control</span>
+<span class="sd">    convis.filters.retina.GanglionInput : provides a static non-linearity and a last spatial integration</span>
+<span class="sd">    convis.filters.retina.GanglionSpiking : creates spikes from an input current</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bipolar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gang</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Retina</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">OPL</span><span class="p">()</span>
@@ -147,38 +165,15 @@
         <span class="k">return</span> <span class="n">Output</span><span class="p">([</span><span class="n">io_buffers</span><span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">],</span><span class="n">io_buffers</span><span class="p">[</span><span class="s1">&#39;I2&#39;</span><span class="p">]],</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ganglion_spikes_ON&#39;</span><span class="p">,</span><span class="s1">&#39;ganglion_spikes_OFF&#39;</span><span class="p">])</span></div>
 </pre></div>
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

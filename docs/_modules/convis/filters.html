@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.filters &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <title>convis.filters &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -26,46 +26,212 @@
     <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis.filters</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <h1>Source code for convis.filters</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="k">import</span> <span class="n">nn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">numerical_filters</span> <span class="k">as</span> <span class="n">nf</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">Layer</span>
 <span class="n">TIME_DIMENSION</span> <span class="o">=</span> <span class="mi">2</span>
 
-<div class="viewcode-block" id="Conv3d"><a class="viewcode-back" href="../../filters.html#convis.filters.Conv3d">[docs]</a><span class="k">class</span> <span class="nc">Conv3d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TimePadding"><a class="viewcode-back" href="../../docs.html#convis.filters.TimePadding">[docs]</a><span class="k">class</span> <span class="nc">TimePadding</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remembers references to previous time slices</span>
+<span class="sd">        and prepends the input with `length` many</span>
+<span class="sd">        time steps from previous calls.</span>
+<span class="sd">        </span>
+<span class="sd">        If the size of the image is changed without</span>
+<span class="sd">        removing the state first, an Exception is</span>
+<span class="sd">        raised.</span>
+
+<span class="sd">        To avoid this, call `.clear_state()`. This method is recursive</span>
+<span class="sd">        on all `convis.Layers`, so you only have to call it on the</span>
+<span class="sd">        outermost `Layer`.</span>
+<span class="sd">        If you want to store your history for one set of images,</span>
+<span class="sd">        do some computation on other images and then return to</span>
+<span class="sd">        the previous one, you can use `.push_state()` and `.pop_state()`.</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TimePadding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;saved_inputs&#39;</span><span class="p">,[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">available_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="n">TIME_DIMENSION</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;input size does not match state size! Call `.clear_state()` on your model first!&#39;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_length</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+            <span class="n">x_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=</span><span class="n">TIME_DIMENSION</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">]</span> <span class="o">+</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=</span><span class="n">TIME_DIMENSION</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">TIME_DIMENSION</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_pad</span><span class="p">[:,:,</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">TIME_DIMENSION</span><span class="p">)):,:,:]</span></div>
+
+<div class="viewcode-block" id="Delay"><a class="viewcode-back" href="../../docs.html#convis.filters.Delay">[docs]</a><span class="k">class</span> <span class="nc">Delay</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Causes the input to be delayed by a set</span>
+<span class="sd">        number of time steps.</span>
+
+<span class="sd">            d = Delay(delay=100)</span>
+<span class="sd">            d.run(some_input,10)</span>
+
+<span class="sd">        Optionally, a length of input can also be prependet</span>
+<span class="sd">        similar to the TimePadding Layer.</span>
+<span class="sd">        </span>
+<span class="sd">            d = Delay(delay=100,length=10) # additionally preprends 10 timesteps of each previous chunk</span>
+<span class="sd">            d.run(some_input,10)</span>
+
+<span class="sd">        When the size of the image is changed, the previous inputs</span>
+<span class="sd">        do not match, so an Exception is raised.</span>
+<span class="sd">        To avoid this, call `.clear_state()`. This method is recursive</span>
+<span class="sd">        on all `convis.Layers`, so you only have to call it on the</span>
+<span class="sd">        outermost `Layer`.</span>
+<span class="sd">        If you want to store your history for one set of images,</span>
+<span class="sd">        do some computation on other images and then return to</span>
+<span class="sd">        the previous one, you can use `.push_state()` and `.pop_state()`.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Delay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;saved_inputs&#39;</span><span class="p">,[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">available_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="n">TIME_DIMENSION</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;input size does not match state size! Call `.clear_state()` on your model first!&#39;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_length</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+            <span class="n">x_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=</span><span class="n">TIME_DIMENSION</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="p">]</span> <span class="o">+</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=</span><span class="n">TIME_DIMENSION</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">TIME_DIMENSION</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">x_pad</span><span class="p">[:,:,</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">TIME_DIMENSION</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">):</span><span class="n">to</span><span class="p">,:,:]</span></div>
+
+<div class="viewcode-block" id="VariableDelay"><a class="viewcode-back" href="../../docs.html#convis.filters.VariableDelay">[docs]</a><span class="k">class</span> <span class="nc">VariableDelay</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This Layer applies variable delays to each </span>
+<span class="sd">        pixel of the input.</span>
+<span class="sd">    </span>
+<span class="sd">        Example::</span>
+
+<span class="sd">            </span>
+<span class="sd">            v = VariableDelay(delays = d)</span>
+
+<span class="sd">        At the moment, the delays do *not* provide a gradient.</span>
+
+<span class="sd">        Possible future feature if requested:</span>
+<span class="sd">        variable delay per pixel, channel and batch dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delays</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariableDelay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">delays</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">delays</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_delay</span> <span class="o">=</span> <span class="n">Delay</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_delay</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_delay</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">)</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">))</span>
+        <span class="n">x_delayed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_delay</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">ind_to</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">)))</span>
+        <span class="n">ind_from</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">ind_to</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">x_out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x_row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_delayed</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="n">new_row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">x_pixel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">)):</span>
+                <span class="c1">#print int(ind_from[i,j]),int(ind_to[i,j])</span>
+                <span class="n">to</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ind_to</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">to</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">to</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">new_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_pixel</span><span class="p">[:,:,</span><span class="nb">int</span><span class="p">(</span><span class="n">ind_from</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]):</span><span class="n">to</span><span class="p">,:,:])</span>
+            <span class="n">x_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">new_row</span><span class="p">,</span><span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">x_out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">x_out</span><span class="p">,</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_out</span></div>
+
+<div class="viewcode-block" id="Conv3d"><a class="viewcode-back" href="../../docs.html#convis.filters.Conv3d">[docs]</a><span class="k">class</span> <span class="nc">Conv3d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Does a convolution, but pads the input in time</span>
+<span class="sd">        with previous input and in space by replicating</span>
+<span class="sd">        the edge.</span>
+
+<span class="sd">        Arguments:</span>
+
+<span class="sd">            * in_channels</span>
+<span class="sd">            * out_channels</span>
+<span class="sd">            * kernel_size</span>
+<span class="sd">            * bias (bool)</span>
+
+<span class="sd">        Additional PyTorch Conv3d keyword arguments:</span>
+
+<span class="sd">            * padding (should not be used)</span>
+<span class="sd">            * stride</span>
+<span class="sd">            * dilation</span>
+<span class="sd">            * groups</span>
+
+<span class="sd">        Additional convis Conv3d keyword arguments:</span>
+
+<span class="sd">            * time_pad: False (enables padding in time)</span>
+<span class="sd">            * autopad: False (enables padding in space)</span>
+
+<span class="sd">        To change the weight, use the method `set_weight()`</span>
+<span class="sd">        which also accepts numpy arguments.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">out_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">do_adjust_padding</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;adjust_padding&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_time_pad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time_pad&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autopad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;autopad&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autopad_mode</span> <span class="o">=</span> <span class="s1">&#39;replicate&#39;</span>
         <span class="k">if</span> <span class="s1">&#39;adjust_padding&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;adjust_padding&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;time_pad&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;time_pad&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="s1">&#39;autopad&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;autopad&#39;</span><span class="p">]</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Conv3d</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Conv3d</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span><span class="n">out_channels</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;bias&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_pad</span> <span class="o">=</span> <span class="n">TimePadding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="n">TIME_DIMENSION</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">set_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="nb">float</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span>
@@ -86,6 +252,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">)),</span>
                         <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">)),</span>
                         <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">filter_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">TIME_DIMENSION</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">kernel_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
@@ -118,6 +287,9 @@
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_time_pad</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_pad</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_pad</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">autopad</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">autopad_mode</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Conv3d</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
@@ -165,38 +337,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">exponential_filter_1d</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

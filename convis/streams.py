@@ -1,23 +1,13 @@
+"""
+
+
+"""
+
 import numpy as np
 import glob,litus
 import datetime
 from future.utils import iteritems as _iteritems
 
-"""
-Test::
-
-    %pylab inline
-    import litus
-    import convis.runner
-    import convis.streams
-    A = np.array([1.0*(np.arange(50*50) < i).reshape((50,50)) for i in range(50*50 + 1)])
-    inp = convis.streams.RepeatingStream(A,size=(50,50))
-    out = convis.streams.run_visualizer()
-    out.refresh_rate = 5
-    f = lambda x: [np.sqrt(x)]
-    r = convis.runner.Runner(f,inp,out,dt=0.005)
-
-"""
 
 class GlobalClock(object):
     def __init__(self, t_zero = 0.0, t=0.0, dt=0.001):
@@ -240,7 +230,12 @@ class InrImageFileStreamer(object):
 
 
 class Stream(object):
-    """Basic stream that gives zeros"""
+    """
+        Stream Base Class
+
+        Streams have to have methods to either `get()`
+        or `put` a frame.
+    """
     def __init__(self, size=(50,50), pixel_per_degree=10, t_zero = 0.0, t=0.0, dt=0.001):
         self.size = list(size)
         self.pixel_per_degree = pixel_per_degree
@@ -297,7 +292,7 @@ class RandomStream(Stream):
     def get(self,i):
         return self.mean + self.level * np.random.rand(*([i]+self.size))
     def put(self,s):
-        raise Exception("Not implemented for basic stream.")
+        raise Exception("Not implemented for read only stream.")
 
 class SequenceStream(Stream):
     """ 3d Numpy array that represents a sequence of images"""

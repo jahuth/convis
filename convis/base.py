@@ -226,6 +226,72 @@ class Layer(torch.nn.Module):
         in-place! Using `.cuda()` or `.float()` will return a reference to the 
         original model and not a copy.
 
+
+        Attributes
+        ----------
+
+        _use_cuda : bool
+        set_optimizer : _OptimizerSelector objet that allows tab completion to select an optimizer
+
+        Methods
+        -------
+
+        cuda(device=None)
+            move the model to the gpu
+        cpu()
+            move the model to the cpu
+
+        run(the_input, dt=None)
+            execute the model, using chunk sizes of `dt`
+
+        parse_config(conf)
+
+        optimize(inp,outp,dt=None)
+            use the selected optimizer to fit the model
+            to return outp to the input inp.
+            Accepts a chunk length `dt`
+
+        register_state(name, value)
+            registers an attribute name to be a state variable
+        
+        state()
+            returns the current state of the model
+            (recursively for all submodules)
+
+        set_state(d)
+            set all state parameters defined in dictionary `d`
+            to the corresponding values.
+
+        push_state()
+            pushes the current state on a stack
+
+        pop_state()
+            pops the last state from the stack
+            and sets all state variables to the 
+            corresponding values.
+
+
+        Examples
+        --------
+
+
+        >>> import convis
+        >>> import torch.nn.functional as F
+        >>> 
+        >>> class Model(convis.Layer):
+        >>>     def __init__(self):
+        >>>         super(Model, self).__init__()
+        >>>         self.conv1 = convis.filters.Conv3d(1, (20,1,1))
+        >>>         self.conv2 = convis.filters.Conv3d(1, (1,10,10))
+        >>>     def forward(self, x):
+        >>>        x = F.relu(self.conv1(x))
+        >>>        return F.relu(self.conv2(x))
+
+
+        See Also
+        --------
+
+        torch.nn.Module : torchs layer class
     """
     _state = OrderedDict()
     def __init__(self):
@@ -281,16 +347,10 @@ class Layer(torch.nn.Module):
             Returns an `Output` object.
         """
         if dt is not None:
-            return self.run_in_chunks(the_input,dt=dt,t=t)
+            return self._run_in_chunks(the_input,dt=dt,t=t)
         else:
             return self(the_input)
-    def run_in_chunks(self,the_input,dt=100,t=0):
-        """
-            Runs the model over the_input in chunks of length dt.
-            
-            TODO: the_input has to be 3d!
-
-        """
+    def _run_in_chunks(self,the_input,dt=100,t=0):
         chunked_output = []
         keys = ['output']
         if len(shape(the_input)) == 3:

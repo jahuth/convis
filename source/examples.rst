@@ -45,7 +45,7 @@ A runner runs in its own thread and consumes an input stream::
 
 The input stream can be infinite in length (as eg. the `RandomStream`).
 
-More information specific to the retina model can be found :ref:`here <retina>`.
+More information specific to the retina model can be found :ref:`here <model_retina>`.
 
 
 Indices

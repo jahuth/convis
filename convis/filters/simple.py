@@ -94,3 +94,81 @@ class TemporalHighPassFilterRecursive(Layer):
         norm = 2.0*self.tau/steps#(self.tau/(self.tau+0.5))*steps
         return x - (self.k)*torch.cat(o,dim=TIME_DIMENSION)/norm
 
+
+class SmoothConv(Layer):
+    """
+        A convolution with temporally smoothed filters.
+        It can cover a long temporal period, but is a lot more
+        efficient than a convlution filter of the same length.
+
+        Each spatial filter `.g[n]` is applied to a temporally filtered
+        signal with increasing delays by convolving multiple recursive
+        exponential filters.
+
+        The length of the filter depends on the number of temporal
+        components and the time constant used for the delays.
+
+        Each exponential filter `.e[n]` can have an individual 
+        time constant, giving variable spacing between the filters.
+
+        By default, the time constants are set to not create a gradient,
+        so that they are not fittable.
+
+        To show each component, use `get_all_components(some_input)`
+
+        .. plot::
+            :include-source:
+
+            import matplotlib.pyplot as plt
+            import numpy as np
+            import convis
+            s = convis.filters.simple.SmoothConv(n=6,tau=0.05)
+            inp = np.zeros((1000,1,1))
+            inp[50,0,0] = 1.0
+            inp = convis.prepare_input(inp)
+            c = s.get_all_components(inp)
+            convis.plot_5d_time(c,mean=(3,4))
+            c = c.data.cpu().numpy()
+
+
+
+        Attributes
+        ----------
+
+
+        Methods
+        -------
+
+
+        See Also
+        --------
+
+        convis.filters.Conv3d : A full convolution layer 
+
+    """
+    def __init__(self,n=3,tau=0.1,spatial_filter=(10,10)):
+        super(SmoothConv, self).__init__()
+        self.dims=5
+        self.e = []
+        self.g = []
+        for i in range(n):
+            self.e.append(TemporalLowPassFilterRecursive(requires_grad=False))
+            self.e[i].tau.data[0] = tau
+            self.g.append(Conv3d(1,1,(1,spatial_filter[0],spatial_filter[1]),autopad=True, bias=False))
+            self.g[i].set_weight(np.random.randn(1,spatial_filter[0],spatial_filter[1]))
+        self.e = torch.nn.ModuleList(self.e)
+        self.g = torch.nn.ModuleList(self.g)
+    def forward(self,the_input):
+        o = []
+        y = the_input
+        for i in range(len(self.e)):
+            y = self.e[i](y)
+            o.append(self.g[i](y))
+        return torch.sum(torch.cat(o,dim=0),dim=0)[None,:,:,:,:]
+    def get_all_components(self,the_input):
+        o = []
+        y = the_input
+        for i in range(len(self.e)):
+            y = self.e[i](y)
+            o.append(self.g[i](y))
+        return torch.cat(o,dim=1)

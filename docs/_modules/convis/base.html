@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.base &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <title>convis.base &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -26,27 +26,31 @@
     <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis.base</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <h1>Source code for convis.base</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Convis base classes</span>
+<span class="sd">----------------------</span>
+
+<span class="sd">Convis extends PyTorch by adding some methods to `torch.nn.Module` and calling it a Layer.</span>
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">.misc_utils</span> <span class="k">import</span> <span class="n">unique_list</span><span class="p">,</span> <span class="n">suppress</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -62,6 +66,7 @@
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variables</span>
 <span class="kn">from</span> <span class="nn">.variables</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">o</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">optimizer</span>
 <span class="kn">from</span> <span class="nn">.o</span> <span class="k">import</span> <span class="n">O</span><span class="p">,</span> <span class="n">Ox</span><span class="p">,</span> <span class="n">save_name</span>
@@ -85,25 +90,32 @@
 
 <span class="c1">### Node and Model classes</span>
 
-<div class="viewcode-block" id="len_parents"><a class="viewcode-back" href="../../docs.html#convis.base.len_parents">[docs]</a><span class="k">def</span> <span class="nf">len_parents</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">len_parents</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="s1">&#39;parent&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">len_parents</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
-    <span class="k">return</span> <span class="mi">0</span></div>
+    <span class="k">return</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="Output"><a class="viewcode-back" href="../../docs.html#convis.base.Output">[docs]</a><span class="k">class</span> <span class="nc">Output</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="Output.__init__"><a class="viewcode-back" href="../../docs.html#convis.base.Output.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">outs</span><span class="p">,</span><span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This object provides a container for output numpy arrays which are labeled with theano variables.</span>
+
+<span class="sd">        The outputs can be queried either by sorted order (like a simple list),</span>
+<span class="sd">        by the theano variable which represents this output, the name of this variable</span>
+<span class="sd">        or the full path of the variable.</span>
+<span class="sd">        To make this meaningfull, provide a name to your output variables.</span>
+
+<span class="sd">        In the case of name collisions, the behavior of OrderedDict will use the last variable added.</span>
+
+<span class="sd">        The full path names of all variables are also added to this objects __dict__,</span>
+<span class="sd">        allowing for tab completion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">outs</span><span class="p">,</span><span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            This object provides a container for output numpy arrays which are labeled with theano variables.</span>
-
-<span class="sd">            The outputs can be queried either by sorted order (like a simple list),</span>
-<span class="sd">            by the theano variable which represents this output, the name of this variable</span>
-<span class="sd">            or the full path of the variable.</span>
-<span class="sd">            To make this meaningfull, provide a name to your output variables.</span>
-
-<span class="sd">            In the case of name collisions, the behavior of OrderedDict will use the last variable added.</span>
-
 <span class="sd">            The full path names of all variables are also added to this objects __dict__,</span>
 <span class="sd">            allowing for tab completion.</span>
+
+<span class="sd">            By default returns a numpy array when used with square brackets, the </span>
+<span class="sd">            Variable when accessed over `._outs[n]`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_out_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_out_dict_by_full_names</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
@@ -114,12 +126,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_out_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span><span class="n">outs</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_out_dict_by_full_names</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="n">full_path</span><span class="p">(</span><span class="n">k</span><span class="p">),</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">o</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span><span class="n">outs</span><span class="p">)])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_out_dict_by_short_names</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="n">save_name</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">)),</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">o</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span><span class="n">outs</span><span class="p">)</span> <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_out_dict</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Output.__len__"><a class="viewcode-back" href="../../docs.html#convis.base.Output.__len__">[docs]</a>    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outs</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Output.__iter__"><a class="viewcode-back" href="../../docs.html#convis.base.Output.__iter__">[docs]</a>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outs</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Output.__getitem__"><a class="viewcode-back" href="../../docs.html#convis.base.Output.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_out_dict</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -131,21 +147,21 @@
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_dict_by_full_names</span><span class="p">[</span><span class="n">save_name</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
         <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">!=</span> <span class="n">save_name</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;Key not found: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; / &#39;</span><span class="o">+</span><span class="n">save_name</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
-        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;Key not found: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">))</span></div></div>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;Key not found: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="_OptimizerSelection"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelection">[docs]</a><span class="k">class</span> <span class="nc">_OptimizerSelection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_OptimizerSelection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A single optimizer option that can be called to set this optimizer for the model.</span>
 <span class="sd">        The doc string of the original optimizer is available by calling `help()` on this object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="_OptimizerSelection.__init__"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelection.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_opt</span> <span class="o">=</span> <span class="n">opt</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opt</span><span class="o">.</span><span class="vm">__doc__</span></div>
-<div class="viewcode-block" id="_OptimizerSelection.__call__"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelection.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">set_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_opt</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opt</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">set_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_opt</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="_OptimizerSelector"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelector">[docs]</a><span class="k">class</span> <span class="nc">_OptimizerSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_OptimizerSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Enables tab completion to set optimizers for a model.</span>
 <span class="sd">        Includes all Optimizers found in `torch.nn.optim` and</span>
@@ -154,29 +170,30 @@
 <span class="sd">        If optimizers are added to torch during runtime,</span>
 <span class="sd">        you can call `._reload()` to add all available options.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="_OptimizerSelector.__init__"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelector.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">o</span><span class="p">))</span> <span class="ow">is</span> <span class="nb">type</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">o</span><span class="p">),</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">):</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">_OptimizerSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">o</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">))</span> <span class="ow">is</span> <span class="nb">type</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">),</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">):</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">_OptimizerSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">)))</span></div>
-<div class="viewcode-block" id="_OptimizerSelector._reload"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelector._reload">[docs]</a>    <span class="k">def</span> <span class="nf">_reload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">_OptimizerSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">)))</span>
+    <span class="k">def</span> <span class="nf">_reload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">o</span><span class="p">))</span> <span class="ow">is</span> <span class="nb">type</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">o</span><span class="p">),</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">):</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">_OptimizerSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">o</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">))</span> <span class="ow">is</span> <span class="nb">type</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">),</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">):</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">_OptimizerSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">)))</span></div>
-<div class="viewcode-block" id="_OptimizerSelector.__call__"><a class="viewcode-back" href="../../docs.html#convis.base._OptimizerSelector.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">_OptimizerSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">o</span><span class="p">)))</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">types</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">types</span><span class="o">.</span><span class="n">GeneratorType</span><span class="p">)):</span>
             <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="n">args</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
         <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="n">opt</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">opt</span><span class="p">),</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">):</span>
-            <span class="bp">self</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">opt</span><span class="p">),</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="p">,</span> <span class="n">opt</span><span class="p">),</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="prepare_input"><a class="viewcode-back" href="../../docs.html#convis.base.prepare_input">[docs]</a><span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">volatile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -252,28 +269,112 @@
 <span class="sd">        in-place! Using `.cuda()` or `.float()` will return a reference to the </span>
 <span class="sd">        original model and not a copy.</span>
 
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        _use_cuda : bool</span>
+<span class="sd">        set_optimizer : _OptimizerSelector objet that allows tab completion to select an optimizer</span>
+
+<span class="sd">        Methods</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        cuda(device=None)</span>
+<span class="sd">            move the model to the gpu</span>
+<span class="sd">        cpu()</span>
+<span class="sd">            move the model to the cpu</span>
+
+<span class="sd">        run(the_input, dt=None)</span>
+<span class="sd">            execute the model, using chunk sizes of `dt`</span>
+
+<span class="sd">        parse_config(conf)</span>
+
+<span class="sd">        optimize(inp,outp,dt=None)</span>
+<span class="sd">            use the selected optimizer to fit the model</span>
+<span class="sd">            to return outp to the input inp.</span>
+<span class="sd">            Accepts a chunk length `dt`</span>
+
+<span class="sd">        register_state(name, value)</span>
+<span class="sd">            registers an attribute name to be a state variable</span>
+<span class="sd">        </span>
+<span class="sd">        state()</span>
+<span class="sd">            returns the current state of the model</span>
+<span class="sd">            (recursively for all submodules)</span>
+
+<span class="sd">        set_state(d)</span>
+<span class="sd">            set all state parameters defined in dictionary `d`</span>
+<span class="sd">            to the corresponding values.</span>
+
+<span class="sd">        push_state()</span>
+<span class="sd">            pushes the current state on a stack</span>
+
+<span class="sd">        pop_state()</span>
+<span class="sd">            pops the last state from the stack</span>
+<span class="sd">            and sets all state variables to the </span>
+<span class="sd">            corresponding values.</span>
+
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; import torch.nn.functional as F</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; class Model(convis.Layer):</span>
+<span class="sd">        &gt;&gt;&gt;     def __init__(self):</span>
+<span class="sd">        &gt;&gt;&gt;         super(Model, self).__init__()</span>
+<span class="sd">        &gt;&gt;&gt;         self.conv1 = convis.filters.Conv3d(1, (20,1,1))</span>
+<span class="sd">        &gt;&gt;&gt;         self.conv2 = convis.filters.Conv3d(1, (1,10,10))</span>
+<span class="sd">        &gt;&gt;&gt;     def forward(self, x):</span>
+<span class="sd">        &gt;&gt;&gt;        x = F.relu(self.conv1(x))</span>
+<span class="sd">        &gt;&gt;&gt;        return F.relu(self.conv2(x))</span>
+
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        torch.nn.Module : torchs layer class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Layer.__init__"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">_state</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_state</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variables</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_named_variables</span><span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_optimizer</span> <span class="o">=</span> <span class="n">_OptimizerSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_optimizer</span> <span class="o">=</span> <span class="n">_OptimizerSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">register_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
 <div class="viewcode-block" id="Layer.cuda"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.cuda">[docs]</a>    <span class="k">def</span> <span class="nf">cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Moves the model to the GPU (optionally with number `device`).</span>
 <span class="sd">            returns the model itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span></div>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span></div>
 <div class="viewcode-block" id="Layer.cpu"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.cpu">[docs]</a>    <span class="k">def</span> <span class="nf">cpu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Moves the model to the CPU and returns the model itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span></div>
-<div class="viewcode-block" id="Layer.__call__"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">new_args</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">prepare_input</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;dims&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">),</span> <span class="n">cuda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">)</span>
@@ -281,7 +382,7 @@
         <span class="n">o0</span> <span class="o">=</span> <span class="n">o</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">new_args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;outputs&#39;</span><span class="p">):</span>
             <span class="n">o</span> <span class="o">=</span> <span class="n">Output</span><span class="p">([</span><span class="n">o</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">],</span> <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">o</span></div>
+        <span class="k">return</span> <span class="n">o</span>
 <div class="viewcode-block" id="Layer.run"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">the_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Runs the model either once, or multiple times to process chunks of size `dt`.</span>
@@ -289,16 +390,10 @@
 <span class="sd">            Returns an `Output` object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_in_chunks</span><span class="p">(</span><span class="n">the_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_in_chunks</span><span class="p">(</span><span class="n">the_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="n">the_input</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Layer.run_in_chunks"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.run_in_chunks">[docs]</a>    <span class="k">def</span> <span class="nf">run_in_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">the_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Runs the model over the_input in chunks of length dt.</span>
-<span class="sd">            </span>
-<span class="sd">            TODO: the_input has to be 3d!</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_run_in_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">the_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="n">chunked_output</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">(</span><span class="n">the_input</span><span class="p">))</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -318,15 +413,15 @@
         <span class="k">for</span> <span class="n">co</span> <span class="ow">in</span> <span class="n">chunked_output</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">co</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="n">TIME_DIMENSION</span><span class="p">))</span>
-            <span class="k">except</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">co</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">Output</span><span class="p">(</span><span class="n">outs</span><span class="p">,</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">Output</span><span class="p">(</span><span class="n">outs</span><span class="p">,</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py</span>
         <span class="c1"># for full example on how to find parameters</span>
         <span class="k">return</span> <span class="n">Ox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">())</span>
-<div class="viewcode-block" id="Layer._apply"><a class="viewcode-back" href="../../docs.html#convis.base.Layer._apply">[docs]</a>    <span class="k">def</span> <span class="nf">_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
             <span class="n">module</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
 
@@ -350,8 +445,16 @@
             <span class="k">if</span> <span class="n">buf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_buffers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span></div>
-<div class="viewcode-block" id="Layer.__setattr__"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.__setattr__">[docs]</a>    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;_state&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">if</span> <span class="n">is_variable</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">Parameter</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -359,7 +462,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_named_variables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
             <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 <div class="viewcode-block" id="Layer.parse_config"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.parse_config">[docs]</a>    <span class="k">def</span> <span class="nf">parse_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;retina_config_key&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Loads parameter values from a configuration (RetinaConfiguration or dict).</span>
@@ -378,7 +488,7 @@
                         <span class="k">else</span><span class="p">:</span>
                             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;has no set:&#39;</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Layer.optimize"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Layer.optimize"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Runs an Optimizer to fit the models parameters such that the output</span>
 <span class="sd">            of the model when presented `inp` approximates `outp`.</span>
@@ -423,23 +533,82 @@
             <span class="n">closure</span><span class="o">.</span><span class="n">outp</span> <span class="o">=</span> <span class="n">outp</span>
             <span class="n">closure</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span>
             <span class="k">return</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.state">[docs]</a>    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            collects the state and returns an</span>
+<span class="sd">            OrderedDict </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">rec</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_state&#39;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">s_name</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">o</span><span class="p">[</span><span class="n">s_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">s_name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">mod_name</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">mod</span> <span class="ow">is</span> <span class="n">model</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">o</span><span class="p">[</span><span class="n">mod_name</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">s_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+            <span class="k">return</span> <span class="n">o</span>
+        <span class="k">return</span> <span class="n">rec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.set_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.set_state">[docs]</a>    <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            collects the state and returns an</span>
+<span class="sd">            OrderedDict </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">rec</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">sub_state_dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_state&#39;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">s_name</span><span class="p">,</span> <span class="n">sub_state_dict</span><span class="p">[</span><span class="n">s_name</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">mod_name</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">mod</span> <span class="ow">is</span> <span class="n">model</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">new_sub_state_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">sub_state_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">s_name_split</span> <span class="o">=</span> <span class="n">s_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">s_name_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mod_name</span><span class="p">:</span>
+                        <span class="n">new_sub_state_dict</span><span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s_name_split</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span> <span class="o">=</span> <span class="n">s</span>
+                <span class="n">rec</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">new_sub_state_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.clear_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.clear_state">[docs]</a>    <span class="k">def</span> <span class="nf">clear_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            resets the state to default values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">rec</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_state&#39;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_default_state&#39;</span><span class="p">):</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">s_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_default_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">mod_name</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">mod</span> <span class="ow">is</span> <span class="n">model</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">o</span><span class="p">[</span><span class="n">mod_name</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">s_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+            <span class="k">return</span> <span class="n">o</span>
+        <span class="k">return</span> <span class="n">rec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 <div class="viewcode-block" id="Layer.push_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.push_state">[docs]</a>    <span class="k">def</span> <span class="nf">push_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            collects all State variables and pushes they values onto a stack</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span> <span class="c1"># we can&#39;t recognize state variables right now :(</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_state_stack&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">())</span></div>
 <div class="viewcode-block" id="Layer.pop_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.pop_state">[docs]</a>    <span class="k">def</span> <span class="nf">pop_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            retrieves the values of all State variables and from a stack</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_state_stack&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No state was pushed to the stack!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span></div></div>
 
 <span class="n">Model</span> <span class="o">=</span> <span class="n">Layer</span>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
-<div class="viewcode-block" id="get_next"><a class="viewcode-back" href="../../docs.html#convis.base.get_next">[docs]</a><span class="k">def</span> <span class="nf">get_next</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="n">l</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_next</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="n">l</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;get&#39;</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s1">&#39;__next__&#39;</span><span class="p">):</span>
@@ -450,14 +619,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">StopIteration</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">stream</span></div>
+        <span class="k">return</span> <span class="n">stream</span>
 
-<div class="viewcode-block" id="DummyModel"><a class="viewcode-back" href="../../docs.html#convis.base.DummyModel">[docs]</a><span class="k">class</span> <span class="nc">DummyModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<div class="viewcode-block" id="DummyModel.__init__"><a class="viewcode-back" href="../../docs.html#convis.base.DummyModel.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span></div>
-<div class="viewcode-block" id="DummyModel.run"><a class="viewcode-back" href="../../docs.html#convis.base.DummyModel.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_DummyModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">inps</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span><span class="n">get_next</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">l</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
-        <span class="k">return</span> <span class="n">Output</span><span class="p">(</span><span class="n">inps</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span><span class="n">keys</span><span class="o">=</span><span class="n">inps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div></div>
+        <span class="k">return</span> <span class="n">Output</span><span class="p">(</span><span class="n">inps</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span><span class="n">keys</span><span class="o">=</span><span class="n">inps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         
 <div class="viewcode-block" id="Runner"><a class="viewcode-back" href="../../docs.html#convis.base.Runner">[docs]</a><span class="k">class</span> <span class="nc">Runner</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -471,30 +640,30 @@
 <span class="sd">        when using optimize, `goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Runner.__init__"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="nb">input</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">goal</span> <span class="o">=</span> <span class="n">goal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">20</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span></div>
-<div class="viewcode-block" id="Runner.stop"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span></div>
-<div class="viewcode-block" id="Runner.start"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">thread</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="n">thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">,</span><span class="nb">tuple</span><span class="p">())</span></div>
-<div class="viewcode-block" id="Runner.thread"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.thread">[docs]</a>    <span class="k">def</span> <span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">,</span><span class="nb">tuple</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">datetime</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Runner.run"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">):</span>
                 <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">)</span>
@@ -506,48 +675,25 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">o</span></div>
-<div class="viewcode-block" id="Runner.optimize"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">o</span>
+    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">get_next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">),</span> <span class="n">get_next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;keys&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">o</span></div></div>
+        <span class="k">return</span> <span class="n">o</span></div>
 </pre></div>
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

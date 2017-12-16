@@ -4,7 +4,7 @@ Usage
 Running a model
 -----------------
 
-Example::
+.. code-block:: python
 
     import convis
     retina = convis.retina.Retina()
@@ -28,6 +28,7 @@ Runner objects can execute a model on a fixed set of input and output streams.
 The execution can also happen in a separate thread:
 
 .. code-block:: python
+
     import convis, time
     import numpy as np
 
@@ -48,14 +49,16 @@ Optimizing a Model
 One way to optimize a model is by using the `.set_optimizer` attribute and the `.optimize` method:
 
 .. code-block:: python
+
     l = convis.models.LN()
     l.set_optimizer.SGD(lr=0.001) # selects an optimizer with arguments
-    l.optimize(some_inp, desired_outp) # does the optimization with the selected optimizer
+    #l.optimize(some_inp, desired_outp) # does the optimization with the selected optimizer
 
 
 A full example:
 
 .. code-block:: python
+
     import numpy as np
     import matplotlib.pylab as plt
     import convis
@@ -67,28 +70,29 @@ A full example:
     plt.matshow(l_goal.conv.weight.data.cpu().numpy().mean((0,1,2)))
     plt.colorbar()
     l = convis.models.LN()
-    l.conv.set_weight(np.ones((5,5,5)),normalize=True)
-    l.set_optimizer.LBFGS()
-    l.cuda()
-    l_goal.cuda()
-    inp = 1.0*(np.random.randn(200,10,10))
-    inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
-    outp = l_goal(inp[None,None,:,:,:])
-    plt.figure()
-    plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),'--',color='red')
-    for i in range(50):
-        l.optimize(inp[None,None,:,:,:],outp)
-        if i%10 == 2:
-            plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
-    plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))
-    plt.colorbar()
-    plt.figure()
-    h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)
+    #l.conv.set_weight(np.ones((5,5,5)),normalize=True)
+    #l.set_optimizer.LBFGS()
+    #l.cuda()
+    #l_goal.cuda()
+    #inp = 1.0*(np.random.randn(200,10,10))
+    #inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
+    #outp = l_goal(inp[None,None,:,:,:])
+    #plt.figure()
+    #plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),'--',color='red')
+    #for i in range(50):
+    #    l.optimize(inp[None,None,:,:,:],outp)
+    #    if i%10 == 2:
+    #        plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
+    #plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))
+    #plt.colorbar()
+    #plt.figure()
+    #h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)
 
 
 
 
 .. plot::
+
     import numpy as np
     import matplotlib.pylab as plt
     import convis
@@ -133,6 +137,7 @@ Using an Optimizer by Hand
 The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling `.step()` (see also http://pytorch.org/docs/master/optim.html ).
 
 .. code-block:: python
+
     import numpy as np
     import convis
     import torch
@@ -147,19 +152,20 @@ The normal PyTorch way to call Optimizers is to fill the gradient buffers by han
     optimizer = torch.optim.SGD(l.parameters(), lr=0.01)
     for i in range(50):
         # first the gradient buffer have to be set to 0
-        optimizer.zero_grad()
+        #optimizer.zero_grad()
         # then the computation is done
         o = l(inp)
         # and some loss measure is used to compare the output to the goal
         loss = ((outp-o)**2).mean() # eg. mean square error
         # applying the backward computation fills all gradient buffers with the corresponding gradients
-        loss.backward(retain_graph=True)
+        #loss.backward(retain_graph=True)
         # now that the gradients have the correct values, the optimizer can perform one optimization step
-        optimizer.step()
+        #optimizer.step()
 
 Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values:
 
 .. code-block:: python
+
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)
     optimizer = torch.optim.LBFGS(lr=0.01)
@@ -171,16 +177,17 @@ Or using a closure function, which is necessary for advanced optimizers that nee
         loss.backward(retain_graph=True)
         return loss
 
-    for i in range(50):
-        optimizer.step(closure)
+    #for i in range(50):
+    #    optimizer.step(closure)
 
 
 The `.optimize` method of `convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions:
 
 .. code-block:: python
+
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)
     opt2 = torch.optim.LBFGS(l.parameters())
-    l.optimize(inp[None,None,:,:,:],outp, optimizer=opt2, loss_fn = lambda x,y: (x-y).abs().sum()) # using LBFGS (without calling .set_optimizer) and another loss function
+    #l.optimize(inp[None,None,:,:,:],outp, optimizer=opt2, loss_fn = lambda x,y: (x-y).abs().sum()) # using LBFGS (without calling .set_optimizer) and another loss function
 
 `.set_optimizer.*()` will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument. 

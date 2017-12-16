@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.retina_virtualretina &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <title>convis.retina_virtualretina &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -26,25 +26,20 @@
     <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis.retina_virtualretina</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <h1>Source code for convis.retina_virtualretina</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -380,7 +375,7 @@
         <span class="p">}</span>
 
 
-<div class="viewcode-block" id="RetinaConfiguration"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration">[docs]</a><span class="k">class</span> <span class="nc">RetinaConfiguration</span><span class="p">:</span>
+<div class="viewcode-block" id="RetinaConfiguration"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.RetinaConfiguration">[docs]</a><span class="k">class</span> <span class="nc">RetinaConfiguration</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A configuration object that writes an xml file for VirtualRetina.</span>
 
@@ -408,7 +403,7 @@
 <span class="sd">        &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">_default_config</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_default_config</span><span class="p">)</span>
-<div class="viewcode-block" id="RetinaConfiguration.get"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.get"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.RetinaConfiguration.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Retrieves values from the configuration.</span>
 
@@ -434,7 +429,7 @@
             <span class="k">return</span> <span class="n">default</span>
 
         <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">default</span><span class="p">)</span></div>
-<div class="viewcode-block" id="RetinaConfiguration.set"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">layer_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.set"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.RetinaConfiguration.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">layer_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            shortcuts for frequent configuration values</span>
 
@@ -561,7 +556,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">d</span><span class="p">[</span><span class="n">keys</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span>
             <span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">)</span></div>
-<div class="viewcode-block" id="RetinaConfiguration.read_json"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.read_json">[docs]</a>    <span class="k">def</span> <span class="nf">read_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.read_json"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.RetinaConfiguration.read_json">[docs]</a>    <span class="k">def</span> <span class="nf">read_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Reads a full retina config json file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -627,12 +622,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span> <span class="o">=</span> <span class="n">dict_recursive_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_xml</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>
-<div class="viewcode-block" id="RetinaConfiguration.write_json"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.write_json"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.RetinaConfiguration.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Writes a retina config json file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retina_config</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span></div>
-<div class="viewcode-block" id="RetinaConfiguration.write_xml"><a class="viewcode-back" href="../../retina.html#convis.retina.RetinaConfiguration.write_xml">[docs]</a>    <span class="k">def</span> <span class="nf">write_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="RetinaConfiguration.write_xml"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.RetinaConfiguration.write_xml">[docs]</a>    <span class="k">def</span> <span class="nf">write_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Writes a full retina config xml file.</span>
 
@@ -684,7 +679,7 @@
 <span class="k">def</span> <span class="nf">random_config</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">RetinaConfiguration</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">deriche_filter_density_map</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">sigma0</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Nx</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Ny</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="deriche_filter_density_map"><a class="viewcode-back" href="../../docs.html#convis.retina_virtualretina.deriche_filter_density_map">[docs]</a><span class="k">def</span> <span class="nf">deriche_filter_density_map</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="n">sigma0</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Nx</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Ny</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a map of how strongly a point is to be blurred.</span>
 
@@ -721,41 +716,18 @@
             <span class="n">log_polar_K</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">log_polar_R0</span>
         <span class="n">density</span> <span class="o">=</span> <span class="n">r</span>
         <span class="n">density</span><span class="p">[</span><span class="n">r</span><span class="o">&gt;</span><span class="n">log_polar_R0</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_polar_R0</span> <span class="o">+</span> <span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">log_polar_K</span><span class="o">*</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="n">r</span><span class="o">&gt;</span><span class="n">log_polar_R0</span><span class="p">]</span><span class="o">-</span><span class="n">log_polar_R0</span><span class="p">))</span><span class="o">/</span><span class="n">log_polar_K</span>
-    <span class="k">return</span> <span class="n">density</span><span class="o">/</span><span class="p">(</span><span class="n">sigma0</span><span class="o">*</span><span class="n">ratiopix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">density</span><span class="o">/</span><span class="p">(</span><span class="n">sigma0</span><span class="o">*</span><span class="n">ratiopix</span><span class="p">)</span></div>
 </pre></div>
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

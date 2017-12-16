@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.filters.retina &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <title>convis.filters.retina &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -26,26 +26,20 @@
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../filters.html" accesskey="U">convis.filters</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis.filters.retina</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <h1>Source code for convis.filters.retina</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">litus</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -76,7 +70,59 @@
 
 
 
-<span class="k">class</span> <span class="nc">SeperatableOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="SeperatableOPLFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.SeperatableOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">SeperatableOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A fullly convolutional OPL implementation.</span>
+
+<span class="sd">        All filters are implemented as convolutions which</span>
+<span class="sd">        makes this layer a lot slower than :py:class:`HalfRecursiveOPLFilter`.</span>
+
+<span class="sd">        The following virtual parameters set the corresponding</span>
+<span class="sd">        tensors with convolution filters. Eg. they turn </span>
+<span class="sd">        the standard deviation of the gaussian into a</span>
+<span class="sd">        numerical, circular gaussian.</span>
+
+<span class="sd">        You can set them to a value via `.set(value)` which will</span>
+<span class="sd">        trigger them to re-calculate the filters.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ---------------------</span>
+
+<span class="sd">        sigma_center : virtual parameter</span>
+<span class="sd">            Size of the center receptive field</span>
+<span class="sd">        tau_center : virtual parameter</span>
+<span class="sd">            Time constant of the center receptive field</span>
+<span class="sd">        n_center : virtual parameter</span>
+<span class="sd">            number of cascading exponential filters</span>
+<span class="sd">        undershoot_tau_center : virtual parameter</span>
+<span class="sd">            time constant of the high pass filter</span>
+<span class="sd">        undershoot_relative_weight_center : virtual parameter</span>
+<span class="sd">            relative weight of the high pass filter</span>
+<span class="sd">        sigma_surround : virtual parameter</span>
+<span class="sd">            Size of the surround receptive field</span>
+<span class="sd">        tau_surround : virtual parameter</span>
+<span class="sd">            Time constant of the surround receptive field</span>
+<span class="sd">        relative_weight : virtual parameter</span>
+<span class="sd">            relative weight between center and surround</span>
+<span class="sd">        center_G</span>
+<span class="sd">            Spatial convolution filter for the center receptive field</span>
+<span class="sd">        center_E</span>
+<span class="sd">            recursive temporal filter for the center receptive field</span>
+<span class="sd">        surround_G</span>
+<span class="sd">            Spatial convolution filter for the surround receptive field</span>
+<span class="sd">        surround_E</span>
+<span class="sd">            recursive temporal filter for the surround receptive field</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        Retina</span>
+<span class="sd">        OPL</span>
+<span class="sd">        HalfRecursiveOPLFilter</span>
+<span class="sd">        FullConvolutionOPLFilter</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SeperatableOPLFilter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
@@ -156,9 +202,61 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">*</span> <span class="n">s</span><span class="p">[:,:,</span><span class="o">-</span><span class="n">y</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">TIME_DIMENSION</span><span class="p">]:,:,:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="n">x_pad</span><span class="p">[:,:,</span><span class="o">-</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">):,:,:]</span>
         <span class="c1">#return y[:,:,(self.filter_length/2):-(self.filter_length/2),:,:]</span>
-        <span class="k">return</span> <span class="n">y</span><span class="p">[:,:,</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">:,:,:]</span>
+        <span class="k">return</span> <span class="n">y</span><span class="p">[:,:,</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">:,:,:]</span></div>
 
-<span class="k">class</span> <span class="nc">HalfRecursiveOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="HalfRecursiveOPLFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.HalfRecursiveOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">HalfRecursiveOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The default OPL implementation.</span>
+
+<span class="sd">        Temporal filters are implemented recursively and</span>
+<span class="sd">        spatial filters are convolution filters.</span>
+
+<span class="sd">        The following virtual parameters set the corresponding</span>
+<span class="sd">        tensors with convolution filters. Eg. they turn </span>
+<span class="sd">        the standard deviation of the gaussian into a</span>
+<span class="sd">        numerical, circular gaussian.</span>
+
+<span class="sd">        You can set them to a value via `.set(value)` which will</span>
+<span class="sd">        trigger them to re-calculate the filters.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        --------------------</span>
+
+<span class="sd">        sigma_center : virtual parameter</span>
+<span class="sd">            Size of the center receptive field</span>
+<span class="sd">        tau_center : virtual parameter</span>
+<span class="sd">            Time constant of the center receptive field</span>
+<span class="sd">        n_center : virtual parameter</span>
+<span class="sd">            number of cascading exponential filters</span>
+<span class="sd">        undershoot_tau_center : virtual parameter</span>
+<span class="sd">            time constant of the high pass filter</span>
+<span class="sd">        undershoot_relative_weight_center : virtual parameter</span>
+<span class="sd">            relative weight of the high pass filter</span>
+<span class="sd">        sigma_surround : virtual parameter</span>
+<span class="sd">            Size of the surround receptive field</span>
+<span class="sd">        tau_surround : virtual parameter</span>
+<span class="sd">            Time constant of the surround receptive field</span>
+<span class="sd">        relative_weight : virtual parameter</span>
+<span class="sd">            relative weight between center and surround</span>
+<span class="sd">        center_G : Conv3d</span>
+<span class="sd">            Spatial convolution filter for the center receptive field</span>
+<span class="sd">        center_E : Recursive Filter</span>
+<span class="sd">            recursive temporal filter for the center receptive field</span>
+<span class="sd">        surround_G : Conv3d</span>
+<span class="sd">            Spatial convolution filter for the surround receptive field</span>
+<span class="sd">        surround_E : Recursive Filter</span>
+<span class="sd">            recursive temporal filter for the surround receptive field</span>
+
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        Retina</span>
+<span class="sd">        OPL</span>
+<span class="sd">        SeperatableOPLFilter</span>
+<span class="sd">        FullConvolutionOPLFilter</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">HalfRecursiveOPLFilter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
@@ -220,9 +318,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">center_signal</span> <span class="o">=</span> <span class="n">y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surround_signal</span> <span class="o">=</span> <span class="n">s</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">*</span> <span class="n">s</span><span class="p">[:,:,:,:,:]</span>
-        <span class="k">return</span> <span class="n">y</span>
+        <span class="k">return</span> <span class="n">y</span></div>
 
-<span class="k">class</span> <span class="nc">FullConvolutionOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="FullConvolutionOPLFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.FullConvolutionOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">FullConvolutionOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        Retina</span>
+<span class="sd">        OPL</span>
+<span class="sd">        HalfRecursiveOPLFilter</span>
+<span class="sd">        SeperatableOPLFilter</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">FullConvolutionOPLFilter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
@@ -231,10 +341,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,:,:,:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
     
-<div class="viewcode-block" id="OPL"><a class="viewcode-back" href="../../../retina.html#convis.filters.retina.OPL">[docs]</a><span class="k">class</span> <span class="nc">OPL</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="OPL"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.OPL">[docs]</a><span class="k">class</span> <span class="nc">OPL</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The OPL current is a filtered version of the luminance input with spatial and temporal kernels.</span>
 
@@ -253,16 +363,25 @@
 <span class="sd">    :math:`S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)`</span>
 <span class="sd">    p.275</span>
 
-<span class="sd">    To keep all dimensions similar, a *fake kernel* has to be used on the center output that contains a single 1 but has the shape of the filters used on the surround, such that the surround can be subtracted from the center.</span>
+<span class="sd">    This Layer can use one of multiple implementations. :py:class:`HalfRecursiveOPLFilter`</span>
+<span class="sd">    and :py:class:`SeperatableOPLFilter` both accept the same configuration attributes.</span>
+<span class="sd">    Or :py:class:`FullConvolutionOPLFilter` which does not accept the</span>
+<span class="sd">    parameters, but offers a single, non-separable convolution filter.</span>
 
-<span class="sd">    The inputs of the function are: </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
 
-<span class="sd">     * :py:obj:`L` (the luminance input), </span>
-<span class="sd">     * :py:obj:`E_n_C`, :py:obj:`TwuTu_C`, :py:obj:`G_C` (the center filters), </span>
-<span class="sd">     * :py:obj:`E_S`, :py:obj:`G_S` (the surround filters), </span>
-<span class="sd">     * :py:obj:`Reshape_C_S` (the fake filter), </span>
-<span class="sd">     * :py:obj:`lambda_OPL`, :py:obj:`w_OPL` (scaling and weight parameters)</span>
+<span class="sd">    opl_filter : Layer</span>
+<span class="sd">        The OPL filter that is used.</span>
+<span class="sd">        Either :py:class:`HalfRecursiveOPLFilter`, :py:class:`SeperatableOPLFilter` or :py:class:`FullConvolutionOPLFilter`.</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
 
+<span class="sd">    Retina</span>
+<span class="sd">    HalfRecursiveOPLFilter</span>
+<span class="sd">    SeperatableOPLFilter</span>
+<span class="sd">    FullConvolutionOPLFilter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">OPL</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -274,7 +393,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opl_filter</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
  
-<div class="viewcode-block" id="Bipolar"><a class="viewcode-back" href="../../../retina.html#convis.filters.retina.Bipolar">[docs]</a><span class="k">class</span> <span class="nc">Bipolar</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="Bipolar"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.Bipolar">[docs]</a><span class="k">class</span> <span class="nc">Bipolar</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Example Configuration::</span>
 
@@ -286,6 +405,26 @@
 <span class="sd">            &#39;adaptation-tau__sec&#39;: 0.005,              # `tauSurround` in virtual retina</span>
 <span class="sd">            &#39;adaptation-feedback-amplification__Hz&#39;: 0 # `ampFeedback` in virtual retina</span>
 <span class="sd">        },</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">        opl-amplification__Hz : 50</span>
+<span class="sd">            for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ;</span>
+<span class="sd">            `ampInputCurrent` in virtual retina</span>
+<span class="sd">        bipolar-inert-leaks__Hz: 50</span>
+<span class="sd">            `gLeak` in virtual retina</span>
+<span class="sd">        adaptation-sigma__deg: 0.2</span>
+<span class="sd">            `sigmaSurround` in virtual retina</span>
+<span class="sd">        adaptation-tau__sec: 0.005</span>
+<span class="sd">            `tauSurround` in virtual retina</span>
+<span class="sd">        adaptation-feedback-amplification__Hz: 0</span>
+<span class="sd">            `ampFeedback` in virtual retina</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    Retina</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Bipolar</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -363,7 +502,7 @@
         <span class="k">return</span> <span class="n">y</span></div>
 
 
-<div class="viewcode-block" id="GanglionInput"><a class="viewcode-back" href="../../../retina.html#convis.filters.retina.GanglionInput">[docs]</a><span class="k">class</span> <span class="nc">GanglionInput</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="GanglionInput"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.GanglionInput">[docs]</a><span class="k">class</span> <span class="nc">GanglionInput</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The input current to the ganglion cells is filtered through a gain function.</span>
 
@@ -446,8 +585,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="ow">and</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
         <span class="n">x_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="n">TIME_DIMENSION</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sign</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient</span><span class="p">(</span><span class="n">x_pad</span><span class="p">)[:,:,</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">:,:,:]</span>
         <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_0</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_G</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">v_0</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">i_0</span><span class="p">))</span>
@@ -457,7 +596,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="n">x_pad</span><span class="p">[:,:,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">:,:,:]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_pooling</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GanglionSpiking"><a class="viewcode-back" href="../../../retina.html#convis.filters.retina.GanglionSpiking">[docs]</a><span class="k">class</span> <span class="nc">GanglionSpiking</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="GanglionSpiking"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.GanglionSpiking">[docs]</a><span class="k">class</span> <span class="nc">GanglionSpiking</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The ganglion cells recieve the gain controlled input and produce spikes. </span>
 
@@ -546,39 +685,15 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">all_spikes</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:]</span></div>
 </pre></div>
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">convis 0.5.0.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../filters.html" >convis.filters</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

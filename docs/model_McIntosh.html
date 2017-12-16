@@ -1,0 +1,251 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>A Convolutional Retina Model &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Linear-Nonlinear Models" href="model_ln.html" /> 
+  </head>
+  <body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>A Convolutional Retina Model</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="model_ln.html">Linear-Nonlinear Models</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="examples.html">Examples</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="a-convolutional-retina-model">
+<span id="model-mcintosh"></span><h1>A Convolutional Retina Model<a class="headerlink" href="#a-convolutional-retina-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="use-it">
+<h2>Use it<a class="headerlink" href="#use-it" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">McIntosh</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="c1"># moving the model to the gpu if desired</span>
+<span class="n">some_output</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="c1"># running the model</span>
+
+<span class="c1"># fitting the model to data</span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">Adam</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The chunk size <cite>dt</cite> depends on your the memory you have available.</p>
+<p>The model has two convolution filters <cite>layer1</cite> and <cite>layer2</cite> and a linear <cite>readout</cite>. Since the size of the readout filter depends on the image size, it will be discarded if it does not match the image.</p>
+<p>The parameters of the model are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="first docutils">
+<dt><cite>layer1</cite> the first convolution filter</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><cite>layer1.conv</cite></dt>
+<dd><ul class="first last">
+<li><cite>layer1.conv.weight</cite> with dimensions <cite>8,1,time,x,y</cite></li>
+<li><cite>layer1.conv.bias</cite></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>layer2</cite> the second convolution filter</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><cite>layer2.conv</cite></dt>
+<dd><ul class="first last">
+<li><cite>layer2.conv.weight</cite> with dimensions <cite>16,8,time,x,y</cite></li>
+<li><cite>layer2.conv.bias</cite></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>readout</cite></dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><cite>readout.weight</cite> with dimensions <cite>N, (16 * x * y)</cite></dt>
+<dd><ul class="first last">
+<li>where <cite>N</cite> is the number of desired output channels</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Between the layers, a rectifying non-linearity is applied,
+but it does not have any parameters.</p>
+</div>
+<div class="section" id="build-it-yourself">
+<h2>Build it yourself<a class="headerlink" href="#build-it-yourself" title="Permalink to this headline">¶</a></h2>
+<p>Lane McIntosh et al. published a paper in 2016 about a machine learning
+approach to retinal modelling [1]. They used a convolutional neural network
+to fit the responses of retinal ganglion cells.</p>
+<p>The model is implemented in convis, but if you want to know how it works,
+you can follow this build-it-yourself recipie and built slight variations,
+eg. a model that accepts color images or has additional layers.</p>
+<p>First, let’s start with importing the necessary libraries.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+</pre></div>
+</div>
+<p>The model by McIntosh et al. takes an input video and convolves it
+in two stages and finally takes a dense linear filter to get a single
+time course for each cell.</p>
+<p>3d convolutions in PyTorch follow the convention of having</p>
+<blockquote>
+<div><ul class="simple">
+<li>input dimensions: batch, input channels, time, space x, space y</li>
+<li>output dimensions: batch, output channels, time, space x, space y</li>
+<li>weight dimensions: input channels, output channels, time, space x, space y</li>
+</ul>
+</div></blockquote>
+<p>For us, the batches are always 1 and for most models, the number of
+input and output channels are 1 as well. However, since this is an
+actual convolutional network, there will be more than one input and
+output channel for each layer.</p>
+<p>The first layer takes gray scale input and convolves it with 8 subunit
+filters, resulting in a <a href="#id1"><span class="problematic" id="id2">:py:`1, 8, time, space x, space y`</span></a> output.</p>
+<p>The second layer has 16 subunits, so it takes the 8 channels from the previous
+layer and creates output with 16 channels from it.</p>
+<p>So the computation that we want to do is the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># assuming we recieved some `the_input` variable</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">convolve_1</span><span class="p">(</span><span class="n">the_input</span><span class="p">)</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">relu</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">convolve_2</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">relu</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">linear_readout</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each of the convolution operations is not a stateless function,
+but a convolutional layer that keeps track of its weights and states.
+The <cite>relu</cite> (or some other activation function) can be found in the
+<a href="#id3"><span class="problematic" id="id4">:py:module:`torch.nn.function`</span></a> submodule.
+And the readout is a Linear layer that combines the channels and
+space together.</p>
+<p>To create a model, we define a class that inherits from <cite>convis.Layer</cite>.
+In its <cite>__init__</cite> function it has to create all the layers and parameters
+that it’s using and in its <cite>forward</cite> method, it just does exactly the
+computation we outlined in pseudo code before.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyMcIntoshModel</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filter_size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">random_init</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">filter_2_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyMcIntoshModel</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="n">MemoryConv</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="n">filter_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span><span class="n">c1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c1</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">random_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c1</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">filter_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">filter_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">filter_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">c2</span> <span class="o">=</span> <span class="n">MemoryConv</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="n">filter_2_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s1">&#39;c2&#39;</span><span class="p">,</span><span class="n">c2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c2</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">random_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c2</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">rand</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="n">filter_2_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">filter_2_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">filter_2_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readout</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="n">out_channels</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">the_input</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c1</span><span class="p">(</span><span class="n">the_input</span><span class="p">))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c2</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+        <span class="c1"># The readout should consider all channels and all locations</span>
+        <span class="c1"># so we need to reshape the Tensor such that the 4th dimension</span>
+        <span class="c1"># contains dimensions 1,3 and 4</span>
+        <span class="c1">#  - moving dimension 3 to 4:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span><span class="n">dim</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="c1">#  - moving dimension 1 to 4:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="n">dim</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">a</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">print</span> <span class="s1">&#39;Resetting weight&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">a</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">a</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span>
+</pre></div>
+</div>
+<p>Now that the model is defined, we can immediately use it and fit it to data.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">MyMcIntoshModel</span><span class="p">(</span><span class="n">filter_size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">()</span><span class="o">*</span><span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">chirp</span><span class="p">()</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">cuda</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">m</span><span class="o">.</span><span class="n">readout</span><span class="o">.</span><span class="n">weight</span><span class="p">])</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">inp</span><span class="p">[:,:,:,:</span><span class="mi">1</span><span class="p">,:</span><span class="mi">1</span><span class="p">],</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;response&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;target&#39;</span><span class="p">,</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>[1] McIntosh, L. T., Maheswaranathan, N., Nayebi, A., Ganguli, S., &amp; Baccus, S. A. (2016). Deep Learning Models of the Retinal Response to Natural Scenes. Advances in Neural Information Processing Systems 29 (NIPS), (Nips), 1–9.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="model_ln.html">Linear-Nonlinear Models</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="examples.html">Examples</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

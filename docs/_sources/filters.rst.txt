@@ -83,14 +83,4 @@ However, the temporal filter is also more simplified and might not be able to fi
     plt.ylim(-0.1,1.25)
     plt.legend()
 
-.. automodule:: convis.filters.simple
-   :members:
-
-
-Retina Layers
----------------
-
-.. automodule:: convis.filters.retina
-   :members:
-
 

@@ -5,7 +5,7 @@ This module provides sample kernels and inputs.
 
 """
 import numpy as np
-
+from .base import prepare_input
 ##############################################################################
 #
 #  Sample Kernels
@@ -114,7 +114,7 @@ class StimulusSize(object):
     """
         This class holds information about sample stimulus size.        
     """
-    def __init__(self,t=2000,x=20,y=20, pixel_per_degree=10, frames_per_second=1000.0):
+    def __init__(self,t=2000,x=20,y=20, pixel_per_degree=10, frames_per_second=1000.0, cuda=False, prepare=False):
         self.t = int(t)
         self.x = int(x)
         self.y = int(y)
@@ -126,9 +126,19 @@ class StimulusSize(object):
                 'pulse':pulse,
                 'chirp':chirp
             }
+        if cuda:
+            prepare = True
+        self._cuda = cuda
+        self._prepare = prepare
         self.__dict__.update(self._stimulus_functions)
     def __getattr__(self,k):
-        if k in self._stimulus_functions.keys():
-            return lambda *args, **kwargs: self._stimulus_functions[k](t=self.t,x=self.x,y=self.y,pixel_per_degree=self.pixel_per_degree,frames_per_second=self.frames_per_second,*args,**kwargs)
+        if self._prepare:
+            if k in self._stimulus_functions.keys():
+                return lambda *args, **kwargs: prepare_input(self._stimulus_functions[k](t=self.t,x=self.x,y=self.y,pixel_per_degree=self.pixel_per_degree,frames_per_second=self.frames_per_second,*args,**kwargs), cuda=self._cuda)
+        else:            
+            if k in self._stimulus_functions.keys():
+                return lambda *args, **kwargs: self._stimulus_functions[k](t=self.t,x=self.x,y=self.y,pixel_per_degree=self.pixel_per_degree,frames_per_second=self.frames_per_second,*args,**kwargs)
 
 default_stimulus_size = StimulusSize()
+default_stimulus_size_cuda = StimulusSize(cuda = True)
+cuda = StimulusSize(cuda = True)

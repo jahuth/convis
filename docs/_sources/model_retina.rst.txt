@@ -1,7 +1,7 @@
-.. _retina:
+.. _model_retina:
 
 Retina Model
-====================
+------------------------
 
 This module implements a spiking retina model in python and theano.
 
@@ -9,7 +9,7 @@ It is based on the VirutalRetina Simualtor [Wohrer 2008].
 
 
 General Overview
------------------
+~~~~~~~~~~~~~~~~
 
 The formulas on which the classes are based are:
 
@@ -28,25 +28,24 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 .. image:: _static/dot_test_3.png
 
 The Retina Model class and Configuration
-----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+%.. autoclass:: convis.retina.Retina
+%   :members:
 
-.. autoclass:: convis.retina.Retina
-   :members:
 
+%.. autoclass:: convis.retina.RetinaConfiguration
+%   :members:
 
-.. autoclass:: convis.retina.RetinaConfiguration
-   :members:
+%.. autofunction:: convis.retina.default_config
 
-.. autofunction:: convis.retina.default_config
-
-.. autofunction:: convis.retina.random_config
+%.. autofunction:: convis.retina.random_config
 
 
 Retina Filters
---------------
+~~~~~~~~~~~~~~~~
 
 
-.. automodule:: convis.filters.retina
-   :members:
+%.. automodule:: convis.filters.retina
+%   :members:

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <title>convis classes and modules &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -27,63 +27,29 @@
     <link rel="prev" title="Examples" href="examples.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="examples.html" title="Examples"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis classes and modules</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="examples.html">Examples</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <div class="section" id="module-convis">
-<span id="convis"></span><h1>convis<a class="headerlink" href="#module-convis" title="Permalink to this headline">¶</a></h1>
-</div>
+<span id="convis-classes-and-modules"></span><h1>convis classes and modules<a class="headerlink" href="#module-convis" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-convis.base">
-<span id="convis-base"></span><h1><cite>convis.base</cite><a class="headerlink" href="#module-convis.base" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="convis.base.DummyModel">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">DummyModel</code><a class="reference internal" href="_modules/convis/base.html#DummyModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.DummyModel" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="convis.base.DummyModel.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'run': &lt;function run&gt;, '__dict__': &lt;attribute '__dict__' of 'DummyModel' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'DummyModel' objects&gt;, '__doc__': None, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.DummyModel.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.DummyModel.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#DummyModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.DummyModel.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.DummyModel.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.DummyModel.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.DummyModel.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.DummyModel.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.DummyModel.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>chunk_size=20</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#DummyModel.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.DummyModel.run" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<span id="convis-base"></span><h2><cite>convis.base</cite><a class="headerlink" href="#module-convis.base" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="convis-base-classes">
+<h3>Convis base classes<a class="headerlink" href="#convis-base-classes" title="Permalink to this headline">¶</a></h3>
+<p>Convis extends PyTorch by adding some methods to <cite>torch.nn.Module</cite> and calling it a Layer.</p>
 <dl class="class">
 <dt id="convis.base.Layer">
 <em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Layer</code><a class="reference internal" href="_modules/convis/base.html#Layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer" title="Permalink to this definition">¶</a></dt>
@@ -111,30 +77,86 @@ corresponding device when calling <cite>.cuda()</cite> or <cite>.cpu()</cite>.</
 <p>In contrast to many methods of torch.Tensors, Layer methods are always
 in-place! Using <cite>.cuda()</cite> or <cite>.float()</cite> will return a reference to the 
 original model and not a copy.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference external" href="http://pytorch.org/docs/0.3.0/nn.html#torch.nn.Module" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-obj docutils literal"><span class="pre">torch.nn.Module</span></code></a></dt>
+<dd>torchs layer class</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>_use_cuda</strong></td>
+<td>(bool)</td>
+</tr>
+<tr class="row-even"><td><strong>set_optimizer</strong></td>
+<td>(_OptimizerSelector objet that allows tab completion to select an optimizer)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>cuda(device=None)</strong></td>
+<td>move the model to the gpu</td>
+</tr>
+<tr class="row-even"><td><strong>cpu()</strong></td>
+<td>move the model to the cpu</td>
+</tr>
+<tr class="row-odd"><td><strong>run(the_input, dt=None)</strong></td>
+<td>execute the model, using chunk sizes of <cite>dt</cite></td>
+</tr>
+<tr class="row-even"><td><strong>parse_config(conf)</strong></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>optimize(inp,outp,dt=None)</strong></td>
+<td>use the selected optimizer to fit the model to return outp to the input inp. Accepts a chunk length <cite>dt</cite></td>
+</tr>
+<tr class="row-even"><td><strong>register_state(name, value)</strong></td>
+<td>registers an attribute name to be a state variable</td>
+</tr>
+<tr class="row-odd"><td><strong>state()</strong></td>
+<td>returns the current state of the model (recursively for all submodules)</td>
+</tr>
+<tr class="row-even"><td><strong>set_state(d)</strong></td>
+<td>set all state parameters defined in dictionary <cite>d</cite> to the corresponding values.</td>
+</tr>
+<tr class="row-odd"><td><strong>push_state()</strong></td>
+<td>pushes the current state on a stack</td>
+</tr>
+<tr class="row-even"><td><strong>pop_state()</strong></td>
+<td>pops the last state from the stack and sets all state variables to the corresponding values.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
-<dt id="convis.base.Layer.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__call__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Layer.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Layer.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.Layer.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Layer.__setattr__">
-<code class="descname">__setattr__</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.__setattr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.__setattr__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Layer._apply">
-<code class="descname">_apply</code><span class="sig-paren">(</span><em>fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer._apply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer._apply" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="convis.base.Layer.clear_state">
+<code class="descname">clear_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.clear_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.clear_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>resets the state to default values</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Layer.cpu">
@@ -167,11 +189,6 @@ of the model when presented <cite>inp</cite> approximates <cite>outp</cite>.</p>
 <p>It is important to specify a chunk length <cite>dt</cite>, if the complete input does not fit into memory.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="convis.base.Layer.params">
-<code class="descname">params</code><a class="headerlink" href="#convis.base.Layer.params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
 <dt id="convis.base.Layer.parse_config">
 <code class="descname">parse_config</code><span class="sig-paren">(</span><em>config</em>, <em>prefix=''</em>, <em>key='retina_config_key'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.parse_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.parse_config" title="Permalink to this definition">¶</a></dt>
@@ -198,10 +215,17 @@ of the model when presented <cite>inp</cite> approximates <cite>outp</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.run_in_chunks">
-<code class="descname">run_in_chunks</code><span class="sig-paren">(</span><em>the_input</em>, <em>dt=100</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.run_in_chunks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.run_in_chunks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the model over the_input in chunks of length dt.</p>
-<p>TODO: the_input has to be 3d!</p>
+<dt id="convis.base.Layer.set_state">
+<code class="descname">set_state</code><span class="sig-paren">(</span><em>state_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.set_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.set_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>collects the state and returns an
+OrderedDict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.state">
+<code class="descname">state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>collects the state and returns an
+OrderedDict</p>
 </dd></dl>
 
 </dd></dl>
@@ -215,19 +239,6 @@ of the model when presented <cite>inp</cite> approximates <cite>outp</cite>.</p>
 <dl class="class">
 <dt id="convis.base.Output">
 <em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Output</code><span class="sig-paren">(</span><em>outs</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="convis.base.Output.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '__getitem__': &lt;function __getitem__&gt;, '__iter__': &lt;function __iter__&gt;, '__len__': &lt;function __len__&gt;, '__dict__': &lt;attribute '__dict__' of 'Output' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Output' objects&gt;, '__doc__': None, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.Output.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Output.__getitem__">
-<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.__getitem__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Output.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>outs</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>This object provides a container for output numpy arrays which are labeled with theano variables.</p>
 <p>The outputs can be queried either by sorted order (like a simple list),
 by the theano variable which represents this output, the name of this variable
@@ -236,29 +247,7 @@ To make this meaningfull, provide a name to your output variables.</p>
 <p>In the case of name collisions, the behavior of OrderedDict will use the last variable added.</p>
 <p>The full path names of all variables are also added to this objects __dict__,
 allowing for tab completion.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Output.__iter__">
-<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.__iter__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Output.__len__">
-<code class="descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.__len__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Output.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.Output.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Output.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.Output.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
+<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -270,137 +259,8 @@ and can run or optimize it in a separate thread.</p>
 <p><cite>input</cite> should be a <cite>convis.streams.Stream</cite> that contains input data
 <cite>output</cite> should be a <cite>convis.streams.Stream</cite> that accepts new data
 when using optimize, <cite>goal</cite> has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</p>
-<dl class="attribute">
-<dt id="convis.base.Runner.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', 'run': &lt;function run&gt;, 'thread': &lt;function thread&gt;, 'stop': &lt;function stop&gt;, '__doc__': '\n        Keeps track of the input and output of a model\n        and can run or optimize it in a separate thread.\n\n        `model` has to be a `convis.Layer`\n\n        `input` should be a `convis.streams.Stream` that contains input data\n        `output` should be a `convis.streams.Stream` that accepts new data\n        when using optimize, `goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)\n\n    ', 'start': &lt;function start&gt;, '__dict__': &lt;attribute '__dict__' of 'Runner' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Runner' objects&gt;, 'optimize': &lt;function optimize&gt;, '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base.Runner.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Runner.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>model=None</em>, <em>input=None</em>, <em>output=None</em>, <em>goal=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Runner.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base.Runner.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base.Runner.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base.Runner.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
+<p class="rubric">Methods</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Runner.optimize">
-<code class="descname">optimize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.optimize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Runner.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>length=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.run" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Runner.start">
-<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.start" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Runner.stop">
-<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.stop" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base.Runner.thread">
-<code class="descname">thread</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.thread" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.base._OptimizerSelection">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">_OptimizerSelection</code><span class="sig-paren">(</span><em>model</em>, <em>opt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelection" title="Permalink to this definition">¶</a></dt>
-<dd><p>A single optimizer option that can be called to set this optimizer for the model.
-The doc string of the original optimizer is available by calling <cite>help()</cite> on this object.</p>
-<dl class="method">
-<dt id="convis.base._OptimizerSelection.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelection.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelection.__call__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base._OptimizerSelection.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '__dict__': &lt;attribute '__dict__' of '_OptimizerSelection' objects&gt;, '__call__': &lt;function __call__&gt;, '__weakref__': &lt;attribute '__weakref__' of '_OptimizerSelection' objects&gt;, '__doc__': '\n        A single optimizer option that can be called to set this optimizer for the model.\n        The doc string of the original optimizer is available by calling `help()` on this object.\n    ', '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base._OptimizerSelection.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base._OptimizerSelection.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>model</em>, <em>opt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelection.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelection.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base._OptimizerSelection.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base._OptimizerSelection.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base._OptimizerSelection.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base._OptimizerSelection.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.base._OptimizerSelector">
-<em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">_OptimizerSelector</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enables tab completion to set optimizers for a model.
-Includes all Optimizers found in <cite>torch.nn.optim</cite> and
-<cite>convis.optimizer</cite>.</p>
-<p>If optimizers are added to torch during runtime,
-you can call <cite>._reload()</cite> to add all available options.</p>
-<dl class="method">
-<dt id="convis.base._OptimizerSelector.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>opt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector.__call__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base._OptimizerSelector.__dict__">
-<code class="descname">__dict__</code><em class="property"> = dict_proxy({'__module__': 'convis.base', '_reload': &lt;function _reload&gt;, '__dict__': &lt;attribute '__dict__' of '_OptimizerSelector' objects&gt;, '__call__': &lt;function __call__&gt;, '__weakref__': &lt;attribute '__weakref__' of '_OptimizerSelector' objects&gt;, '__doc__': '\n        Enables tab completion to set optimizers for a model.\n        Includes all Optimizers found in `torch.nn.optim` and\n        `convis.optimizer`.\n\n        If optimizers are added to torch during runtime,\n        you can call `._reload()` to add all available options.\n    ', '__init__': &lt;function __init__&gt;})</em><a class="headerlink" href="#convis.base._OptimizerSelector.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="convis.base._OptimizerSelector.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base._OptimizerSelector.__module__">
-<code class="descname">__module__</code><em class="property"> = 'convis.base'</em><a class="headerlink" href="#convis.base._OptimizerSelector.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="convis.base._OptimizerSelector.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#convis.base._OptimizerSelector.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="convis.base._OptimizerSelector._reload">
-<code class="descname">_reload</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#_OptimizerSelector._reload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base._OptimizerSelector._reload" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="convis.base.get_next">
-<code class="descclassname">convis.base.</code><code class="descname">get_next</code><span class="sig-paren">(</span><em>stream</em>, <em>l=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#get_next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.get_next" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="convis.base.len_parents">
-<code class="descclassname">convis.base.</code><code class="descname">len_parents</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#len_parents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.len_parents" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="function">
 <dt id="convis.base.prepare_input">
@@ -424,15 +284,507 @@ wrap it in a Variable and optionally move it to the GPU.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-convis.filters.simple">
-<span id="simple-convis-filters"></span><h1>Simple <cite>convis.filters</cite><a class="headerlink" href="#module-convis.filters.simple" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="module-convis.filters">
+<span id="simple-convis-filters"></span><h2>Simple <cite>convis.filters</cite><a class="headerlink" href="#module-convis.filters" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.filters.Conv3d">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv3d</code><span class="sig-paren">(</span><em>in_channels=1</em>, <em>out_channels=1</em>, <em>kernel_size=(1</em>, <em>1</em>, <em>1)</em>, <em>bias=True</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a convolution, but pads the input in time
+with previous input and in space by replicating
+the edge.</p>
+<p>Arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>in_channels</li>
+<li>out_channels</li>
+<li>kernel_size</li>
+<li>bias (bool)</li>
+</ul>
+</div></blockquote>
+<p>Additional PyTorch Conv3d keyword arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>padding (should not be used)</li>
+<li>stride</li>
+<li>dilation</li>
+<li>groups</li>
+</ul>
+</div></blockquote>
+<p>Additional convis Conv3d keyword arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>time_pad: False (enables padding in time)</li>
+<li>autopad: False (enables padding in space)</li>
+</ul>
+</div></blockquote>
+<p>To change the weight, use the method <cite>set_weight()</cite>
+which also accepts numpy arguments.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.Delay">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Delay</code><span class="sig-paren">(</span><em>delay=0</em>, <em>length=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Causes the input to be delayed by a set
+number of time steps.</p>
+<blockquote>
+<div>d = Delay(delay=100)
+d.run(some_input,10)</div></blockquote>
+<p>Optionally, a length of input can also be prependet
+similar to the TimePadding Layer.</p>
+<blockquote>
+<div>d = Delay(delay=100,length=10) # additionally preprends 10 timesteps of each previous chunk
+d.run(some_input,10)</div></blockquote>
+<p>When the size of the image is changed, the previous inputs
+do not match, so an Exception is raised.
+To avoid this, call <cite>.clear_state()</cite>. This method is recursive
+on all <cite>convis.Layers</cite>, so you only have to call it on the
+outermost <cite>Layer</cite>.
+If you want to store your history for one set of images,
+do some computation on other images and then return to
+the previous one, you can use <cite>.push_state()</cite> and <cite>.pop_state()</cite>.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.TimePadding">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">TimePadding</code><span class="sig-paren">(</span><em>length=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#TimePadding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.TimePadding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remembers references to previous time slices
+and prepends the input with <cite>length</cite> many
+time steps from previous calls.</p>
+<p>If the size of the image is changed without
+removing the state first, an Exception is
+raised.</p>
+<p>To avoid this, call <cite>.clear_state()</cite>. This method is recursive
+on all <cite>convis.Layers</cite>, so you only have to call it on the
+outermost <cite>Layer</cite>.
+If you want to store your history for one set of images,
+do some computation on other images and then return to
+the previous one, you can use <cite>.push_state()</cite> and <cite>.pop_state()</cite>.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.VariableDelay">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">VariableDelay</code><span class="sig-paren">(</span><em>delays=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#VariableDelay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.VariableDelay" title="Permalink to this definition">¶</a></dt>
+<dd><p>This Layer applies variable delays to each 
+pixel of the input.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">VariableDelay</span><span class="p">(</span><span class="n">delays</span> <span class="o">=</span> <span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At the moment, the delays do <em>not</em> provide a gradient.</p>
+<p>Possible future feature if requested:
+variable delay per pixel, channel and batch dimension.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<span class="target" id="module-convis.filters.simple"></span><dl class="class">
+<dt id="convis.filters.simple.SmoothConv">
+<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">SmoothConv</code><span class="sig-paren">(</span><em>n=3</em>, <em>tau=0.1</em>, <em>spatial_filter=(10</em>, <em>10)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#SmoothConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.SmoothConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>A convolution with temporally smoothed filters.
+It can cover a long temporal period, but is a lot more
+efficient than a convlution filter of the same length.</p>
+<p>Each spatial filter <cite>.g[n]</cite> is applied to a temporally filtered
+signal with increasing delays by convolving multiple recursive
+exponential filters.</p>
+<p>The length of the filter depends on the number of temporal
+components and the time constant used for the delays.</p>
+<p>Each exponential filter <cite>.e[n]</cite> can have an individual 
+time constant, giving variable spacing between the filters.</p>
+<p>By default, the time constants are set to not create a gradient,
+so that they are not fittable.</p>
+<p>To show each component, use <cite>get_all_components(some_input)</cite></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">SmoothConv</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">inp</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get_all_components</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-1.py">Source code</a>, <a class="reference external" href=".//docs-1.png">png</a>, <a class="reference external" href=".//docs-1.hires.png">hires.png</a>, <a class="reference external" href=".//docs-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-1.png" src="_images/docs-1.png" />
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a></dt>
+<dd>A full convolution layer</dd>
+</dl>
+</div>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-convis.utils">
+<span id="convis-utils"></span><h2><cite>convis.utils</cite><a class="headerlink" href="#module-convis.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="convis.utils.plot_5d_matshow">
+<code class="descclassname">convis.utils.</code><code class="descname">plot_5d_matshow</code><span class="sig-paren">(</span><em>w, border=True, dims=[(0, 1, 3), (2, 4)], border_val=0.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_5d_matshow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_5d_matshow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a 5d Tensor as a concatenation of spatial maps.</p>
+<p>The 5 dimensions have to be separated into two sets which
+will correspond to the two dimensions of the image.</p>
+<blockquote>
+<div>plot_5d_matshow(w, dims=[(0,3),(2,1,4)])</div></blockquote>
+<p>Other arguments and keyword arguments are passed
+to <cite>matplotlib.pylab.plot()</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.utils.plot_5d_time">
+<code class="descclassname">convis.utils.</code><code class="descname">plot_5d_time</code><span class="sig-paren">(</span><em>w</em>, <em>lsty='-'</em>, <em>mean=()</em>, <em>time=(2</em>, <em>)</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_5d_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_5d_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a line plot from a 5d tensor.</p>
+<p>Dimensions in argument <cite>mean</cite> will be combined.
+If <cite>mean</cite> is <cite>True</cite>, all 4 non-time dimensions will be 
+averaged.</p>
+<p>Other arguments and keyword arguments are passed
+to <cite>matplotlib.pylab.plot()</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-convis.streams">
+<span id="convis-streams"></span><h2><cite>convis.streams</cite><a class="headerlink" href="#module-convis.streams" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.streams.InrImageStreamer">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">InrImageStreamer</code><span class="sig-paren">(</span><em>filename</em>, <em>z=False</em>, <em>slice_at=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageStreamer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageStreamer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a large inr file and is an iterator over all images.</p>
+<p>By default, the z dimension is ignored. Setting <cite>z</cite> to True changes this, such that each image is 3d instead of 2d.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.SequenceStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">SequenceStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em>, <em>max_frames=5000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#SequenceStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.SequenceStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>3d Numpy array that represents a sequence of images</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.Stream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">Stream</code><span class="sig-paren">(</span><em>size=(50</em>, <em>50)</em>, <em>pixel_per_degree=10</em>, <em>t_zero=0.0</em>, <em>t=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#Stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.Stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stream Base Class</p>
+<p>Streams have to have methods to either <cite>get()</cite>
+or <cite>put</cite> a frame.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.TimedResampleStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">TimedResampleStream</code><span class="sig-paren">(</span><em>stream</em>, <em>t_zero=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#TimedResampleStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.TimedResampleStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>3d Numpy array that represents a sequence of images</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.TimedSequenceStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">TimedSequenceStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em>, <em>t_zero=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#TimedSequenceStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.TimedSequenceStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>3d Numpy array that represents a sequence of images</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-convis.tests">
+<span id="convis-tests"></span><h2><cite>convis.tests</cite><a class="headerlink" href="#module-convis.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="virtual-retina-simulator">
+<h2>Virtual Retina Simulator<a class="headerlink" href="#virtual-retina-simulator" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-convis.filters.retina">
+<span id="convis-filters-retina"></span><h2><cite>convis.filters.retina</cite><a class="headerlink" href="#module-convis.filters.retina" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.filters.retina.Bipolar">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">Bipolar</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#Bipolar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.Bipolar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Example Configuration:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="c1"># for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ;</span>
+                                               <span class="c1"># `ampInputCurrent` in virtual retina</span>
+    <span class="s1">&#39;bipolar-inert-leaks__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>             <span class="c1"># `gLeak` in virtual retina</span>
+    <span class="s1">&#39;adaptation-sigma__deg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>              <span class="c1"># `sigmaSurround` in virtual retina</span>
+    <span class="s1">&#39;adaptation-tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>              <span class="c1"># `tauSurround` in virtual retina</span>
+    <span class="s1">&#39;adaptation-feedback-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="c1"># `ampFeedback` in virtual retina</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">Retina</span></code></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>opl-amplification__Hz</strong></td>
+<td><ol class="first last arabic simple" start="50">
+<li>for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ; <cite>ampInputCurrent</cite> in virtual retina bipolar-inert-leaks__Hz: 50 <cite>gLeak</cite> in virtual retina adaptation-sigma__deg: 0.2 <cite>sigmaSurround</cite> in virtual retina adaptation-tau__sec: 0.005 <cite>tauSurround</cite> in virtual retina adaptation-feedback-amplification__Hz: 0 <cite>ampFeedback</cite> in virtual retina</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.FullConvolutionOPLFilter">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">FullConvolutionOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#FullConvolutionOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.FullConvolutionOPLFilter" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">Retina</span></code>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a></p>
+</div>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.GanglionInput">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">GanglionInput</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#GanglionInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.GanglionInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>The input current to the ganglion cells is filtered through a gain function.</p>
+<p><span class="math">\(I_{Gang}(x,y,t) = G * N(eT * V_{Bip})\)</span></p>
+<p><span class="math">\(N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)</p>
+<p><span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if <span class="math">\(V &gt; v^0_G\)</span>)</p>
+<blockquote>
+<div><p>Example configuration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><p class="first">‘name’: ‘Parvocellular Off’,
+‘enabled’: True,
+‘sign’: -1,
+‘transient-tau__sec’:0.02,
+‘transient-relative-weight’:0.7,
+‘bipolar-linear-threshold’:0,
+‘value-at-linear-threshold__Hz’:37,
+‘bipolar-amplification__Hz’:100,
+‘sigma-pool__deg’: 0.0,
+‘spiking-channel’: {</p>
+<blockquote>
+<div>…</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>‘name’: ‘Magnocellular On’,
+‘enabled’: False,
+‘sign’: 1,
+‘transient-tau__sec’:0.03,
+‘transient-relative-weight’:1.0,
+‘bipolar-linear-threshold’:0,
+‘value-at-linear-threshold__Hz’:80,
+‘bipolar-amplification__Hz’:400,
+‘sigma-pool__deg’: 0.1,
+‘spiking-channel’: {</p>
+<blockquote>
+<div>…</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+</div></blockquote>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.GanglionSpiking">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">GanglionSpiking</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#GanglionSpiking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.GanglionSpiking" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ganglion cells recieve the gain controlled input and produce spikes.</p>
+<p>When the cell is not refractory, <span class="math">\(V\)</span> moves as:</p>
+<p>$$ \dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + eta_v(t)$$</p>
+<p>Otherwise it is set to 0.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.HalfRecursiveOPLFilter">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">HalfRecursiveOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#HalfRecursiveOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default OPL implementation.</p>
+<p>Temporal filters are implemented recursively and
+spatial filters are convolution filters.</p>
+<p>The following virtual parameters set the corresponding
+tensors with convolution filters. Eg. they turn 
+the standard deviation of the gaussian into a
+numerical, circular gaussian.</p>
+<p>You can set them to a value via <cite>.set(value)</cite> which will
+trigger them to re-calculate the filters.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">Retina</span></code>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>sigma_center</strong></td>
+<td>(virtual parameter) Size of the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>tau_center</strong></td>
+<td>(virtual parameter) Time constant of the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>n_center</strong></td>
+<td>(virtual parameter) number of cascading exponential filters</td>
+</tr>
+<tr class="row-even"><td><strong>undershoot_tau_center</strong></td>
+<td>(virtual parameter) time constant of the high pass filter</td>
+</tr>
+<tr class="row-odd"><td><strong>undershoot_relative_weight_center</strong></td>
+<td>(virtual parameter) relative weight of the high pass filter</td>
+</tr>
+<tr class="row-even"><td><strong>sigma_surround</strong></td>
+<td>(virtual parameter) Size of the surround receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>tau_surround</strong></td>
+<td>(virtual parameter) Time constant of the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>relative_weight</strong></td>
+<td>(virtual parameter) relative weight between center and surround</td>
+</tr>
+<tr class="row-odd"><td><strong>center_G</strong></td>
+<td>(Conv3d) Spatial convolution filter for the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>center_E</strong></td>
+<td>(Recursive Filter) recursive temporal filter for the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>surround_G</strong></td>
+<td>(Conv3d) Spatial convolution filter for the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>surround_E</strong></td>
+<td>(Recursive Filter) recursive temporal filter for the surround receptive field</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.OPL">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">OPL</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#OPL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.OPL" title="Permalink to this definition">¶</a></dt>
+<dd><p>The OPL current is a filtered version of the luminance input with spatial and temporal kernels.</p>
+<p>$$I_{OLP}(x,y,t) = lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$</p>
+<p>with:</p>
+<p><span class="math">\(C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)\)</span></p>
+<p><span class="math">\(S(x,y,t) = G * E * C(x,y,t)\)</span></p>
+<p>In the case of leaky heat equation:</p>
+<p><span class="math">\(C(x,y,t) = T(wu,Tu) * K(sigma_C,Tau_C) * L (x,y,t)\)</span></p>
+<p><span class="math">\(S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)\)</span>
+p.275</p>
+<p>This Layer can use one of multiple implementations. <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>
+and <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a> both accept the same configuration attributes.
+Or <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a> which does not accept the
+parameters, but offers a single, non-separable convolution filter.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">Retina</span></code>, <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="92%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>opl_filter</strong></td>
+<td>(Layer) The OPL filter that is used. Either <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a> or <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.SeperatableOPLFilter">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">SeperatableOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#SeperatableOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.SeperatableOPLFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fullly convolutional OPL implementation.</p>
+<p>All filters are implemented as convolutions which
+makes this layer a lot slower than <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>.</p>
+<p>The following virtual parameters set the corresponding
+tensors with convolution filters. Eg. they turn 
+the standard deviation of the gaussian into a
+numerical, circular gaussian.</p>
+<p>You can set them to a value via <cite>.set(value)</cite> which will
+trigger them to re-calculate the filters.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">Retina</span></code>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>sigma_center</strong></td>
+<td>(virtual parameter) Size of the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>tau_center</strong></td>
+<td>(virtual parameter) Time constant of the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>n_center</strong></td>
+<td>(virtual parameter) number of cascading exponential filters</td>
+</tr>
+<tr class="row-even"><td><strong>undershoot_tau_center</strong></td>
+<td>(virtual parameter) time constant of the high pass filter</td>
+</tr>
+<tr class="row-odd"><td><strong>undershoot_relative_weight_center</strong></td>
+<td>(virtual parameter) relative weight of the high pass filter</td>
+</tr>
+<tr class="row-even"><td><strong>sigma_surround</strong></td>
+<td>(virtual parameter) Size of the surround receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>tau_surround</strong></td>
+<td>(virtual parameter) Time constant of the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>relative_weight</strong></td>
+<td>(virtual parameter) relative weight between center and surround</td>
+</tr>
+<tr class="row-odd"><td><strong>center_G</strong></td>
+<td>Spatial convolution filter for the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>center_E</strong></td>
+<td>recursive temporal filter for the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>surround_G</strong></td>
+<td>Spatial convolution filter for the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>surround_E</strong></td>
+<td>recursive temporal filter for the surround receptive field</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-convis.retina">
-<span id="virtual-retina-simulator"></span><h1>Virtual Retina Simulator<a class="headerlink" href="#module-convis.retina" title="Permalink to this headline">¶</a></h1>
+<span id="convis-retina"></span><h2><cite>convis.retina</cite><a class="headerlink" href="#module-convis.retina" title="Permalink to this headline">¶</a></h2>
 <p>This module implements a spiking retina model in python and theano.</p>
 <p>It is based on the VirutalRetina Simualtor [Wohrer 2008].</p>
 <div class="section" id="general-overview">
-<h2>General Overview<a class="headerlink" href="#general-overview" title="Permalink to this headline">¶</a></h2>
+<h3>General Overview<a class="headerlink" href="#general-overview" title="Permalink to this headline">¶</a></h3>
 <p>The formulas on which the classes are based are:</p>
 <p>$$C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)$$
 $$S(x,y,t) = G * E * C(x,y,t)$$ 
@@ -442,65 +794,199 @@ $$g_{A}(x,y,t) = G * E * Q(V{Bip})(x,y,t)`with $Q(V{Bip}) = g_{A}^{0} + lambda_{
 $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 <p>with <span class="math">\(N(V) = \\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)</p>
 <p>with <span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if  <span class="math">\(V &gt; v^0_G\)</span>)</p>
+<dl class="class">
+<dt id="convis.retina.Retina">
+<em class="property">class </em><code class="descclassname">convis.retina.</code><code class="descname">Retina</code><span class="sig-paren">(</span><em>opl=True</em>, <em>bipolar=True</em>, <em>gang=True</em>, <em>spikes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina.html#Retina"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina.Retina" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-obj docutils literal"><span class="pre">convis.base.Layer</span></code></a></dt>
+<dd>The Layer base class, providing chunking and optimization</dd>
+<dt><a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.retina.OPL</span></code></a></dt>
+<dd>The outer plexiform layer performs luminance to contrast conversion</dd>
+<dt><a class="reference internal" href="#convis.filters.retina.Bipolar" title="convis.filters.retina.Bipolar"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.retina.Bipolar</span></code></a></dt>
+<dd>provides contrast gain control</dd>
+<dt><a class="reference internal" href="#convis.filters.retina.GanglionInput" title="convis.filters.retina.GanglionInput"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.retina.GanglionInput</span></code></a></dt>
+<dd>provides a static non-linearity and a last spatial integration</dd>
+<dt><a class="reference internal" href="#convis.filters.retina.GanglionSpiking" title="convis.filters.retina.GanglionSpiking"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.retina.GanglionSpiking</span></code></a></dt>
+<dd>creates spikes from an input current</dd>
+</dl>
 </div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="63%" />
+<col width="37%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>opl</strong></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td><strong>bipolar</strong></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>gang_0_input</strong></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td><strong>gang_0_spikes</strong></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>gang_1_input</strong></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td><strong>gang_1_spikes</strong></td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="convis-retina-virtualretina">
+<h2><cite>convis.retina_virtualretina</cite><a class="headerlink" href="#convis-retina-virtualretina" title="Permalink to this headline">¶</a></h2>
+<p>This module provides compatibility and default configurations
+for the convis retina model and the VirtualRetina software
+package.</p>
+<span class="target" id="module-convis.retina_virtualretina"></span><p>This module is a compatibility layer between the Virtual Retina configurations and behaviour and the python implementation.</p>
+<dl class="class">
+<dt id="convis.retina_virtualretina.RetinaConfiguration">
+<em class="property">class </em><code class="descclassname">convis.retina_virtualretina.</code><code class="descname">RetinaConfiguration</code><span class="sig-paren">(</span><em>updates={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration" title="Permalink to this definition">¶</a></dt>
+<dd><p>A configuration object that writes an xml file for VirtualRetina.</p>
+<p>(When this is altered, silver.glue.RetinaConfiguration has to also be updated by hand)</p>
+<p>Does not currently care to parse an xml file, but can save/load in json instead.
+The defaults are equal to <cite>human.parvo.xml</cite>.</p>
+<p>Values can be changed either directly in the configuration dictionary, or with the <cite>set</cite> helperfunction:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">silver</span><span class="o">.</span><span class="n">glue</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
+<span class="n">config</span><span class="o">.</span><span class="n">retina_config</span><span class="p">[</span><span class="s1">&#39;retina&#39;</span><span class="p">][</span><span class="s1">&#39;input-luminosity-range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;basic-microsaccade-generator.enabled&#39;</span><span class="p">)</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ganglion-layers.*.spiking-channel.sigma-V&#39;</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># for all layers</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="convis.retina_virtualretina.RetinaConfiguration.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves values from the configuration.</p>
+<p>conf.set(“ganglion-layers.*.spiking-channel.sigma-V”,None) # gets the value for all layers
+conf.set(“ganglion-layers.0”,{}) # gets the first layer</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.retina_virtualretina.RetinaConfiguration.read_json">
+<code class="descname">read_json</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.read_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration.read_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a full retina config json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.retina_virtualretina.RetinaConfiguration.set">
+<code class="descname">set</code><span class="sig-paren">(</span><em>key</em>, <em>value</em>, <em>layer_filter=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>shortcuts for frequent configuration values</p>
+<p>Knows where to put:</p>
+<blockquote>
+<div>‘pixels-per-degree’, ‘size__deg’ (if x and y are equal), ‘uniform-density__inv-deg’
+all attributes of linear-version
+all attributes of undershoot</div></blockquote>
+<p>Understands dot notation:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conf</span> <span class="o">=</span> <span class="n">silver</span><span class="o">.</span><span class="n">glue</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.2.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.*.spiking-channel.sigma-V&quot;</span><span class="p">,</span><span class="mf">0.101</span><span class="p">)</span> <span class="c1"># changes the value for all layers</span>
+</pre></div>
+</div>
+<p>But whole sub-tree dicitonaries can be set as well (they replace, not update):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                                    <span class="s1">&#39;bipolar-inert-leaks__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                                    <span class="s1">&#39;adaptation-sigma__deg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+                                    <span class="s1">&#39;adaptation-tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>
+                                    <span class="s1">&#39;adaptation-feedback-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                                <span class="p">})</span>
+</pre></div>
+</div>
+<p>New dictionary keys are created automatically, new list elements can be created like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.=.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># copies all values from the last element</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.=1.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># copies all values from list element 1</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.+.enabled&quot;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># creates a new (empty) dictionary which is probably underspecified</span>
+
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ganglion-layers.+&quot;</span><span class="p">,{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Parvocellular On&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.02</span><span class="p">,</span>
+            <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="s1">&#39;bipolar-linear-threshold&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;value-at-linear-threshold__Hz&#39;</span><span class="p">:</span><span class="mi">37</span><span class="p">,</span>
+            <span class="s1">&#39;bipolar-amplification__Hz&#39;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>
+            <span class="s1">&#39;spiking-channel&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;g-leak__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                <span class="s1">&#39;sigma-V&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                <span class="s1">&#39;refr-mean__sec&#39;</span><span class="p">:</span> <span class="mf">0.003</span><span class="p">,</span>
+                <span class="s1">&#39;refr-stdev__sec&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s1">&#39;random-init&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s1">&#39;square-array&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;size-x__deg&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s1">&#39;size-y__deg&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s1">&#39;uniform-density__inv-deg&#39;</span><span class="p">:</span> <span class="mi">20</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">})</span> <span class="c1"># ganglion cell layer creates a new dicitonary</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.retina_virtualretina.RetinaConfiguration.write_json">
+<code class="descname">write_json</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration.write_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a retina config json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.retina_virtualretina.RetinaConfiguration.write_xml">
+<code class="descname">write_xml</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.write_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration.write_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a full retina config xml file.</p>
+<p>Attributes that are not understood by the original Virtual Retina are removed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.retina_virtualretina.deriche_filter_density_map">
+<code class="descclassname">convis.retina_virtualretina.</code><code class="descname">deriche_filter_density_map</code><span class="sig-paren">(</span><em>retina</em>, <em>sigma0=1.0</em>, <em>Nx=None</em>, <em>Ny=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#deriche_filter_density_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.deriche_filter_density_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a map of how strongly a point is to be blurred.</p>
+<p>Relevant config options of retina:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;log-polar-scheme&#39;</span> <span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;fovea-radius__deg&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;scaling-factor-outside-fovea__inv-deg&#39;</span><span class="p">:</span> <span class="mf">1.0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>or for a circular (constant) scheme:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;log-polar-scheme&#39;</span> <span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;fovea-radius__deg&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;scaling-factor-outside-fovea__inv-deg&#39;</span><span class="p">:</span> <span class="mf">1.0</span>
+<span class="p">}</span> 
+</pre></div>
+</div>
+<p>The output should be used with <cite>retina_base.deriche_coefficients</cite> to generate the coefficient maps for a Deriche filter.</p>
+</dd></dl>
+
+<span class="target" id="module-torch"></span></div>
 </div>
 
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">convis</a></li>
-<li><a class="reference internal" href="#module-convis.base"><cite>convis.base</cite></a></li>
-<li><a class="reference internal" href="#module-convis.filters.simple">Simple <cite>convis.filters</cite></a></li>
-<li><a class="reference internal" href="#module-convis.retina">Virtual Retina Simulator</a><ul>
-<li><a class="reference internal" href="#general-overview">General Overview</a></li>
-</ul>
-</li>
-</ul>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="examples.html">Examples</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="examples.html"
-                        title="previous chapter">Examples</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/docs.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="examples.html" title="Examples"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

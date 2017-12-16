@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Filters and Layers &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <title>Filters and Layers &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -24,34 +24,28 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="PyTorch Basics" href="pytorch_basics.html" />
+    <link rel="next" title="Extending Conv3d" href="filters_Conv3d.html" />
     <link rel="prev" title="Usage" href="usage.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pytorch_basics.html" title="PyTorch Basics"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="usage.html" title="Usage"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>Filters and Layers</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="usage.html">Usage</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="filters_Conv3d.html">Extending Conv3d</a>&#160;&#160;»
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <div class="section" id="filters-and-layers">
 <h1>Filters and Layers<a class="headerlink" href="#filters-and-layers" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="convolution-filters">
@@ -72,8 +66,40 @@ The time dimension has to be padded by another operation.</p>
 </div>
 <dl class="class">
 <dt id="convis.filters.Conv3d">
-<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv3d</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv3d</code><span class="sig-paren">(</span><em>in_channels=1</em>, <em>out_channels=1</em>, <em>kernel_size=(1</em>, <em>1</em>, <em>1)</em>, <em>bias=True</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a convolution, but pads the input in time
+with previous input and in space by replicating
+the edge.</p>
+<p>Arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>in_channels</li>
+<li>out_channels</li>
+<li>kernel_size</li>
+<li>bias (bool)</li>
+</ul>
+</div></blockquote>
+<p>Additional PyTorch Conv3d keyword arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>padding (should not be used)</li>
+<li>stride</li>
+<li>dilation</li>
+<li>groups</li>
+</ul>
+</div></blockquote>
+<p>Additional convis Conv3d keyword arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>time_pad: False (enables padding in time)</li>
+<li>autopad: False (enables padding in space)</li>
+</ul>
+</div></blockquote>
+<p>To change the weight, use the method <cite>set_weight()</cite>
+which also accepts numpy arguments.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
 
 <p>Spatial gaussian filters and temporal exponential filters can be generated with functions from the <cite>convis.numerical_filters</cite> submodule.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
@@ -143,172 +169,23 @@ However, the temporal filter is also more simplified and might not be able to fi
 <img alt="_images/filters-2_01.png" src="_images/filters-2_01.png" />
 <p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-2_01.png">png</a>, <a class="reference external" href=".//filters-2_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-2_01.pdf">pdf</a>)</span></p>
 </div>
-<span class="target" id="module-convis.filters.simple"></span></div>
-<div class="section" id="module-convis.filters.retina">
-<span id="retina-layers"></span><h2>Retina Layers<a class="headerlink" href="#module-convis.filters.retina" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="convis.filters.retina.Bipolar">
-<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">Bipolar</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#Bipolar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.Bipolar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example Configuration:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;contrast-gain-control&#39;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s1">&#39;opl-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="c1"># for linear OPL: ampOPL = relative_ampOPL / fatherRetina-&gt;input_luminosity_range ;</span>
-                                               <span class="c1"># `ampInputCurrent` in virtual retina</span>
-    <span class="s1">&#39;bipolar-inert-leaks__Hz&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>             <span class="c1"># `gLeak` in virtual retina</span>
-    <span class="s1">&#39;adaptation-sigma__deg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>              <span class="c1"># `sigmaSurround` in virtual retina</span>
-    <span class="s1">&#39;adaptation-tau__sec&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>              <span class="c1"># `tauSurround` in virtual retina</span>
-    <span class="s1">&#39;adaptation-feedback-amplification__Hz&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="c1"># `ampFeedback` in virtual retina</span>
-<span class="p">},</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.retina.GanglionInput">
-<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">GanglionInput</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#GanglionInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.GanglionInput" title="Permalink to this definition">¶</a></dt>
-<dd><p>The input current to the ganglion cells is filtered through a gain function.</p>
-<p><span class="math">\(I_{Gang}(x,y,t) = G * N(eT * V_{Bip})\)</span></p>
-<p><span class="math">\(N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)</p>
-<p><span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if <span class="math">\(V &gt; v^0_G\)</span>)</p>
-<blockquote>
-<div><p>Example configuration:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>{</dt>
-<dd><p class="first">‘name’: ‘Parvocellular Off’,
-‘enabled’: True,
-‘sign’: -1,
-‘transient-tau__sec’:0.02,
-‘transient-relative-weight’:0.7,
-‘bipolar-linear-threshold’:0,
-‘value-at-linear-threshold__Hz’:37,
-‘bipolar-amplification__Hz’:100,
-‘sigma-pool__deg’: 0.0,
-‘spiking-channel’: {</p>
-<blockquote>
-<div>…</div></blockquote>
-<p class="last">}</p>
-</dd>
-</dl>
-<p>},
-{</p>
-<blockquote>
-<div><p>‘name’: ‘Magnocellular On’,
-‘enabled’: False,
-‘sign’: 1,
-‘transient-tau__sec’:0.03,
-‘transient-relative-weight’:1.0,
-‘bipolar-linear-threshold’:0,
-‘value-at-linear-threshold__Hz’:80,
-‘bipolar-amplification__Hz’:400,
-‘sigma-pool__deg’: 0.1,
-‘spiking-channel’: {</p>
-<blockquote>
-<div>…</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>},</p>
-</div></blockquote>
-</div></blockquote>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.retina.GanglionSpiking">
-<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">GanglionSpiking</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#GanglionSpiking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.GanglionSpiking" title="Permalink to this definition">¶</a></dt>
-<dd><p>The ganglion cells recieve the gain controlled input and produce spikes.</p>
-<p>When the cell is not refractory, <span class="math">\(V\)</span> moves as:</p>
-<p>$$ \dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + eta_v(t)$$</p>
-<p>Otherwise it is set to 0.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="convis.filters.retina.OPL">
-<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">OPL</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/retina.html#OPL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.OPL" title="Permalink to this definition">¶</a></dt>
-<dd><p>The OPL current is a filtered version of the luminance input with spatial and temporal kernels.</p>
-<p>$$I_{OLP}(x,y,t) = lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$</p>
-<p>with:</p>
-<p><span class="math">\(C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)\)</span></p>
-<p><span class="math">\(S(x,y,t) = G * E * C(x,y,t)\)</span></p>
-<p>In the case of leaky heat equation:</p>
-<p><span class="math">\(C(x,y,t) = T(wu,Tu) * K(sigma_C,Tau_C) * L (x,y,t)\)</span></p>
-<p><span class="math">\(S(x,y,t) = K(sigma_S,Tau_S) * C(x,y,t)\)</span>
-p.275</p>
-<p>To keep all dimensions similar, a <em>fake kernel</em> has to be used on the center output that contains a single 1 but has the shape of the filters used on the surround, such that the surround can be subtracted from the center.</p>
-<p>The inputs of the function are:</p>
-<blockquote>
-<div><ul class="simple">
-<li><code class="xref py py-obj docutils literal"><span class="pre">L</span></code> (the luminance input),</li>
-<li><code class="xref py py-obj docutils literal"><span class="pre">E_n_C</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">TwuTu_C</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">G_C</span></code> (the center filters),</li>
-<li><code class="xref py py-obj docutils literal"><span class="pre">E_S</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">G_S</span></code> (the surround filters),</li>
-<li><code class="xref py py-obj docutils literal"><span class="pre">Reshape_C_S</span></code> (the fake filter),</li>
-<li><code class="xref py py-obj docutils literal"><span class="pre">lambda_OPL</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">w_OPL</span></code> (scaling and weight parameters)</li>
-</ul>
-</div></blockquote>
-</dd></dl>
-
 </div>
 </div>
 
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Filters and Layers</a><ul>
-<li><a class="reference internal" href="#convolution-filters">Convolution Filters</a></li>
-<li><a class="reference internal" href="#recursive-temporal-filters">Recursive Temporal Filters</a></li>
-<li><a class="reference internal" href="#module-convis.filters.retina">Retina Layers</a></li>
-</ul>
-</li>
-</ul>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="usage.html">Usage</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="filters_Conv3d.html">Extending Conv3d</a>&#160;&#160;»
+        </p>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="usage.html"
-                        title="previous chapter">Usage</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pytorch_basics.html"
-                        title="next chapter">PyTorch Basics</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/filters.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pytorch_basics.html" title="PyTorch Basics"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="usage.html" title="Usage"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

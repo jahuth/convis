@@ -1,0 +1,101 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Retina Model &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Linear-Nonlinear Models" href="model_ln.html" />
+    <link rel="prev" title="Models" href="model.html" /> 
+  </head>
+  <body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>Retina Model</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="model.html">Models</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="model_ln.html">Linear-Nonlinear Models</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="retina-model">
+<span id="model-retina"></span><h1>Retina Model<a class="headerlink" href="#retina-model" title="Permalink to this headline">¶</a></h1>
+<p>This module implements a spiking retina model in python and theano.</p>
+<p>It is based on the VirutalRetina Simualtor [Wohrer 2008].</p>
+<div class="section" id="general-overview">
+<h2>General Overview<a class="headerlink" href="#general-overview" title="Permalink to this headline">¶</a></h2>
+<p>The formulas on which the classes are based are:</p>
+<p>$$C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)$$
+$$S(x,y,t) = G * E * C(x,y,t)$$
+$$I_{OLP}(x,y,t) = lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$
+$$\frac{dV_{Bip}}{dt} (x,y,t) = I_{OLP}(x,y,t) - g_{A}(x,y,t)dV_{Bip}(x,y,t)$$
+$$g_{A}(x,y,t) = G * E * Q(V{Bip})(x,y,t)`with $Q(V{Bip}) = g_{A}^{0} + lambda_{A}V^2_{Bip}$$
+$$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
+<p>with <span class="math">\(N(V) = \\\\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}\)</span> (if <span class="math">\(V &lt; v^0_G\)</span>)</p>
+<p>with <span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if  <span class="math">\(V &gt; v^0_G\)</span>)</p>
+<img alt="_images/dot_test_3.png" src="_images/dot_test_3.png" />
+</div>
+<div class="section" id="the-retina-model-class-and-configuration">
+<h2>The Retina Model class and Configuration<a class="headerlink" href="#the-retina-model-class-and-configuration" title="Permalink to this headline">¶</a></h2>
+<p>%.. autoclass:: convis.retina.Retina
+%   :members:</p>
+<p>%.. autoclass:: convis.retina.RetinaConfiguration
+%   :members:</p>
+<p>%.. autofunction:: convis.retina.default_config</p>
+<p>%.. autofunction:: convis.retina.random_config</p>
+</div>
+<div class="section" id="retina-filters">
+<h2>Retina Filters<a class="headerlink" href="#retina-filters" title="Permalink to this headline">¶</a></h2>
+<p>%.. automodule:: convis.filters.retina
+%   :members:</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="model.html">Models</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="model_ln.html">Linear-Nonlinear Models</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

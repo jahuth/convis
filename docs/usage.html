@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Usage &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <title>Usage &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -28,36 +28,29 @@
     <link rel="prev" title="Installation" href="installation.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="filters.html" title="Filters and Layers"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="installation.html" title="Installation"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>Usage</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="installation.html">Installation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="filters.html">Filters and Layers</a>&#160;&#160;»
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <div class="section" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="running-a-model">
 <h2>Running a model<a class="headerlink" href="#running-a-model" title="Permalink to this headline">¶</a></h2>
-<p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
 <span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
 <span class="n">retina</span><span class="p">(</span><span class="n">some_short_input</span><span class="p">)</span>
 <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
@@ -73,12 +66,62 @@
 <h3>Using Runner objects<a class="headerlink" href="#using-runner-objects" title="Permalink to this headline">¶</a></h3>
 <p>Runner objects can execute a model on a fixed set of input and output streams.
 The execution can also happen in a separate thread:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span><span class="o">,</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">RandomStream</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span><span class="n">pixel_per_degree</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mf">100.2</span><span class="p">,</span><span class="n">mean</span><span class="o">=</span><span class="mf">128.0</span><span class="p">)</span>
+<span class="n">out1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">SequenceStream</span><span class="p">(</span><span class="n">sequence</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)),</span> <span class="n">max_frames</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="n">runner</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">retina</span><span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">inp</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="n">out1</span><span class="p">)</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># let thread run for 5 seconds or longer</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">out1</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="c1"># some time later</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="optimizing-a-model">
 <h2>Optimizing a Model<a class="headerlink" href="#optimizing-a-model" title="Permalink to this headline">¶</a></h2>
 <p>One way to optimize a model is by using the <cite>.set_optimizer</cite> attribute and the <cite>.optimize</cite> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> <span class="c1"># selects an optimizer with arguments</span>
+<span class="c1">#l.optimize(some_inp, desired_outp) # does the optimization with the selected optimizer</span>
+</pre></div>
+</div>
 <p>A full example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">l_goal</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="c1">#l.conv.set_weight(np.ones((5,5,5)),normalize=True)</span>
+<span class="c1">#l.set_optimizer.LBFGS()</span>
+<span class="c1">#l.cuda()</span>
+<span class="c1">#l_goal.cuda()</span>
+<span class="c1">#inp = 1.0*(np.random.randn(200,10,10))</span>
+<span class="c1">#inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()</span>
+<span class="c1">#outp = l_goal(inp[None,None,:,:,:])</span>
+<span class="c1">#plt.figure()</span>
+<span class="c1">#plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),&#39;--&#39;,color=&#39;red&#39;)</span>
+<span class="c1">#for i in range(50):</span>
+<span class="c1">#    l.optimize(inp[None,None,:,:,:],outp)</span>
+<span class="c1">#    if i%10 == 2:</span>
+<span class="c1">#        plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))</span>
+<span class="c1">#plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))</span>
+<span class="c1">#plt.colorbar()</span>
+<span class="c1">#plt.figure()</span>
+<span class="c1">#h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//usage-1.py">Source code</a>)</p>
 <p>When selecting an Optimizer, the full list of available Optimizers can be seen by tab-completion.</p>
 <p>Some interesting optimizers are:</p>
 <blockquote>
@@ -91,80 +134,73 @@ The execution can also happen in a separate thread:</p>
 <div class="section" id="using-an-optimizer-by-hand">
 <h3>Using an Optimizer by Hand<a class="headerlink" href="#using-an-optimizer-by-hand" title="Permalink to this headline">¶</a></h3>
 <p>The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling <cite>.step()</cite> (see also <a class="reference external" href="http://pytorch.org/docs/master/optim.html">http://pytorch.org/docs/master/optim.html</a> ).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">l_goal</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,:,:,:])</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="c1"># first the gradient buffer have to be set to 0</span>
+    <span class="c1">#optimizer.zero_grad()</span>
+    <span class="c1"># then the computation is done</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="c1"># and some loss measure is used to compare the output to the goal</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">outp</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="c1"># eg. mean square error</span>
+    <span class="c1"># applying the backward computation fills all gradient buffers with the corresponding gradients</span>
+    <span class="c1">#loss.backward(retain_graph=True)</span>
+    <span class="c1"># now that the gradients have the correct values, the optimizer can perform one optimization step</span>
+    <span class="c1">#optimizer.step()</span>
+</pre></div>
+</div>
 <p>Or using a closure function, which is necessary for advanced optimizers that need to re-evaluate the loss at different parameter values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">outp</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span>
+
+<span class="c1">#for i in range(50):</span>
+<span class="c1">#    optimizer.step(closure)</span>
+</pre></div>
+</div>
 <p>The <cite>.optimize</cite> method of <a href="#id1"><span class="problematic" id="id2">`</span></a>convis.Layer`s does exactly the same as the code above. It is also possible to supply it with alternate optimizers and loss functions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">opt2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="c1">#l.optimize(inp[None,None,:,:,:],outp, optimizer=opt2, loss_fn = lambda x,y: (x-y).abs().sum()) # using LBFGS (without calling .set_optimizer) and another loss function</span>
+</pre></div>
+</div>
 <p><cite>.set_optimizer.*()</cite> will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument.</p>
 </div>
 </div>
 </div>
 
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Usage</a><ul>
-<li><a class="reference internal" href="#running-a-model">Running a model</a><ul>
-<li><a class="reference internal" href="#switching-between-cpu-and-gpu-usage">Switching between CPU and GPU usage</a></li>
-<li><a class="reference internal" href="#using-runner-objects">Using Runner objects</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#optimizing-a-model">Optimizing a Model</a><ul>
-<li><a class="reference internal" href="#using-an-optimizer-by-hand">Using an Optimizer by Hand</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="installation.html">Installation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="filters.html">Filters and Layers</a>&#160;&#160;»
+        </p>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="previous chapter">Installation</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="filters.html"
-                        title="next chapter">Filters and Layers</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/usage.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="filters.html" title="Filters and Layers"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="installation.html" title="Installation"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.

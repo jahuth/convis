@@ -29,6 +29,29 @@ from .retina_virtualretina import RetinaConfiguration
 from .filters import retina as rf
 
 class Retina(Layer):
+    """
+
+
+    Attributes
+    ----------
+
+    opl
+    bipolar
+    gang_0_input
+    gang_0_spikes
+    gang_1_input
+    gang_1_spikes
+
+    See Also
+    --------
+
+    convis.base.Layer : The Layer base class, providing chunking and optimization
+    convis.filters.retina.OPL : The outer plexiform layer performs luminance to contrast conversion
+    convis.filters.retina.Bipolar : provides contrast gain control
+    convis.filters.retina.GanglionInput : provides a static non-linearity and a last spatial integration
+    convis.filters.retina.GanglionSpiking : creates spikes from an input current
+
+    """
     def __init__(self,opl=True,bipolar=True,gang=True,spikes=True):
         super(Retina,self).__init__()
         self.opl = rf.OPL()

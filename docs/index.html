@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to convis’s documentation! &#8212; convis 0.5.0.0 documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <title>Welcome to convis’s documentation! &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.0.0',
+        VERSION:     '0.5.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -27,27 +27,22 @@
     <link rel="next" title="Installation" href="installation.html" /> 
   </head>
   <body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="installation.html" title="Installation"
-             accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="#">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>Welcome to convis’s documentation!</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="installation.html">Installation</a>&#160;&#160;»
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <div class="section" id="welcome-to-convis-s-documentation">
 <h1>Welcome to convis’s documentation!<a class="headerlink" href="#welcome-to-convis-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Convis lets you build vision models using PyTorch.</p>
@@ -56,23 +51,16 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#running-a-model">Running a model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usage.html#switching-between-cpu-and-gpu-usage">Switching between CPU and GPU usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="usage.html#using-runner-objects">Using Runner objects</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#optimizing-a-model">Optimizing a Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usage.html#using-an-optimizer-by-hand">Using an Optimizer by Hand</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#running-a-model">Running a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#optimizing-a-model">Optimizing a Model</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="filters.html#convolution-filters">Convolution Filters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="filters.html#recursive-temporal-filters">Recursive Temporal Filters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="filters.html#module-convis.filters.retina">Retina Layers</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="filters_Conv3d.html">Extending Conv3d</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pytorch_basics.html#tensor-computing-with-torch-tensor">Tensor computing with <cite>torch.tensor</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pytorch_basics.html#automated-differentiation-with-torch-autograd">Automated differentiation with <cite>torch.autograd</cite></a></li>
@@ -85,10 +73,20 @@
 <li class="toctree-l2"><a class="reference internal" href="pytorch_basics.html#conv3d">Conv3d</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="retina.html">Retina Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="retina.html#general-overview">General Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="retina.html#the-retina-model-class-and-configuration">The Retina Model class and Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="retina.html#module-convis.filters.retina">Retina Filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_retina.html">Retina Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model_retina.html#general-overview">General Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_retina.html#the-retina-model-class-and-configuration">The Retina Model class and Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_retina.html#retina-filters">Retina Filters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model_ln.html">Linear-Nonlinear Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model_ln.html#usage">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model_McIntosh.html">A Convolutional Retina Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model_McIntosh.html#use-it">Use it</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_McIntosh.html#build-it-yourself">Build it yourself</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
@@ -96,11 +94,16 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs.html">convis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs.html#module-convis.base"><cite>convis.base</cite></a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs.html#module-convis.filters.simple">Simple <cite>convis.filters</cite></a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs.html#module-convis.retina">Virtual Retina Simulator</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="docs.html#general-overview">General Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs.html">convis classes and modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.base"><cite>convis.base</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.filters">Simple <cite>convis.filters</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.utils"><cite>convis.utils</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.streams"><cite>convis.streams</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.tests"><cite>convis.tests</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#virtual-retina-simulator">Virtual Retina Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.filters.retina"><cite>convis.filters.retina</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.retina"><cite>convis.retina</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#convis-retina-virtualretina"><cite>convis.retina_virtualretina</cite></a></li>
 </ul>
 </li>
 </ul>
@@ -116,58 +119,17 @@
 </div>
 
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Welcome to convis’s documentation!</a><ul>
-<li><a class="reference internal" href="#indices">Indices</a></li>
-</ul>
-</li>
-</ul>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="installation.html">Installation</a>&#160;&#160;»
+        </p>
 
-  <h4>Next topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="next chapter">Installation</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="installation.html" title="Installation"
-             >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">convis 0.5.0.0 documentation</a> &#187;</li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
