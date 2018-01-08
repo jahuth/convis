@@ -468,6 +468,7 @@ class Layer(torch.nn.Module):
             optimizer = self._optimizer
         def closure():
             self.pop_state()
+            self.push_state()
             optimizer.zero_grad()
             o = self(closure.inp)
             loss = closure.loss_fn(closure.outp,o)
@@ -521,9 +522,8 @@ class Layer(torch.nn.Module):
                     continue
                 new_sub_state_dict = OrderedDict()
                 for s_name,s in sub_state_dict.items():
-                    s_name_split = s_name.split('.')
-                    if s_name_split[0] == mod_name:
-                        new_sub_state_dict['.'.join(s_name_split[1:])] = s
+                    if s_name.startswith(mod_name+'.'):
+                        new_sub_state_dict[s_name[len(mod_name+'.'):]] = s
                 rec(mod, new_sub_state_dict)
         return rec(self, state_dict)
     def clear_state(self):
