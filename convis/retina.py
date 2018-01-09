@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 """
 
 This module implements a spiking retina model.
 
-It is based on VirutalRetina[1]_.
+It is based on VirutalRetina [1]_.
 
 
 General Overview
@@ -27,7 +28,7 @@ References
 
 .. [1] Wohrer, A., & Kornprobst, P. (2009).
     Virtual Retina: a biological retina model and simulator, with contrast gain control.
-    Journal of Computational Neuroscience, 26(2), 219–49. http://doi.org/10.1007/s10827-008-0108-4
+    Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4
 
 """
 from __future__ import print_function
@@ -62,7 +63,7 @@ class Retina(Layer):
 
     .. [1] Wohrer, A., & Kornprobst, P. (2009).
         Virtual Retina: a biological retina model and simulator, with contrast gain control.
-        Journal of Computational Neuroscience, 26(2), 219–49. http://doi.org/10.1007/s10827-008-0108-4
+        Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4
 
 
     See Also
