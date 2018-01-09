@@ -42,6 +42,7 @@ except:
     pass
 
 from .variables import Variable, State, Parameter, as_parameter, is_variable
+from copy import deepcopy
 
 TIME_DIMENSION = 2
 
@@ -308,7 +309,7 @@ class Layer(torch.nn.Module):
             self._state[name] = getattr(self,name)
         else:
             self._state[name] = val
-        self._default_state[name] = val
+        self._default_state[name] = deepcopy(val)
     def cuda(self, device=None):
         """
             Moves the model to the GPU (optionally with number `device`).
@@ -535,9 +536,12 @@ class Layer(torch.nn.Module):
             if hasattr(model,'_state'):
                 for s_name,s in model._state.items():
                     if hasattr(model,'_default_state'):
-                        setattr(model,s_name, model._default_state.get(s_name, None))
+                        old_val = model._state.get(s_name, None)
+                        setattr(model,s_name, deepcopy(model._default_state.get(s_name, None)))
                     else:
+                        old_val = model._state.get(s_name, None)
                         setattr(model,s_name, None)
+                    o[s_name] = (old_val,getattr(model, s_name, None))
             for mod_name,mod in list(model.named_modules()):
                 if mod is model:
                     continue
@@ -608,7 +612,10 @@ class Runner(object):
         self.closed = True
     def start(self):
         if self.closed:
-            import thread
+            try:
+                import thread
+            except ImportError:
+                import _thread as thread
             self.closed = False
             self.start_time = datetime.datetime.now()
             thread.start_new_thread(self.thread,tuple())
