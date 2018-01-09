@@ -4,6 +4,7 @@ from . import base
 from . import retina
 from . import models
 from . import samples
+from . import streams
 from . import variables
 from . import numerical_filters
 from . import utils
