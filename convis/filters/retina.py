@@ -73,7 +73,7 @@ class SeperatableOPLFilter(Layer):
         See Also
         --------
 
-        Retina
+        convis.retina.Retina
         OPL
         HalfRecursiveOPLFilter
         FullConvolutionOPLFilter
@@ -209,7 +209,7 @@ class HalfRecursiveOPLFilter(Layer):
         See Also
         --------
 
-        Retina
+        convis.retina.Retina
         OPL
         SeperatableOPLFilter
         FullConvolutionOPLFilter
@@ -285,7 +285,7 @@ class FullConvolutionOPLFilter(Layer):
         See Also
         --------
 
-        Retina
+        convis.retina.Retina
         OPL
         HalfRecursiveOPLFilter
         SeperatableOPLFilter
@@ -332,11 +332,11 @@ class OPL(Layer):
     opl_filter : Layer
         The OPL filter that is used.
         Either :py:class:`HalfRecursiveOPLFilter`, :py:class:`SeperatableOPLFilter` or :py:class:`FullConvolutionOPLFilter`.
-    
+
     See Also
     --------
 
-    Retina
+    convis.retina.Retina
     HalfRecursiveOPLFilter
     SeperatableOPLFilter
     FullConvolutionOPLFilter
@@ -381,7 +381,8 @@ class Bipolar(Layer):
     See Also
     --------
 
-    Retina
+    convis.retina.Retina
+
     
     """
     def __init__(self,**kwargs):
@@ -511,6 +512,34 @@ class GanglionInput(Layer):
                 }
             },
 
+    Examples
+    ---------
+
+    Setting the virtual Parameters::
+
+        >>> m = convis.filters.retina.GanglionInput()
+        >>> m.sigma_surround.set(0.1)
+
+    Attributes
+    ----------
+    i_0 : Parameter
+    v_0 : Parameter
+    lambda_G : Parameter
+    spatial_pooling : Conv3d
+        convolution Op for spatial pooling. Can be set to 
+        a gaussian with :meth:`sigma_surround.set()`
+    sigma_surround : VirtualParameter
+        sets spatial_pooling to be a gaussian of a certain standard deviation
+    transient
+        convolution Op for high pass filtering
+
+
+    See Also
+    --------
+
+    convis.retina.Retina
+    GanglionSpiking
+
     """
     def __init__(self,**kwargs):
         super(GanglionInput, self).__init__()
@@ -571,6 +600,27 @@ class GanglionSpiking(Layer):
     $$ \\\\dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + \eta_v(t)$$
 
     Otherwise it is set to 0.
+
+
+    Attributes
+    ----------
+
+    refr_mu : Parameter
+        The mean of the distribution of random refractory times (in seconds).
+    refr_sigma : Parameter
+        The standard deviation of the refractory time that is randomly drawn around `refr_mu`
+    noise_sigma : Parameter
+        Amount of noise added to the membrane potential.
+    g_L : Parameter
+        Leak current (in Hz or dimensionless firing rate).
+
+
+    See Also
+    --------
+
+    convis.retina.Retina
+    GanglionInput
+
     """
     def __init__(self,**kwargs):
         super(GanglionSpiking, self).__init__()

@@ -1,9 +1,18 @@
 Models
 ===========
 
+    >>> convis.models.<tab>
+                      L
+                      LN
+                      LNLN
+                      LNFDSNF
+                      McIntosh
+                      Retina
 
- * :ref:`The Retina Model <model_retina>`
- * :ref:`Linear-Nonlinear Models <model_ln>`
- * :ref:`CNN Model <model_McIntosh>`
+.. toctree::
+   :maxdepth: 1
 
-Each model can be used 
+   model_retina
+   model_ln
+   model_McIntosh
+

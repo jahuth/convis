@@ -232,7 +232,18 @@ class Layer(torch.nn.Module):
         ----------
 
         _use_cuda : bool
-        set_optimizer : _OptimizerSelector objet that allows tab completion to select an optimizer
+
+        .. py:attribute:: set_optimizer
+
+            :class:`magic object <convis.base._OptimizerSelector>` that allows 
+            tab completion to select an optimizer. (see :ref:`example <tab_completion_example>`)
+
+
+            The list of parameters as first argument can be omitted
+            and will be filled with all parameters of the model by
+            default. Other parameters are passed through to the optimizer.
+
+
 
         Methods
         -------
@@ -272,6 +283,7 @@ class Layer(torch.nn.Module):
             corresponding values.
 
 
+
         Examples
         --------
 
@@ -289,10 +301,32 @@ class Layer(torch.nn.Module):
         >>>        return F.relu(self.conv2(x))
 
 
+        .. _tab_completion_example:
+
+        Selecting an :class:`~torch.optim.Optimizer` and using it with :meth:`~convis.base.Layer.optimize`:
+
+        >>> m = convis.models.LN()
+        >>> m.set_optimizer.<then press tab>
+                            ASGD
+                            Adadelta
+                            Adagrad
+                            Adam
+                            ...
+        >>> m.set_optimizer.SGD(lr=0.01)
+        >>> m.optimize(input,output)
+
+        The list of parameters as first argument can be omitted
+        and will be filled with all parameters of the model by
+        default. Other parameters are passed through to the optimizer
+        eg. the learning rate :attr:`lr` in this example.
+
+
         See Also
         --------
 
         torch.nn.Module : torchs layer class
+
+
     """
     _state = OrderedDict()
     def __init__(self):
@@ -449,19 +483,19 @@ class Layer(torch.nn.Module):
     def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).sum(), dt=None, t=0):
         """
             Runs an Optimizer to fit the models parameters such that the output
-            of the model when presented `inp` approximates `outp`.
+            of the model when presented :attr:`inp` approximates :attr:`outp`.
 
-            To use this function, an Optimizer has to be selected::
+            To use this function, an :class:`torch.optim.Optimizer` has to be selected::
 
-                model.set_optimizer(torch.optim.SGD(lr=0.01))
-                model.optimize(x,y, dt=100)
+                >>> model.set_optimizer(torch.optim.SGD(model.parameters(),lr=0.01))
+                >>> model.optimize(x,y, dt=100)
 
             or::
 
-                model.set_optimizer.SGD(lr=0.01) # uses optimizers from torch.optim
-                model.optimize(x,y, dt=100)
+                >>> model.set_optimizer.SGD(lr=0.01) # uses optimizers from torch.optim
+                >>> model.optimize(x,y, dt=100)
 
-            It is important to specify a chunk length `dt`, if the complete input does not fit into memory.
+            It is important to specify a chunk length :attr:`dt`, if the complete input does not fit into memory.
 
         """
         if optimizer is None:
@@ -594,11 +628,11 @@ class Runner(object):
         Keeps track of the input and output of a model
         and can run or optimize it in a separate thread.
 
-        `model` has to be a `convis.Layer`
+        :attr:`model` has to be a :class:`convis.base.Layer`
 
-        `input` should be a `convis.streams.Stream` that contains input data
-        `output` should be a `convis.streams.Stream` that accepts new data
-        when using optimize, `goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)
+        :attr:`input` should be a :class:`convis.streams.Stream` that contains input data
+        :attr:`output` should be a :class:`convis.streams.Stream` that accepts new data
+        when using optimize, :attr:`goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)
 
     """
     def __init__(self, model=None, input=None, output=None, goal=None):
@@ -609,8 +643,14 @@ class Runner(object):
         self.chunk_size = 20
         self.closed = True
     def stop(self):
+        """
+
+        """
         self.closed = True
     def start(self):
+        """
+
+        """
         if self.closed:
             try:
                 import thread
@@ -628,6 +668,9 @@ class Runner(object):
                 time.sleep(0.5)
             time.sleep(0.1)
     def run(self, length = None, **kwargs):
+        """
+
+        """
         if length is not None:
             for t in xrange(0,length,self.chunk_size):
                 o = self.model.run(self.input, dt=self.chunk_size)
@@ -641,6 +684,9 @@ class Runner(object):
                 self.output.put(o.data.cpu().numpy()[0,0])
             return o
     def optimize(self):
+        """
+
+        """
         o = self.model.optimize(get_next(self.input), get_next(self.goal))
         if hasattr(o,'keys'):
             self.output.put(o[0].data.cpu().numpy()[0,0])

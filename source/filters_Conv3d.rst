@@ -3,7 +3,7 @@
 Extending Conv3d
 ------------------
 
-To make apparent how :py:module:`convis` and :py:module:`PyTorch` differ,
+To make apparent how :py:mod:`convis` and :py:mod:`PyTorch <torch>` differ,
 we will first implement a custom convolution layer that wraps the `PyTorch`
 3d convolution.
 
@@ -87,4 +87,4 @@ A full implementation can look something like this:
 
 
 Now this convolution layer already does most of the hard work of padding the input
-and remembering a state. A similar one is already implemented in convis under :py:module:`convis.filters.`.
+and remembering a state. A similar one is already implemented in convis under :py:mod:`convis.filters`.

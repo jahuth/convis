@@ -1,35 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-
-This module implements a spiking retina model.
-
-It is based on VirutalRetina [1]_.
-
-
-General Overview
------------------
-
-The formulas on which the classes are based are:
-
-$$C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)$$
-$$S(x,y,t) = G * E * C(x,y,t)$$ 
-$$I_{OLP}(x,y,t) = \lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$ 
-$$\\\\frac{dV_{Bip}}{dt} (x,y,t) = I_{OLP}(x,y,t) - g_{A}(x,y,t)dV_{Bip}(x,y,t)$$
-$$g_{A}(x,y,t) = G * E * Q(V{Bip})(x,y,t)`with $Q(V{Bip}) = g_{A}^{0} + \lambda_{A}V^2_{Bip}$$
-$$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$
-
-with :math:`N(V) = \\\\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0_G`)
-
-with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
-
-
-References
-----------
-
-.. [1] Wohrer, A., & Kornprobst, P. (2009).
-    Virtual Retina: a biological retina model and simulator, with contrast gain control.
-    Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4
-
+This module provides the retina model.
 """
 from __future__ import print_function
 from .base import Layer, Model,Output

@@ -1,76 +1,48 @@
-convis classes and modules
+Convis classes and modules
 ==================================
+
+
+.. contents:: Table of Contents
+   :depth: 2
+
+
+Further Submodules: 
+
+.. toctree::
+   :maxdepth: 2
+
+   docs_filters
+   docs_models
+   docs_streams
+   docs_retina
+   docs_tests
+
 
 .. automodule:: convis
    :members:
 
 
-`convis.base`
-----------------
+Base classes `convis.base`
+---------------------------
 
 .. automodule:: convis.base
    :members:
 
 
-Simple `convis.filters`
-------------------------
 
-.. automodule:: convis.filters
-   :members:
-
-.. automodule:: convis.filters.simple
-   :members:
-
-
-`convis.utils`
-------------------------
+Utilitary methods `convis.utils`
+----------------------------------
 
 .. automodule:: convis.utils
    :members:
 
-`convis.streams`
-------------------------
 
-.. automodule:: convis.streams
-   :members:
+Sample Data `convis.samples`
+------------------------------
 
-
-`convis.tests`
-------------------------
-
-.. automodule:: convis.tests
-   :members:
-
-
-Virtual Retina Simulator
--------------------------
-
-
-`convis.filters.retina`
-------------------------
-
-.. automodule:: convis.filters.retina
-   :members:
-
-
-`convis.retina`
-------------------------
-
-.. automodule:: convis.retina
-   :members:
-
-`convis.retina_virtualretina`
-------------------------
-
-This module provides compatibility and default configurations
-for the convis retina model and the VirtualRetina software 
-package.
-
-
-.. automodule:: convis.retina_virtualretina
+.. automodule:: convis.samples
    :members:
 
 
 
-.. py:module:: torch
 

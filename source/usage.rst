@@ -11,8 +11,8 @@ Running a model
     retina(some_short_input)
     retina.run(some_input,dt=100)
 
-Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling `Layer.run(input,dt=..)` with `dt` set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
-`.run` also accepts numpy arrays as input, which will be converted into PyTorch `Tensor`s and packaged as a `Variable`.
+Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling :meth:`Layer.run(input,dt=..) <convis.base.Layer.run>` with `dt` set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
+:meth:`~convis.base.Layer.run` also accepts numpy arrays as input, which will be converted into PyTorch `Tensor`s and packaged as a `Variable`.
 
 
 Switching between CPU and GPU usage
@@ -46,7 +46,7 @@ The execution can also happen in a separate thread:
 Optimizing a Model
 --------------------
 
-One way to optimize a model is by using the `.set_optimizer` attribute and the `.optimize` method:
+One way to optimize a model is by using the :meth:`~convis.base.Layer.set_optimizer` attribute and the :meth:`~convis.base.Layer.optimize` method:
 
 .. code-block:: python
 
@@ -134,7 +134,7 @@ Some interesting optimizers are:
 Using an Optimizer by Hand
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling `.step()` (see also http://pytorch.org/docs/master/optim.html ).
+The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling :meth:`~torch.optim.Optimizer.step()` (see also http://pytorch.org/docs/master/optim.html ).
 
 .. code-block:: python
 
@@ -190,4 +190,4 @@ The `.optimize` method of `convis.Layer`s does exactly the same as the code abov
     opt2 = torch.optim.LBFGS(l.parameters())
     #l.optimize(inp[None,None,:,:,:],outp, optimizer=opt2, loss_fn = lambda x,y: (x-y).abs().sum()) # using LBFGS (without calling .set_optimizer) and another loss function
 
-`.set_optimizer.*()` will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument. 
+:attr:`.set_optimizer.*() <convis.base.Layer.set_optimizer>` will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument. 

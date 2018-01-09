@@ -15,6 +15,7 @@ import torch
 from .base import Layer
 from .filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION, Delay, VariableDelay
 from . import variables
+from .retina import Retina
 
 class L(Layer):
     """

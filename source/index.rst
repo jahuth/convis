@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to convis's documentation!
-**********************************
+Welcome to the documentation of Convis
+***************************************
 
 Convis lets you build vision models using PyTorch.
 
@@ -15,7 +15,7 @@ Convis lets you build vision models using PyTorch.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    installation
    usage
@@ -23,9 +23,6 @@ Contents:
    filters_Conv3d
    pytorch_basics
    model
-   model_retina
-   model_ln
-   model_McIntosh
    examples
    docs
 
