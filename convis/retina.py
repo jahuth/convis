@@ -1,8 +1,8 @@
 """
 
-This module implements a spiking retina model in python and theano.
+This module implements a spiking retina model.
 
-It is based on the VirutalRetina Simualtor [Wohrer 2008].
+It is based on VirutalRetina[1]_.
 
 
 General Overview
@@ -22,6 +22,13 @@ with :math:`N(V) = \\\\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V < v^0
 with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 
 
+References
+----------
+
+.. [1] Wohrer, A., & Kornprobst, P. (2009).
+    Virtual Retina: a biological retina model and simulator, with contrast gain control.
+    Journal of Computational Neuroscience, 26(2), 219–49. http://doi.org/10.1007/s10827-008-0108-4
+
 """
 from __future__ import print_function
 from .base import Layer, Model,Output
@@ -30,17 +37,33 @@ from .filters import retina as rf
 
 class Retina(Layer):
     """
-
+    A retinal ganglion cell model comparable to VirtualRetina [1]_.
 
     Attributes
     ----------
 
-    opl
-    bipolar
-    gang_0_input
-    gang_0_spikes
-    gang_1_input
-    gang_1_spikes
+    opl : Layer (convis.filters.retina.OPL)
+    bipolar : Layer (convis.filters.retina.Bipolar)
+    gang_0_input : Layer (convis.filters.retina.GanglionInput)
+    gang_0_spikes : Layer (convis.filters.retina.GanglionSpiking)
+    gang_1_input : Layer (convis.filters.retina.GanglionInput)
+    gang_1_spikes : Layer (convis.filters.retina.GanglionSpiking)
+    
+    _timing : list of tuples
+        timing information of the last run (last chunk)
+        Each entry is a tuple of (function that was executed, 
+        number of seconds it took to execute)
+    keep_timing_info : bool
+        whether to store all timing information in a list
+    timing_info : list
+        stores timing information of all runs if
+        `keep_timing_info` is True.
+
+
+    .. [1] Wohrer, A., & Kornprobst, P. (2009).
+        Virtual Retina: a biological retina model and simulator, with contrast gain control.
+        Journal of Computational Neuroscience, 26(2), 219–49. http://doi.org/10.1007/s10827-008-0108-4
+
 
     See Also
     --------
@@ -52,6 +75,8 @@ class Retina(Layer):
     convis.filters.retina.GanglionSpiking : creates spikes from an input current
 
     """
+    keep_timing_info = False
+    timing_info = []
     def __init__(self,opl=True,bipolar=True,gang=True,spikes=True):
         super(Retina,self).__init__()
         self.opl = rf.OPL()
@@ -107,8 +132,11 @@ class Retina(Layer):
         self.gang_1_input.parse_config(config,prefix='ganglion-layers.1.',key=key)
         self.gang_1_spikes.parse_config(config,prefix='ganglion-layers.1.spiking-channel.',key=key)
     def forward(self,inp):
+        self._timing = []
+        import datetime
         io_buffers = {'I1':inp}
         for b_out,f,b_in in self.commands:
+            start_time = datetime.datetime.now()
             if f =='copy':
                 for oi,oo in enumerate(b_out):
                     io_buffers[oo] = io_buffers[b_in[0]]
@@ -119,4 +147,7 @@ class Retina(Layer):
                     o = o[0] # we can only use the first output
                 for oi,oo in enumerate(b_out):
                     io_buffers[oo] = o
+            self._timing.append((f,(datetime.datetime.now()-start_time).total_seconds()))
+        if self.keep_timing_info:
+            self.timing_info.append(self._timing)
         return Output([io_buffers['I1'],io_buffers['I2']],keys=['ganglion_spikes_ON','ganglion_spikes_OFF'])

@@ -21,10 +21,21 @@ def plot_5d_matshow(w,border=True, dims=[(0,1,3),(2,4)], border_val = 0.0, **kwa
 
         Other arguments and keyword arguments are passed
         to `matplotlib.pylab.plot()`
+
+        `border_val` can be a float value or 'max', 'min' or 'mean',
+        in which case the corresponding value will be taken from w.
     """
     assert len(dims) == 2, "A 2d plot can only show two dimensions."
     w = _to_numpy(w)
+    if len(w.shape) == 3:
+        w = w[None,None]
     if border:
+        if border_val is 'max':
+            border_val = np.max(w)
+        if border_val is 'min':
+            border_val = np.min(w)
+        if border_val is 'mean':
+            border_val = np.mean(w)
         w_ = border_val*np.ones((w.shape[0],w.shape[1],w.shape[2],w.shape[3]+1,w.shape[4]+1))
         w_[:,:,:,:-1,:-1] = w
         w = w_

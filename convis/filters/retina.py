@@ -113,7 +113,8 @@ class SeperatableOPLFilter(Layer):
         self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
         self.sigma_surround.set(0.05)
         self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0))
-        self.surround_E.bias.data[0] = 0.0
+        if hasattr(self.surround_E,'bias') and self.surround_E.bias is not None:
+            self.surround_E.bias.data[0] = 0.0
         self.surround_E.weight.data[0,0,2,0,0] = 1.0
         self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,adjust_padding=False,resolution=variables.default_resolution)
         self.input_state = State(torch.zeros((1,1,1,1,1)))
@@ -406,7 +407,7 @@ class Bipolar(Layer):
         self.a_0 = Variable(1.0)
         self.a_1 = -(-self.steps/self.tau).exp()
         self.b_0 =  1.0 - self.a_1
-        self.conv2d = Conv2d(1,1,(9,9),padding=(4,4))
+        self.conv2d = Conv2d(1,1,(9,9),autopad=True)
         self.conv2d.gaussian(0.1)
         #self.conv2d.set_weight(1.0)
     def init_states(self,input_shapes):
@@ -443,7 +444,15 @@ class Bipolar(Layer):
         for i,input_image in enumerate(x.split(1,dim=2)):
             total_conductance = self.g_leak + preceding_inhibition
             attenuation_map = (-self.steps*total_conductance).exp()
-            E_infinity = (self.input_amp * input_image[0,0,0,:,:] + self.inputNernst_inhibition * preceding_inhibition)/total_conductance
+            try:
+                E_infinity = (self.input_amp * input_image[0,0,0,:,:] + self.inputNernst_inhibition * preceding_inhibition)/total_conductance
+            except:
+                print((self.input_amp.size(),
+                       input_image[0,0,0,:,:].size(),
+                       self.inputNernst_inhibition,
+                       preceding_inhibition.size(),
+                       total_conductance.size()))
+                raise
             V_bip = ((preceding_V_bip - E_infinity) * attenuation_map) + E_infinity # V_bip converges to E_infinity
             
             inhibition = (self.lambda_amp*(preceding_V_bip.unsqueeze(0).unsqueeze(0))**2.0 * self.b_0 

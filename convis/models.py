@@ -6,6 +6,7 @@ These models are ready to run.
 
 """
 
+from __future__ import print_function
 import numpy as np
 import uuid
 from torch import nn
@@ -24,7 +25,7 @@ class L(Layer):
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
         super(L, self).__init__()
-        self.conv = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True)
+        self.conv = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
@@ -55,12 +56,27 @@ class LN(Layer):
         A linear-nonlinear model with a convolution filter.
 
         Pads input automatically to produce output of the same size as the input.
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
     """
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
-        self.nonlinearity = lambda x: x.clamp(min=0.0)
+        self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
         super(LN, self).__init__()
-        self.conv = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True)
+        in_channels = 1
+        out_channels = 1
+        if len(kernel_dim) == 5:
+            in_channels = kernel_dim[1]
+            out_channels = kernel_dim[0]
+            kernel_dim = kernel_dim[2:]
+        self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
@@ -76,12 +92,12 @@ class LNLN(Layer):
     """
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
-        self.nonlinearity = lambda x: x.clamp(min=0.0)
+        self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
         super(LNLN, self).__init__()
-        self.conv1 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True)
+        self.conv1 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv1.bias.data[0] = 0.0
-        self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True)
+        self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv2.bias.data[0] = 0.0
     def forward(self, x):
@@ -178,7 +194,7 @@ class McIntosh(Layer):
         #  - moving dimension 1 to 4:
         a = torch.cat(a.split(1,dim=1),dim=4)
         if self.readout.weight.size()[-1] != a.size()[-1]:
-            print 'Resetting weight'
+            print('Resetting weight')
             if self._use_cuda:
                 self.readout.weight = torch.nn.Parameter(torch.ones((self.readout.weight.size()[0],a.size()[-1])))
                 self.readout.cuda()

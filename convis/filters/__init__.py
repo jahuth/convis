@@ -38,7 +38,7 @@ class TimePadding(Layer):
     def forward(self, x):
         if len(self.saved_inputs) > 0:
             if x.size()[-2:] != self.saved_inputs[-1].size()[-2:]:
-                raise Exception('input size does not match state size! Call `.clear_state()` on your model first!')
+                raise Exception('input size '+str(x.size()[-2:])+' does not match state size ('+str(self.saved_inputs[-1].size()[-2:])+')! Call `.clear_state()` on your model first!')
         while self.available_length < self.length:
             self.saved_inputs.append(x)
         if self._use_cuda:
@@ -189,16 +189,55 @@ class Conv3d(torch.nn.Conv3d):
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
         self.time_pad = TimePadding(self.weight.size()[TIME_DIMENSION])
-    def set_weight(self,w,normalize=False):
+    def set_weight(self,w,normalize=False,preserve_channels=False):
+        """
+            Sets a new weight for the convolution.
+
+            Parameters
+            ----------
+            w: numpy array or PyTorch Tensor
+                The new kernel `w` should have 1,2,3 or 5 dimensions.
+                    1 dimensions: temporal kernel
+                    2 dimensions: spatial kernel
+                    3 dimensions: spatio-temporal kernel (time,x,y)
+                    5 dimensions: spatio-temporal kernels for multiple channels
+                        (out_channels, in_channels, time, x, y)
+                If the new kernel has 1, 2 or 3 dimensions and 
+                `preserve_channels` is `True`, the input and output 
+                channels will be preserved and the same kernel
+                will be applied to all channel combinations.
+                (ie. each output channel recieves the sum of all
+                input channels).
+                This makes sense if the kernel is further optimized,
+                otherwise, the same effect can be achieved with a 
+                single input and output channel more effectively.
+
+            normalize: bool (default: False)
+                Whether or not the sum of the kernel values
+                should be normalized to 1, such that the
+                sum over all input values and all output 
+                values is the approximately same.
+
+            preserve_channels: bool (default: False)
+                Whether or not to copy smaller kernels
+                to all input-output channel combinations.
+
+        """
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape) * w
         else:
-            if len(w.shape) == 1:
-                w = w[None,None,:,None,None]
-            if len(w.shape) == 2:
-                w = w[None,None,None,:,:]
-            if len(w.shape) == 3:
-                w = w[None,None,:,:,:]
+            if len(w.shape) == 5:
+                self.out_channels = w.shape[0]
+                self.in_channels = w.shape[1]
+            else:
+                if len(w.shape) == 1:
+                    w = w[None,None,:,None,None]
+                elif len(w.shape) == 2:
+                    w = w[None,None,None,:,:]
+                elif len(w.shape) == 3:
+                    w = w[None,None,:,:,:]
+                if preserve_channels is True:
+                    w = w * np.ones((self.out_channels, self.in_channels, 1, 1, 1))
             self.weight.data = torch.Tensor(w)
             self.kernel_size = self.weight.data.shape[2:]
         if normalize:
@@ -253,6 +292,10 @@ class Conv3d(torch.nn.Conv3d):
 
 class Conv2d(nn.Conv2d):
     def __init__(self,*args,**kwargs):
+        self.autopad = kwargs.get('autopad',False)
+        self.autopad_mode = 'replicate'
+        if 'autopad' in kwargs.keys():
+            del kwargs['autopad']
         super(Conv2d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
@@ -265,24 +308,43 @@ class Conv2d(nn.Conv2d):
                 self.weight.data = torch.Tensor(w)
             else:
                 if len(w.shape) == 4:
+                    self.out_channels = w.shape[0]
+                    self.in_channels = w.shape[1]
                     w_h = w.shape[2]
                     w_w = w.shape[3]
-                    self.weight.data[0,0,:w_h,:w_w] = torch.Tensor(w[0,0])
+                    self.weight.data = torch.Tensor(w)
                 else:
                     w_h = w.shape[0]
                     w_w = w.shape[1]
-                    self.weight.data[0,0,:w_h,:w_w] = torch.Tensor(w)
+                    self.weight.data = torch.Tensor(w)[None,None]
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
+    @property
+    def kernel_padding(self):
+        k = np.array(self.weight.data.shape[-2:])
+        return (int(math.floor((k[1])/2.0))-1,
+                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
+                int(math.floor((k[0])/2.0))-1,
+                int(math.ceil(k[0]))-int(math.floor((k[0])/2.0)))
+    def forward(self,x):
+        if self.autopad:
+            x = torch.nn.functional.pad(x,self.kernel_padding, self.autopad_mode)
+        return super(Conv2d, self).forward(x)
     def gaussian(self,sig):
         self.set_weight(nf.gauss_filter_2d(sig,sig)[None,None,:,:],normalize=False)
         
 class Conv1d(nn.Conv1d):
     def __init__(self,*args,**kwargs):
+        self.do_time_pad = kwargs.get('time_pad',False)
+        if 'time_pad' in kwargs.keys():
+            del kwargs['time_pad']
         super(Conv1d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
+    @property
+    def filter_length(self):
+        return self.weight.data.shape[0]
     def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape) * w
@@ -290,5 +352,10 @@ class Conv1d(nn.Conv1d):
             self.weight.data = torch.Tensor(w)
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
+    def forward(self,x):
+        if self.do_time_pad:
+            self.time_pad.length = self.filter_length
+            x = self.time_pad(x)
+        return super(Conv3d, self).forward(x)
     def exponential(self,*args,**kwargs):
         self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)

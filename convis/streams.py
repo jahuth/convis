@@ -3,6 +3,7 @@
 
 """
 
+from __future__ import print_function
 import numpy as np
 import glob,litus
 import datetime
@@ -456,7 +457,10 @@ class StreamVisualizer():
         self.last_batch_time = None
         #self.recieve_thread = thread.start_new_thread(self.recieve,tuple())
     def mainloop(self):
-        import Tkinter as tk
+        try:
+            import Tkinter as tk
+        except ImportError:
+            import tkinter as tk
         from PIL import Image, ImageTk
         from ttk import Frame, Button, Style
         import time
@@ -579,7 +583,10 @@ class StreamVisualizer():
             pass
         return s
 def _create_mainloop():
-    import Tkinter as tk
+    try:
+        import Tkinter as tk
+    except ImportError:
+        import tkinter as tk
     global _main_root
     _main_root = tk.Tk()
     _main_root.title('Hidden Display')
@@ -589,7 +596,11 @@ def _create_mainloop():
     _main_root.mainloop()    
 
 def run_visualizer():
-    import thread, time
+    try:
+        import thread
+    except ImportError:
+        import _thread as thread
+    import time
     global _main_root
     if _main_root is None:
         thread.start_new_thread(_create_mainloop,tuple())
@@ -635,7 +646,7 @@ try:
                                 dtype='f')
         def put(self,s):
             with h5py.File(self.filename, "r+") as f:
-                print set(f.keys())
+                print(set(f.keys()))
                 if not self.data_set_name in set(f.keys()):
                     self.dset = f.create_dataset(self.data_set_name, 
                                 (0,s.shape[1],s.shape[2]),
