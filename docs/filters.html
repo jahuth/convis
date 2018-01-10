@@ -99,6 +99,55 @@ the edge.</p>
 which also accepts numpy arguments.</p>
 <p class="rubric">Attributes</p>
 <p class="rubric">Methods</p>
+<dl class="method">
+<dt id="convis.filters.Conv3d.set_weight">
+<code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>preserve_channels=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.set_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a new weight for the convolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>w: numpy array or PyTorch Tensor</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>The new kernel <cite>w</cite> should have 1,2,3 or 5 dimensions.</dt>
+<dd><p class="first">1 dimensions: temporal kernel
+2 dimensions: spatial kernel
+3 dimensions: spatio-temporal kernel (time,x,y)
+5 dimensions: spatio-temporal kernels for multiple channels</p>
+<blockquote class="last">
+<div><p>(out_channels, in_channels, time, x, y)</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>If the new kernel has 1, 2 or 3 dimensions and 
+<cite>preserve_channels</cite> is <cite>True</cite>, the input and output 
+channels will be preserved and the same kernel
+will be applied to all channel combinations.
+(ie. each output channel recieves the sum of all
+input channels).
+This makes sense if the kernel is further optimized,
+otherwise, the same effect can be achieved with a 
+single input and output channel more effectively.</p>
+</div></blockquote>
+<p><strong>normalize: bool (default: False)</strong></p>
+<blockquote>
+<div><p>Whether or not the sum of the kernel values
+should be normalized to 1, such that the
+sum over all input values and all output 
+values is the approximately same.</p>
+</div></blockquote>
+<p><strong>preserve_channels: bool (default: False)</strong></p>
+<blockquote class="last">
+<div><p>Whether or not to copy smaller kernels
+to all input-output channel combinations.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <p>Spatial gaussian filters and temporal exponential filters can be generated with functions from the <cite>convis.numerical_filters</cite> submodule.</p>
@@ -188,7 +237,7 @@ However, the temporal filter is also more simplified and might not be able to fi
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

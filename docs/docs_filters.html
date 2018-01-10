@@ -1,0 +1,263 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Filters convis.filters &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Models convis.models" href="docs_models.html" />
+    <link rel="prev" title="Convis classes and modules" href="docs.html" /> 
+  </head>
+  <body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>Filters convis.filters</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="docs.html">Convis classes and modules</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="docs_models.html">Models <cite>convis.models</cite></a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="filters-convis-filters">
+<h1>Filters <cite>convis.filters</cite><a class="headerlink" href="#filters-convis-filters" title="Permalink to this headline">¶</a></h1>
+<p>Filters are basic Layers that have only one specific function, eg. a convolution.
+They can be combined into Models.</p>
+<span class="target" id="module-convis.filters"></span><dl class="class">
+<dt id="convis.filters.TimePadding">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">TimePadding</code><span class="sig-paren">(</span><em>length=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#TimePadding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.TimePadding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remembers references to previous time slices
+and prepends the input with <cite>length</cite> many
+time steps from previous calls.</p>
+<p>If the size of the image is changed without
+removing the state first, an Exception is
+raised.</p>
+<p>To avoid this, call <cite>.clear_state()</cite>. This method is recursive
+on all <cite>convis.Layers</cite>, so you only have to call it on the
+outermost <cite>Layer</cite>.
+If you want to store your history for one set of images,
+do some computation on other images and then return to
+the previous one, you can use <cite>.push_state()</cite> and <cite>.pop_state()</cite>.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.Delay">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Delay</code><span class="sig-paren">(</span><em>delay=0</em>, <em>length=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Causes the input to be delayed by a set
+number of time steps.</p>
+<blockquote>
+<div>d = Delay(delay=100)
+d.run(some_input,10)</div></blockquote>
+<p>Optionally, a length of input can also be prependet
+similar to the TimePadding Layer.</p>
+<blockquote>
+<div>d = Delay(delay=100,length=10) # additionally preprends 10 timesteps of each previous chunk
+d.run(some_input,10)</div></blockquote>
+<p>When the size of the image is changed, the previous inputs
+do not match, so an Exception is raised.
+To avoid this, call <cite>.clear_state()</cite>. This method is recursive
+on all <cite>convis.Layers</cite>, so you only have to call it on the
+outermost <cite>Layer</cite>.
+If you want to store your history for one set of images,
+do some computation on other images and then return to
+the previous one, you can use <cite>.push_state()</cite> and <cite>.pop_state()</cite>.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.VariableDelay">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">VariableDelay</code><span class="sig-paren">(</span><em>delays=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#VariableDelay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.VariableDelay" title="Permalink to this definition">¶</a></dt>
+<dd><p>This Layer applies variable delays to each 
+pixel of the input.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">VariableDelay</span><span class="p">(</span><span class="n">delays</span> <span class="o">=</span> <span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At the moment, the delays do <em>not</em> provide a gradient.</p>
+<p>Possible future feature if requested:
+variable delay per pixel, channel and batch dimension.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.Conv3d">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv3d</code><span class="sig-paren">(</span><em>in_channels=1</em>, <em>out_channels=1</em>, <em>kernel_size=(1</em>, <em>1</em>, <em>1)</em>, <em>bias=True</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a convolution, but pads the input in time
+with previous input and in space by replicating
+the edge.</p>
+<p>Arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>in_channels</li>
+<li>out_channels</li>
+<li>kernel_size</li>
+<li>bias (bool)</li>
+</ul>
+</div></blockquote>
+<p>Additional PyTorch Conv3d keyword arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>padding (should not be used)</li>
+<li>stride</li>
+<li>dilation</li>
+<li>groups</li>
+</ul>
+</div></blockquote>
+<p>Additional convis Conv3d keyword arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li>time_pad: False (enables padding in time)</li>
+<li>autopad: False (enables padding in space)</li>
+</ul>
+</div></blockquote>
+<p>To change the weight, use the method <cite>set_weight()</cite>
+which also accepts numpy arguments.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="convis.filters.Conv3d.set_weight">
+<code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>preserve_channels=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.set_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a new weight for the convolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>w: numpy array or PyTorch Tensor</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>The new kernel <cite>w</cite> should have 1,2,3 or 5 dimensions.</dt>
+<dd><p class="first">1 dimensions: temporal kernel
+2 dimensions: spatial kernel
+3 dimensions: spatio-temporal kernel (time,x,y)
+5 dimensions: spatio-temporal kernels for multiple channels</p>
+<blockquote class="last">
+<div><p>(out_channels, in_channels, time, x, y)</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>If the new kernel has 1, 2 or 3 dimensions and 
+<cite>preserve_channels</cite> is <cite>True</cite>, the input and output 
+channels will be preserved and the same kernel
+will be applied to all channel combinations.
+(ie. each output channel recieves the sum of all
+input channels).
+This makes sense if the kernel is further optimized,
+otherwise, the same effect can be achieved with a 
+single input and output channel more effectively.</p>
+</div></blockquote>
+<p><strong>normalize: bool (default: False)</strong></p>
+<blockquote>
+<div><p>Whether or not the sum of the kernel values
+should be normalized to 1, such that the
+sum over all input values and all output 
+values is the approximately same.</p>
+</div></blockquote>
+<p><strong>preserve_channels: bool (default: False)</strong></p>
+<blockquote class="last">
+<div><p>Whether or not to copy smaller kernels
+to all input-output channel combinations.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-convis.filters.simple"></span><dl class="class">
+<dt id="convis.filters.simple.SmoothConv">
+<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">SmoothConv</code><span class="sig-paren">(</span><em>n=3</em>, <em>tau=0.1</em>, <em>spatial_filter=(10</em>, <em>10)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#SmoothConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.SmoothConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>A convolution with temporally smoothed filters.
+It can cover a long temporal period, but is a lot more
+efficient than a convlution filter of the same length.</p>
+<p>Each spatial filter <cite>.g[n]</cite> is applied to a temporally filtered
+signal with increasing delays by convolving multiple recursive
+exponential filters.</p>
+<p>The length of the filter depends on the number of temporal
+components and the time constant used for the delays.</p>
+<p>Each exponential filter <cite>.e[n]</cite> can have an individual 
+time constant, giving variable spacing between the filters.</p>
+<p>By default, the time constants are set to not create a gradient,
+so that they are not fittable.</p>
+<p>To show each component, use <cite>get_all_components(some_input)</cite></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">SmoothConv</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">inp</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get_all_components</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_filters-1.py">Source code</a>, <a class="reference external" href=".//docs_filters-1.png">png</a>, <a class="reference external" href=".//docs_filters-1.hires.png">hires.png</a>, <a class="reference external" href=".//docs_filters-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_filters-1.png" src="_images/docs_filters-1.png" />
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a></dt>
+<dd>A full convolution layer</dd>
+</dl>
+</div>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="docs.html">Convis classes and modules</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="docs_models.html">Models <cite>convis.models</cite></a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

@@ -56,8 +56,8 @@
 <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling <cite>Layer.run(input,dt=..)</cite> with <cite>dt</cite> set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
-<cite>.run</cite> also accepts numpy arrays as input, which will be converted into PyTorch <cite>Tensor`s and packaged as a `Variable</cite>.</p>
+<p>Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">Layer.run(input,dt=..)</span></code></a> with <cite>dt</cite> set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
+<a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a> also accepts numpy arrays as input, which will be converted into PyTorch <cite>Tensor`s and packaged as a `Variable</cite>.</p>
 <div class="section" id="switching-between-cpu-and-gpu-usage">
 <h3>Switching between CPU and GPU usage<a class="headerlink" href="#switching-between-cpu-and-gpu-usage" title="Permalink to this headline">¶</a></h3>
 <p>PyTorch objects can move between GPU memory and RAM by calling <cite>.cuda()</cite> and <cite>.cpu()</cite> methods respectively. This can be done on a single Tensor or on an entire model.</p>
@@ -84,7 +84,7 @@ The execution can also happen in a separate thread:</p>
 </div>
 <div class="section" id="optimizing-a-model">
 <h2>Optimizing a Model<a class="headerlink" href="#optimizing-a-model" title="Permalink to this headline">¶</a></h2>
-<p>One way to optimize a model is by using the <cite>.set_optimizer</cite> attribute and the <cite>.optimize</cite> method:</p>
+<p>One way to optimize a model is by using the <code class="xref py py-meth docutils literal"><span class="pre">set_optimizer()</span></code> attribute and the <a class="reference internal" href="docs.html#convis.base.Layer.optimize" title="convis.base.Layer.optimize"><code class="xref py py-meth docutils literal"><span class="pre">optimize()</span></code></a> method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
 <span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> <span class="c1"># selects an optimizer with arguments</span>
 <span class="c1">#l.optimize(some_inp, desired_outp) # does the optimization with the selected optimizer</span>
@@ -122,6 +122,26 @@ The execution can also happen in a separate thread:</p>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//usage-1.py">Source code</a>)</p>
+<div class="figure" id="id3">
+<img alt="_images/usage-1_00.png" src="_images/usage-1_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_00.png">png</a>, <a class="reference external" href=".//usage-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id4">
+<img alt="_images/usage-1_01.png" src="_images/usage-1_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_01.png">png</a>, <a class="reference external" href=".//usage-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_01.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id5">
+<img alt="_images/usage-1_02.png" src="_images/usage-1_02.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_02.png">png</a>, <a class="reference external" href=".//usage-1_02.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_02.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id6">
+<img alt="_images/usage-1_03.png" src="_images/usage-1_03.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_03.png">png</a>, <a class="reference external" href=".//usage-1_03.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_03.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id7">
+<img alt="_images/usage-1_04.png" src="_images/usage-1_04.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//usage-1_04.png">png</a>, <a class="reference external" href=".//usage-1_04.hires.png">hires.png</a>, <a class="reference external" href=".//usage-1_04.pdf">pdf</a>)</span></p>
+</div>
 <p>When selecting an Optimizer, the full list of available Optimizers can be seen by tab-completion.</p>
 <p>Some interesting optimizers are:</p>
 <blockquote>
@@ -133,7 +153,7 @@ The execution can also happen in a separate thread:</p>
 </div></blockquote>
 <div class="section" id="using-an-optimizer-by-hand">
 <h3>Using an Optimizer by Hand<a class="headerlink" href="#using-an-optimizer-by-hand" title="Permalink to this headline">¶</a></h3>
-<p>The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling <cite>.step()</cite> (see also <a class="reference external" href="http://pytorch.org/docs/master/optim.html">http://pytorch.org/docs/master/optim.html</a> ).</p>
+<p>The normal PyTorch way to call Optimizers is to fill the gradient buffers by hand and then calling <a class="reference external" href="http://pytorch.org/docs/0.3.0/optim.html#torch.optim.Optimizer.step" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-meth docutils literal"><span class="pre">step()</span></code></a> (see also <a class="reference external" href="http://pytorch.org/docs/master/optim.html">http://pytorch.org/docs/master/optim.html</a> ).</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">convis</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -182,7 +202,7 @@ The execution can also happen in a separate thread:</p>
 <span class="c1">#l.optimize(inp[None,None,:,:,:],outp, optimizer=opt2, loss_fn = lambda x,y: (x-y).abs().sum()) # using LBFGS (without calling .set_optimizer) and another loss function</span>
 </pre></div>
 </div>
-<p><cite>.set_optimizer.*()</cite> will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument.</p>
+<p><code class="xref py py-attr docutils literal"><span class="pre">.set_optimizer.*()</span></code> will automatically include all the parameters in the model, if no generator/list of parameters is used as the first argument.</p>
 </div>
 </div>
 </div>
@@ -203,7 +223,7 @@ The execution can also happen in a separate thread:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

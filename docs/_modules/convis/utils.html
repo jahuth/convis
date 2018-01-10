@@ -64,10 +64,21 @@
 
 <span class="sd">        Other arguments and keyword arguments are passed</span>
 <span class="sd">        to `matplotlib.pylab.plot()`</span>
+
+<span class="sd">        `border_val` can be a float value or &#39;max&#39;, &#39;min&#39; or &#39;mean&#39;,</span>
+<span class="sd">        in which case the corresponding value will be taken from w.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;A 2d plot can only show two dimensions.&quot;</span>
     <span class="n">w</span> <span class="o">=</span> <span class="n">_to_numpy</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">border</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">border_val</span> <span class="ow">is</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+            <span class="n">border_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">border_val</span> <span class="ow">is</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+            <span class="n">border_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">border_val</span> <span class="ow">is</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+            <span class="n">border_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
         <span class="n">w_</span> <span class="o">=</span> <span class="n">border_val</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">w_</span><span class="p">[:,:,:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
         <span class="n">w</span> <span class="o">=</span> <span class="n">w_</span>
@@ -130,7 +141,7 @@
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

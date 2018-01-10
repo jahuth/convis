@@ -85,6 +85,7 @@
     <span class="k">pass</span>
 
 <span class="kn">from</span> <span class="nn">.variables</span> <span class="k">import</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">State</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">as_parameter</span><span class="p">,</span> <span class="n">is_variable</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
 
 <span class="n">TIME_DIMENSION</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -274,7 +275,18 @@
 <span class="sd">        ----------</span>
 
 <span class="sd">        _use_cuda : bool</span>
-<span class="sd">        set_optimizer : _OptimizerSelector objet that allows tab completion to select an optimizer</span>
+
+<span class="sd">        .. py:attribute:: set_optimizer</span>
+
+<span class="sd">            :class:`magic object &lt;convis.base._OptimizerSelector&gt;` that allows </span>
+<span class="sd">            tab completion to select an optimizer. (see :ref:`example &lt;tab_completion_example&gt;`)</span>
+
+
+<span class="sd">            The list of parameters as first argument can be omitted</span>
+<span class="sd">            and will be filled with all parameters of the model by</span>
+<span class="sd">            default. Other parameters are passed through to the optimizer.</span>
+
+
 
 <span class="sd">        Methods</span>
 <span class="sd">        -------</span>
@@ -314,6 +326,7 @@
 <span class="sd">            corresponding values.</span>
 
 
+
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 
@@ -331,10 +344,32 @@
 <span class="sd">        &gt;&gt;&gt;        return F.relu(self.conv2(x))</span>
 
 
+<span class="sd">        .. _tab_completion_example:</span>
+
+<span class="sd">        Selecting an :class:`~torch.optim.Optimizer` and using it with :meth:`~convis.base.Layer.optimize`:</span>
+
+<span class="sd">        &gt;&gt;&gt; m = convis.models.LN()</span>
+<span class="sd">        &gt;&gt;&gt; m.set_optimizer.&lt;then press tab&gt;</span>
+<span class="sd">                            ASGD</span>
+<span class="sd">                            Adadelta</span>
+<span class="sd">                            Adagrad</span>
+<span class="sd">                            Adam</span>
+<span class="sd">                            ...</span>
+<span class="sd">        &gt;&gt;&gt; m.set_optimizer.SGD(lr=0.01)</span>
+<span class="sd">        &gt;&gt;&gt; m.optimize(input,output)</span>
+
+<span class="sd">        The list of parameters as first argument can be omitted</span>
+<span class="sd">        and will be filled with all parameters of the model by</span>
+<span class="sd">        default. Other parameters are passed through to the optimizer</span>
+<span class="sd">        eg. the learning rate :attr:`lr` in this example.</span>
+
+
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 
 <span class="sd">        torch.nn.Module : torchs layer class</span>
+
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_state</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -351,7 +386,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 <div class="viewcode-block" id="Layer.cuda"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.cuda">[docs]</a>    <span class="k">def</span> <span class="nf">cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Moves the model to the GPU (optionally with number `device`).</span>
@@ -491,19 +526,19 @@
 <div class="viewcode-block" id="Layer.optimize"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Runs an Optimizer to fit the models parameters such that the output</span>
-<span class="sd">            of the model when presented `inp` approximates `outp`.</span>
+<span class="sd">            of the model when presented :attr:`inp` approximates :attr:`outp`.</span>
 
-<span class="sd">            To use this function, an Optimizer has to be selected::</span>
+<span class="sd">            To use this function, an :class:`torch.optim.Optimizer` has to be selected::</span>
 
-<span class="sd">                model.set_optimizer(torch.optim.SGD(lr=0.01))</span>
-<span class="sd">                model.optimize(x,y, dt=100)</span>
+<span class="sd">                &gt;&gt;&gt; model.set_optimizer(torch.optim.SGD(model.parameters(),lr=0.01))</span>
+<span class="sd">                &gt;&gt;&gt; model.optimize(x,y, dt=100)</span>
 
 <span class="sd">            or::</span>
 
-<span class="sd">                model.set_optimizer.SGD(lr=0.01) # uses optimizers from torch.optim</span>
-<span class="sd">                model.optimize(x,y, dt=100)</span>
+<span class="sd">                &gt;&gt;&gt; model.set_optimizer.SGD(lr=0.01) # uses optimizers from torch.optim</span>
+<span class="sd">                &gt;&gt;&gt; model.optimize(x,y, dt=100)</span>
 
-<span class="sd">            It is important to specify a chunk length `dt`, if the complete input does not fit into memory.</span>
+<span class="sd">            It is important to specify a chunk length :attr:`dt`, if the complete input does not fit into memory.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -511,6 +546,7 @@
             <span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span>
         <span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pop_state</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">push_state</span><span class="p">()</span>
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
             <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">closure</span><span class="o">.</span><span class="n">inp</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">closure</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">closure</span><span class="o">.</span><span class="n">outp</span><span class="p">,</span><span class="n">o</span><span class="p">)</span>
@@ -564,9 +600,8 @@
                     <span class="k">continue</span>
                 <span class="n">new_sub_state_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">sub_state_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">s_name_split</span> <span class="o">=</span> <span class="n">s_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">s_name_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mod_name</span><span class="p">:</span>
-                        <span class="n">new_sub_state_dict</span><span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s_name_split</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span> <span class="o">=</span> <span class="n">s</span>
+                    <span class="k">if</span> <span class="n">s_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">mod_name</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+                        <span class="n">new_sub_state_dict</span><span class="p">[</span><span class="n">s_name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">mod_name</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="p">):]]</span> <span class="o">=</span> <span class="n">s</span>
                 <span class="n">rec</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">new_sub_state_dict</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">rec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">)</span></div>
 <div class="viewcode-block" id="Layer.clear_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.clear_state">[docs]</a>    <span class="k">def</span> <span class="nf">clear_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -578,9 +613,12 @@
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_state&#39;</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">s_name</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_default_state&#39;</span><span class="p">):</span>
-                        <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">s_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_default_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                        <span class="n">old_val</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">s_name</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_default_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
                     <span class="k">else</span><span class="p">:</span>
+                        <span class="n">old_val</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                         <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">o</span><span class="p">[</span><span class="n">s_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">old_val</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">s_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">mod_name</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">()):</span>
                 <span class="k">if</span> <span class="n">mod</span> <span class="ow">is</span> <span class="n">model</span><span class="p">:</span>
                     <span class="k">continue</span>
@@ -633,11 +671,11 @@
 <span class="sd">        Keeps track of the input and output of a model</span>
 <span class="sd">        and can run or optimize it in a separate thread.</span>
 
-<span class="sd">        `model` has to be a `convis.Layer`</span>
+<span class="sd">        :attr:`model` has to be a :class:`convis.base.Layer`</span>
 
-<span class="sd">        `input` should be a `convis.streams.Stream` that contains input data</span>
-<span class="sd">        `output` should be a `convis.streams.Stream` that accepts new data</span>
-<span class="sd">        when using optimize, `goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</span>
+<span class="sd">        :attr:`input` should be a :class:`convis.streams.Stream` that contains input data</span>
+<span class="sd">        :attr:`output` should be a :class:`convis.streams.Stream` that accepts new data</span>
+<span class="sd">        when using optimize, :attr:`goal` has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">goal</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -647,14 +685,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">goal</span> <span class="o">=</span> <span class="n">goal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">20</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Runner.stop"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span></div>
+<div class="viewcode-block" id="Runner.start"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">thread</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">thread</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">_thread</span> <span class="k">as</span> <span class="nn">thread</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="n">thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">,</span><span class="nb">tuple</span><span class="p">())</span>
+            <span class="n">thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">,</span><span class="nb">tuple</span><span class="p">())</span></div>
     <span class="k">def</span> <span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">datetime</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
@@ -663,7 +710,10 @@
             <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Runner.run"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">):</span>
                 <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">)</span>
@@ -675,14 +725,17 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">o</span>
-    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">o</span></div>
+<div class="viewcode-block" id="Runner.optimize"><a class="viewcode-back" href="../../docs.html#convis.base.Runner.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">get_next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">),</span> <span class="n">get_next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;keys&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">o</span></div>
+        <span class="k">return</span> <span class="n">o</span></div></div>
 </pre></div>
 
       </div>
@@ -696,7 +749,7 @@
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

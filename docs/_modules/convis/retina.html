@@ -41,49 +41,44 @@
         
         
   <h1>Source code for convis.retina</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">This module implements a spiking retina model in python and theano.</span>
-
-<span class="sd">It is based on the VirutalRetina Simualtor [Wohrer 2008].</span>
-
-
-<span class="sd">General Overview</span>
-<span class="sd">-----------------</span>
-
-<span class="sd">The formulas on which the classes are based are:</span>
-
-<span class="sd">$$C(x,y,t) = G * T(wu,Tu) * E(n,t) * L (x,y,t)$$</span>
-<span class="sd">$$S(x,y,t) = G * E * C(x,y,t)$$ </span>
-<span class="sd">$$I_{OLP}(x,y,t) = \lambda_{OPL}(C(x,y,t) - w_{OPL} S(x,y,t)_)$$ </span>
-<span class="sd">$$\\\\frac{dV_{Bip}}{dt} (x,y,t) = I_{OLP}(x,y,t) - g_{A}(x,y,t)dV_{Bip}(x,y,t)$$</span>
-<span class="sd">$$g_{A}(x,y,t) = G * E * Q(V{Bip})(x,y,t)`with $Q(V{Bip}) = g_{A}^{0} + \lambda_{A}V^2_{Bip}$$</span>
-<span class="sd">$$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</span>
-
-<span class="sd">with :math:`N(V) = \\\\frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` (if :math:`V &lt; v^0_G`)</span>
-
-<span class="sd">with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V &gt; v^0_G`)</span>
-
-
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides the retina model.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span><span class="n">Output</span>
 <span class="kn">from</span> <span class="nn">.retina_virtualretina</span> <span class="k">import</span> <span class="n">RetinaConfiguration</span>
 <span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">retina</span> <span class="k">as</span> <span class="n">rf</span>
 
-<div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../docs.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../docs_retina.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-
+<span class="sd">    A retinal ganglion cell model comparable to VirtualRetina [1]_.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    opl</span>
-<span class="sd">    bipolar</span>
-<span class="sd">    gang_0_input</span>
-<span class="sd">    gang_0_spikes</span>
-<span class="sd">    gang_1_input</span>
-<span class="sd">    gang_1_spikes</span>
+<span class="sd">    opl : Layer (convis.filters.retina.OPL)</span>
+<span class="sd">    bipolar : Layer (convis.filters.retina.Bipolar)</span>
+<span class="sd">    gang_0_input : Layer (convis.filters.retina.GanglionInput)</span>
+<span class="sd">    gang_0_spikes : Layer (convis.filters.retina.GanglionSpiking)</span>
+<span class="sd">    gang_1_input : Layer (convis.filters.retina.GanglionInput)</span>
+<span class="sd">    gang_1_spikes : Layer (convis.filters.retina.GanglionSpiking)</span>
+<span class="sd">    </span>
+<span class="sd">    _timing : list of tuples</span>
+<span class="sd">        timing information of the last run (last chunk)</span>
+<span class="sd">        Each entry is a tuple of (function that was executed, </span>
+<span class="sd">        number of seconds it took to execute)</span>
+<span class="sd">    keep_timing_info : bool</span>
+<span class="sd">        whether to store all timing information in a list</span>
+<span class="sd">    timing_info : list</span>
+<span class="sd">        stores timing information of all runs if</span>
+<span class="sd">        `keep_timing_info` is True.</span>
+
+
+<span class="sd">    .. [1] Wohrer, A., &amp; Kornprobst, P. (2009).</span>
+<span class="sd">        Virtual Retina: a biological retina model and simulator, with contrast gain control.</span>
+<span class="sd">        Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4</span>
+
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -95,6 +90,8 @@
 <span class="sd">    convis.filters.retina.GanglionSpiking : creates spikes from an input current</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">keep_timing_info</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">timing_info</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bipolar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gang</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Retina</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">OPL</span><span class="p">()</span>
@@ -150,8 +147,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inp</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timing</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="kn">import</span> <span class="nn">datetime</span>
         <span class="n">io_buffers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;I1&#39;</span><span class="p">:</span><span class="n">inp</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">b_out</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">b_in</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="p">:</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">f</span> <span class="o">==</span><span class="s1">&#39;copy&#39;</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">oi</span><span class="p">,</span><span class="n">oo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_out</span><span class="p">):</span>
                     <span class="n">io_buffers</span><span class="p">[</span><span class="n">oo</span><span class="p">]</span> <span class="o">=</span> <span class="n">io_buffers</span><span class="p">[</span><span class="n">b_in</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
@@ -162,6 +162,9 @@
                     <span class="n">o</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># we can only use the first output</span>
                 <span class="k">for</span> <span class="n">oi</span><span class="p">,</span><span class="n">oo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_out</span><span class="p">):</span>
                     <span class="n">io_buffers</span><span class="p">[</span><span class="n">oo</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timing</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">f</span><span class="p">,(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_timing_info</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timing_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timing</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Output</span><span class="p">([</span><span class="n">io_buffers</span><span class="p">[</span><span class="s1">&#39;I1&#39;</span><span class="p">],</span><span class="n">io_buffers</span><span class="p">[</span><span class="s1">&#39;I2&#39;</span><span class="p">]],</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ganglion_spikes_ON&#39;</span><span class="p">,</span><span class="s1">&#39;ganglion_spikes_OFF&#39;</span><span class="p">])</span></div>
 </pre></div>
 
@@ -176,7 +179,7 @@
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

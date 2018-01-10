@@ -1,0 +1,358 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>convis.samples &#8212; convis 0.5.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.5.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>convis 0.5.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>convis.samples</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for convis.samples</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">This module provides sample kernels and inputs.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">prepare_input</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">models</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  Sample Kernels</span>
+<span class="c1">#</span>
+
+<span class="k">def</span> <span class="nf">text_kernel</span><span class="p">():</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span><span class="mi">16</span><span class="p">))</span>
+    <span class="c1">#con</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> 
+           <span class="s2">&quot;0011000110010010,0100101001011010,0100001001011010,0100101001010110,0011000110010110&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="c1">#vis</span>
+    <span class="n">vis</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> 
+           <span class="s2">&quot;0010001010011100,0010001010110010,0001010010011000,0001010010100110,0000100010011100&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+
+    <span class="n">con_x</span><span class="p">,</span> <span class="n">con_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">con</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">)</span>
+    <span class="n">kernel</span><span class="p">[</span><span class="n">con_x</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">con_y</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">vis_x</span><span class="p">,</span> <span class="n">vis_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vis</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">)</span>
+    <span class="n">kernel</span><span class="p">[</span><span class="n">vis_x</span><span class="o">+</span><span class="mi">9</span><span class="p">,</span><span class="n">vis_y</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">kernel</span>
+
+
+
+<span class="k">def</span> <span class="nf">gabor_kernel</span><span class="p">(</span><span class="n">phi</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">f</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">phase</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">size</span><span class="o">/</span><span class="n">resolution</span><span class="p">,</span><span class="mf">0.5</span><span class="o">*</span><span class="n">size</span><span class="o">/</span><span class="n">resolution</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>    
+    <span class="n">xgrid</span><span class="p">,</span> <span class="n">ygrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span><span class="n">vals</span><span class="p">)</span>       
+    <span class="n">the_gaussian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">sigma_x</span><span class="o">*</span><span class="n">xgrid</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">sigma_y</span><span class="o">*</span><span class="n">ygrid</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">the_sine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">xgrid</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">ygrid</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="n">phase</span><span class="p">)</span>
+    <span class="n">the_gabor</span> <span class="o">=</span> <span class="n">the_gaussian</span> <span class="o">*</span> <span class="n">the_sine</span>  
+    <span class="k">return</span> <span class="n">the_gabor</span>
+
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#  Sample Inputs</span>
+<span class="c1">#</span>
+
+<span class="k">def</span> <span class="nf">sparse_input</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                            <span class="n">frames_per_second</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">pixel_per_degree</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;shape&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">the_input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)):</span>
+            <span class="n">the_input</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">the_input</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">the_input</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">the_input</span>
+
+<span class="k">def</span> <span class="nf">moving_grating</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">vt</span><span class="o">=</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">200.0</span><span class="p">,</span><span class="n">vx</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span><span class="n">vy</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                            <span class="n">frames_per_second</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">pixel_per_degree</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">T</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">t</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">x</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">vt</span><span class="o">*</span><span class="n">T</span><span class="o">+</span><span class="n">vx</span><span class="o">*</span><span class="n">X</span><span class="o">+</span><span class="n">vy</span><span class="o">*</span><span class="n">Y</span><span class="p">)</span> 
+
+
+<div class="viewcode-block" id="random_checker_stimulus"><a class="viewcode-back" href="../../docs.html#convis.samples.random_checker_stimulus">[docs]</a><span class="k">def</span> <span class="nf">random_checker_stimulus</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">checker_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span>
+                            <span class="n">frames_per_second</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">pixel_per_degree</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a random checker flicker of uniformly distributed values</span>
+<span class="sd">        in a grid of `checker_size`x`checker_size` pixels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">t</span><span class="p">,</span>
+                             <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">checker_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                             <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="n">checker_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">checker_size</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">checker_size</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)[:,:</span><span class="n">x</span><span class="p">,:</span><span class="n">y</span><span class="p">])</span></div>
+
+<span class="k">def</span> <span class="nf">pulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pulse_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                            <span class="n">frames_per_second</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">pixel_per_degree</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">%</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pulse_length</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">pulse_length</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">chirp</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pulse_on</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">pulse_off</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                            <span class="n">amp_on</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span> <span class="n">amp_off</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+                            <span class="n">amp_freq</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+                            <span class="n">amp_1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">amp_2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                            <span class="n">freq_on</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">freq_off</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span>
+                            <span class="n">freq_1</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">freq_2</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+                            <span class="n">stimulus_off</span> <span class="o">=</span> <span class="mi">4500</span><span class="p">,</span>
+                            <span class="n">scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">frames_per_second</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
+                            <span class="n">pixel_per_degree</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">scale</span><span class="p">:</span>
+        <span class="n">total_t</span> <span class="o">=</span> <span class="n">stimulus_off</span> <span class="c1">#pulse_on + pulse_off + amp_on + amp_off + freq_on + freq_off</span>
+        <span class="n">total_scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">total_t</span><span class="p">)</span>
+        <span class="n">pulse_on</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pulse_on</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+        <span class="n">pulse_off</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pulse_off</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+        <span class="n">amp_on</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">amp_on</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+        <span class="n">amp_off</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">amp_off</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+        <span class="n">freq_on</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq_on</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+        <span class="n">freq_off</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq_off</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+        <span class="n">stimulus_off</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stimulus_off</span> <span class="o">*</span> <span class="n">total_scale</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">pulse_on</span><span class="p">:</span><span class="n">pulse_off</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">amp_on</span><span class="p">:</span><span class="n">amp_off</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">one</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">amp_1</span><span class="p">,</span><span class="n">amp_2</span><span class="p">,</span><span class="n">amp_off</span><span class="o">-</span><span class="n">amp_on</span><span class="p">)</span>
+                                    <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">amp_off</span><span class="o">-</span><span class="n">amp_on</span><span class="p">)</span><span class="o">*</span><span class="n">amp_freq</span><span class="o">/</span><span class="n">frames_per_second</span><span class="p">))[:,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">freq_on</span><span class="p">:</span><span class="n">freq_off</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">one</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">freq_1</span><span class="p">,</span><span class="n">freq_2</span><span class="p">,</span><span class="n">freq_off</span><span class="o">-</span><span class="n">freq_on</span><span class="p">)</span>
+                                            <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">freq_off</span><span class="o">-</span><span class="n">freq_on</span><span class="p">)</span><span class="o">/</span><span class="n">frames_per_second</span><span class="p">)[:,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="StimulusSize"><a class="viewcode-back" href="../../docs.html#convis.samples.StimulusSize">[docs]</a><span class="k">class</span> <span class="nc">StimulusSize</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This class holds information about sample stimulus size.        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">frames_per_second</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prepare</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames_per_second</span> <span class="o">=</span> <span class="n">frames_per_second</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="n">pixel_per_degree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stimulus_functions</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;sparse_input&#39;</span><span class="p">:</span> <span class="n">sparse_input</span><span class="p">,</span>
+                <span class="s1">&#39;moving_grating&#39;</span><span class="p">:</span> <span class="n">moving_grating</span><span class="p">,</span>
+                <span class="s1">&#39;pulse&#39;</span><span class="p">:</span><span class="n">pulse</span><span class="p">,</span>
+                <span class="s1">&#39;chirp&#39;</span><span class="p">:</span><span class="n">chirp</span>
+            <span class="p">}</span>
+        <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+            <span class="n">prepare</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cuda</span> <span class="o">=</span> <span class="n">cuda</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span> <span class="o">=</span> <span class="n">prepare</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stimulus_functions</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stimulus_functions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">return</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">prepare_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stimulus_functions</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pixel_per_degree</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span><span class="p">,</span><span class="n">frames_per_second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frames_per_second</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">cuda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cuda</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>            
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stimulus_functions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">return</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stimulus_functions</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pixel_per_degree</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span><span class="p">,</span><span class="n">frames_per_second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frames_per_second</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<span class="n">default_stimulus_size</span> <span class="o">=</span> <span class="n">StimulusSize</span><span class="p">()</span>
+<span class="n">default_stimulus_size_cuda</span> <span class="o">=</span> <span class="n">StimulusSize</span><span class="p">(</span><span class="n">cuda</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">cuda</span> <span class="o">=</span> <span class="n">StimulusSize</span><span class="p">(</span><span class="n">cuda</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGenerator"><a class="viewcode-back" href="../../docs.html#convis.samples.SampleGenerator">[docs]</a><span class="k">class</span> <span class="nc">SampleGenerator</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A Linear-Nonlinear model with a random kernel/weight</span>
+<span class="sd">        that generates random input/output combinations for</span>
+<span class="sd">        testing purposes.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        &gt;&gt;&gt; g = convis.samples.SampleGenerator(&#39;sparse&#39;,kernel_size=(20,5,5),p=0.05)</span>
+<span class="sd">        &gt;&gt;&gt; x,y = g.generate()</span>
+<span class="sd">        &gt;&gt;&gt; m = convis.models.LN((50,10,10))</span>
+<span class="sd">        &gt;&gt;&gt; m.set_optimizer.Adam()</span>
+<span class="sd">        &gt;&gt;&gt; m.optimize(x,y)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kernel : str or numpy array</span>
+<span class="sd">                Possible values for `kernel`:</span>
+<span class="sd">                </span>
+<span class="sd">                    &#39;random&#39; or &#39;randn&#39;: normal distributed kernel values</span>
+<span class="sd">                    </span>
+<span class="sd">                    &#39;rand&#39;: random kernel values bounded between 0 and 1</span>
+<span class="sd">                    </span>
+<span class="sd">                    &#39;sparse&#39;: a kernel with a ratio of (approx).</span>
+<span class="sd">                              `p` 1s and 1-`p` 0s, randomly assigned.</span>
+<span class="sd">                    </span>
+<span class="sd">                    or a 5d or 3d numpy array</span>
+<span class="sd">        kernel_size : tuple(int,int,int)</span>
+<span class="sd">                specifies the dimensions of the generated input</span>
+<span class="sd">        dt : int</span>
+<span class="sd">                length of chunks when evaluating the model</span>
+<span class="sd">        p : float</span>
+<span class="sd">                the ratio of 1s for sparse input</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conv : convis.filters.Conv3d</span>
+<span class="sd">            the convolution operation (including the weight)</span>
+
+<span class="sd">        Methods</span>
+<span class="sd">        -------</span>
+<span class="sd">        generate(input,size,p)</span>
+<span class="sd">            generates random input and corresponding output</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        convis.samples.generate_sample_data()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SampleGenerator</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kernel</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;randn&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">kernel_size</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">kernel</span> <span class="ow">is</span> <span class="s1">&#39;rand&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">kernel_size</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">kernel</span> <span class="ow">is</span> <span class="s1">&#39;sparse&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">kernel_size</span><span class="p">)</span><span class="o">&lt;</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;`kernel` parameter not recognized!&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+<div class="viewcode-block" id="SampleGenerator.generate"><a class="viewcode-back" href="../../docs.html#convis.samples.SampleGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">input</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input : str or numpy array</span>
+
+<span class="sd">            Possible values for `input`:</span>
+
+<span class="sd">                - &#39;random&#39; or &#39;randn&#39;: normal distributed input</span>
+<span class="sd">                - &#39;rand&#39;: random input values bounded between 0 and 1</span>
+<span class="sd">                - &#39;sparse&#39;: input with a ratio of (approx).</span>
+<span class="sd">                          `p` 1s and 1-`p` 0s, randomly assigned.</span>
+<span class="sd">                - or a 3d or 5d numpy array.</span>
+<span class="sd">            </span>
+<span class="sd">            If input is anything else, `generate` tries to use it</span>
+<span class="sd">            as input to the model.</span>
+
+<span class="sd">        size : tuple(int,int,int)</span>
+<span class="sd">                specifies the dimensions of the generated input</span>
+<span class="sd">        p : float</span>
+<span class="sd">                the ratio of 1s for sparse input</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x :  PyTorch Tensor </span>
+<span class="sd">            the randomly created input input </span>
+<span class="sd">        y :  PyTorch Variable</span>
+<span class="sd">            the corresponding output</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">input</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;randn&#39;</span><span class="p">]:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">input</span> <span class="ow">is</span> <span class="s1">&#39;rand&#39;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">input</span> <span class="ow">is</span> <span class="s1">&#39;sparse&#39;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">input</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span></div></div>
+
+<span class="n">_g</span> <span class="o">=</span> <span class="n">SampleGenerator</span><span class="p">()</span>
+
+<div class="viewcode-block" id="generate_sample_data"><a class="viewcode-back" href="../../docs.html#convis.samples.generate_sample_data">[docs]</a><span class="k">def</span> <span class="nf">generate_sample_data</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates random input and sample output using </span>
+<span class="sd">        a `SampleGenerator` with a random kernel.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input : str or numpy array</span>
+
+<span class="sd">            Possible values for `input`:</span>
+
+<span class="sd">                - &#39;random&#39; or &#39;randn&#39;: normal distributed input</span>
+<span class="sd">                - &#39;rand&#39;: random input values bounded between 0 and 1</span>
+<span class="sd">                - &#39;sparse&#39;: input with a ratio of (approx).</span>
+<span class="sd">                          `p` 1s and 1-`p` 0s, randomly assigned.</span>
+<span class="sd">                - or a 3d or 5d numpy array.</span>
+
+<span class="sd">        size : tuple(int,int,int)</span>
+<span class="sd">                specifies the dimensions of the generated input</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x :  PyTorch Tensor </span>
+<span class="sd">            the randomly created input input </span>
+<span class="sd">        y :  PyTorch Variable</span>
+<span class="sd">            the corresponding output</span>
+
+<span class="sd">        The kernel will be different each time </span>
+<span class="sd">        `convis` is (re)loaded, but constant in one</span>
+<span class="sd">        session. The &quot;secret&quot; `SampleGenerator` is </span>
+<span class="sd">        available as `convis.samples._g`.</span>
+
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        &gt;&gt;&gt; m = convis.models.LN((50,10,10))</span>
+<span class="sd">        &gt;&gt;&gt; m.set_optimizer.Adam()</span>
+<span class="sd">        &gt;&gt;&gt; x,y = convis.samples.generate_sample_data()</span>
+<span class="sd">        &gt;&gt;&gt; m.optimize(x,y)</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        SampleGenerator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_g</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Jacob Huth.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

@@ -70,7 +70,7 @@
 
 
 
-<div class="viewcode-block" id="SeperatableOPLFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.SeperatableOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">SeperatableOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="SeperatableOPLFilter"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.SeperatableOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">SeperatableOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A fullly convolutional OPL implementation.</span>
 
@@ -116,7 +116,7 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 
-<span class="sd">        Retina</span>
+<span class="sd">        convis.retina.Retina</span>
 <span class="sd">        OPL</span>
 <span class="sd">        HalfRecursiveOPLFilter</span>
 <span class="sd">        FullConvolutionOPLFilter</span>
@@ -156,7 +156,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_surround</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surround_G</span><span class="o">.</span><span class="n">gaussian</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;surround-sigma__deg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_callback_arguments</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="n">variables</span><span class="o">.</span><span class="n">default_resolution</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_surround</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span> <span class="o">=</span> <span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">19</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="p">,</span><span class="s1">&#39;bias&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau_surround</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">exponential</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;surround-tau__sec&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_callback_arguments</span><span class="p">(</span><span class="n">even</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="n">variables</span><span class="o">.</span><span class="n">default_resolution</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
@@ -204,7 +205,7 @@
         <span class="c1">#return y[:,:,(self.filter_length/2):-(self.filter_length/2),:,:]</span>
         <span class="k">return</span> <span class="n">y</span><span class="p">[:,:,</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">:,:,:]</span></div>
 
-<div class="viewcode-block" id="HalfRecursiveOPLFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.HalfRecursiveOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">HalfRecursiveOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="HalfRecursiveOPLFilter"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.HalfRecursiveOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">HalfRecursiveOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The default OPL implementation.</span>
 
@@ -251,7 +252,7 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 
-<span class="sd">        Retina</span>
+<span class="sd">        convis.retina.Retina</span>
 <span class="sd">        OPL</span>
 <span class="sd">        SeperatableOPLFilter</span>
 <span class="sd">        FullConvolutionOPLFilter</span>
@@ -320,14 +321,14 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">*</span> <span class="n">s</span><span class="p">[:,:,:,:,:]</span>
         <span class="k">return</span> <span class="n">y</span></div>
 
-<div class="viewcode-block" id="FullConvolutionOPLFilter"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.FullConvolutionOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">FullConvolutionOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="FullConvolutionOPLFilter"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.FullConvolutionOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">FullConvolutionOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        </span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 
-<span class="sd">        Retina</span>
+<span class="sd">        convis.retina.Retina</span>
 <span class="sd">        OPL</span>
 <span class="sd">        HalfRecursiveOPLFilter</span>
 <span class="sd">        SeperatableOPLFilter</span>
@@ -344,7 +345,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
     
-<div class="viewcode-block" id="OPL"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.OPL">[docs]</a><span class="k">class</span> <span class="nc">OPL</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="OPL"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.OPL">[docs]</a><span class="k">class</span> <span class="nc">OPL</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The OPL current is a filtered version of the luminance input with spatial and temporal kernels.</span>
 
@@ -374,11 +375,11 @@
 <span class="sd">    opl_filter : Layer</span>
 <span class="sd">        The OPL filter that is used.</span>
 <span class="sd">        Either :py:class:`HalfRecursiveOPLFilter`, :py:class:`SeperatableOPLFilter` or :py:class:`FullConvolutionOPLFilter`.</span>
-<span class="sd">    </span>
+
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 
-<span class="sd">    Retina</span>
+<span class="sd">    convis.retina.Retina</span>
 <span class="sd">    HalfRecursiveOPLFilter</span>
 <span class="sd">    SeperatableOPLFilter</span>
 <span class="sd">    FullConvolutionOPLFilter</span>
@@ -393,7 +394,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opl_filter</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
  
-<div class="viewcode-block" id="Bipolar"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.Bipolar">[docs]</a><span class="k">class</span> <span class="nc">Bipolar</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="Bipolar"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.Bipolar">[docs]</a><span class="k">class</span> <span class="nc">Bipolar</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Example Configuration::</span>
 
@@ -423,7 +424,8 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 
-<span class="sd">    Retina</span>
+<span class="sd">    convis.retina.Retina</span>
+
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -449,7 +451,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">a_0</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">a_1</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">b_0</span> <span class="o">=</span>  <span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span> <span class="o">=</span> <span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,(</span><span class="mi">9</span><span class="p">,</span><span class="mi">9</span><span class="p">),</span><span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span> <span class="o">=</span> <span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,(</span><span class="mi">9</span><span class="p">,</span><span class="mi">9</span><span class="p">),</span><span class="n">autopad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span><span class="o">.</span><span class="n">gaussian</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
         <span class="c1">#self.conv2d.set_weight(1.0)</span>
     <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shapes</span><span class="p">):</span>
@@ -486,7 +488,15 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">input_image</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)):</span>
             <span class="n">total_conductance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_leak</span> <span class="o">+</span> <span class="n">preceding_inhibition</span>
             <span class="n">attenuation_map</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">*</span><span class="n">total_conductance</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
-            <span class="n">E_infinity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_amp</span> <span class="o">*</span> <span class="n">input_image</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputNernst_inhibition</span> <span class="o">*</span> <span class="n">preceding_inhibition</span><span class="p">)</span><span class="o">/</span><span class="n">total_conductance</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">E_infinity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_amp</span> <span class="o">*</span> <span class="n">input_image</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputNernst_inhibition</span> <span class="o">*</span> <span class="n">preceding_inhibition</span><span class="p">)</span><span class="o">/</span><span class="n">total_conductance</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">input_amp</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
+                       <span class="n">input_image</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">inputNernst_inhibition</span><span class="p">,</span>
+                       <span class="n">preceding_inhibition</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
+                       <span class="n">total_conductance</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
+                <span class="k">raise</span>
             <span class="n">V_bip</span> <span class="o">=</span> <span class="p">((</span><span class="n">preceding_V_bip</span> <span class="o">-</span> <span class="n">E_infinity</span><span class="p">)</span> <span class="o">*</span> <span class="n">attenuation_map</span><span class="p">)</span> <span class="o">+</span> <span class="n">E_infinity</span> <span class="c1"># V_bip converges to E_infinity</span>
             
             <span class="n">inhibition</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">*</span><span class="p">(</span><span class="n">preceding_V_bip</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">**</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_0</span> 
@@ -502,7 +512,7 @@
         <span class="k">return</span> <span class="n">y</span></div>
 
 
-<div class="viewcode-block" id="GanglionInput"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.GanglionInput">[docs]</a><span class="k">class</span> <span class="nc">GanglionInput</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="GanglionInput"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.GanglionInput">[docs]</a><span class="k">class</span> <span class="nc">GanglionInput</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The input current to the ganglion cells is filtered through a gain function.</span>
 
@@ -544,6 +554,34 @@
 <span class="sd">                    ...</span>
 <span class="sd">                }</span>
 <span class="sd">            },</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+
+<span class="sd">    Setting the virtual Parameters::</span>
+
+<span class="sd">        &gt;&gt;&gt; m = convis.filters.retina.GanglionInput()</span>
+<span class="sd">        &gt;&gt;&gt; m.sigma_surround.set(0.1)</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    i_0 : Parameter</span>
+<span class="sd">    v_0 : Parameter</span>
+<span class="sd">    lambda_G : Parameter</span>
+<span class="sd">    spatial_pooling : Conv3d</span>
+<span class="sd">        convolution Op for spatial pooling. Can be set to </span>
+<span class="sd">        a gaussian with :meth:`sigma_surround.set()`</span>
+<span class="sd">    sigma_surround : VirtualParameter</span>
+<span class="sd">        sets spatial_pooling to be a gaussian of a certain standard deviation</span>
+<span class="sd">    transient</span>
+<span class="sd">        convolution Op for high pass filtering</span>
+
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    convis.retina.Retina</span>
+<span class="sd">    GanglionSpiking</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -596,7 +634,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="n">x_pad</span><span class="p">[:,:,</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_length</span><span class="p">:,:,:]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_pooling</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GanglionSpiking"><a class="viewcode-back" href="../../../docs.html#convis.filters.retina.GanglionSpiking">[docs]</a><span class="k">class</span> <span class="nc">GanglionSpiking</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="GanglionSpiking"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.GanglionSpiking">[docs]</a><span class="k">class</span> <span class="nc">GanglionSpiking</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The ganglion cells recieve the gain controlled input and produce spikes. </span>
 
@@ -605,6 +643,27 @@
 <span class="sd">    $$ \\\\dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + \eta_v(t)$$</span>
 
 <span class="sd">    Otherwise it is set to 0.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    refr_mu : Parameter</span>
+<span class="sd">        The mean of the distribution of random refractory times (in seconds).</span>
+<span class="sd">    refr_sigma : Parameter</span>
+<span class="sd">        The standard deviation of the refractory time that is randomly drawn around `refr_mu`</span>
+<span class="sd">    noise_sigma : Parameter</span>
+<span class="sd">        Amount of noise added to the membrane potential.</span>
+<span class="sd">    g_L : Parameter</span>
+<span class="sd">        Leak current (in Hz or dimensionless firing rate).</span>
+
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    convis.retina.Retina</span>
+<span class="sd">    GanglionInput</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">GanglionSpiking</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -696,7 +755,7 @@
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>
