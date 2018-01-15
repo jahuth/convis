@@ -7,6 +7,10 @@ from ..base import Layer
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 from .. import variables
 
+
+X_DIMENSION = 3
+Y_DIMENSION = 4
+
 class L(Layer):
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dim = 5
@@ -36,9 +40,10 @@ class TemporalLowPassFilterRecursive(Layer):
         super(TemporalLowPassFilterRecursive, self).__init__()
         #self.tau = Parameter(0.01,requires_grad=True)
         self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
+        self.register_state('last_y',None)
     def clear(self):
         if hasattr(self,'last_y'):
-            del self.last_y
+            self.last_y = None
     def forward(self, x):
         steps = variables.Parameter(1.0/variables.default_resolution.steps_per_second,requires_grad=False)
         if self._use_cuda:
@@ -46,7 +51,7 @@ class TemporalLowPassFilterRecursive(Layer):
         a_0 = 1.0
         a_1 = -torch.exp(-steps/self.tau)
         b_0 = 1.0 - a_1
-        if hasattr(self,'last_y'):
+        if self.last_y is not None:
             y = self.last_y
         else:
             y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
@@ -68,9 +73,10 @@ class TemporalHighPassFilterRecursive(Layer):
         #self.tau = Parameter(0.01,requires_grad=True)
         self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
         self.k = torch.nn.Parameter(torch.Tensor([0.5]),requires_grad=requires_grad)
+        self.register_state('last_y',None)
     def clear(self):
         if hasattr(self,'last_y'):
-            del self.last_y
+            self.last_y = None
     def forward(self, x):
         steps = variables.Parameter(1.0/variables.default_resolution.steps_per_second,requires_grad=False)
         if self._use_cuda:
@@ -78,7 +84,7 @@ class TemporalHighPassFilterRecursive(Layer):
         a_0 = 1.0
         a_1 = -torch.exp(-steps/self.tau)
         b_0 = 1.0 - a_1
-        if hasattr(self,'last_y'):
+        if self.last_y is not None:
             y = self.last_y
         else:
             y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
@@ -93,6 +99,73 @@ class TemporalHighPassFilterRecursive(Layer):
         self.last_y = y
         norm = 2.0*self.tau/steps#(self.tau/(self.tau+0.5))*steps
         return x - (self.k)*torch.cat(o,dim=TIME_DIMENSION)/norm
+
+def select_(x,dim,i):
+    if dim == 0:
+        return x[i,:,:,:,:,][None,:,:,:,:]
+    if dim == 1:
+        return x[:,i,:,:,:][:,None,:,:,:]
+    if dim == 2:
+        return x[:,:,i,:,:][:,:,None,:,:]
+    if dim == 3:
+        return x[:,:,:,i,:][:,:,:,None,:]
+    if dim == 4:
+        return x[:,:,:,:,i][:,:,:,:,None]
+
+class SpatialRecursiveFilter(Layer): 
+    def __init__(self,kernel_dim=(1,1,1),requires_grad=True):
+        self.dim = 5
+        super(SpatialRecursiveFilter, self).__init__()
+        self.density = torch.nn.Parameter(torch.Tensor([1.0]))
+    def forward(self, x):
+        config = {}
+        alpha = 1.695 * self.density
+        ema = torch.exp(-alpha)
+        ek = (1.0-ema)*(1.0-ema) / (1.0+2.0*alpha*ema - ema*ema)
+        A1 = ek
+        A2 = ek * ema * (alpha-1.0)
+        A3 = ek * ema * (alpha+1.0)
+        A4 = -ek*ema*ema
+        B1 = 2.0*ema
+        B2 = -ema*ema
+        def smooth_forward(x,a1,a2,b1,b2,dim):
+            x1 = select_(x,dim,0)
+            o = []
+            y1 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            y2 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            x2 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            for i in range(x.data.shape[dim]):
+                x1,x2 = select_(x,dim,i),x1
+                y = (a1 * x1 + a2 * x2 + b1 * y1 + b2 * y2)
+                y1, y2 = y, y1
+                o.append(y)
+            o = torch.cat(o,dim=dim)
+            return o
+        def smooth_backward(x,a1,a2,b1,b2,dim):
+            x1 = select_(x,dim,0)
+            o = []
+            y1 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            y2 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            x2 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            for i in range(x.data.shape[dim]-1,-1,-1):
+                y = (a1 * x1 + a2 * x2 + b1 * y1 + b2 * y2)
+                x1,x2 = select_(x,dim,i),x1
+                y1, y2 = y, y1
+                o.append(y)
+            o = torch.cat(o[::-1],dim=dim)
+            return o
+        x_ = smooth_forward(x,A1,A2,B1,B2,dim=X_DIMENSION)
+        x = smooth_backward(x,A3,A4,B1,B2,dim=X_DIMENSION) + x_
+        x_ = smooth_forward(x,A1,A2,B1,B2,dim=Y_DIMENSION)
+        x = smooth_backward(x,A3,A4,B1,B2,dim=Y_DIMENSION) + x_
+        return x
+    def gaussian(self, sigma):
+        """
+            sets the filter density to
+            approximate a gaussian filter with 
+            sigma standard deviation.
+        """
+        self.density.data[0] = 1.0/(sigma*variables.default_resolution.pixel_per_degree)
 
 
 class SmoothConv(Layer):

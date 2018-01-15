@@ -47,9 +47,9 @@ class Retina(Layer):
     convis.filters.retina.GanglionSpiking : creates spikes from an input current
 
     """
-    keep_timing_info = False
-    timing_info = []
     def __init__(self,opl=True,bipolar=True,gang=True,spikes=True):
+        self.keep_timing_info = False
+        self.timing_info = []
         super(Retina,self).__init__()
         self.opl = rf.OPL()
         self.bipolar = rf.Bipolar()

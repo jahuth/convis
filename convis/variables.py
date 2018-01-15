@@ -125,7 +125,7 @@ class State(Variable):
     def __init__(self,x, **kwargs):
         super(State, self).__init__(x,**kwargs)
 
-class Parameter(torch.nn.Parameter,Variable):
+class Parameter(Variable,torch.nn.Parameter):
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
             x = np.array([x])

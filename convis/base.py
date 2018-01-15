@@ -340,7 +340,7 @@ class Layer(torch.nn.Module):
         self.set_optimizer = _OptimizerSelector(self)
     def register_state(self,name,val=None):
         if hasattr(self,name) and val is None:
-            self._state[name] = getattr(self,name)
+            self._state[name] = getattr(self,name,None)
         else:
             self._state[name] = val
         self._default_state[name] = deepcopy(val)

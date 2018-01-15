@@ -26,30 +26,18 @@ class L(Layer):
     def __init__(self,kernel_dim=(1,1,1), bias = False):
         self.dims = 5
         super(L, self).__init__()
-        self.conv = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        in_channels = 1
+        out_channels = 1
+        if len(kernel_dim) == 5:
+            in_channels = kernel_dim[1]
+            out_channels = kernel_dim[0]
+            kernel_dim = kernel_dim[2:]
+        self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
-        self.input_state = torch.autograd.Variable(torch.zeros((1,1,1,1,1)))
-    @property
-    def filter_length(self):
-        return self.conv.weight.data.shape[TIME_DIMENSION] - 1
     def forward(self, x):
-        if not (self.input_state.data.shape[TIME_DIMENSION] == self.filter_length and
-            self.input_state.data.shape[3] == x.data.shape[3] and
-            self.input_state.data.shape[4] == x.data.shape[4]):
-            self.input_state = torch.autograd.Variable(torch.zeros((x.data.shape[0],x.data.shape[1],self.filter_length,x.data.shape[3],x.data.shape[4])))
-            x_init = x[:,:,:self.filter_length,:,:]
-            self.input_state[:,:,(-x_init.data.shape[2]):,:,:] = x_init
-        if self._use_cuda:
-            self.input_state = self.input_state.cuda()
-            x_pad = torch.cat([self.input_state.cuda(), x.cuda()], dim=TIME_DIMENSION)
-        else:
-            self.input_state = self.input_state.cpu()
-            #print self.input_state, x
-            x_pad = torch.cat([self.input_state.cpu(), x.cpu()], dim=TIME_DIMENSION)
-        self.input_state = x_pad[:,:,-(self.filter_length):,:,:]
-        return self.conv(x_pad)
+        return self.conv(x)
 
 
 class LN(Layer):
@@ -169,6 +157,7 @@ class McIntosh(Layer):
         Advances in Neural Information Processing Systems 29 (NIPS), (Nips), 1-9.
         Also: arXiv:1702.01825 [q-bio.NC]
     """
+    verbose = False
     def __init__(self,filter_size=(10,5,5), random_init=True, out_channels=1, filter_2_size=(1,1,1), layer1_channels = 8,
                 layer2_channels = 16):
         super(McIntosh,self).__init__()
@@ -195,7 +184,8 @@ class McIntosh(Layer):
         #  - moving dimension 1 to 4:
         a = torch.cat(a.split(1,dim=1),dim=4)
         if self.readout.weight.size()[-1] != a.size()[-1]:
-            print('Resetting weight')
+            if self.verbose:
+                print('Resetting weight')
             if self._use_cuda:
                 self.readout.weight = torch.nn.Parameter(torch.ones((self.readout.weight.size()[0],a.size()[-1])))
                 self.readout.cuda()

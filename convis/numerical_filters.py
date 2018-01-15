@@ -19,8 +19,8 @@ Filters for convolutions
 
 """
 
-def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0):
-    kernel = exponential_filter_1d(tau=tau,n=n,normalize=normalize,resolution=resolution,amplification=amplification)
+def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0,max_length=1000,min_steps=10):
+    kernel = exponential_filter_1d(tau=tau,n=n,normalize=normalize,resolution=resolution,amplification=amplification,max_length=max_length,min_steps=min_steps)
     return kernel.reshape((1,len(kernel),1,1,1))
 
 def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10,even=None):
@@ -57,23 +57,23 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
         return np.ones(1)
     return kernel
 
-def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
+def exponential_highpass_filter_1d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None,max_length=1000,min_steps=10):
     if resolution is None:
         return np.ones(1)
-    tau_in_steps = resolution.seconds_to_steps(tau)
+    #tau_in_steps = resolution.seconds_to_steps(tau)
     # we amplify the kernel to enforce greater precision
-    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=1.0*relative_weight)/1.0
+    kernel = -exponential_filter_1d(tau=tau,normalize=normalize,resolution=resolution,amplification=1.0*relative_weight,max_length=max_length,min_steps=min_steps)/1.0
     return np.concatenate([[1], kernel],axis=0)
 
-def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
-    kernel = exponential_highpass_filter_1d(tau=tau, relative_weight=relative_weight, normalize=normalize,resolution=resolution)
+def exponential_highpass_filter_3d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None,max_length=1000,min_steps=10):
+    kernel = exponential_highpass_filter_1d(tau=tau, relative_weight=relative_weight, normalize=normalize,resolution=resolution,max_length=max_length,min_steps=min_steps)
     return kernel.reshape((len(kernel),1,1))
 
-def exponential_highpass_filter_5d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None):
-    kernel = exponential_highpass_filter_1d(tau=tau, relative_weight=relative_weight, normalize=normalize,resolution=resolution)
+def exponential_highpass_filter_5d(tau = 0.01, relative_weight=0.1, normalize=True, resolution=None,max_length=1000,min_steps=10):
+    kernel = exponential_highpass_filter_1d(tau=tau, relative_weight=relative_weight, normalize=normalize,resolution=resolution,max_length=max_length,min_steps=min_steps)
     return kernel.reshape((1,len(kernel),1,1,1))
 
-def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, even=False):
+def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, even=False, border_factor=1.0):
     """
         A 2d gaussian.
 
@@ -88,9 +88,9 @@ def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, 
     x_sig = resolution.degree_to_pixel(x_sig)
     y_sig = resolution.degree_to_pixel(y_sig)
     a_x = 1.0/(x_sig * np.sqrt(2.0*np.pi))
-    x_min = np.ceil(np.sqrt(-2.0*(x_sig**2)*np.log(resolution.filter_epsilon/a_x)))
+    x_min = border_factor*np.ceil(np.sqrt(-2.0*(x_sig**2)*np.log(resolution.filter_epsilon/a_x)))
     a_y = 1.0/(y_sig * np.sqrt(2.0*np.pi))
-    y_min = np.ceil(np.sqrt(-2.0*(y_sig**2)*np.log(resolution.filter_epsilon/a_y)))
+    y_min = border_factor*np.ceil(np.sqrt(-2.0*(y_sig**2)*np.log(resolution.filter_epsilon/a_y)))
     if x_min < 1.0:
         x_gauss = np.ones(2) if even else np.ones(1)
     else:
@@ -106,7 +106,7 @@ def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, 
         return np.ones((1,1))
     return kernel
 
-def gauss_filter_3d(x_sig,y_sig,normalize=False,resolution=None, even=None):
+def gauss_filter_3d(x_sig,y_sig,normalize=False,resolution=None, even=None,border_factor=1.0):
     """
         A 2d gaussian in a 5d data structure (1 x time x 1 x X x Y)
 
@@ -114,10 +114,10 @@ def gauss_filter_3d(x_sig,y_sig,normalize=False,resolution=None, even=None):
 
         if :py:obj:`even` is not None, the kernel will be either made to have even or uneven side lengths, depending on the truth value of :py:obj:`even`.
     """
-    kernel = gauss_filter_2d(x_sig,y_sig,normalize=normalize,resolution=resolution, even=even)
+    kernel = gauss_filter_2d(x_sig,y_sig,normalize=normalize,resolution=resolution, even=even,border_factor=border_factor)
     return kernel.reshape((1,kernel.shape[0],kernel.shape[1]))
 
-def gauss_filter_5d(x_sig,y_sig,normalize=False,resolution=None, even=None):
+def gauss_filter_5d(x_sig,y_sig,normalize=False,resolution=None, even=None,border_factor=1.0):
     """
         A 2d gaussian in a 5d data structure (1 x time x 1 x X x Y)
 
@@ -125,7 +125,7 @@ def gauss_filter_5d(x_sig,y_sig,normalize=False,resolution=None, even=None):
 
         if :py:obj:`even` is not None, the kernel will be either made to have even or uneven side lengths, depending on the truth value of :py:obj:`even`.
     """
-    kernel = gauss_filter_2d(x_sig,y_sig,normalize=normalize,resolution=resolution, even=even)
+    kernel = gauss_filter_2d(x_sig,y_sig,normalize=normalize,resolution=resolution, even=even,border_factor=border_factor)
     return kernel.reshape((1,1,1,kernel.shape[0],kernel.shape[1]))
 
 def fake_filter(*actual_filters,**kwargs):

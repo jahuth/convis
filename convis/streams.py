@@ -109,7 +109,15 @@ class InrImageStreamer(object):
         return 0
 
 class InrImageStreamWriter(object):
-    def __init__(self,filename,v=0,x=0,y=0,z=0):
+    def __init__(self,filename,v=1,x=1,y=1,z=1,time_dimension='VDIM'):
+        """
+            Usage::
+
+                s = convis.streams.InrImageStreamWriter('stim.inr',x=inp.shape[1],y=inp.shape[2],time_dimension='ZDIM')
+                with s:
+                    for i in inp:
+                        s.put(i[None,:,:])
+        """
         self.filename = filename
         self.file = open(filename,'w')
         self.image_i = 0
@@ -121,10 +129,11 @@ class InrImageStreamWriter(object):
                          'YDIM': y,
                          'ZDIM': z}
         self.last_image = np.zeros((50,50))
+        self.time_dimension = time_dimension
         #self.write_header()
     def write_header(self):
         self.file.seek(0)
-        self.header['VDIM'] = self.image_i
+        self.header[self.time_dimension] = self.image_i
         header = "#INRIMAGE-4#{\n"+"\n".join([str(k) +'='+str(v) for k,v in _iteritems(self.header)])
         header = header + ('\n' * (252 - len(header))) + "##}"
         self.file.write(header)
