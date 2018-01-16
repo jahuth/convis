@@ -92,7 +92,10 @@ class Output(object):
     def plot(self,k=0):
         utils.plot(self[k])
     def array(self,k=0):
-        return np.array(self[k])
+        if type(self[k]) == torch.autograd.variable.Variable:
+            return self[k].data.cpu().numpy()
+        else:
+            return np.array(self[k])
     def __getitem__(self,k):
         if type(k) is int:
             return self._outs[k]

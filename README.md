@@ -88,17 +88,48 @@ print(retina)
 Here is a graph of the model:
 <a href="retina_graph.png"><img src="retina_graph.png" widht="200"/></a>
 
-To use the model, supply a numpy array as an argument to the `Retina` (for short input) or to the `run_in_chunks` function:
+To use the model, supply a numpy array as an argument to the `Retina` (for short input) or to the `run` function with a `dt` keyword to split the input in smaller chunks (and automatically reassemble the output):
 
 ```python
 inp = np.ones((100,20,20))
 output = retina(inp)
-
+    
 inp = np.ones((10000,20,20))
-output = retina.run_in_chunks(inp,200)
+output = retina.run(inp,dt=200)
 ```
 
-It will return an object containing all outputs of the model (the default for retina is two outputs: spikes of On and Off cells).
+It will return an `Output` object containing all outputs of the model (the default for retina is two outputs: spikes of On and Off cells).
+
+```python
+convis.plot_5d_time(output[0])
+title('On Cells (1 line = 1 pixel)')
+figure()
+convis.plot_5d_matshow(output[0][:,:,::50,:,:])
+title('Every 50th frame of activity')
+figure()
+# dimension 2 is time, so we mean over all others
+# to get the average activity
+convis.plot_5d_time(output[0].mean((0,1,3,4)))
+convis.plot_5d_time(output[1].mean((0,1,3,4)))
+title('Mean Activitiy of On and Off Cells')
+```
+
+The output object holds the ouput of the computation (in most cases `torch.autograd.Variables`) but can be converted to a `numpy` array with `output.array(...)`. Outputs can be addressed with numbers or names.
+
+```python
+>>> type(output[0])
+<class 'torch.autograd.variable.Variable'>
+>>> type(output[0].data.cpu().numpy())
+<class 'numpy.ndarray'>
+>>> type(output.array(0))
+<class 'numpy.ndarray'>
+>>> output[0] is output.ganglion_spikes_ON
+True
+>>> output[0] is output['ganglion_spikes_ON']
+True
+>>> output.array(0) is output.array('ganglion_spikes_ON')
+True
+```
 
 If instead of spikes, only the firing rate should be returned, the retina can be initialized without a spiking mechanism:
 
