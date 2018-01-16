@@ -33,6 +33,17 @@ except Exception as e:
     plotting_exceptions.append(e)
     pass
 
+
+doc_urls = [
+    ('convis.filters.retina', 'https://jahuth.github.io/convis/docs_retina.html#'),
+    ('convis.filters', 'https://jahuth.github.io/convis/docs_filters.html#'),
+    ('convis.models', 'https://jahuth.github.io/convis/docs_models.html#'),
+    ('convis.retina', 'https://jahuth.github.io/convis/docs_retina.html#'),
+    ('convis.base','https://jahuth.github.io/convis/docs.html#'),
+    ('convis.streams','https://jahuth.github.io/convis/docs_streams.html#'),
+    ('convis.samples','https://jahuth.github.io/convis/docs.html#')
+]
+
 def describe(v,**kwargs):
     return _Descriptor(v,**kwargs)
 
@@ -288,19 +299,7 @@ def describe_html(v,wrap_in_html=True,**kwargs):
             return s
         return HTML(s)
     if isinstance(v, torch.nn.Module):
-        uid = uuid.uuid4().hex
-        s = """<div class='convis_description torch_module'><b """+on_click_toggle+""">"""+getattr(v.__class__,'__name__','(nameless module)')+"""</b>"""
-        #s += describe_html(dict(list(v.named_parameters())[:2]), wrap_in_html=False, **kwargs)
-        for pk,pv in v.named_parameters():
-            s += "<div> - <b>"+str(pk)+"</b> "+str(type(pv))
-            if hasattr(pv,'data'):
-                if hasattr(pv.data,'shape'):
-                    s += 'shape: '+str(pv.data.shape)
-            s += "</div>"
-        s += """</div>"""
-        if not wrap_in_html:
-            return s
-        return HTML(s)
+        return describe_layer_with_html(v, 4, wrap_in_html)
     if isinstance(v, ModuleType):
         uid = uuid.uuid4().hex
         s = """<div class='convis_description module'><b """+on_click_toggle+""">"""+getattr(v,'__name__','(nameless module)')+"""</b>"""
@@ -513,3 +512,76 @@ def plot_3d_tensor_as_3d_plot(ar,ax=None,scale_ar=None,num_levels = 20, contour_
     ax.set_zticks(range(ar.shape[0]),minor=False)
     ax.invert_zaxis()
     return ax
+
+def describe_layer_with_html(layer, max_depth = 3,wrap_in_html=False):
+    from IPython.display import HTML
+    s = ''
+    def make_table(title,lst, line_style):
+        from IPython.display import HTML
+        lst = list(lst)
+        sub_string = ''
+        if len(lst) > 0:
+            sub_string += '<div style="font-weight: bold;">'+title+'</div>'
+            for name, val in lst:
+                sub_string += '<div style="'+line_style+'">'+str(name)+' <i>('+str(val.__class__.__name__)
+                if hasattr(val,'size'):
+                    if len(val.size()) == 1 and val.size()[0] == 1:
+                        sub_string += ' <i style="font-size: 80%;">scalar value</i>'
+                    else:
+                        sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in val.size()]))+'</i>'
+                if hasattr(val,'get'):
+                        v = val.get()
+                        if hasattr(v,'size'):
+                            sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in v.size()]))+'</i>'
+                        else:
+                            sub_string += ' <i style="font-size: 80%;">'+str(v)+'</i>'
+                sub_string += ')</i>'
+                if hasattr(val,'doc'):
+                    sub_string += '<div style="font-size: 80%;">'+str(val.doc)+'</div>'
+                sub_string += '</div>'
+        return sub_string
+
+    def r(model,depth):
+        sub_string =''
+        sub_string +='<div class="doc_string">'
+        if hasattr(model,'__doc__'):
+            try:
+                sub_string += '<br />'.join(model.__doc__.strip().split('\n')[:1])+''
+            except:
+                pass
+        sub_string +=  '&nbsp;&nbsp;<tiny style="font-size:80%;">(see full doc string with `help()`'
+        if hasattr(model,'__doc_link__'):
+            sub_string +=' or browse the documentation for <a href="'+model.__doc_link__+'">'+str(model.__class__.__name__)+'</a>'
+        else:
+            cls = str(model.__class__.__module__)+'.'+str(model.__class__.__name__)
+            if cls.startswith('convis'):
+                sphinx_path = "https://jahuth.github.io/convis/search.html?q="
+                for doc_package,doc_url in doc_urls:
+                    if cls.startswith(doc_package):
+                        sphinx_path = doc_url
+                        break
+                sub_string +=' or browse the documentation for <a href="'+sphinx_path+cls+'" style="color:#222;">'+str(model.__class__.__name__)+'</a>'
+        sub_string +=  ')</tiny>'
+        sub_string += '</div>'
+        if hasattr(model,'_state') and len(model._state) > 0:
+            sub_string += make_table('State', [(s,getattr(model,s,None)) for s in model._state], 'margin:1px; padding:2px; background-color: #e3eb91; color: #444; margin-left:10px;')
+        if hasattr(model,'_named_variables') and len(model._named_variables) > 0:
+            sub_string += make_table('Variables', model._named_variables.items(), 'margin:1px; padding:2px; background-color: #75bea3; color: #444; margin-left:10px;')
+        if len(list(model.named_children())) > 0:
+            sub_string += '<div style="font-weight: bold;">Modules</div>'
+            for mod_name,mod in list(model.named_children()):
+                if mod_name is '':
+                    continue
+                bg = '#eae2e5' if depth%2==0 else '#7a7275'
+                sub_string += '<div style="margin:1px; padding:2px; background-color: '+bg+'; color: #444; margin-left:10px;"><div>'
+                sub_string += ' <b style:font-size:120%>'+str(mod_name)+'</b> ('+str(mod.__class__.__name__)+')</div>'
+                if depth > 0:
+                    #if isinstance(mod, Layer) or isinstance(mod, torch.nn.Module):
+                    if hasattr(mod, 'named_children'):
+                        sub_string += '<div>'+r(mod, depth-1)+'</div>'
+                sub_string += '</div>'
+        return sub_string
+    s += r(layer,max_depth)
+    if wrap_in_html:
+        return HTML(s)
+    return s

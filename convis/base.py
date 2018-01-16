@@ -22,6 +22,7 @@ from .variable_describe import describe, describe_dict, describe_html
 import warnings
 
 from . import variables
+from . import variable_describe
 from .variables import *
 from . import utils
 from . import o
@@ -246,6 +247,18 @@ class Layer(torch.nn.Module):
             and will be filled with all parameters of the model by
             default. Other parameters are passed through to the optimizer.
 
+        .. py:attribute:: user_parameteres
+
+            A hierarchical, tab-completable list of all :class:`~torch.nn.Parameter`s/:class:`~convis.variables.Parameter`s
+            /:class:`~convis.variables.VirtualParameter`s of the model that provide a `.set()` function for the user.
+
+        .. py:attribute:: m
+
+            A hierarchical, tab-completable list of all :class:`~torch.nn.Module`s/:class:`~convis.base.Layer`s of the model.
+
+        .. py:attribute:: s
+
+            A hierarchical, tab-completable list of all state variables of the model.
 
 
         Methods
@@ -322,6 +335,43 @@ class Layer(torch.nn.Module):
         and will be filled with all parameters of the model by
         default. Other parameters are passed through to the optimizer
         eg. the learning rate :attr:`lr` in this example.
+
+
+        .. _tab_completion_special_attributes_example:
+
+        The special attributes `p`,`m`,`s` and `user_parameters`
+        provide tab-completion for parameters, submodules and states:
+
+        >>> retina = convis.models.retina()
+        >>> print retina.p
+        Parameters of the model (see also .user_parameters)
+        Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl
+        >>> print retina.user_parameters
+        Parameters of the model that can be set by the user.
+        Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl
+        >>> print retina.p
+        Modules of the model
+        Choices: _self, gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl
+        >>> print retina.s
+        Current state of the model
+        Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl
+
+        To find explore the parameters / modules / states,
+        print the object to see the available choices or
+        press tab:
+
+        >>> retina.p.<tab complete>
+        >>> retina.p.bi<tab complete>
+        >>> retina.p.bipolar.<tab complete>
+        >>> retina.p.bipolar.g_leak # the g_leak Parameter
+
+        The hierarchical :class:`~convis.o.Ox` object provides 
+        a few special functions
+
+        >>> retina.p._all.bipolar_g_leak # lists everything in a flat list
+        >>> retina.p._search.leak.<tab complete to search>
+        >>> retina.p._search.leak.bipolar_g_leak # found one result
+
 
 
         See Also
@@ -412,10 +462,28 @@ class Layer(torch.nn.Module):
                 outs.append(np.array(co))
         return Output(outs,keys=keys)
     @property
-    def params(self):
-        # see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py
-        # for full example on how to find parameters
-        return Ox(self.named_parameters())
+    def p(self):
+        """
+            A hierarchical, tab-completable list of all :class:`torch.nn.parameter.Parameter` of the model.
+            If a parameters is reachable via `some_model.p.layer1.module1.parameter1`
+            it will also be available directly as `some_model.layer1.module1.parameter1`.
+            However for tab-completion, the later method provides *all* attributes
+            of the model, not only parameters.
+        """
+        return variables.create_Ox_from_torch_iterator_dicts(self.named_parameters(),
+            doc='Parameters of the model (tab-completable, includes also parameters that should not be changed by the user. See also .user_parameters)')
+    @property
+    def user_parameters(self):
+        return variables.create_Ox_from_torch_iterator_dicts(filter(lambda x: hasattr(x[1],'set'), self.named_parameters()),
+            doc='Parameters of the model that can be set by the user via `.set()`. (tab-completable)')
+    @property
+    def m(self):
+        return variables.create_Ox_from_torch_iterator_dicts(self.named_modules(),
+            doc='Modules of the model (tab-completable)')
+    @property
+    def s(self):
+        return variables.create_Ox_from_torch_iterator_dicts(self.state(),
+            doc='Current state of the model (tab-completable)')
     def _apply(self, fn):
         for module in self.children():
             module._apply(fn)
@@ -600,6 +668,8 @@ class Layer(torch.nn.Module):
         if not hasattr(self, '_state_stack'):
             raise Exception('No state was pushed to the stack!')
         self.set_state(self._state_stack.pop())
+    def _repr_html_(self):
+        return variable_describe.describe_layer_with_html(self, 0)
 
 Model = Layer
 

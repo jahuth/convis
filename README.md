@@ -94,8 +94,8 @@ To use the model, supply a numpy array as an argument to the `Retina` (for short
 inp = np.ones((100,20,20))
 output = retina(inp)
     
-inp = np.ones((10000,20,20))
-output = retina.run(inp,dt=200)
+inp = np.ones((2000,20,20))
+output = retina.run(inp,dt=100)
 ```
 
 It will return an `Output` object containing all outputs of the model (the default for retina is two outputs: spikes of On and Off cells).
@@ -127,8 +127,8 @@ The output object holds the ouput of the computation (in most cases `torch.autog
 True
 >>> output[0] is output['ganglion_spikes_ON']
 True
->>> output.array(0) is output.array('ganglion_spikes_ON')
-True
+>>> np.sum(abs(output.array('ganglion_spikes_ON') - output.array(0)))
+0
 ```
 
 If instead of spikes, only the firing rate should be returned, the retina can be initialized without a spiking mechanism:

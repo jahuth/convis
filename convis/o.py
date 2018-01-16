@@ -131,17 +131,21 @@ class O(object):
         self.__dict__.update(**dict([(save_name(k),v) for (k,v) in kwargs.items()]))
         return self
     def __repr__(self):
+        if '_doc' in self.__dict__.keys():
+            return str(self.__dict__.get('_doc','')) + '\n' +  'Choices: '+(', '.join(self.__iterkeys__()))
         return 'Choices: '+(', '.join(self.__iterkeys__()))
     def _repr_html_(self):
+        if '_doc' in self.__dict__.keys():
+            return str(self.__dict__.get('_doc','')) + '<br/>' +  'Choices: '+(', '.join(self.__iterkeys__()))
         return repr(self)
     def __len__(self):
-        return len([k for k in self.__dict__.keys() if not k.startswith('_')])
+        return len([k for k in self.__dict__.keys() if not k.startswith('_') or k is '_self'])
     def __iter__(self):
-        return iter([v for (k,v) in self.__dict__.items() if not k.startswith('_')])
+        return iter([v for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self'])
     def __iterkeys__(self):
-        return iter([k for (k,v) in self.__dict__.items() if not k.startswith('_')])
+        return iter([k for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self'])
     def __iteritems__(self):
-        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_')]) 
+        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self']) 
     def __setattr__(self, name, value):
         if name in self.__dict__.keys():
             var_to_replace = getattr(self, name)
@@ -191,6 +195,8 @@ class O(object):
         raise IndexError('Key not found: '+str(k))
     @property
     def _(self):
+        if hasattr(self,'_self'):
+            return getattr(self,'_self')
         if hasattr(self,'_original'):
             return getattr(self,'_original')
         return self._get_as('_original_type',recursive=True)

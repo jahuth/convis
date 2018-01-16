@@ -5,6 +5,8 @@ except:
 from .misc_utils import unique_list
 from .o import O, Ox, save_name
 import numpy as np
+import copy
+
 replaceable_theano_vars = []#[TensorVariable,ScalarSharedVariable]
 
 global_lookup_table = {}
@@ -162,6 +164,61 @@ def is_variable(x):
         return hasattr(x,'_is_convis_variable')
     except:
         return False
+
+def dict_with_dots_to_hierarchical_dict(d):
+    d = copy.copy(d)
+    # move the empty string key (the module itself)
+    # to another key
+    if '' in d.keys():
+        d['_self'] = d['']
+        del d['']
+    for k in d.keys():
+        if '.' in k:
+            val = d[k]
+            del d[k]
+            ks = k.split('.')
+            if ks[0] in d:
+                if type(d[ks[0]]) == dict:
+                    d[ks[0]].update(dict_with_dots_to_hierarchical_dict({'.'.join(ks[1:]): val}))
+                else:
+                    old_val = d[ks[0]]
+                    d[ks[0]] = {'_self': d[ks[0]]}
+                    d[ks[0]].update(dict_with_dots_to_hierarchical_dict({'.'.join(ks[1:]): val}))
+                    #raise Exception('Key collision! %s and %s'%(ks[0],k))
+            else:
+                d[ks[0]] = dict_with_dots_to_hierarchical_dict({'.'.join(ks[1:]): val})
+    return d
+
+def create_Ox_from_torch_iterator_dicts(iterator,doc=''):
+    """
+        Takes a dictionary (or iterator with key,value pairs)
+        with dots in the keys and returns a hierarchical object.
+
+            >>> p = convis.variables.create_Ox_from_torch_iterator_dicts(retina.named_parameters())
+                # the same as:
+            >>> p = Ox(**dict_with_dots_to_hierarchical_dict(dict(retina.named_parameters())))
+            >>> p.<tab complete>
+            >>> p.bipolar.<tab complete>
+            >>> p.bipolar.g_leak
+
+
+        :class:`convis.o.Ox` objects have a few special attributes (with leading underscores)
+        that help finding nodes in large hierarchies
+
+            >>> p._all # lists everything with underscore 
+                       # separating hierarchies (ie. similar
+                       # to `.named_parameters()`, but each works
+                       # as an attribute instead of a string
+                       # key)
+            >>> p._search.g_leak.<tab complete>
+            >>> p._search.g_leak.bipolar_g_leak
+
+        See also
+        --------
+
+        convis.o.Ox
+    """
+    return Ox(_doc=doc,**dict_with_dots_to_hierarchical_dict(dict(iterator)))
 
 def create_hierarchical_dict(vs,pi=0,name_sanitizer=save_name):
     """
