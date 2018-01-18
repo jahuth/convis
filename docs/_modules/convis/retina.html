@@ -90,9 +90,9 @@
 <span class="sd">    convis.filters.retina.GanglionSpiking : creates spikes from an input current</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">keep_timing_info</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">timing_info</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bipolar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gang</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep_timing_info</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timing_info</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Retina</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">OPL</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">Bipolar</span><span class="p">()</span>

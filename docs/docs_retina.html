@@ -313,6 +313,69 @@ trigger them to re-calculate the filters.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="convis.filters.retina.RecursiveOPLFilter">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">RecursiveOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#RecursiveOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.RecursiveOPLFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>The most efficient OPL implementation.</p>
+<p>Temporal and spatial filters are implemented recursively.</p>
+<p>The following virtual parameters set the corresponding
+tensors with convolution filters. Eg. they turn 
+the standard deviation of the gaussian into a
+numerical, circular gaussian.</p>
+<p>You can set them to a value via <cite>.set(value)</cite> which will
+trigger them to re-calculate the filters.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-obj docutils literal"><span class="pre">convis.retina.Retina</span></code></a>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>sigma_center</strong></td>
+<td>(virtual parameter) Size of the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>tau_center</strong></td>
+<td>(virtual parameter) Time constant of the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>n_center</strong></td>
+<td>(virtual parameter) number of cascading exponential filters</td>
+</tr>
+<tr class="row-even"><td><strong>undershoot_tau_center</strong></td>
+<td>(virtual parameter) time constant of the high pass filter</td>
+</tr>
+<tr class="row-odd"><td><strong>undershoot_relative_weight_center</strong></td>
+<td>(virtual parameter) relative weight of the high pass filter</td>
+</tr>
+<tr class="row-even"><td><strong>sigma_surround</strong></td>
+<td>(virtual parameter) Size of the surround receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>tau_surround</strong></td>
+<td>(virtual parameter) Time constant of the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>relative_weight</strong></td>
+<td>(virtual parameter) relative weight between center and surround</td>
+</tr>
+<tr class="row-odd"><td><strong>center_G</strong></td>
+<td>(Conv3d) Spatial convolution filter for the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>center_E</strong></td>
+<td>(Recursive Filter) recursive temporal filter for the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>surround_G</strong></td>
+<td>(Conv3d) Spatial convolution filter for the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>surround_E</strong></td>
+<td>(Recursive Filter) recursive temporal filter for the surround receptive field</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="convis.filters.retina.FullConvolutionOPLFilter">
 <em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">FullConvolutionOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#FullConvolutionOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.FullConvolutionOPLFilter" title="Permalink to this definition">¶</a></dt>
 <dd><div class="admonition seealso">
