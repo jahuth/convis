@@ -464,6 +464,7 @@ class StreamVisualizer():
         self.decay_activity = None
         self.last_batch_length = None
         self.last_batch_time = None
+        self.cmap = None
         #self.recieve_thread = thread.start_new_thread(self.recieve,tuple())
     def mainloop(self):
         try:
@@ -557,7 +558,10 @@ class StreamVisualizer():
                 elif im.shape[0] < 300:
                     im = np.repeat(im,2,axis=0)
                     im = np.repeat(im,2,axis=1)
-                self.image = Image.fromarray(256.0*im).convert('RGB')#Image.open(image_buffer)#cStringIO.StringIO(self.last_buffer))
+                if self.cmap is not None:
+                    self.image = Image.fromarray(self.cmap(im, bytes=True))
+                else:
+                    self.image = Image.fromarray(256.0*im).convert('RGB')#Image.open(image_buffer)#cStringIO.StringIO(self.last_buffer))
                 #self.image.resize((500,500), Image.ANTIALIAS)
                 #self.image.load()
                 self.image1 = ImageTk.PhotoImage(self.image)
@@ -646,7 +650,7 @@ try:
             #self.file = h5py.File(filename, "r+") 
             self.data_set_name = data_set_name
             if size is not None:
-                with h5py.File(self.filename, "r+") as f:
+                with h5py.File(self.filename, "a") as f:
                     self.dset = self.file.create_dataset(data_set_name, 
                                 (0,size[0],size[1]), 
                                 compression="gzip",
@@ -654,7 +658,7 @@ try:
                                 maxshape=(None,s.shape[1],s.shape[2]),
                                 dtype='f')
         def put(self,s):
-            with h5py.File(self.filename, "r+") as f:
+            with h5py.File(self.filename, "a") as f:
                 print(set(f.keys()))
                 if not self.data_set_name in set(f.keys()):
                     self.dset = f.create_dataset(self.data_set_name, 

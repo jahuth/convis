@@ -1,4 +1,9 @@
 from __future__ import print_function
+try:
+    import torch
+except ImportError:
+    print('Please download the torch package from https://pytorch.org')
+    raise
 
 from . import base
 from . import retina

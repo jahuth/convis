@@ -50,7 +50,7 @@
 <h1>VirtualRetina-like Simulator<a class="headerlink" href="#virtualretina-like-simulator" title="Permalink to this headline">¶</a></h1>
 <p>The <a class="reference internal" href="#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-class docutils literal"><span class="pre">Retina</span></code></a> model combines filters from
 <a class="reference internal" href="#module-convis.filters.retina" title="convis.filters.retina"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters.retina</span></code></a> into a complete model, similar
-to VirtualRetina <a class="reference internal" href="#wohrer2008" id="id1">[Wohrer2008]</a>.
+to VirtualRetina <a class="reference internal" href="#wohrer2009" id="id1">[Wohrer2009]</a>.
 To load the same xml configuration as VirtualRetina, the
 module <a class="reference internal" href="#module-convis.retina_virtualretina" title="convis.retina_virtualretina"><code class="xref py py-mod docutils literal"><span class="pre">convis.retina_virtualretina</span></code></a> provides a
 <a class="reference internal" href="#convis.retina_virtualretina.RetinaConfiguration" title="convis.retina_virtualretina.RetinaConfiguration"><code class="xref py py-class docutils literal"><span class="pre">RetinaConfiguration</span></code></a> object
@@ -108,10 +108,10 @@ $$I_{Gang}(x,y,t) = G * N(T * V_{Bip})$$</p>
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<table class="docutils citation" frame="void" id="wohrer2008" rules="none">
+<table class="docutils citation" frame="void" id="wohrer2009" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Wohrer2008]</a></td><td>Wohrer, A., &amp; Kornprobst, P. (2009).
+<tr><td class="label"><a class="fn-backref" href="#id1">[Wohrer2009]</a></td><td>Wohrer, A., &amp; Kornprobst, P. (2009).
 Virtual Retina: a biological retina model and simulator, with contrast gain control.
 Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference external" href="http://doi.org/10.1007/s10827-008-0108-4">http://doi.org/10.1007/s10827-008-0108-4</a></td></tr>
 </tbody>
@@ -123,7 +123,15 @@ Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference extern
 <dl class="class">
 <dt id="convis.retina.Retina">
 <em class="property">class </em><code class="descclassname">convis.retina.</code><code class="descname">Retina</code><span class="sig-paren">(</span><em>opl=True</em>, <em>bipolar=True</em>, <em>gang=True</em>, <em>spikes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina.html#Retina"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina.Retina" title="Permalink to this definition">¶</a></dt>
-<dd><p>A retinal ganglion cell model comparable to VirtualRetina <a href="#id3"><span class="problematic" id="id2">[1]_</span></a>.</p>
+<dd><p>A retinal ganglion cell model comparable to VirtualRetina <a class="reference internal" href="#wohrer200901" id="id2">[Wohrer200901]</a>.</p>
+<table class="docutils citation" frame="void" id="wohrer200901" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Wohrer200901]</a></td><td>Wohrer, A., &amp; Kornprobst, P. (2009).
+Virtual Retina: a biological retina model and simulator, with contrast gain control.
+Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference external" href="http://doi.org/10.1007/s10827-008-0108-4">http://doi.org/10.1007/s10827-008-0108-4</a></td></tr>
+</tbody>
+</table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <dl class="last docutils">
@@ -139,11 +147,38 @@ Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference extern
 <dd>creates spikes from an input current</dd>
 </dl>
 </div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">inp</span><span class="p">[:</span><span class="mi">1000</span><span class="p">],</span><span class="mf">2.0</span><span class="o">*</span><span class="n">inp</span><span class="p">[</span><span class="mi">1000</span><span class="p">:</span><span class="mi">1500</span><span class="p">],</span><span class="n">inp</span><span class="p">[</span><span class="mi">1500</span><span class="p">:</span><span class="mi">2000</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">o_init</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">[:</span><span class="mi">500</span><span class="p">],</span><span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="mi">500</span><span class="p">:],</span><span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># plots the mean activity over time</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">(</span><span class="n">opl</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">bipolar</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">gang</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">spikes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">o_init</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">[:</span><span class="mi">500</span><span class="p">],</span><span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="mi">500</span><span class="p">:],</span><span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># plots the mean activity over time</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="c1"># plots a line for each pixel</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_retina-1.py">Source code</a>)</p>
+<div class="figure" id="id3">
+<img alt="_images/docs_retina-1_00.png" src="_images/docs_retina-1_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//docs_retina-1_00.png">png</a>, <a class="reference external" href=".//docs_retina-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//docs_retina-1_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id4">
+<img alt="_images/docs_retina-1_01.png" src="_images/docs_retina-1_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//docs_retina-1_01.png">png</a>, <a class="reference external" href=".//docs_retina-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//docs_retina-1_01.pdf">pdf</a>)</span></p>
+</div>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="21%" />
-<col width="79%" />
+<col width="11%" />
+<col width="89%" />
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><strong>opl</strong></td>
@@ -173,12 +208,8 @@ Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference extern
 <tr class="row-odd"><td><strong>timing_info</strong></td>
 <td>(list) stores timing information of all runs if <cite>keep_timing_info</cite> is True.</td>
 </tr>
-<tr class="row-even"><td><strong>.. [1] Wohrer, A., &amp; Kornprobst, P. (2009).</strong></td>
-<td>Virtual Retina: a biological retina model and simulator, with contrast gain control. Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference external" href="http://doi.org/10.1007/s10827-008-0108-4">http://doi.org/10.1007/s10827-008-0108-4</a></td>
-</tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 </div>
@@ -245,7 +276,6 @@ trigger them to re-calculate the filters.</p>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -309,7 +339,68 @@ trigger them to re-calculate the filters.</p>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.retina.RecursiveOPLFilter">
+<em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">RecursiveOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#RecursiveOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.RecursiveOPLFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>The most efficient OPL implementation.</p>
+<p>Temporal and spatial filters are implemented recursively.</p>
+<p>The following virtual parameters set the corresponding
+tensors with convolution filters. Eg. they turn 
+the standard deviation of the gaussian into a
+numerical, circular gaussian.</p>
+<p>You can set them to a value via <cite>.set(value)</cite> which will
+trigger them to re-calculate the filters.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-obj docutils literal"><span class="pre">convis.retina.Retina</span></code></a>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">FullConvolutionOPLFilter</span></code></a></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>sigma_center</strong></td>
+<td>(virtual parameter) Size of the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>tau_center</strong></td>
+<td>(virtual parameter) Time constant of the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>n_center</strong></td>
+<td>(virtual parameter) number of cascading exponential filters</td>
+</tr>
+<tr class="row-even"><td><strong>undershoot_tau_center</strong></td>
+<td>(virtual parameter) time constant of the high pass filter</td>
+</tr>
+<tr class="row-odd"><td><strong>undershoot_relative_weight_center</strong></td>
+<td>(virtual parameter) relative weight of the high pass filter</td>
+</tr>
+<tr class="row-even"><td><strong>sigma_surround</strong></td>
+<td>(virtual parameter) Size of the surround receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>tau_surround</strong></td>
+<td>(virtual parameter) Time constant of the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>relative_weight</strong></td>
+<td>(virtual parameter) relative weight between center and surround</td>
+</tr>
+<tr class="row-odd"><td><strong>center_G</strong></td>
+<td>(Conv3d) Spatial convolution filter for the center receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>center_E</strong></td>
+<td>(Recursive Filter) recursive temporal filter for the center receptive field</td>
+</tr>
+<tr class="row-odd"><td><strong>surround_G</strong></td>
+<td>(Conv3d) Spatial convolution filter for the surround receptive field</td>
+</tr>
+<tr class="row-even"><td><strong>surround_E</strong></td>
+<td>(Recursive Filter) recursive temporal filter for the surround receptive field</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="class">
@@ -319,8 +410,6 @@ trigger them to re-calculate the filters.</p>
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-obj docutils literal"><span class="pre">convis.retina.Retina</span></code></a>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a></p>
 </div>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -355,7 +444,6 @@ parameters, but offers a single, non-separable convolution filter.</p>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -391,7 +479,6 @@ parameters, but offers a single, non-separable convolution filter.</p>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -478,7 +565,6 @@ parameters, but offers a single, non-separable convolution filter.</p>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -513,7 +599,6 @@ parameters, but offers a single, non-separable convolution filter.</p>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 </div>
@@ -537,7 +622,6 @@ The defaults are equal to <cite>human.parvo.xml</cite>.</p>
 <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ganglion-layers.*.spiking-channel.sigma-V&#39;</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># for all layers</span>
 </pre></div>
 </div>
-<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="convis.retina_virtualretina.RetinaConfiguration.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/retina_virtualretina.html#RetinaConfiguration.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.retina_virtualretina.RetinaConfiguration.get" title="Permalink to this definition">¶</a></dt>

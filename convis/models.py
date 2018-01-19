@@ -17,6 +17,8 @@ from .filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION, Delay, VariableDela
 from . import variables
 from .retina import Retina
 
+__all__ = ['L','LN','LNLN','LNFDLNF','LNFDSNF','McIntosh','Retina']
+
 class L(Layer):
     """
         A linear model with a convolution filter.
@@ -203,3 +205,4 @@ class McIntosh(Layer):
         if hasattr(self,'_last_processed_image'):
             utils.plot(self.readout.weight.squeeze().data.cpu().numpy().reshape((1,self._last_processed_image[-4],1,self._last_processed_image[-2],self._last_processed_image[-1])))
             plt.title('Readout')
+

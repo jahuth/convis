@@ -18,7 +18,7 @@ included in the main repository, the preferred method is for you to commit the
 change to a fork on your own github account and submit a pull request.
 
 
-General discussion is encuraged on the two mailing lists:
+General discussion is encouraged on the two mailing lists:
  * [convis-users@googlegroups.com](https://groups.google.com/forum/#!forum/convis-users) for announcements and user questions
  * [convis-dev@googlegroups.com](https://groups.google.com/forum/#!forum/convis-dev) for discussions about the development
 

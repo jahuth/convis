@@ -302,3 +302,4 @@ intersphinx_mapping = {'https://docs.python.org/': None,
                        'torch': ('http://pytorch.org/docs/0.3.0/', None)}
 
 autodoc_member_order = 'bysource'
+numpydoc_show_class_members = False

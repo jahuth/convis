@@ -47,14 +47,14 @@
         
         
   <div class="section" id="convis-classes-and-modules">
-<h1><a class="toc-backref" href="#id1">Convis classes and modules</a><a class="headerlink" href="#convis-classes-and-modules" title="Permalink to this headline">¶</a></h1>
+<h1><a class="toc-backref" href="#id5">Convis classes and modules</a><a class="headerlink" href="#convis-classes-and-modules" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="table-of-contents">
 <p class="topic-title first">Table of Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#convis-classes-and-modules" id="id1">Convis classes and modules</a><ul>
-<li><a class="reference internal" href="#module-convis.base" id="id2">Base classes <cite>convis.base</cite></a></li>
-<li><a class="reference internal" href="#module-convis.utils" id="id3">Utilitary methods <cite>convis.utils</cite></a></li>
-<li><a class="reference internal" href="#module-convis.samples" id="id4">Sample Data <cite>convis.samples</cite></a></li>
+<li><a class="reference internal" href="#convis-classes-and-modules" id="id5">Convis classes and modules</a><ul>
+<li><a class="reference internal" href="#module-convis.base" id="id6">Base classes <cite>convis.base</cite></a></li>
+<li><a class="reference internal" href="#module-convis.utils" id="id7">Utilitary methods <cite>convis.utils</cite></a></li>
+<li><a class="reference internal" href="#module-convis.samples" id="id8">Sample Data <cite>convis.samples</cite></a></li>
 </ul>
 </li>
 </ul>
@@ -63,10 +63,7 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="docs_models.html#convis-models">Convis Models</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html#general-overview">General Overview</a></li>
@@ -80,7 +77,7 @@
 </ul>
 </div>
 <span class="target" id="module-convis"></span><div class="section" id="module-convis.base">
-<span id="base-classes-convis-base"></span><h2><a class="toc-backref" href="#id2">Base classes <cite>convis.base</cite></a><a class="headerlink" href="#module-convis.base" title="Permalink to this headline">¶</a></h2>
+<span id="base-classes-convis-base"></span><h2><a class="toc-backref" href="#id6">Base classes <cite>convis.base</cite></a><a class="headerlink" href="#module-convis.base" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="convis-base-classes">
 <h3>Convis base classes<a class="headerlink" href="#convis-base-classes" title="Permalink to this headline">¶</a></h3>
 <p>Convis extends PyTorch by adding some methods to <cite>torch.nn.Module</cite> and calling it a Layer.</p>
@@ -95,7 +92,6 @@ To make this meaningfull, provide a name to your output variables.</p>
 <p>In the case of name collisions, the behavior of OrderedDict will use the last variable added.</p>
 <p>The full path names of all variables are also added to this objects __dict__,
 allowing for tab completion.</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="function">
@@ -183,6 +179,39 @@ original model and not a copy.</p>
 and will be filled with all parameters of the model by
 default. Other parameters are passed through to the optimizer
 eg. the learning rate <code class="xref py py-attr docutils literal"><span class="pre">lr</span></code> in this example.</p>
+<p id="tab-completion-special-attributes-example">The special attributes <cite>p</cite>,`m`,`s` and <cite>user_parameters</cite>
+provide tab-completion for parameters, submodules and states:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">retina</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">retina</span><span class="o">.</span><span class="n">p</span>
+<span class="go">Parameters of the model (see also .user_parameters)</span>
+<span class="go">Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">retina</span><span class="o">.</span><span class="n">user_parameters</span>
+<span class="go">Parameters of the model that can be set by the user.</span>
+<span class="go">Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">retina</span><span class="o">.</span><span class="n">p</span>
+<span class="go">Modules of the model</span>
+<span class="go">Choices: _self, gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">retina</span><span class="o">.</span><span class="n">s</span>
+<span class="go">Current state of the model</span>
+<span class="go">Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+</pre></div>
+</div>
+<p>To find explore the parameters / modules / states,
+print the object to see the available choices or
+press tab:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.&lt;</span><span class="n">tab</span> <span class="n">complete</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bi</span><span class="o">&lt;</span><span class="n">tab</span> <span class="n">complete</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.&lt;</span><span class="n">tab</span> <span class="n">complete</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">g_leak</span> <span class="c1"># the g_leak Parameter</span>
+</pre></div>
+</div>
+<p>The hierarchical <code class="xref py py-class docutils literal"><span class="pre">Ox</span></code> object provides 
+a few special functions</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_all</span><span class="o">.</span><span class="n">bipolar_g_leak</span> <span class="c1"># lists everything in a flat list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">leak</span><span class="o">.&lt;</span><span class="n">tab</span> <span class="n">complete</span> <span class="n">to</span> <span class="n">search</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">leak</span><span class="o">.</span><span class="n">bipolar_g_leak</span> <span class="c1"># found one result</span>
+</pre></div>
+</div>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -195,6 +224,15 @@ eg. the learning rate <code class="xref py py-attr docutils literal"><span class
 </tr>
 <tr class="row-even"><td><strong>.. py:attribute:: set_optimizer</strong></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">magic</span> <span class="pre">object</span></code> that allows tab completion to select an optimizer. (see <a class="reference internal" href="#tab-completion-example"><span class="std std-ref">example</span></a>)  The list of parameters as first argument can be omitted and will be filled with all parameters of the model by default. Other parameters are passed through to the optimizer.</td>
+</tr>
+<tr class="row-odd"><td><strong>.. py:attribute:: user_parameteres</strong></td>
+<td>A hierarchical, tab-completable list of all <code class="xref py py-class docutils literal"><span class="pre">set()</span></code> function for the user.</td>
+</tr>
+<tr class="row-even"><td><strong>.. py:attribute:: m</strong></td>
+<td>A hierarchical, tab-completable list of all :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>~torch.nn.Module`s/:class:<a href="#id3"><span class="problematic" id="id4">`</span></a>~convis.base.Layer`s of the model.</td>
+</tr>
+<tr class="row-odd"><td><strong>.. py:attribute:: s</strong></td>
+<td>A hierarchical, tab-completable list of all state variables of the model.</td>
 </tr>
 </tbody>
 </table>
@@ -257,6 +295,16 @@ returns the model itself.</p>
 <p>Returns an <cite>Output</cite> object.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="convis.base.Layer.p">
+<code class="descname">p</code><a class="headerlink" href="#convis.base.Layer.p" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hierarchical, tab-completable list of all <code class="xref py py-class docutils literal"><span class="pre">torch.nn.parameter.Parameter</span></code> of the model.
+If a parameters is reachable via <cite>some_model.p.layer1.module1.parameter1</cite>
+it will also be available directly as <cite>some_model.layer1.module1.parameter1</cite>.
+However for tab-completion, the later method provides <em>all</em> attributes
+of the model, not only parameters.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="convis.base.Layer.parse_config">
 <code class="descname">parse_config</code><span class="sig-paren">(</span><em>config</em>, <em>prefix=''</em>, <em>key='retina_config_key'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.parse_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.parse_config" title="Permalink to this definition">¶</a></dt>
@@ -313,6 +361,37 @@ OrderedDict</p>
 <dd><p>retrieves the values of all State variables and from a stack</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="convis.base.Layer.plot_impulse">
+<code class="descname">plot_impulse</code><span class="sig-paren">(</span><em>shp=(500</em>, <em>10</em>, <em>10)</em>, <em>dt=500</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.plot_impulse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.plot_impulse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the response to a 1 bin impulse.</p>
+<p>The state of the model is preserved (pushed 
+to the stack and poped later).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The output of the model</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>shp</strong></td>
+<td>(tuple(t, x, y)) the size of the stimulus. A larger stimulus will show a larger area of the impulse response</td>
+</tr>
+<tr class="row-even"><td><strong>dt</strong></td>
+<td>(int) length of chunks when computing the response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="attribute">
@@ -330,7 +409,6 @@ and can run or optimize it in a separate thread.</p>
 <p><code class="xref py py-attr docutils literal"><span class="pre">input</span></code> should be a <a class="reference internal" href="docs_streams.html#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.Stream</span></code></a> that contains input data
 <code class="xref py py-attr docutils literal"><span class="pre">output</span></code> should be a <a class="reference internal" href="docs_streams.html#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.Stream</span></code></a> that accepts new data
 when using optimize, <code class="xref py py-attr docutils literal"><span class="pre">goal</span></code> has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</p>
-<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="convis.base.Runner.stop">
 <code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.stop" title="Permalink to this definition">¶</a></dt>
@@ -356,7 +434,7 @@ when using optimize, <code class="xref py py-attr docutils literal"><span class=
 </div>
 </div>
 <div class="section" id="module-convis.utils">
-<span id="utilitary-methods-convis-utils"></span><h2><a class="toc-backref" href="#id3">Utilitary methods <cite>convis.utils</cite></a><a class="headerlink" href="#module-convis.utils" title="Permalink to this headline">¶</a></h2>
+<span id="utilitary-methods-convis-utils"></span><h2><a class="toc-backref" href="#id7">Utilitary methods <cite>convis.utils</cite></a><a class="headerlink" href="#module-convis.utils" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="convis.utils.plot_5d_matshow">
 <code class="descclassname">convis.utils.</code><code class="descname">plot_5d_matshow</code><span class="sig-paren">(</span><em>w, border=True, dims=[(0, 1, 3), (2, 4)], border_val=0.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_5d_matshow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_5d_matshow" title="Permalink to this definition">¶</a></dt>
@@ -384,7 +462,7 @@ to <cite>matplotlib.pylab.plot()</cite></p>
 
 </div>
 <div class="section" id="module-convis.samples">
-<span id="sample-data-convis-samples"></span><h2><a class="toc-backref" href="#id4">Sample Data <cite>convis.samples</cite></a><a class="headerlink" href="#module-convis.samples" title="Permalink to this headline">¶</a></h2>
+<span id="sample-data-convis-samples"></span><h2><a class="toc-backref" href="#id8">Sample Data <cite>convis.samples</cite></a><a class="headerlink" href="#module-convis.samples" title="Permalink to this headline">¶</a></h2>
 <p>This module provides sample kernels and inputs.</p>
 <dl class="function">
 <dt id="convis.samples.random_checker_stimulus">

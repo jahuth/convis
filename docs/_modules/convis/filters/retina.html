@@ -53,7 +53,7 @@
 <span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">..filters</span> <span class="k">import</span> <span class="n">Conv1d</span><span class="p">,</span> <span class="n">Conv2d</span><span class="p">,</span> <span class="n">Conv3d</span><span class="p">,</span> <span class="n">TIME_DIMENSION</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">variables</span>
-<span class="kn">from</span> <span class="nn">..filters.simple</span> <span class="k">import</span> <span class="n">TemporalLowPassFilterRecursive</span><span class="p">,</span> <span class="n">TemporalHighPassFilterRecursive</span>
+<span class="kn">from</span> <span class="nn">..filters</span> <span class="k">import</span> <span class="n">TemporalLowPassFilterRecursive</span><span class="p">,</span> <span class="n">TemporalHighPassFilterRecursive</span><span class="p">,</span> <span class="n">SpatialRecursiveFilter</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Todo:</span>
@@ -321,6 +321,106 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">*</span> <span class="n">s</span><span class="p">[:,:,:,:,:]</span>
         <span class="k">return</span> <span class="n">y</span></div>
 
+<div class="viewcode-block" id="RecursiveOPLFilter"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.RecursiveOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">RecursiveOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The most efficient OPL implementation.</span>
+
+<span class="sd">        Temporal and spatial filters are implemented recursively.</span>
+
+<span class="sd">        The following virtual parameters set the corresponding</span>
+<span class="sd">        tensors with convolution filters. Eg. they turn </span>
+<span class="sd">        the standard deviation of the gaussian into a</span>
+<span class="sd">        numerical, circular gaussian.</span>
+
+<span class="sd">        You can set them to a value via `.set(value)` which will</span>
+<span class="sd">        trigger them to re-calculate the filters.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        --------------------</span>
+
+<span class="sd">        sigma_center : virtual parameter</span>
+<span class="sd">            Size of the center receptive field</span>
+<span class="sd">        tau_center : virtual parameter</span>
+<span class="sd">            Time constant of the center receptive field</span>
+<span class="sd">        n_center : virtual parameter</span>
+<span class="sd">            number of cascading exponential filters</span>
+<span class="sd">        undershoot_tau_center : virtual parameter</span>
+<span class="sd">            time constant of the high pass filter</span>
+<span class="sd">        undershoot_relative_weight_center : virtual parameter</span>
+<span class="sd">            relative weight of the high pass filter</span>
+<span class="sd">        sigma_surround : virtual parameter</span>
+<span class="sd">            Size of the surround receptive field</span>
+<span class="sd">        tau_surround : virtual parameter</span>
+<span class="sd">            Time constant of the surround receptive field</span>
+<span class="sd">        relative_weight : virtual parameter</span>
+<span class="sd">            relative weight between center and surround</span>
+<span class="sd">        center_G : Conv3d</span>
+<span class="sd">            Spatial convolution filter for the center receptive field</span>
+<span class="sd">        center_E : Recursive Filter</span>
+<span class="sd">            recursive temporal filter for the center receptive field</span>
+<span class="sd">        surround_G : Conv3d</span>
+<span class="sd">            Spatial convolution filter for the surround receptive field</span>
+<span class="sd">        surround_E : Recursive Filter</span>
+<span class="sd">            recursive temporal filter for the surround receptive field</span>
+
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        convis.retina.Retina</span>
+<span class="sd">        OPL</span>
+<span class="sd">        SeperatableOPLFilter</span>
+<span class="sd">        FullConvolutionOPLFilter</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RecursiveOPLFilter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_G</span> <span class="o">=</span> <span class="n">SpatialRecursiveFilter</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_G</span><span class="o">.</span><span class="n">gaussian</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">center_G</span><span class="o">.</span><span class="n">gaussian</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;center-sigma__deg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_callback_arguments</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="n">variables</span><span class="o">.</span><span class="n">default_resolution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_E</span> <span class="o">=</span> <span class="n">TemporalLowPassFilterRecursive</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;center-tau__sec&#39;</span><span class="p">,</span><span class="n">var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">center_E</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;center-n__uint&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_undershoot</span> <span class="o">=</span> <span class="n">TemporalHighPassFilterRecursive</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undershoot_tau_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;undershoot.tau__sec&#39;</span><span class="p">,</span>
+            <span class="n">var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">center_undershoot</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undershoot_relative_weight_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;undershoot.relative-weight&#39;</span><span class="p">,</span>
+            <span class="n">var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">center_undershoot</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surround_G</span> <span class="o">=</span> <span class="n">SpatialRecursiveFilter</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surround_G</span><span class="o">.</span><span class="n">gaussian</span><span class="p">(</span><span class="mf">0.15</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_surround</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surround_G</span><span class="o">.</span><span class="n">gaussian</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;surround-sigma__deg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_callback_arguments</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="n">variables</span><span class="o">.</span><span class="n">default_resolution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_surround</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">0.15</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span> <span class="o">=</span> <span class="n">TemporalLowPassFilterRecursive</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_surround</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;surround-tau__sec&#39;</span><span class="p">,</span><span class="n">var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;opl-relative-weight&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_opl</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;opl-amplification&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_E</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_undershoot</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_G</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_opl</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_E</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_undershoot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surround_G</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surround_E</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_signal</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surround_signal</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">*</span> <span class="n">s</span><span class="p">[:,:,:,:,:]</span>
+        <span class="k">return</span> <span class="n">y</span></div>
+
 <div class="viewcode-block" id="FullConvolutionOPLFilter"><a class="viewcode-back" href="../../../docs_retina.html#convis.filters.retina.FullConvolutionOPLFilter">[docs]</a><span class="k">class</span> <span class="nc">FullConvolutionOPLFilter</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        </span>
@@ -340,6 +440,45 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,:,:,:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;center-sigma__deg&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;center-tau__sec&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;center-n__uint&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undershoot_tau_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;undershoot.tau__sec&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undershoot_relative_weight_center</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;undershoot.relative-weight&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_surround</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;surround-sigma__deg&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_surround</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;surround-tau__sec&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;opl-relative-weight&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_opl</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;opl-amplification&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">VirtualParameter</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">create_kernel</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">set_callback_arguments</span><span class="p">(</span>
+                            <span class="n">sigma_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_center</span><span class="p">,</span>
+                            <span class="n">tau_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_center</span><span class="p">,</span>
+                            <span class="n">n_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_center</span><span class="p">,</span>
+                            <span class="n">undershoot_tau_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">undershoot_tau_center</span><span class="p">,</span>
+                            <span class="n">undershoot_relative_weight_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">undershoot_relative_weight_center</span><span class="p">,</span>
+                            <span class="n">sigma_surround</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_surround</span><span class="p">,</span>
+                            <span class="n">tau_surround</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_surround</span><span class="p">,</span>
+                            <span class="n">relative_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_weight</span><span class="p">,</span>
+                            <span class="n">lambda_opl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_opl</span>
+                        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">create_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_center</span><span class="p">,</span>
+                            <span class="n">tau_center</span><span class="p">,</span>
+                            <span class="n">n_center</span><span class="p">,</span>
+                            <span class="n">undershoot_tau_center</span><span class="p">,</span>
+                            <span class="n">undershoot_relative_weight_center</span><span class="p">,</span>
+                            <span class="n">sigma_surround</span><span class="p">,</span>
+                            <span class="n">tau_surround</span><span class="p">,</span>
+                            <span class="n">relative_weight</span><span class="p">,</span>
+                            <span class="n">lambda_opl</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;updating!&#39;</span><span class="p">)</span>
+        <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
@@ -454,6 +593,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span> <span class="o">=</span> <span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,(</span><span class="mi">9</span><span class="p">,</span><span class="mi">9</span><span class="p">),</span><span class="n">autopad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span><span class="o">.</span><span class="n">gaussian</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
         <span class="c1">#self.conv2d.set_weight(1.0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;preceding_V_bip&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;preceding_attenuationMap&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;preceding_inhibition&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shapes</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preceding_attenuationMap</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
@@ -461,7 +603,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="c1"># initial slices</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;preceding_V_bip&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">init_states</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
             <span class="c1">#self.conv2d.cuda()</span>
@@ -684,6 +826,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span>
                             <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;--should be inherited&#39;</span><span class="p">,</span>
                             <span class="n">doc</span> <span class="o">=</span> <span class="s1">&#39;Length of timesteps (ie. the steps_to_seconds(1.0) of the model.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;zeros&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;refr&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;noise_prev&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shape</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">+</span><span class="mf">0.2</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># membrane potential</span>
@@ -696,7 +842,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">noise_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">I_gang</span><span class="p">):</span>
         <span class="n">g_infini</span> <span class="o">=</span> <span class="mf">50.0</span> <span class="c1"># apparently?</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">init_states</span><span class="p">(</span><span class="n">I_gang</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
             <span class="c1">#y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cuda()</span>

@@ -18,7 +18,7 @@ class TestConvis(unittest.TestCase):
                             np.arange(stimulus.shape[1]),
                             np.arange(stimulus.shape[2]),indexing='ij')
         stimulus += 0.5*(1.0+np.sin(0.1 * T + 0.5*X + 0.3*Y))
-        o = ret.run_in_chunks(stimulus, 200)
+        o = ret.run(stimulus, dt=200)
         self.assertEqual(len(o),2)
 
 class TestConvisFilters(unittest.TestCase):

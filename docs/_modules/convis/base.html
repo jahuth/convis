@@ -65,6 +65,7 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variables</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variable_describe</span>
 <span class="kn">from</span> <span class="nn">.variables</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">o</span>
@@ -135,7 +136,10 @@
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -286,6 +290,18 @@
 <span class="sd">            and will be filled with all parameters of the model by</span>
 <span class="sd">            default. Other parameters are passed through to the optimizer.</span>
 
+<span class="sd">        .. py:attribute:: user_parameteres</span>
+
+<span class="sd">            A hierarchical, tab-completable list of all :class:`~torch.nn.Parameter`s/:class:`~convis.variables.Parameter`s</span>
+<span class="sd">            /:class:`~convis.variables.VirtualParameter`s of the model that provide a `.set()` function for the user.</span>
+
+<span class="sd">        .. py:attribute:: m</span>
+
+<span class="sd">            A hierarchical, tab-completable list of all :class:`~torch.nn.Module`s/:class:`~convis.base.Layer`s of the model.</span>
+
+<span class="sd">        .. py:attribute:: s</span>
+
+<span class="sd">            A hierarchical, tab-completable list of all state variables of the model.</span>
 
 
 <span class="sd">        Methods</span>
@@ -364,6 +380,43 @@
 <span class="sd">        eg. the learning rate :attr:`lr` in this example.</span>
 
 
+<span class="sd">        .. _tab_completion_special_attributes_example:</span>
+
+<span class="sd">        The special attributes `p`,`m`,`s` and `user_parameters`</span>
+<span class="sd">        provide tab-completion for parameters, submodules and states:</span>
+
+<span class="sd">        &gt;&gt;&gt; retina = convis.models.retina()</span>
+<span class="sd">        &gt;&gt;&gt; print retina.p</span>
+<span class="sd">        Parameters of the model (see also .user_parameters)</span>
+<span class="sd">        Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+<span class="sd">        &gt;&gt;&gt; print retina.user_parameters</span>
+<span class="sd">        Parameters of the model that can be set by the user.</span>
+<span class="sd">        Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+<span class="sd">        &gt;&gt;&gt; print retina.p</span>
+<span class="sd">        Modules of the model</span>
+<span class="sd">        Choices: _self, gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+<span class="sd">        &gt;&gt;&gt; print retina.s</span>
+<span class="sd">        Current state of the model</span>
+<span class="sd">        Choices: gang_0_spikes, gang_1_spikes, gang_0_input, gang_1_input, bipolar, opl</span>
+
+<span class="sd">        To find explore the parameters / modules / states,</span>
+<span class="sd">        print the object to see the available choices or</span>
+<span class="sd">        press tab:</span>
+
+<span class="sd">        &gt;&gt;&gt; retina.p.&lt;tab complete&gt;</span>
+<span class="sd">        &gt;&gt;&gt; retina.p.bi&lt;tab complete&gt;</span>
+<span class="sd">        &gt;&gt;&gt; retina.p.bipolar.&lt;tab complete&gt;</span>
+<span class="sd">        &gt;&gt;&gt; retina.p.bipolar.g_leak # the g_leak Parameter</span>
+
+<span class="sd">        The hierarchical :class:`~convis.o.Ox` object provides </span>
+<span class="sd">        a few special functions</span>
+
+<span class="sd">        &gt;&gt;&gt; retina.p._all.bipolar_g_leak # lists everything in a flat list</span>
+<span class="sd">        &gt;&gt;&gt; retina.p._search.leak.&lt;tab complete to search&gt;</span>
+<span class="sd">        &gt;&gt;&gt; retina.p._search.leak.bipolar_g_leak # found one result</span>
+
+
+
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 
@@ -383,7 +436,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_optimizer</span> <span class="o">=</span> <span class="n">_OptimizerSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">register_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_default_state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
@@ -452,10 +505,28 @@
                 <span class="n">outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">co</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">Output</span><span class="p">(</span><span class="n">outs</span><span class="p">,</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># see https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/module.py</span>
-        <span class="c1"># for full example on how to find parameters</span>
-        <span class="k">return</span> <span class="n">Ox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">p</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            A hierarchical, tab-completable list of all :class:`torch.nn.parameter.Parameter` of the model.</span>
+<span class="sd">            If a parameters is reachable via `some_model.p.layer1.module1.parameter1`</span>
+<span class="sd">            it will also be available directly as `some_model.layer1.module1.parameter1`.</span>
+<span class="sd">            However for tab-completion, the later method provides *all* attributes</span>
+<span class="sd">            of the model, not only parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">variables</span><span class="o">.</span><span class="n">create_Ox_from_torch_iterator_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">(),</span>
+            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Parameters of the model (tab-completable, includes also parameters that should not be changed by the user. See also .user_parameters)&#39;</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">user_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">variables</span><span class="o">.</span><span class="n">create_Ox_from_torch_iterator_dicts</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s1">&#39;set&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()),</span>
+            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Parameters of the model that can be set by the user via `.set()`. (tab-completable)&#39;</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">m</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">variables</span><span class="o">.</span><span class="n">create_Ox_from_torch_iterator_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">named_modules</span><span class="p">(),</span>
+            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Modules of the model (tab-completable)&#39;</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">variables</span><span class="o">.</span><span class="n">create_Ox_from_torch_iterator_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">(),</span>
+            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Current state of the model (tab-completable)&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
             <span class="n">module</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
@@ -639,7 +710,39 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_state_stack&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No state was pushed to the stack!&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span></div>
+    <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_layer_with_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<div class="viewcode-block" id="Layer.plot_impulse"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.plot_impulse">[docs]</a>    <span class="k">def</span> <span class="nf">plot_impulse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">shp</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Plots the response to a 1 bin impulse.</span>
+
+<span class="sd">            The state of the model is preserved (pushed </span>
+<span class="sd">            to the stack and poped later).</span>
+
+
+<span class="sd">            Attributes</span>
+<span class="sd">            ----------</span>
+
+<span class="sd">            shp : tuple(t, x, y)</span>
+<span class="sd">                the size of the stimulus. A larger stimulus</span>
+<span class="sd">                will show a larger area of the impulse response</span>
+<span class="sd">            dt : int</span>
+<span class="sd">                length of chunks when computing the response</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            The output of the model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">plot_5d_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push_state</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_state</span><span class="p">()</span>
+        <span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+        <span class="n">inp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">shp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">shp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_state</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">o</span></div></div>
 
 <span class="n">Model</span> <span class="o">=</span> <span class="n">Layer</span>
 

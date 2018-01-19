@@ -46,6 +46,23 @@
   <div class="section" id="welcome-to-the-documentation-of-convis">
 <h1>Welcome to the documentation of Convis<a class="headerlink" href="#welcome-to-the-documentation-of-convis" title="Permalink to this headline">¶</a></h1>
 <p>Convis lets you build vision models using PyTorch.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Installing <cite>convis</cite> and <cite>PyTorch</cite> itself is not complicated.</p>
+<p>Requirements for the base installation are: Python 2.7 or Python 3.6 and PyTorch. All other requirements are installed when running:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">convis</span>
+</pre></div>
+</div>
+<p>or for the most recent version:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jahuth</span><span class="o">/</span><span class="n">convis</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>I recommend installing opencv, and jupyter notebook, if you do not already have it installed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">convis</span> <span class="n">notebook</span>
+<span class="c1"># eg. for ubuntu:</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">opencv</span>
+</pre></div>
+</div>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
@@ -105,10 +122,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">Convis classes and modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="docs_models.html#convis-models">Convis Models</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="docs_retina.html#general-overview">General Overview</a></li>
@@ -129,13 +143,42 @@
 </li>
 </ul>
 </div>
+</div>
+<div class="section" id="found-a-bug-or-want-to-contribute">
+<h2>Found a bug or want to contribute?<a class="headerlink" href="#found-a-bug-or-want-to-contribute" title="Permalink to this headline">¶</a></h2>
+<p>Bug reports and feature requests are always welcome!
+The best place to put them is the <a class="reference external" href="https://github.com/jahuth/convis/issues">github issue tracker</a>.
+If you have questions about usage of functions and classes and can not find
+an answer in the documentation and docstrings, this is considered a bug and I appreciate
+it if you open an issue for that!</p>
+<p>If you want, you can flag your issue already with one of the labels:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://github.com/jahuth/convis/labels/bug">bug</a></li>
+<li><a class="reference external" href="https://github.com/jahuth/convis/labels/enhancement">enhancement</a></li>
+<li><a class="reference external" href="https://github.com/jahuth/convis/labels/missing%20documentation">missing documentation</a></li>
+<li><a class="reference external" href="https://github.com/jahuth/convis/labels/question">question</a></li>
+</ul>
+</div></blockquote>
+<p>If you have fixed a bug or added a feature and you would like to see the change
+included in the main repository, the preferred method is for you to commit the
+change to a fork on your own github account and submit a pull request.</p>
+<dl class="docutils">
+<dt>General discussion is encouraged on the two mailing lists:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://groups.google.com/forum/#!forum/convis-users">convis-users&#64;googlegroups.com</a> for announcements and user questions</li>
+<li><a class="reference external" href="https://groups.google.com/forum/#!forum/convis-dev">convis-dev&#64;googlegroups.com</a> for discussions about the development</li>
+</ul>
+</dd>
+</dl>
 <div class="section" id="indices">
-<h2>Indices<a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h2>
+<h3>Indices<a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
 <li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
 <li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
 </ul>
+</div>
 </div>
 </div>
 
