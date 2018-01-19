@@ -10,7 +10,7 @@ except ImportError:
 from ..base import *
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 from .. import variables
-from ..filters.simple import TemporalLowPassFilterRecursive, TemporalHighPassFilterRecursive, SpatialRecursiveFilter
+from ..filters import TemporalLowPassFilterRecursive, TemporalHighPassFilterRecursive, SpatialRecursiveFilter
 
 """
 Todo:

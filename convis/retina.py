@@ -9,42 +9,70 @@ from .filters import retina as rf
 
 class Retina(Layer):
     """
-    A retinal ganglion cell model comparable to VirtualRetina [1]_.
-
-    Attributes
-    ----------
-
-    opl : Layer (convis.filters.retina.OPL)
-    bipolar : Layer (convis.filters.retina.Bipolar)
-    gang_0_input : Layer (convis.filters.retina.GanglionInput)
-    gang_0_spikes : Layer (convis.filters.retina.GanglionSpiking)
-    gang_1_input : Layer (convis.filters.retina.GanglionInput)
-    gang_1_spikes : Layer (convis.filters.retina.GanglionSpiking)
-    
-    _timing : list of tuples
-        timing information of the last run (last chunk)
-        Each entry is a tuple of (function that was executed, 
-        number of seconds it took to execute)
-    keep_timing_info : bool
-        whether to store all timing information in a list
-    timing_info : list
-        stores timing information of all runs if
-        `keep_timing_info` is True.
+        A retinal ganglion cell model comparable to VirtualRetina [Wohrer2009]_.
 
 
-    .. [1] Wohrer, A., & Kornprobst, P. (2009).
-        Virtual Retina: a biological retina model and simulator, with contrast gain control.
-        Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4
+        .. [Wohrer2009] Wohrer, A., & Kornprobst, P. (2009).
+            Virtual Retina: a biological retina model and simulator, with contrast gain control.
+            Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4
 
 
-    See Also
-    --------
 
-    convis.base.Layer : The Layer base class, providing chunking and optimization
-    convis.filters.retina.OPL : The outer plexiform layer performs luminance to contrast conversion
-    convis.filters.retina.Bipolar : provides contrast gain control
-    convis.filters.retina.GanglionInput : provides a static non-linearity and a last spatial integration
-    convis.filters.retina.GanglionSpiking : creates spikes from an input current
+        Attributes
+        ----------
+
+        opl : Layer (convis.filters.retina.OPL)
+        bipolar : Layer (convis.filters.retina.Bipolar)
+        gang_0_input : Layer (convis.filters.retina.GanglionInput)
+        gang_0_spikes : Layer (convis.filters.retina.GanglionSpiking)
+        gang_1_input : Layer (convis.filters.retina.GanglionInput)
+        gang_1_spikes : Layer (convis.filters.retina.GanglionSpiking)
+        _timing : list of tuples
+            timing information of the last run (last chunk)
+            Each entry is a tuple of (function that was executed, 
+            number of seconds it took to execute)
+        keep_timing_info : bool
+            whether to store all timing information in a list
+        timing_info : list
+            stores timing information of all runs if
+            `keep_timing_info` is True.
+
+
+        Examples
+        --------
+
+
+        .. plot::
+            :include-source:
+            
+            import convis
+            import numpy as np
+            from matplotlib import pylab as plt
+            retina = convis.retina.Retina()
+            inp = convis.samples.moving_grating(2000)
+            inp = np.concatenate([inp[:1000],2.0*inp[1000:1500],inp[1500:2000]],axis=0)
+            o_init = retina.run(inp[:500],dt=200)
+            o = retina.run(inp[500:],dt=200)
+            convis.plot_5d_time(o[0],mean=(3,4)) # plots the mean activity over time
+            plt.figure()
+            retina = convis.retina.Retina(opl=True,bipolar=False,gang=True,spikes=False)
+            o_init = retina.run(inp[:500],dt=200)
+            o = retina.run(inp[500:],dt=200)
+            convis.plot_5d_time(o[0],mean=(3,4)) # plots the mean activity over time
+            convis.plot_5d_time(o[0],alpha=0.1) # plots a line for each pixel
+
+
+
+
+        See Also
+        --------
+
+        convis.base.Layer : The Layer base class, providing chunking and optimization
+        convis.filters.retina.OPL : The outer plexiform layer performs luminance to contrast conversion
+        convis.filters.retina.Bipolar : provides contrast gain control
+        convis.filters.retina.GanglionInput : provides a static non-linearity and a last spatial integration
+        convis.filters.retina.GanglionSpiking : creates spikes from an input current
+
 
     """
     def __init__(self,opl=True,bipolar=True,gang=True,spikes=True):

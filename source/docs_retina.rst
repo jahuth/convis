@@ -4,7 +4,7 @@ VirtualRetina-like Simulator
 
 The :class:`~convis.retina.Retina` model combines filters from
 :mod:`convis.filters.retina` into a complete model, similar
-to VirtualRetina [Wohrer2008]_.
+to VirtualRetina [Wohrer2009]_.
 To load the same xml configuration as VirtualRetina, the 
 module :mod:`convis.retina_virtualretina` provides a 
 :class:`~convis.retina_virtualretina.RetinaConfiguration` object
@@ -62,7 +62,7 @@ $$ \\dfrac{ dV(x,y) }{dt} = I_{Gang}(x,y,t) - g^L V(x,y,t) + \\eta_v(t)$$
 References
 ----------
 
-.. [Wohrer2008] Wohrer, A., & Kornprobst, P. (2009).
+.. [Wohrer2009] Wohrer, A., & Kornprobst, P. (2009).
     Virtual Retina: a biological retina model and simulator, with contrast gain control.
     Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4
 

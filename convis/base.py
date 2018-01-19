@@ -670,6 +670,36 @@ class Layer(torch.nn.Module):
         self.set_state(self._state_stack.pop())
     def _repr_html_(self):
         return variable_describe.describe_layer_with_html(self, 0)
+    def plot_impulse(self,shp=(500,10,10),dt=500):
+        """
+            Plots the response to a 1 bin impulse.
+
+            The state of the model is preserved (pushed 
+            to the stack and poped later).
+
+
+            Attributes
+            ----------
+
+            shp : tuple(t, x, y)
+                the size of the stimulus. A larger stimulus
+                will show a larger area of the impulse response
+            dt : int
+                length of chunks when computing the response
+
+            Returns
+            -------
+            The output of the model
+        """
+        from . import plot_5d_time
+        self.push_state()
+        self.clear_state()
+        inp = np.zeros(shp)
+        inp[0,int(shp[1]/2),int(shp[2]/2)] = 1.0
+        o = self.run(inp,dt=dt)
+        plot_5d_time(o[0])
+        self.pop_state()
+        return o
 
 Model = Layer
 
