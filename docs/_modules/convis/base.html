@@ -712,7 +712,37 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No state was pushed to the stack!&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span></div>
     <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_layer_with_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_layer_with_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<div class="viewcode-block" id="Layer.plot_impulse"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.plot_impulse">[docs]</a>    <span class="k">def</span> <span class="nf">plot_impulse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">shp</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Plots the response to a 1 bin impulse.</span>
+
+<span class="sd">            The state of the model is preserved (pushed </span>
+<span class="sd">            to the stack and poped later).</span>
+
+
+<span class="sd">            Attributes</span>
+<span class="sd">            ----------</span>
+
+<span class="sd">            shp : tuple(t, x, y)</span>
+<span class="sd">                the size of the stimulus. A larger stimulus</span>
+<span class="sd">                will show a larger area of the impulse response</span>
+<span class="sd">            dt : int</span>
+<span class="sd">                length of chunks when computing the response</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            The output of the model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">plot_5d_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push_state</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_state</span><span class="p">()</span>
+        <span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+        <span class="n">inp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">shp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">shp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_state</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">o</span></div></div>
 
 <span class="n">Model</span> <span class="o">=</span> <span class="n">Layer</span>
 

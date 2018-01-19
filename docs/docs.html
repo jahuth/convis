@@ -63,10 +63,7 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="docs_models.html#convis-models">Convis Models</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html#general-overview">General Overview</a></li>
@@ -95,7 +92,6 @@ To make this meaningfull, provide a name to your output variables.</p>
 <p>In the case of name collisions, the behavior of OrderedDict will use the last variable added.</p>
 <p>The full path names of all variables are also added to this objects __dict__,
 allowing for tab completion.</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="function">
@@ -365,6 +361,37 @@ OrderedDict</p>
 <dd><p>retrieves the values of all State variables and from a stack</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="convis.base.Layer.plot_impulse">
+<code class="descname">plot_impulse</code><span class="sig-paren">(</span><em>shp=(500</em>, <em>10</em>, <em>10)</em>, <em>dt=500</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.plot_impulse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.plot_impulse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the response to a 1 bin impulse.</p>
+<p>The state of the model is preserved (pushed 
+to the stack and poped later).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The output of the model</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>shp</strong></td>
+<td>(tuple(t, x, y)) the size of the stimulus. A larger stimulus will show a larger area of the impulse response</td>
+</tr>
+<tr class="row-even"><td><strong>dt</strong></td>
+<td>(int) length of chunks when computing the response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="attribute">
@@ -382,7 +409,6 @@ and can run or optimize it in a separate thread.</p>
 <p><code class="xref py py-attr docutils literal"><span class="pre">input</span></code> should be a <a class="reference internal" href="docs_streams.html#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.Stream</span></code></a> that contains input data
 <code class="xref py py-attr docutils literal"><span class="pre">output</span></code> should be a <a class="reference internal" href="docs_streams.html#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.Stream</span></code></a> that accepts new data
 when using optimize, <code class="xref py py-attr docutils literal"><span class="pre">goal</span></code> has to have the same length as input and the same behaviour at the end of the stream (repeating or stop)</p>
-<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="convis.base.Runner.stop">
 <code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Runner.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Runner.stop" title="Permalink to this definition">¶</a></dt>

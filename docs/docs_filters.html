@@ -65,8 +65,6 @@ outermost <cite>Layer</cite>.
 If you want to store your history for one set of images,
 do some computation on other images and then return to
 the previous one, you can use <cite>.push_state()</cite> and <cite>.pop_state()</cite>.</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -90,8 +88,6 @@ outermost <cite>Layer</cite>.
 If you want to store your history for one set of images,
 do some computation on other images and then return to
 the previous one, you can use <cite>.push_state()</cite> and <cite>.pop_state()</cite>.</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -106,8 +102,6 @@ pixel of the input.</p>
 <p>At the moment, the delays do <em>not</em> provide a gradient.</p>
 <p>Possible future feature if requested:
 variable delay per pixel, channel and batch dimension.</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -143,8 +137,6 @@ the edge.</p>
 </div></blockquote>
 <p>To change the weight, use the method <cite>set_weight()</cite>
 which also accepts numpy arguments.</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="convis.filters.Conv3d.set_weight">
 <code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>preserve_channels=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.set_weight" title="Permalink to this definition">¶</a></dt>
@@ -196,9 +188,9 @@ to all input-output channel combinations.</p>
 
 </dd></dl>
 
-<span class="target" id="module-convis.filters.simple"></span><dl class="class">
-<dt id="convis.filters.simple.SmoothConv">
-<em class="property">class </em><code class="descclassname">convis.filters.simple.</code><code class="descname">SmoothConv</code><span class="sig-paren">(</span><em>n=3</em>, <em>tau=0.1</em>, <em>spatial_filter=(10</em>, <em>10)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/simple.html#SmoothConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.simple.SmoothConv" title="Permalink to this definition">¶</a></dt>
+<dl class="class">
+<dt id="convis.filters.SmoothConv">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">SmoothConv</code><span class="sig-paren">(</span><em>n=3</em>, <em>tau=0.1</em>, <em>spatial_filter=(10</em>, <em>10)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#SmoothConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.SmoothConv" title="Permalink to this definition">¶</a></dt>
 <dd><p>A convolution with temporally smoothed filters.
 It can cover a long temporal period, but is a lot more
 efficient than a convlution filter of the same length.</p>
@@ -215,7 +207,7 @@ so that they are not fittable.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">convis</span>
-<span class="n">s</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">SmoothConv</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">SmoothConv</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
 <span class="n">inp</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
@@ -231,15 +223,13 @@ so that they are not fittable.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <dl class="last docutils">
-<dt><a class="reference internal" href="#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a></dt>
+<dt><a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a></dt>
 <dd>A full convolution layer</dd>
 </dl>
 </div>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
-</div>
+<span class="target" id="module-convis.filters.simple"></span></div>
 
 
       </div>

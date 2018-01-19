@@ -52,42 +52,70 @@
 
 <div class="viewcode-block" id="Retina"><a class="viewcode-back" href="../../docs_retina.html#convis.retina.Retina">[docs]</a><span class="k">class</span> <span class="nc">Retina</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A retinal ganglion cell model comparable to VirtualRetina [1]_.</span>
-
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-
-<span class="sd">    opl : Layer (convis.filters.retina.OPL)</span>
-<span class="sd">    bipolar : Layer (convis.filters.retina.Bipolar)</span>
-<span class="sd">    gang_0_input : Layer (convis.filters.retina.GanglionInput)</span>
-<span class="sd">    gang_0_spikes : Layer (convis.filters.retina.GanglionSpiking)</span>
-<span class="sd">    gang_1_input : Layer (convis.filters.retina.GanglionInput)</span>
-<span class="sd">    gang_1_spikes : Layer (convis.filters.retina.GanglionSpiking)</span>
-<span class="sd">    </span>
-<span class="sd">    _timing : list of tuples</span>
-<span class="sd">        timing information of the last run (last chunk)</span>
-<span class="sd">        Each entry is a tuple of (function that was executed, </span>
-<span class="sd">        number of seconds it took to execute)</span>
-<span class="sd">    keep_timing_info : bool</span>
-<span class="sd">        whether to store all timing information in a list</span>
-<span class="sd">    timing_info : list</span>
-<span class="sd">        stores timing information of all runs if</span>
-<span class="sd">        `keep_timing_info` is True.</span>
+<span class="sd">        A retinal ganglion cell model comparable to VirtualRetina [Wohrer2009]_.</span>
 
 
-<span class="sd">    .. [1] Wohrer, A., &amp; Kornprobst, P. (2009).</span>
-<span class="sd">        Virtual Retina: a biological retina model and simulator, with contrast gain control.</span>
-<span class="sd">        Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4</span>
+<span class="sd">        .. [Wohrer2009] Wohrer, A., &amp; Kornprobst, P. (2009).</span>
+<span class="sd">            Virtual Retina: a biological retina model and simulator, with contrast gain control.</span>
+<span class="sd">            Journal of Computational Neuroscience, 26(2), 219-49. http://doi.org/10.1007/s10827-008-0108-4</span>
 
 
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
 
-<span class="sd">    convis.base.Layer : The Layer base class, providing chunking and optimization</span>
-<span class="sd">    convis.filters.retina.OPL : The outer plexiform layer performs luminance to contrast conversion</span>
-<span class="sd">    convis.filters.retina.Bipolar : provides contrast gain control</span>
-<span class="sd">    convis.filters.retina.GanglionInput : provides a static non-linearity and a last spatial integration</span>
-<span class="sd">    convis.filters.retina.GanglionSpiking : creates spikes from an input current</span>
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        opl : Layer (convis.filters.retina.OPL)</span>
+<span class="sd">        bipolar : Layer (convis.filters.retina.Bipolar)</span>
+<span class="sd">        gang_0_input : Layer (convis.filters.retina.GanglionInput)</span>
+<span class="sd">        gang_0_spikes : Layer (convis.filters.retina.GanglionSpiking)</span>
+<span class="sd">        gang_1_input : Layer (convis.filters.retina.GanglionInput)</span>
+<span class="sd">        gang_1_spikes : Layer (convis.filters.retina.GanglionSpiking)</span>
+<span class="sd">        _timing : list of tuples</span>
+<span class="sd">            timing information of the last run (last chunk)</span>
+<span class="sd">            Each entry is a tuple of (function that was executed, </span>
+<span class="sd">            number of seconds it took to execute)</span>
+<span class="sd">        keep_timing_info : bool</span>
+<span class="sd">            whether to store all timing information in a list</span>
+<span class="sd">        timing_info : list</span>
+<span class="sd">            stores timing information of all runs if</span>
+<span class="sd">            `keep_timing_info` is True.</span>
+
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+
+<span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
+<span class="sd">            </span>
+<span class="sd">            import convis</span>
+<span class="sd">            import numpy as np</span>
+<span class="sd">            from matplotlib import pylab as plt</span>
+<span class="sd">            retina = convis.retina.Retina()</span>
+<span class="sd">            inp = convis.samples.moving_grating(2000)</span>
+<span class="sd">            inp = np.concatenate([inp[:1000],2.0*inp[1000:1500],inp[1500:2000]],axis=0)</span>
+<span class="sd">            o_init = retina.run(inp[:500],dt=200)</span>
+<span class="sd">            o = retina.run(inp[500:],dt=200)</span>
+<span class="sd">            convis.plot_5d_time(o[0],mean=(3,4)) # plots the mean activity over time</span>
+<span class="sd">            plt.figure()</span>
+<span class="sd">            retina = convis.retina.Retina(opl=True,bipolar=False,gang=True,spikes=False)</span>
+<span class="sd">            o_init = retina.run(inp[:500],dt=200)</span>
+<span class="sd">            o = retina.run(inp[500:],dt=200)</span>
+<span class="sd">            convis.plot_5d_time(o[0],mean=(3,4)) # plots the mean activity over time</span>
+<span class="sd">            convis.plot_5d_time(o[0],alpha=0.1) # plots a line for each pixel</span>
+
+
+
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        convis.base.Layer : The Layer base class, providing chunking and optimization</span>
+<span class="sd">        convis.filters.retina.OPL : The outer plexiform layer performs luminance to contrast conversion</span>
+<span class="sd">        convis.filters.retina.Bipolar : provides contrast gain control</span>
+<span class="sd">        convis.filters.retina.GanglionInput : provides a static non-linearity and a last spatial integration</span>
+<span class="sd">        convis.filters.retina.GanglionSpiking : creates spikes from an input current</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bipolar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">gang</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>

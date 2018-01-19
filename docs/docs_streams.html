@@ -53,8 +53,6 @@
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">InrImageStreamer</code><span class="sig-paren">(</span><em>filename</em>, <em>z=False</em>, <em>slice_at=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageStreamer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageStreamer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a large inr file and is an iterator over all images.</p>
 <p>By default, the z dimension is ignored. Setting <cite>z</cite> to True changes this, such that each image is 3d instead of 2d.</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
@@ -63,30 +61,24 @@
 <dd><p>Stream Base Class</p>
 <p>Streams have to have methods to either <cite>get()</cite>
 or <cite>put</cite> a frame.</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.SequenceStream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">SequenceStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em>, <em>max_frames=5000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#SequenceStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.SequenceStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>3d Numpy array that represents a sequence of images</p>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.TimedSequenceStream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">TimedSequenceStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em>, <em>t_zero=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#TimedSequenceStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.TimedSequenceStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>3d Numpy array that represents a sequence of images</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.TimedResampleStream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">TimedResampleStream</code><span class="sig-paren">(</span><em>stream</em>, <em>t_zero=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#TimedResampleStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.TimedResampleStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>3d Numpy array that represents a sequence of images</p>
-<p class="rubric">Methods</p>
 </dd></dl>
 
 </div>
