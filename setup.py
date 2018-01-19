@@ -8,7 +8,7 @@ setup(
   author = 'Jacob Huth',
   author_email = 'jahuth@uos.de',
   url = 'https://github.com/jahuth/convis',
-  download_url = 'https://github.com/jahuth/convis/tarball/0.5.0.4',
+  download_url = 'https://github.com/jahuth/convis/tarball/0.5.0.5',
   keywords = ['vision model', 'retina model'],
   classifiers = [],
 )
