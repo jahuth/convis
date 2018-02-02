@@ -5,7 +5,7 @@ Retina Model
 
 This module implements a spiking retina model in python and theano.
 
-It is based on the VirutalRetina Simualtor [Wohrer 2008].
+It is based on the VirtualRetina Simualtor [Wohrer 2008].
 
 
 General Overview
@@ -30,22 +30,28 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 The Retina Model class and Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The retina model is :mod:`convis.retina.Retina` and can be configured
+with a :mod:`convis.retina.RetinaConfiguration` that can be loaded
+from a VirtualRetina xml file:
 
-%.. autoclass:: convis.retina.Retina
-%   :members:
-
-
-%.. autoclass:: convis.retina.RetinaConfiguration
-%   :members:
-
-%.. autofunction:: convis.retina.default_config
-
-%.. autofunction:: convis.retina.random_config
-
+    >>> retina = convis.retina.Retina()
+    >>> conf = convis.retina.RetinaConfiguration()
+    >>> conf.load_xml('some_file.xml')
+    >>> conf.set(.., ..) # changing some values before configuring the model
+    >>> retina.parse_config(conf)
+    >>> # or more simply:
+    >>> retina.parse_config('some_file.xml')
 
 Retina Filters
 ~~~~~~~~~~~~~~~~
 
+The stages of the VirtualRetina model correspond to the :mod:`convis` classes:
 
-%.. automodule:: convis.filters.retina
-%   :members:
+     * :class:`convis.filters.retina.OPL` holds only a reference to the actually used opl implementation:
+        - :class:`convis.filters.retina.RecursiveOPLFilter` (all recursive)
+        - :class:`convis.filters.retina.HalfRecursiveOPLFilter` (default, temporally recursive, spatial convolution)
+        - :class:`convis.filters.retina.SeperatableOPLFilter` (spatial and temporal convolutions, but still computed as separate filters)
+        - :class:`convis.filters.retina.FullConvolutionOPLFilter` (a single spatio-temporal convolution filter)
+     * :class:`convis.filters.retina.Bipolar` performs contrast gain control
+     * :class:`convis.filters.retina.GanglionInput` performs spatial pooling and a static non-linearity
+     * :class:`convis.filters.retina.GanglionSpikes` creates spikes

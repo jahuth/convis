@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>VirtualRetina-like Simulator &#8212; convis 0.5.1.0 documentation</title>
+    <title>VirtualRetina-like Simulator &#8212; convis 0.5.1.1 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1.0',
+        VERSION:     '0.5.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,7 +29,7 @@
   </head>
   <body>
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.0 documentation</span></a></h1>
+          <span>convis 0.5.1.1 documentation</span></a></h1>
         <h2 class="heading"><span>VirtualRetina-like Simulator</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -490,43 +490,36 @@ parameters, but offers a single, non-separable convolution filter.</p>
 <p><span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if <span class="math">\(V &gt; v^0_G\)</span>)</p>
 <blockquote>
 <div><p>Example configuration:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>{</dt>
-<dd><p class="first">‘name’: ‘Parvocellular Off’,
-‘enabled’: True,
-‘sign’: -1,
-‘transient-tau__sec’:0.02,
-‘transient-relative-weight’:0.7,
-‘bipolar-linear-threshold’:0,
-‘value-at-linear-threshold__Hz’:37,
-‘bipolar-amplification__Hz’:100,
-‘sigma-pool__deg’: 0.0,
-‘spiking-channel’: {</p>
-<blockquote>
-<div>…</div></blockquote>
-<p class="last">}</p>
-</dd>
-</dl>
-<p>},
-{</p>
-<blockquote>
-<div><p>‘name’: ‘Magnocellular On’,
-‘enabled’: False,
-‘sign’: 1,
-‘transient-tau__sec’:0.03,
-‘transient-relative-weight’:1.0,
-‘bipolar-linear-threshold’:0,
-‘value-at-linear-threshold__Hz’:80,
-‘bipolar-amplification__Hz’:400,
-‘sigma-pool__deg’: 0.1,
-‘spiking-channel’: {</p>
-<blockquote>
-<div>…</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>},</p>
-</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Parvocellular Off&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.02</span><span class="p">,</span>
+    <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="s1">&#39;bipolar-linear-threshold&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;value-at-linear-threshold__Hz&#39;</span><span class="p">:</span><span class="mi">37</span><span class="p">,</span>
+    <span class="s1">&#39;bipolar-amplification__Hz&#39;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>
+    <span class="s1">&#39;sigma-pool__deg&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s1">&#39;spiking-channel&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">},</span>
+<span class="p">{</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Magnocellular On&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;sign&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;transient-tau__sec&#39;</span><span class="p">:</span><span class="mf">0.03</span><span class="p">,</span>
+    <span class="s1">&#39;transient-relative-weight&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;bipolar-linear-threshold&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;value-at-linear-threshold__Hz&#39;</span><span class="p">:</span><span class="mi">80</span><span class="p">,</span>
+    <span class="s1">&#39;bipolar-amplification__Hz&#39;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span>
+    <span class="s1">&#39;sigma-pool__deg&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s1">&#39;spiking-channel&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">},</span>
+</pre></div>
+</div>
 </div></blockquote>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>

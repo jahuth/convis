@@ -48,8 +48,9 @@ $$\\frac{dV_{Bip}}{dt} (x,y,t) = I_{OLP}(x,y,t) - g_{A}(x,y,t)dV_{Bip}(x,y,t)$$
 
 :class:`~convis.filters.retina.GanglionInput` applies a static nonlinearity and another spatial linear filter: 
 $$I_{Gang}(x,y,t) = G * N(T * V_{Bip})$$
- - with :math:`N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` if :math:`V < v^0_G`
- - and :math:`N(V) = i^0_G + \lambda(V-v^0_G)` if  :math:`V > v^0_G`
+
+    - with :math:`N(V) = \frac{i^0_G}{1-\lambda(V-v^0_G)/i^0_G}` if :math:`V < v^0_G`
+    - and :math:`N(V) = i^0_G + \lambda(V-v^0_G)` if  :math:`V > v^0_G`
 
 And finally a spiking mechanism :class:`~convis.filters.retina.GanglionSpiking` is implemented by another differential equation: 
 

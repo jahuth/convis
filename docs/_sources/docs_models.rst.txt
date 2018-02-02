@@ -7,6 +7,9 @@ Models `convis.models`
 .. autoclass:: convis.models.LN
    :members:
 
+.. autoclass:: convis.models.LNCascade
+   :members:
+
 .. autoclass:: convis.models.LNLN
    :members:
 

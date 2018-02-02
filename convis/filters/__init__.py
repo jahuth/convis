@@ -146,7 +146,7 @@ class VariableDelay(Layer):
         x_out = torch.cat(x_out,dim=-1)
         return x_out
 
-class Conv3d(torch.nn.Conv3d):
+class Conv3d(torch.nn.Conv3d,Layer):
     """
         Does a convolution, but pads the input in time
         with previous input and in space by replicating
@@ -187,7 +187,7 @@ class Conv3d(torch.nn.Conv3d):
             del kwargs['time_pad']
         if 'autopad' in kwargs.keys():
             del kwargs['autopad']
-        super(Conv3d, self).__init__(in_channels,out_channels,kernel_size,bias=bias*args,**kwargs)
+        super(Conv3d, self).__init__(in_channels,out_channels,kernel_size,bias=bias,*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
@@ -292,6 +292,93 @@ class Conv3d(torch.nn.Conv3d):
         if self.autopad:
             x = torch.nn.functional.pad(x,self.kernel_padding, self.autopad_mode)
         return super(Conv3d, self).forward(x)
+
+class RF(Conv3d):
+    """
+        A Receptive Field Layer
+
+        Does a convolution and pads the input in time
+        with previous input, just like Conv3d, but with
+        no spatial padding, resulting in a single output
+        pixel.
+
+        To use it correctly, the weight should be set to 
+        the same spatial dimensions as the input.
+        However, if the weight is larger than the input
+        or the input is larger than the weight,
+        the input is padded or cut. The parameter `rf_mode`
+        controls the placement of the receptive field
+        on the image.
+
+        Currently, only rf_mode='corner' is implemented,
+        which keeps the top left pixel identical and only
+        extends or cuts the right and bottom portions
+        of the input.
+
+        .. warning::
+
+            The spatial extent of your weight should match your input images to 
+            get meaningful receptive fields. Otherwise the receptive field is placed
+            at the top left corner of the input.
+
+            If the weight was not set manually, the first time the filter sees input
+            it creates an empty weight of the matching size. However when
+            the input size is changed, the weight does not change automatically
+            to match new input. Use :meth:`reset_weight()` to reset the weight
+            or change the size manually.
+
+            Any receptive field of size 1 by 1 pixel is considered
+            empty and will be replaced with a uniform
+            weight of the size of the input the next time
+            the filter is used.
+
+
+        Examples
+        --------
+
+            >>> m = convis.filters.RF()
+            >>> inp = convis.samples.moving_gratings()
+            >>> o = m.run(inp, dt=200)
+            >>> o.plot()
+
+        Or as a part of a cascade model::
+
+            >>> m = convis.models.LNCascade()
+            >>> m.add_layer(convis.filters.Conv3d(1,5,(1,10,10)))
+            >>> m.add_layer(convis.filters.RF(5,1,(10,1,1)))
+                # this RF will take into account 10 timesteps, it's width and height will be set by the input
+            >>> inp = convis.samples.moving_grating()
+            >>> o = m.run(inp, dt=200)
+
+        See Also
+        --------
+        Conv3d
+    """
+    def __init__(self,in_channels=1,out_channels=1,kernel_size=(1,1,1),bias=True,rf_mode='corner',*args,**kwargs):
+        autopad = kwargs.get('autopad',False)
+        kwargs['autopad'] = autopad
+        self.rf_placement_mode = rf_mode
+        super(RF, self).__init__(in_channels,out_channels,kernel_size,bias=bias, *args,**kwargs)
+    def reset_weight(self):
+        self.set_weight(np.zeros((self.weight.size()[2],1,1)))
+    def forward(self,x):
+        if self.weight.size()[3] == 1 and self.weight.size()[4] == 1:
+            self.set_weight(np.ones((self.weight.size()[2],x.size()[3],x.size()[4])),normalize=True)
+        if self.do_time_pad:
+            self.time_pad.length = self.filter_length
+            x = self.time_pad(x)
+        if self.rf_placement_mode is 'corner':
+            if x.size()[3] < self.weight.size()[3]:
+                x = torch.nn.functional.pad(x,(0,0,0,self.weight.size()[3],0,0))
+            if x.size()[4] < self.weight.size()[4]:
+                x = torch.nn.functional.pad(x,(0,self.weight.size()[4],0,0,0,0))
+            if x.size()[3] > self.weight.size()[3]:
+                x = x[:,:,:,:self.weight.size()[3],:]
+            if x.size()[4] > self.weight.size()[4]:
+                x = x[:,:,:,:,:self.weight.size()[4]]
+        else:
+            raise Exception('RF placements other than \'corner\' are not implemented yet!')
+        return super(RF, self).forward(x)
 
 class Conv2d(nn.Conv2d):
     def __init__(self,*args,**kwargs):
@@ -597,3 +684,50 @@ class SmoothConv(Layer):
             y = self.e[i](y)
             o.append(self.g[i](y))
         return torch.cat(o,dim=1)
+
+class NLRectify(Layer):
+    """Rectifies the input (ie. sets values < 0 to 0)
+    """
+    def __init__(self):
+        super(NLRectify, self).__init__()
+    def forward(self, inp):
+        return (inp).clamp(min=0.0,max=1000000.0)
+
+class NLRectifyScale(Layer):
+    """Rectifies the input, but transforms the input with a scale and a bias.
+
+        Pseudocode:
+
+            out = bias + in * scale
+            out[out < 0] = 0
+
+    """
+    def __init__(self):
+        super(NLRectifyScale, self).__init__()
+        self.scale = convis.Parameter(1.0)
+        self.bias = convis.Parameter(0.0)
+    def forward(self, inp):
+        return (self.bias+inp*self.scale).clamp(min=0.0,max=1000000.0)
+
+class NLSquare(Layer):
+    """A square nonlinearity with a scalable input weight and bias.
+
+    """
+    def __init__(self):
+        super(NLSquare, self).__init__()
+        self.scale = convis.Parameter(1.0)
+        self.bias = convis.Parameter(0.0)
+    def forward(self, inp):
+        return (self.bias+inp*self.scale)**2
+
+class NLRectifySquare(Layer):
+    """A square nonlinearity with a scalable input weight and bias
+    that cuts off negative values after adding the bias.
+
+    """
+    def __init__(self):
+        super(NLRectifySquare, self).__init__()
+        self.scale = convis.Parameter(1.0)
+        self.bias = convis.Parameter(0.0)
+    def forward(self, inp):
+        return ((self.bias+inp*self.scale).clamp(min=0.0,max=1000000.0))**2

@@ -65,7 +65,7 @@ def plot_5d_time(w, lsty='-', mean=tuple(), time=(2,), *args, **kwargs):
     plt.plot(x, lsty, *args, **kwargs)
     return x
 
-def plot(x):
+def plot(x,**kwargs):
     try:
         # assuming a torch Variable on the gpu
         x = x.data.cpu().numpy()
@@ -75,11 +75,10 @@ def plot(x):
     if len(shp) == 5:
         if np.prod(shp[:3]) == 1:
             # a single frame
-            plt.matshow(x)
+            plt.matshow(x,**kwargs)
         elif np.prod(shp[:2]) == 1 and np.prod(shp[3:]) == 1:
             # a single time line
-            plt.plot(x.mean((0,1,3,4)))
-            plt.show()
+            plt.plot(x.mean((0,1,3,4)),**kwargs)
         else:
             # a set of images?
             plot_5d_matshow(x)

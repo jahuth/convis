@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Convis classes and modules &#8212; convis 0.5.1.0 documentation</title>
+    <title>Convis classes and modules &#8212; convis 0.5.1.1 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1.0',
+        VERSION:     '0.5.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,17 +25,17 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Filters convis.filters" href="docs_filters.html" />
-    <link rel="prev" title="Examples" href="examples.html" /> 
+    <link rel="prev" title="A Convolutional Retina Model" href="model_McIntosh.html" /> 
   </head>
   <body>
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.0 documentation</span></a></h1>
+          <span>convis 0.5.1.1 documentation</span></a></h1>
         <h2 class="heading"><span>Convis classes and modules</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="examples.html">Examples</a>
+        «&#160;&#160;<a href="model_McIntosh.html">A Convolutional Retina Model</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
@@ -392,6 +392,37 @@ to the stack and poped later).</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="convis.base.Layer.plot_impulse_space">
+<code class="descname">plot_impulse_space</code><span class="sig-paren">(</span><em>shp=(1</em>, <em>20</em>, <em>20)</em>, <em>dt=500</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.plot_impulse_space"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.plot_impulse_space" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the response to a 1 bin impulse.</p>
+<p>The state of the model is preserved (pushed 
+to the stack and poped later).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The output of the model</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>shp</strong></td>
+<td>(tuple(t, x, y)) the size of the stimulus. A larger stimulus will show a larger area of the impulse response</td>
+</tr>
+<tr class="row-even"><td><strong>dt</strong></td>
+<td>(int) length of chunks when computing the response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="attribute">
@@ -672,7 +703,7 @@ a <cite>SampleGenerator</cite> with a random kernel.</p>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="examples.html">Examples</a>
+        «&#160;&#160;<a href="model_McIntosh.html">A Convolutional Retina Model</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;

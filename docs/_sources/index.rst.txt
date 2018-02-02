@@ -13,6 +13,7 @@ Installation
 ------------
 
 Installing `convis` and `PyTorch` itself is not complicated.
+Go to http://pytorch.org and follow the installation instructions, either for `pip` or `conda`.
 
 Requirements for the base installation are: Python 2.7 or Python 3.6 and PyTorch. All other requirements are installed when running::
 
@@ -37,11 +38,11 @@ Contents:
 
    installation
    usage
+   examples
    filters
    filters_Conv3d
    pytorch_basics
    model
-   examples
    docs
 
 

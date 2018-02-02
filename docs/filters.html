@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Filters and Layers &#8212; convis 0.5.1.0 documentation</title>
+    <title>Filters and Layers &#8212; convis 0.5.1.1 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1.0',
+        VERSION:     '0.5.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,17 +25,17 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Extending Conv3d" href="filters_Conv3d.html" />
-    <link rel="prev" title="Usage" href="usage.html" /> 
+    <link rel="prev" title="Examples" href="examples.html" /> 
   </head>
   <body>
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.0 documentation</span></a></h1>
+          <span>convis 0.5.1.1 documentation</span></a></h1>
         <h2 class="heading"><span>Filters and Layers</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="usage.html">Usage</a>
+        «&#160;&#160;<a href="examples.html">Examples</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
@@ -62,7 +62,7 @@ The time dimension has to be padded by another operation.</p>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Currently, the nd convolution operation is leaking memory!</p>
+<p class="last">Currently, the nd convolution operation can leak memory when fitting a model!</p>
 </div>
 <dl class="class">
 <dt id="convis.filters.Conv3d">
@@ -168,6 +168,77 @@ to all input-output channel combinations.</p>
 <p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-1_01.png">png</a>, <a class="reference external" href=".//filters-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-1_01.pdf">pdf</a>)</span></p>
 </div>
 </div>
+<div class="section" id="receptive-fields">
+<h2>Receptive Fields<a class="headerlink" href="#receptive-fields" title="Permalink to this headline">¶</a></h2>
+<p>While a convolution will pad the input to keep the size of the output equal to the input,
+a receptive field filter will produce a single time series.</p>
+<dl class="class">
+<dt id="convis.filters.RF">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">RF</code><span class="sig-paren">(</span><em>in_channels=1</em>, <em>out_channels=1</em>, <em>kernel_size=(1</em>, <em>1</em>, <em>1)</em>, <em>bias=True</em>, <em>rf_mode='corner'</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#RF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.RF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Receptive Field Layer</p>
+<p>Does a convolution and pads the input in time
+with previous input, just like Conv3d, but with
+no spatial padding, resulting in a single output
+pixel.</p>
+<p>To use it correctly, the weight should be set to 
+the same spatial dimensions as the input.
+However, if the weight is larger than the input
+or the input is larger than the weight,
+the input is padded or cut. The parameter <cite>rf_mode</cite>
+controls the placement of the receptive field
+on the image.</p>
+<p>Currently, only rf_mode=’corner’ is implemented,
+which keeps the top left pixel identical and only
+extends or cuts the right and bottom portions
+of the input.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The spatial extent of your weight should match your input images to 
+get meaningful receptive fields. Otherwise the receptive field is placed
+at the top left corner of the input.</p>
+<p>If the weight was not set manually, the first time the filter sees input
+it creates an empty weight of the matching size. However when
+the input size is changed, the weight does not change automatically
+to match new input. Use <code class="xref py py-meth docutils literal"><span class="pre">reset_weight()</span></code> to reset the weight
+or change the size manually.</p>
+<p class="last">Any receptive field of size 1 by 1 pixel is considered
+empty and will be replaced with a uniform
+weight of the size of the input the next time
+the filter is used.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">Conv3d</span></code></a></p>
+</div>
+<p>Or as a part of a cascade model:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LNCascade</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">RF</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+<span class="go">    # this RF will take into account 10 timesteps, it&#39;s width and height will be set by the input</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">RF</span><span class="p">()</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">()</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;uniform rf&#39;</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;random rf&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//filters-2.py">Source code</a>, <a class="reference external" href=".//filters-2.png">png</a>, <a class="reference external" href=".//filters-2.hires.png">hires.png</a>, <a class="reference external" href=".//filters-2.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/filters-2.png" src="_images/filters-2.png" />
+</div>
+</div>
 <div class="section" id="recursive-temporal-filters">
 <h2>Recursive Temporal Filters<a class="headerlink" href="#recursive-temporal-filters" title="Permalink to this headline">¶</a></h2>
 <p>There are two filters available that perform recursive temporal filtering.
@@ -207,15 +278,47 @@ However, the temporal filter is also more simplified and might not be able to fi
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//filters-2.py">Source code</a>)</p>
+<p>(<a class="reference external" href=".//filters-3.py">Source code</a>)</p>
 <div class="figure" id="id3">
-<img alt="_images/filters-2_00.png" src="_images/filters-2_00.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-2_00.png">png</a>, <a class="reference external" href=".//filters-2_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-2_00.pdf">pdf</a>)</span></p>
+<img alt="_images/filters-3_00.png" src="_images/filters-3_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-3_00.png">png</a>, <a class="reference external" href=".//filters-3_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-3_00.pdf">pdf</a>)</span></p>
 </div>
 <div class="figure" id="id4">
-<img alt="_images/filters-2_01.png" src="_images/filters-2_01.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-2_01.png">png</a>, <a class="reference external" href=".//filters-2_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-2_01.pdf">pdf</a>)</span></p>
+<img alt="_images/filters-3_01.png" src="_images/filters-3_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-3_01.png">png</a>, <a class="reference external" href=".//filters-3_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-3_01.pdf">pdf</a>)</span></p>
 </div>
+</div>
+<div class="section" id="nonlinearities">
+<h2>Nonlinearities<a class="headerlink" href="#nonlinearities" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.filters.NLRectify">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">NLRectify</code><a class="reference internal" href="_modules/convis/filters.html#NLRectify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.NLRectify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rectifies the input (ie. sets values &lt; 0 to 0)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.NLRectifyScale">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">NLRectifyScale</code><a class="reference internal" href="_modules/convis/filters.html#NLRectifyScale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.NLRectifyScale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rectifies the input, but transforms the input with a scale and a bias.</p>
+<p>Pseudocode:</p>
+<blockquote>
+<div>out = bias + in * scale
+out[out &lt; 0] = 0</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.NLSquare">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">NLSquare</code><a class="reference internal" href="_modules/convis/filters.html#NLSquare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.NLSquare" title="Permalink to this definition">¶</a></dt>
+<dd><p>A square nonlinearity with a scalable input weight and bias.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.NLRectifySquare">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">NLRectifySquare</code><a class="reference internal" href="_modules/convis/filters.html#NLRectifySquare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.NLRectifySquare" title="Permalink to this definition">¶</a></dt>
+<dd><p>A square nonlinearity with a scalable input weight and bias
+that cuts off negative values after adding the bias.</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -224,7 +327,7 @@ However, the temporal filter is also more simplified and might not be able to fi
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="usage.html">Usage</a>
+        «&#160;&#160;<a href="examples.html">Examples</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;

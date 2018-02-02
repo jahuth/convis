@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Linear-Nonlinear Models &#8212; convis 0.5.1.0 documentation</title>
+    <title>Linear-Nonlinear Models &#8212; convis 0.5.1.1 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1.0',
+        VERSION:     '0.5.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,7 +29,7 @@
   </head>
   <body>
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.0 documentation</span></a></h1>
+          <span>convis 0.5.1.1 documentation</span></a></h1>
         <h2 class="heading"><span>Linear-Nonlinear Models</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -59,6 +59,16 @@
 <li><cite>LNFDSNF</cite> linear-nonlinear subunit model with feedback and individual delays</li>
 </ul>
 </div></blockquote>
+<p>There is also <a class="reference internal" href="docs_models.html#convis.models.LNCascade" title="convis.models.LNCascade"><code class="xref py py-class docutils literal"><span class="pre">convis.models.LNCascade</span></code></a>, a model implementation that makes it easier to add and modify layers:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LNCascade</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">NLRectify</span><span class="p">())</span> <span class="c1"># create two convolution layers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">linear</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">RF</span><span class="p">,</span> <span class="n">nonlinear</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, convolution models will give a population activity of cells distributed over the whole image.
+If you want to fit the receptive field of a single cell, you might want to use a <a class="reference internal" href="filters.html#convis.filters.RF" title="convis.filters.RF"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.RF</span></code></a> linear filter
+instead of the <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a> filter. A <a class="reference internal" href="filters.html#convis.filters.RF" title="convis.filters.RF"><code class="xref py py-class docutils literal"><span class="pre">RF</span></code></a> filter will output
+a single time series (or multiple if output channels are &gt; 1). The spatial extent of the filter should
+match your input image to get a meaningful receptive field.</p>
 </div>
 </div>
 

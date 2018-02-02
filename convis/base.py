@@ -90,8 +90,8 @@ class Output(object):
         return len(self._outs)
     def __iter__(self):
         return iter(self._outs)
-    def plot(self,k=0):
-        utils.plot(self[k])
+    def plot(self,k=0,**kwargs):
+        utils.plot(self[k],**kwargs)
     def array(self,k=0):
         if type(self[k]) == torch.autograd.variable.Variable:
             return self[k].data.cpu().numpy()
@@ -437,7 +437,7 @@ class Layer(torch.nn.Module):
         if dt is not None:
             return self._run_in_chunks(the_input,dt=dt,t=t)
         else:
-            return self(the_input)
+            return Output(self(the_input),keys=['output'])
     def _run_in_chunks(self,the_input,dt=100,t=0):
         chunked_output = []
         keys = ['output']
@@ -698,6 +698,36 @@ class Layer(torch.nn.Module):
         inp[0,int(shp[1]/2),int(shp[2]/2)] = 1.0
         o = self.run(inp,dt=dt)
         plot_5d_time(o[0])
+        self.pop_state()
+        return o
+    def plot_impulse_space(self,shp=(1,20,20),dt=500):
+        """
+            Plots the response to a 1 bin impulse.
+
+            The state of the model is preserved (pushed 
+            to the stack and poped later).
+
+
+            Attributes
+            ----------
+
+            shp : tuple(t, x, y)
+                the size of the stimulus. A larger stimulus
+                will show a larger area of the impulse response
+            dt : int
+                length of chunks when computing the response
+
+            Returns
+            -------
+            The output of the model
+        """
+        from . import plot_5d_matshow
+        self.push_state()
+        self.clear_state()
+        inp = np.zeros(shp)
+        inp[0,int(shp[1]/2),int(shp[2]/2)] = 1.0
+        o = self.run(inp,dt=dt)
+        plot_5d_matshow(o[0])
         self.pop_state()
         return o
 

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Retina Model &#8212; convis 0.5.1.0 documentation</title>
+    <title>Retina Model &#8212; convis 0.5.1.1 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1.0',
+        VERSION:     '0.5.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,7 +29,7 @@
   </head>
   <body>
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.0 documentation</span></a></h1>
+          <span>convis 0.5.1.1 documentation</span></a></h1>
         <h2 class="heading"><span>Retina Model</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -49,7 +49,7 @@
   <div class="section" id="retina-model">
 <span id="model-retina"></span><h1>Retina Model<a class="headerlink" href="#retina-model" title="Permalink to this headline">¶</a></h1>
 <p>This module implements a spiking retina model in python and theano.</p>
-<p>It is based on the VirutalRetina Simualtor [Wohrer 2008].</p>
+<p>It is based on the VirtualRetina Simualtor [Wohrer 2008].</p>
 <div class="section" id="general-overview">
 <h2>General Overview<a class="headerlink" href="#general-overview" title="Permalink to this headline">¶</a></h2>
 <p>The formulas on which the classes are based are:</p>
@@ -65,17 +65,40 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 </div>
 <div class="section" id="the-retina-model-class-and-configuration">
 <h2>The Retina Model class and Configuration<a class="headerlink" href="#the-retina-model-class-and-configuration" title="Permalink to this headline">¶</a></h2>
-<p>%.. autoclass:: convis.retina.Retina
-%   :members:</p>
-<p>%.. autoclass:: convis.retina.RetinaConfiguration
-%   :members:</p>
-<p>%.. autofunction:: convis.retina.default_config</p>
-<p>%.. autofunction:: convis.retina.random_config</p>
+<p>The retina model is <a class="reference internal" href="docs_retina.html#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-mod docutils literal"><span class="pre">convis.retina.Retina</span></code></a> and can be configured
+with a <code class="xref py py-mod docutils literal"><span class="pre">convis.retina.RetinaConfiguration</span></code> that can be loaded
+from a VirtualRetina xml file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">RetinaConfiguration</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span><span class="o">.</span><span class="n">load_xml</span><span class="p">(</span><span class="s1">&#39;some_file.xml&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">..</span><span class="p">,</span> <span class="o">..</span><span class="p">)</span> <span class="c1"># changing some values before configuring the model</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># or more simply:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="s1">&#39;some_file.xml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="retina-filters">
 <h2>Retina Filters<a class="headerlink" href="#retina-filters" title="Permalink to this headline">¶</a></h2>
-<p>%.. automodule:: convis.filters.retina
-%   :members:</p>
+<p>The stages of the VirtualRetina model correspond to the <a class="reference internal" href="docs.html#module-convis" title="convis"><code class="xref py py-mod docutils literal"><span class="pre">convis</span></code></a> classes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="docs_retina.html#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.OPL</span></code></a> holds only a reference to the actually used opl implementation:</dt>
+<dd><ul class="first last">
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.RecursiveOPLFilter" title="convis.filters.retina.RecursiveOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.RecursiveOPLFilter</span></code></a> (all recursive)</li>
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.HalfRecursiveOPLFilter</span></code></a> (default, temporally recursive, spatial convolution)</li>
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.SeperatableOPLFilter</span></code></a> (spatial and temporal convolutions, but still computed as separate filters)</li>
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.FullConvolutionOPLFilter" title="convis.filters.retina.FullConvolutionOPLFilter"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.FullConvolutionOPLFilter</span></code></a> (a single spatio-temporal convolution filter)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.Bipolar" title="convis.filters.retina.Bipolar"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.Bipolar</span></code></a> performs contrast gain control</li>
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.GanglionInput" title="convis.filters.retina.GanglionInput"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.GanglionInput</span></code></a> performs spatial pooling and a static non-linearity</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.GanglionSpikes</span></code> creates spikes</li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 

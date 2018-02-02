@@ -6,7 +6,9 @@ Build your own Model
 To run the examples, we assume that you ran a short preamble before
 to include modules and generate some sample input::
 
-.. code-block:: python
+.. code-block::
+    python
+
     %matplotlib inline
     import numpy as np
     import matplotlib.pylab as plt
@@ -24,18 +26,24 @@ To discard anti-phase responses which would anihilate the mean response to the s
 
 Note that the non-linearity is not defined as its own layer here, but as a manipulation of the output of the previous layer (`rf.graph`).
 
-.. code-block:: python
+.. code-block::
+    python
+
     model = convis.models.LN()
     model.conv.set_weight(convis.samples.gabor_kernel(phi=0.0)[None,:,:])
 
 Then the model can be executed like this:
 
-.. code-block:: python
+.. code-block::
+    python
+
     o = model.run(the_input)
 
 The plot shows that the model responds strongly to some orientations in the stimulus, but not to others:
 
-.. code-block:: python
+.. code-block::
+    python
+    
     plt.plot(o[0][:,10,:],alpha=0.5)
 
 

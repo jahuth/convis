@@ -43,7 +43,7 @@ A runner runs in its own thread and consumes an input stream::
     runner = convis.Runner(model,input_stream,output_stream)
     runner.start()
 
-The input stream can be infinite in length (as eg. the `RandomStream`).
+The input stream can be infinite in length (as eg. the `RandomStream`), see :mod:`convis.streams`.
 
 More information specific to the retina model can be found :ref:`here <model_retina>`.
 

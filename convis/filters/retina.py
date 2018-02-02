@@ -16,12 +16,8 @@ from ..filters import TemporalLowPassFilterRecursive, TemporalHighPassFilterRecu
 Todo:
 
  - [ ] transient filters
- - [ ] filter inits
+ - [ ] filter inits for 3d kernel OPL
  - [ ] transient filter for Ganglion Input
- - [ ] sign for Ganglion Input
- - [ ] Automatic padding!
- - [ ] parsing config
-
 
 """
 
@@ -623,7 +619,7 @@ class GanglionInput(Layer):
     
     :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V > v^0_G`)
 
-        Example configuration:
+        Example configuration::
 
             {
                 'name': 'Parvocellular Off',
@@ -654,6 +650,7 @@ class GanglionInput(Layer):
                 }
             },
 
+
     Examples
     ---------
 
@@ -661,6 +658,7 @@ class GanglionInput(Layer):
 
         >>> m = convis.filters.retina.GanglionInput()
         >>> m.sigma_surround.set(0.1)
+
 
     Attributes
     ----------

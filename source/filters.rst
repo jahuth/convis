@@ -17,11 +17,9 @@ The time dimension has to be padded by another operation.
     conv.set_weight(np.random.rand(10,20,20),normalize=True)
     some_output = conv(some_input)
 
-
-
 .. warning::
 
-    Currently, the nd convolution operation is leaking memory!
+    Currently, the nd convolution operation can leak memory when fitting a model!
 
 .. autoclass:: convis.filters.Conv3d
    :members:
@@ -38,6 +36,33 @@ Spatial gaussian filters and temporal exponential filters can be generated with 
     plt.imshow(convis.numerical_filters.gauss_filter_2d(4.0,4.0))
     plt.figure()
     plt.plot(convis.numerical_filters.exponential_filter_1d(tau=0.01))
+
+
+Receptive Fields
+----------------
+
+While a convolution will pad the input to keep the size of the output equal to the input,
+a receptive field filter will produce a single time series.
+
+.. autoclass:: convis.filters.RF
+   :members:
+
+
+.. plot::
+    :include-source:
+
+    import convis
+    import numpy as np
+    import matplotlib.pylab as plt
+    m = convis.filters.RF()
+    inp = convis.samples.moving_grating()
+    o = m.run(inp, dt=200)
+    o.plot(label='uniform rf')
+    m.set_weight(np.random.randn(*m.weight.size()))
+    o = m.run(inp, dt=200)
+    o.plot(label='random rf')
+    plt.legend()
+
 
 Recursive Temporal Filters
 -------------------------
@@ -84,3 +109,18 @@ However, the temporal filter is also more simplified and might not be able to fi
     plt.legend()
 
 
+Nonlinearities
+--------------
+
+
+.. autoclass:: convis.filters.NLRectify
+   :members:
+
+.. autoclass:: convis.filters.NLRectifyScale
+   :members:
+
+.. autoclass:: convis.filters.NLSquare
+   :members:
+
+.. autoclass:: convis.filters.NLRectifySquare
+   :members:

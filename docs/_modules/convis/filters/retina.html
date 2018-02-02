@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.filters.retina &#8212; convis 0.5.1.0 documentation</title>
+    <title>convis.filters.retina &#8212; convis 0.5.1.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.5.1.0',
+        VERSION:     '0.5.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -27,7 +27,7 @@
   </head>
   <body>
       <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
-          <span>convis 0.5.1.0 documentation</span></a></h1>
+          <span>convis 0.5.1.1 documentation</span></a></h1>
         <h2 class="heading"><span>convis.filters.retina</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -59,12 +59,8 @@
 <span class="sd">Todo:</span>
 
 <span class="sd"> - [ ] transient filters</span>
-<span class="sd"> - [ ] filter inits</span>
+<span class="sd"> - [ ] filter inits for 3d kernel OPL</span>
 <span class="sd"> - [ ] transient filter for Ganglion Input</span>
-<span class="sd"> - [ ] sign for Ganglion Input</span>
-<span class="sd"> - [ ] Automatic padding!</span>
-<span class="sd"> - [ ] parsing config</span>
-
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -666,7 +662,7 @@
 <span class="sd">    </span>
 <span class="sd">    :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if :math:`V &gt; v^0_G`)</span>
 
-<span class="sd">        Example configuration:</span>
+<span class="sd">        Example configuration::</span>
 
 <span class="sd">            {</span>
 <span class="sd">                &#39;name&#39;: &#39;Parvocellular Off&#39;,</span>
@@ -697,6 +693,7 @@
 <span class="sd">                }</span>
 <span class="sd">            },</span>
 
+
 <span class="sd">    Examples</span>
 <span class="sd">    ---------</span>
 
@@ -704,6 +701,7 @@
 
 <span class="sd">        &gt;&gt;&gt; m = convis.filters.retina.GanglionInput()</span>
 <span class="sd">        &gt;&gt;&gt; m.sigma_surround.set(0.1)</span>
+
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
