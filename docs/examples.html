@@ -1,53 +1,338 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Examples &#8212; convis 0.5.1.1 documentation</title>
-    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.5.1.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Filters and Layers" href="filters.html" />
-    <link rel="prev" title="Usage" href="usage.html" /> 
-  </head>
-  <body>
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.1 documentation</span></a></h1>
-        <h2 class="heading"><span>Examples</span></h2>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Examples &mdash; convis 0.5.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="convis 0.5.1.1 documentation" href="index.html"/>
+        <link rel="next" title="Filters and Layers" href="filters.html"/>
+        <link rel="prev" title="Usage" href="usage.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart-fitting-models-to-data">Quickstart: Fitting models to data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart-running-convis-as-a-simulator">Quickstart: Running Convis as a simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-model">Running a Model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs.html">The API: Convis classes and modules</a></li>
+</ul>
+
+            
+          
+        </div>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-        <p>
-        «&#160;&#160;<a href="usage.html">Usage</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="filters.html">Filters and Layers</a>&#160;&#160;»
-        </p>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">convis</a>
+        
+      </nav>
 
-      </div>
-      <div class="content">
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
+      <li>Examples</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
-  <span class="target" id="examples"></span><div class="section" id="id1">
-<h1>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+            
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="examples">
+<span id="id1"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>There are two quickstart examples that show how to use Convis
+for the two main use cases it was designed for:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#quickstart-fitting"><span class="std std-ref">“I’m an experimentalist and I want to fit models to my data”</span></a></li>
+<li><a class="reference internal" href="#quickstart-simulator"><span class="std std-ref">“I need spiking activity that looks like it’s coming from the retina”</span></a></li>
+</ul>
+</div></blockquote>
+<div class="section" id="quickstart-fitting-models-to-data">
+<h2>Quickstart: Fitting models to data<a class="headerlink" href="#quickstart-fitting-models-to-data" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note" id="quickstart-fitting">
+<p class="first admonition-title">Note</p>
+<p class="last">You can find this example as a notebook in the <a class="reference external" href="https://github.com/jahuth/convis/tree/master/examples">example folder</a>.</p>
+</div>
+<dl class="docutils">
+<dt>First, you need to get your data in a certain format:</dt>
+<dd><ul class="first last simple">
+<li>videos or stimuli can be <cite>time</cite> by <cite>x</cite> by <cite>y</cite> numpy arrays, or <cite>1</cite> by <cite>channel</cite> by <cite>time</cite> by <cite>x</cite> by <cite>y</cite>.</li>
+<li>all sequences have to have the same sampling frequency (bin-length)</li>
+<li>if you want to fit a spike train and you only have the spike times, you need to convert them into a time sequence</li>
+</ul>
+</dd>
+</dl>
+<p>For this example we get a sample pair of input and output (which is generated by a randomized LN model):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">generate_sample_data</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, you need to choose a model, eg. an <cite>LN</cite> model as well.
+For the <cite>LN</cite> cascade models in Convis, you can set a parameter <cite>population</cite>
+depending on whether you have a single or multiple responses
+that you want to fit.
+If <cite>population</cite> is <cite>True</cite>, the model will output an image at the last
+stage, if <cite>population</cite> is <cite>False</cite>, it will only return a time series.
+Our sample output is an image with the same size as the input,
+so <cite>population</cite> should be <cite>True</cite> (which is also the default).
+We also choose the size of the kernel that is used for the convolution.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">(</span><span class="n">kernel_dim</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span><span class="n">population</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This example is not a very hard task, since the model that generated
+the data is very similar to the model we are fitting it with.</p>
+<p>We can have a look at how well our model is doing right now by looking
+at the loss:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">compute_loss</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The default loss function is the sum of squared errors, but any loss
+function can be used by supplying it as an argument (see <a class="reference internal" href="docs.html#convis.base.Layer.optimize" title="convis.base.Layer.optimize"><code class="xref py py-meth docutils literal"><span class="pre">optimize()</span></code></a>).
+Since we didn’t fit the parameters so far, the loss will be pretty bad (around $10^7$).
+<cite>compute_loss</cite> returns the loss for each chunk that is computed
+separately. You can add them up or take the mean using <cite>np.sum</cite> or <cite>np.mean</cite>.</p>
+<p>Next, we will choose an optimizer. Which optimizer works best for you
+will depend on the complexity of you model and the data you supply.
+We recommend trying out different ones.
+In this example, we will choose the Adam optimizer. A list of all optimizers
+can be tab-completed in IPython and jupyter notebooks
+when typing <cite>m.set_optimizer.</cite> and then pressing TAB.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">Adam</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then, we can optimize the model using our complete input,
+but separated into smaller chunks of length <cite>dt</cite> (to make
+sure everything fits into memory).
+Most optimization algorithms need to be run more than once
+since they only take small steps in the direction of the gradient.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can examine the loss again after a few steps of fitting and also visualize the filters.
+<code class="xref py py-meth docutils literal"><span class="pre">convis.plot_5d_matshow()</span></code> can plot a 5 dimensional filter as a sequence of images.
+Since we created a filter spanning 10 frames, we see 12 little matrices, separated by a 1px border.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">compute_loss</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_matshow</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s1">&#39;Filter after fitting&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The loss hopefully is now lower, but it will not be decreased by very much.</p>
+<p>To compare this result visually to the true kernel of the sample data generator we can cheat a little and look at its parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_matshow</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s use a different algorithm to optimize our parameters.
+<cite>LBFGS</cite> is a pseudo-Newton method and will evaluate the model
+multiple times per step.
+We do not necessarily have to run it multiple times over the
+data ourselves and in some cases running this optimizer too
+often can deteriorate our solution again, as the small gradients
+close to the real solution lead to numerical instabilities.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Did we improve?</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">compute_loss</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">out</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_matshow</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s1">&#39;Filter after fitting&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can see clearly now that the size of our fitted kernel does not match the sample generator, which makes sense, since we normally don’t have access to a ground-truth at all. But our model just set the border pixels and the first two frames to 0.</p>
+<p>You can use impulse responses to quickly compare Models
+independent of their kernel sizes.
+(however, for more complex models this will not capture
+the complete model response):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">plot_impulse_space</span><span class="p">()</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">_g</span><span class="o">.</span><span class="n">plot_impulse_space</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Finally, you can save the parameters into a
+compressed numpy file.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">save_parameters</span><span class="p">(</span><span class="s1">&#39;fitted_model.npz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="quickstart-running-convis-as-a-simulator">
+<h2>Quickstart: Running Convis as a simulator<a class="headerlink" href="#quickstart-running-convis-as-a-simulator" title="Permalink to this headline">¶</a></h2>
+<p id="quickstart-simulator">Convis comes with a retina simulator. So to generate retina ganglion cell
+like spikes, you just have to instantiate that model and feed it with
+some input:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If you have a VirtualRetina xml configuration file, you can set the parameters
+accordingly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="s1">&#39;path/to/config_file.xml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, the model has an On and an Off layer of cells with
+otherwise symmetric properties.</p>
+<p>To load a sequence of images or a video, you can use a stream class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">(</span><span class="s1">&#39;input_*.jpg&#39;</span><span class="p">)</span>
+<span class="go"># or</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoReader</span><span class="p">(</span><span class="s1">&#39;a_video.mp4&#39;</span><span class="p">)</span>
+<span class="go"># or</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once you have your input, you can run the model.
+Since the input can be very long and you will most probably
+have a a finite amount of memory (unless you run Convis
+on a true Turing machine), you can specify a chunk length <cite>dt</cite>
+to split up the input into smaller batches.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output is collected in an <cite>Output</cite> object, which
+gives you access to both neural populations (On and Off cells)
+either by numerical index or named attributes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="n">o</span><span class="o">.</span><span class="n">ganglion_spikes_ON</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="n">o</span><span class="o">.</span><span class="n">ganglion_spikes_OFF</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Firing Rates&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="running-a-model">
 <h2>Running a Model<a class="headerlink" href="#running-a-model" title="Permalink to this headline">¶</a></h2>
 <p>An LN Filter:</p>
@@ -91,22 +376,76 @@
 </div>
 
 
-      </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <p>
-        «&#160;&#160;<a href="usage.html">Usage</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="filters.html">Filters and Layers</a>&#160;&#160;»
-        </p>
+        <a href="filters.html" class="btn btn-neutral float-right" title="Filters and Layers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="usage.html" class="btn btn-neutral" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
       </div>
 
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
-    </div>
-  </body>
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.5.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

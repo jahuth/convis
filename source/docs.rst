@@ -1,4 +1,4 @@
-Convis classes and modules
+The API: Convis classes and modules
 ==================================
 
 
@@ -13,8 +13,9 @@ Further Submodules:
 
    docs_filters
    docs_models
-   docs_streams
    docs_retina
+   docs_streams
+   docs_optimizer
    docs_tests
 
 

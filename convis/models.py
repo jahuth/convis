@@ -14,7 +14,7 @@ import torch
 
 from .base import Layer
 from .filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION, Delay, VariableDelay
-from . import variables
+from . import variables, filters
 from .retina import Retina
 
 __all__ = ['L','RF','LN','LNLN','LNFDLNF','LNFDSNF','McIntosh','Retina','LNCascade','List']
@@ -183,8 +183,23 @@ class L(Layer):
         A linear model with a convolution filter.
 
         Pads input automatically to produce output of the same size as the input.
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=True):
         self.dims = 5
         super(L, self).__init__()
         in_channels = 1
@@ -193,7 +208,10 @@ class L(Layer):
             in_channels = kernel_dim[1]
             out_channels = kernel_dim[0]
             kernel_dim = kernel_dim[2:]
-        self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        if population:
+            self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv = filters.RF(in_channels, out_channels, (kernel_dim[0],1,1), bias = bias, autopad=False)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
@@ -205,8 +223,23 @@ class RF(Layer):
         A linear model with a receptive field filter.
 
         Pads input automatically to produce output of the same length as the input.
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=False):
         self.dims = 5
         super(RF, self).__init__()
         in_channels = 1
@@ -215,7 +248,10 @@ class RF(Layer):
             in_channels = kernel_dim[1]
             out_channels = kernel_dim[0]
             kernel_dim = kernel_dim[2:]
-        self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=False, time_pad=True)
+        if population:
+            self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv = filters.RF(in_channels, out_channels, (kernel_dim[0],1,1), bias = bias, autopad=False)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
@@ -237,8 +273,14 @@ class LN(Layer):
         bias: bool
             Whether or not to include a scalar bias parameter in
             the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=True):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
         super(LN, self).__init__()
@@ -248,7 +290,10 @@ class LN(Layer):
             in_channels = kernel_dim[1]
             out_channels = kernel_dim[0]
             kernel_dim = kernel_dim[2:]
-        self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        if population:
+            self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv = filters.RF(in_channels, out_channels, (kernel_dim[0],1,1), bias = bias, autopad=False)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
@@ -269,8 +314,14 @@ class RFN(Layer):
         bias: bool
             Whether or not to include a scalar bias parameter in
             the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=False):
         self.dims = 5
         super(RFN, self).__init__()
         self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
@@ -280,7 +331,10 @@ class RFN(Layer):
             in_channels = kernel_dim[1]
             out_channels = kernel_dim[0]
             kernel_dim = kernel_dim[2:]
-        self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=False, time_pad=True)
+        if population:
+            self.conv = Conv3d(in_channels, out_channels, kernel_dim, bias = bias, autopad=False, time_pad=True)
+        else:
+            self.conv = filters.RF(in_channels, out_channels, (kernel_dim[0],1,1), bias = bias, autopad=False)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0  
@@ -293,15 +347,33 @@ class LNLN(Layer):
         A linear-nonlinear cascade model with two convolution filters.
 
         Pads input automatically to produce output of the same size as the input.
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=True):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
         super(LNLN, self).__init__()
         self.conv1 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv1.bias.data[0] = 0.0
-        self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        if population:
+            self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv2 = filters.RF(1, 1, (kernel_dim[0],1,1), bias = bias)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv2.bias.data[0] = 0.0
     def forward(self, x):
@@ -317,11 +389,28 @@ class LNLNLN(Layer):
 
         Pads input automatically to produce output of the same size as the input.
 
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
+
+
         See Also
         --------
         LNCascade
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=True):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
         super(LNLNLN, self).__init__()
@@ -331,7 +420,10 @@ class LNLNLN(Layer):
         self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv2.bias.data[0] = 0.0
-        self.conv3 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        if population:
+            self.conv3 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv3 = filters.RF(1, 1, (kernel_dim[0],1,1), bias = bias)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv3.bias.data[0] = 0.0
     def forward(self, x):
@@ -346,11 +438,27 @@ class LNLNLNLN(Layer):
 
         Pads input automatically to produce output of the same size as the input.
 
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
+
         See Also
         --------
         LNCascade
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, population=True):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0,max=1000000.0)
         super(LNLNLNLN, self).__init__()
@@ -363,7 +471,10 @@ class LNLNLNLN(Layer):
         self.conv3 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv3.bias.data[0] = 0.0
-        self.conv4 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        if population:
+            self.conv4 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv4 = filters.RF(1, 1, (kernel_dim[0],1,1), bias = bias)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv4.bias.data[0] = 0.0
     def forward(self, x):
@@ -380,15 +491,38 @@ class LNFDLNF(Layer):
         feedback for each layer and individual delays.
 
         Pads input automatically to produce output of the same size as the input.
+
+
+        Parameters
+        ----------
+        kernel_dim: tuple(int,int,int) or tuple(int,int,int,int,int)
+            Either the dimensions of a 3d kernel (time,x,y)
+            or a 5d kernel (out_channels,in_channels,time,x,y).
+        bias: bool
+            Whether or not to include a scalar bias parameter in
+            the linear filter
+        feedback_length: int
+            Feedback is implemented as a temporal convolution filter,
+            `feedback_length` is the maximal possible
+            delay.
+        population: bool
+            If `population` is True, the last filter will be 
+            a convolution filter, creating a population of 
+            responses. If `population` is False, the last filter
+            will be a single receptive field, creating only
+            one output time series.
     """
-    def __init__(self,kernel_dim=(1,1,1), bias = False, feedback_length=50):
+    def __init__(self,kernel_dim=(1,1,1), bias = False, feedback_length=50, population=True):
         self.dims = 5
         self.nonlinearity = lambda x: x.clamp(min=0.0)
         super(LNFDLNF, self).__init__()
         self.conv1 = Conv3d(1, 1, kernel_dim, bias = bias, time_pad=True, autopad=True)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv1.bias.data[0] = 0.0
-        self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, time_pad=True, autopad=True)
+        if population:
+            self.conv2 = Conv3d(1, 1, kernel_dim, bias = bias, autopad=True, time_pad=True)
+        else:
+            self.conv2 = filters.RF(1, 1, (kernel_dim[0],1,1), bias = bias)
         if hasattr(self,'bias') and self.bias is not None:
             self.conv2.bias.data[0] = 0.0
         self.feedback1 = Conv3d(1,1,(feedback_length,1,1), time_pad=True, autopad=True)

@@ -1,45 +1,167 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>convis.base &#8212; convis 0.5.1.1 documentation</title>
-    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.5.1.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
-  </head>
-  <body>
-      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
-          <span>convis 0.5.1.1 documentation</span></a></h1>
-        <h2 class="heading"><span>convis.base</span></h2>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>convis.base &mdash; convis 0.5.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="convis 0.5.1.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs.html">The API: Convis classes and modules</a></li>
+</ul>
+
+            
+          
+        </div>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-        <p>
-        <a class="uplink" href="../../index.html">Contents</a>
-        </p>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">convis</a>
+        
+      </nav>
 
-      </div>
-      <div class="content">
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
         
+          <li><a href="../index.html">Module code</a> &raquo;</li>
         
+      <li>convis.base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
   <h1>Source code for convis.base</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Convis base classes</span>
@@ -245,10 +367,33 @@
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No shape found for &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Layer"><a class="viewcode-back" href="../../docs.html#convis.base.Layer">[docs]</a><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Base class for modules, layers and models.</span>
+    <span class="sd">&quot;&quot;&quot;Base class for modules, layers and models.</span>
 
-<span class="sd">        `convis.Layer` is a `torch.nn.Module` with some added functionality::</span>
+<span class="sd">        `convis.Layer` is a `torch.nn.Module` with some added functionality.</span>
+<span class="sd">        </span>
+<span class="sd">        In addition to a method `forward` that performs the computation, a</span>
+<span class="sd">        `Layer` object also keeps track of a *state*, *parameter values* and </span>
+<span class="sd">        an *optimizer*.</span>
+
+<span class="sd">        The *state* is defined differently than the &quot;state&quot; of :class:`~torch.nn.Module`s:</span>
+<span class="sd">        Since we process video in non-overlapping chunks, we need to save a bit of</span>
+<span class="sd">        information between each chunk (the kind of information depends on the computation).</span>
+<span class="sd">        This is the *state* of a Layer, which will change even if all parameters are held</span>
+<span class="sd">        constant. (In contrast a `torch.nn.Module` state, eg. in `state_dict`, includes all parameters and buffers of the model)</span>
+<span class="sd">        The values of *states* are only important between the processing of two consecutive</span>
+<span class="sd">        inputs, so they usually do not have to be saved to disk, but they have to be stored</span>
+<span class="sd">        and retrieved (using `get_state` and `set_state`) when moving non-continuously over the input.</span>
+
+<span class="sd">        The *parameters* are variables of the model that have to be configured or fitted </span>
+<span class="sd">        to make the model behave in the desired way. The values of these parameters </span>
+<span class="sd">        define the response of the model to input and can be optimized to recreate a </span>
+<span class="sd">        response observed in some data. </span>
+<span class="sd">        These values can be saved to disc to preserve them.</span>
+
+<span class="sd">        Layers can hold an internal *optimizer* that makes it easy to fit the parameters </span>
+<span class="sd">        of a model to data.</span>
+
+<span class="sd">        To create a Layer, create a subclass with an `__init__` and `forward` method::</span>
 
 <span class="sd">            import convis</span>
 <span class="sd">            import torch.nn.functional as F</span>
@@ -325,7 +470,7 @@
 <span class="sd">        register_state(name, value)</span>
 <span class="sd">            registers an attribute name to be a state variable</span>
 <span class="sd">        </span>
-<span class="sd">        state()</span>
+<span class="sd">        get_state()</span>
 <span class="sd">            returns the current state of the model</span>
 <span class="sd">            (recursively for all submodules)</span>
 
@@ -431,6 +576,7 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variables</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_named_variables</span><span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_optimizer</span> <span class="o">=</span> <span class="n">_OptimizerSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -594,6 +740,23 @@
                         <span class="k">else</span><span class="p">:</span>
                             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;has no set:&#39;</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.compute_loss"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.compute_loss">[docs]</a>    <span class="k">def</span> <span class="nf">compute_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the loss of the model output in response to `inp`</span>
+<span class="sd">            compared with the provided `outp` using `loss_fn`.</span>
+
+<span class="sd">            Works like `optimize`, but does not use an actual optimizer.</span>
+
+<span class="sd">            See Also</span>
+<span class="sd">            --------</span>
+<span class="sd">            optimize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">class</span> <span class="nc">DummyOpt</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">x</span><span class="p">()</span>
+            <span class="k">def</span> <span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="o">=</span><span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="o">=</span><span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">DummyOpt</span><span class="p">(),</span> <span class="n">loss_fn</span><span class="o">=</span><span class="n">loss_fn</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span></div>
 <div class="viewcode-block" id="Layer.optimize"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">outp</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Runs an Optimizer to fit the models parameters such that the output</span>
@@ -640,7 +803,86 @@
             <span class="n">closure</span><span class="o">.</span><span class="n">outp</span> <span class="o">=</span> <span class="n">outp</span>
             <span class="n">closure</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span>
             <span class="k">return</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Layer.state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.state">[docs]</a>    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Layer.get_parameters"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.get_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns an OrderedDict of all parameter values of the model</span>
+
+<span class="sd">        The key of each entry is the respective path name</span>
+<span class="sd">        (eg. &#39;submodule_submodule_variablename&#39;), the value</span>
+<span class="sd">        is a numpy array.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        set_parameters</span>
+<span class="sd">        push_parameters</span>
+<span class="sd">        pop_parameters</span>
+<span class="sd">        save_parameters</span>
+<span class="sd">        load_parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;data&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">data</span><span class="p">,</span><span class="s1">&#39;numpy&#39;</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;what is v?&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span><span class="n">_get</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_all</span><span class="o">.</span><span class="n">__iteritems__</span><span class="p">()])</span></div>
+<div class="viewcode-block" id="Layer.set_parameters"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sets parameter values from a dictionary.</span>
+
+<span class="sd">        All parameters of the model will be loaded according</span>
+<span class="sd">        to the respective path names (eg. &#39;submodule_submodule_variablename&#39;).</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            It is important that you load the parameters to a</span>
+<span class="sd">            model with the same structure and parameters of</span>
+<span class="sd">            exactly the same name!</span>
+<span class="sd">            Missing parameters (either in the file or the model) will be </span>
+<span class="sd">            ignored silently.</span>
+<span class="sd">            To enable warnings, set `Layer._debug` or the argument `warn` to `True`.</span>
+<span class="sd">            If you changed the model structure, you can load the</span>
+<span class="sd">            parameters with `np.load`, convert it into a dictionary</span>
+<span class="sd">            and add or rename the parameters there.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        d (dict)</span>
+<span class="sd">            dictionary with parameter values</span>
+<span class="sd">        warn (bool)</span>
+<span class="sd">            whether to warn of mismatching parameter names</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        get_parameters</span>
+<span class="sd">        push_parameters</span>
+<span class="sd">        pop_parameters</span>
+<span class="sd">        save_parameters</span>
+<span class="sd">        load_parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">matched</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">unmatched</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_all</span><span class="o">.</span><span class="n">__iteritems__</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;set&#39;</span><span class="p">):</span>
+                    <span class="n">v</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;data&#39;</span><span class="p">):</span>
+                    <span class="n">v</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;what is </span><span class="si">%s</span><span class="s1">?&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+                <span class="n">matched</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="ow">or</span> <span class="n">warn</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No value for parameter </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s1"> in parameter values to load!&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+                    <span class="n">unmatched</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="ow">or</span> <span class="n">warn</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_all</span><span class="o">.</span><span class="n">__iterkeys__</span><span class="p">():</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No parameter for parameter value </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s1">!&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+                    <span class="n">unmatched</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">unmatched</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Matched and loaded </span><span class="si">%i</span><span class="s1"> parameters. Failed to match </span><span class="si">%i</span><span class="s1"> parameter names!&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span><span class="n">unmatched</span><span class="p">))</span></div>
+<div class="viewcode-block" id="Layer.get_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.get_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            collects the state and returns an</span>
 <span class="sd">            OrderedDict </span>
@@ -697,20 +939,162 @@
                     <span class="n">o</span><span class="p">[</span><span class="n">mod_name</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">s_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
             <span class="k">return</span> <span class="n">o</span>
         <span class="k">return</span> <span class="n">rec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.save_parameters"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.save_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">save_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">filetype</span><span class="o">=</span><span class="s1">&#39;npz&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;saves the model parameters to a file</span>
+
+<span class="sd">        This function currently only supports the npz format.</span>
+<span class="sd">        All parameters of the model will be saved as</span>
+<span class="sd">        variables of the respective path names (eg. &#39;submodule_submodule_variablename&#39;).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename (str)</span>
+<span class="sd">            name of the file to save to</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        load_parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;npz&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Parameters can only be saved as npz at the moment.&#39;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.load_parameters"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.load_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">load_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">filetype</span><span class="o">=</span><span class="s1">&#39;npz&#39;</span><span class="p">,</span><span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;loads saved parameter values from a file.</span>
+
+<span class="sd">        This function currently only supports the npz format.</span>
+<span class="sd">        All parameters of the model will be loaded from npz</span>
+<span class="sd">        variables of the respective path names (eg. &#39;submodule_submodule_variablename&#39;).</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            It is important that you load the parameters to a</span>
+<span class="sd">            model with the same structure and parameters of</span>
+<span class="sd">            exactly the same name!</span>
+<span class="sd">            Missing parameters (either in the file or the model) will be </span>
+<span class="sd">            ignored silently. To enable warnings, set `Layer._debug` or</span>
+<span class="sd">            the argument `warn` to `True`.</span>
+<span class="sd">            If you changed the model structure, you can load the</span>
+<span class="sd">            parameters with `np.load`, convert it into a dictionary</span>
+<span class="sd">            and add or rename the parameters there.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename (str)</span>
+<span class="sd">            name of the file to load from</span>
+<span class="sd">        warn (bool)</span>
+<span class="sd">            whether to warn of mismatching parameter names</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        save_parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;npz&#39;</span><span class="p">:</span>
+            <span class="n">parameter_dict</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameter_dict</span><span class="p">,</span><span class="n">warn</span><span class="o">=</span><span class="n">warn</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Parameters can only be saved as npz at the moment.&#39;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.push_parameters"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.push_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">push_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            collects all parameter values and pushes their values onto a stack</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_parameter_stack&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">())</span></div>
+<div class="viewcode-block" id="Layer.pop_parameters"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.pop_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">pop_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            retrieves the values of all parameters from a stack</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span></div>
 <div class="viewcode-block" id="Layer.push_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.push_state">[docs]</a>    <span class="k">def</span> <span class="nf">push_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            collects all State variables and pushes they values onto a stack</span>
+<span class="sd">            collects all State variables and pushes their values onto a stack</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_state_stack&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">())</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">())</span></div>
 <div class="viewcode-block" id="Layer.pop_state"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.pop_state">[docs]</a>    <span class="k">def</span> <span class="nf">pop_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            retrieves the values of all State variables and from a stack</span>
+<span class="sd">            retrieves the values of all State variables from a stack</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_state_stack&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No state was pushed to the stack!&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span></div>
+<div class="viewcode-block" id="Layer.push_optimizer"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.push_optimizer">[docs]</a>    <span class="k">def</span> <span class="nf">push_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            pushes the current optimizer onto a stack</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_optimizer_stack&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Layer.pop_optimizer"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.pop_optimizer">[docs]</a>    <span class="k">def</span> <span class="nf">pop_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            retrieves the last optimizer from a stack</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="n">opt</span></div>
+<div class="viewcode-block" id="Layer.get_all"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.get_all">[docs]</a>    <span class="k">def</span> <span class="nf">get_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the parameters, states and parameters in</span>
+<span class="sd">            a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span><span class="p">,</span>
+            <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">(),</span>
+            <span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">()</span>
+            <span class="p">}</span></div>
+    <span class="k">def</span> <span class="nf">set_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;optimizer&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span>
+                <span class="s1">&#39;state&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span>
+                <span class="s1">&#39;parameters&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The provided dictionary needs to contain </span><span class="se">\&#39;</span><span class="s1">optimizer</span><span class="se">\&#39;</span><span class="s1">, </span><span class="se">\&#39;</span><span class="s1">state</span><span class="se">\&#39;</span><span class="s1"> and </span><span class="se">\&#39;</span><span class="s1">parameters</span><span class="se">\&#39;</span><span class="s1"> keys.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">])</span>
+<div class="viewcode-block" id="Layer.store_all"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.store_all">[docs]</a>    <span class="k">def</span> <span class="nf">store_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Stores parameters, states and parameter values</span>
+<span class="sd">            in an internal dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_all_store&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_all_store</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_store</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span></div>
+<div class="viewcode-block" id="Layer.retrieve_all"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.retrieve_all">[docs]</a>    <span class="k">def</span> <span class="nf">retrieve_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Retrieves parameters, states and parameter values</span>
+<span class="sd">            from an internal dictionary.</span>
+
+<span class="sd">            The entry is not deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_store</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_store</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+<div class="viewcode-block" id="Layer.push_all"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.push_all">[docs]</a>    <span class="k">def</span> <span class="nf">push_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Pushes the parameters, states and parameters onto</span>
+<span class="sd">            a shared stack.</span>
+
+<span class="sd">            This stack does not interfere with the separate stacks</span>
+<span class="sd">            of `push_parameters`, `push_optimizer` and `push_state`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_all_stack&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_all_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_stack</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span><span class="p">,</span>
+            <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">(),</span>
+            <span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">()</span>
+            <span class="p">})</span></div>
+<div class="viewcode-block" id="Layer.pop_all"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.pop_all">[docs]</a>    <span class="k">def</span> <span class="nf">pop_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Retrieves the parameters, states and parameters from</span>
+<span class="sd">            a shared stack.</span>
+
+<span class="sd">            This stack does not interfere with the separate stacks</span>
+<span class="sd">            of `pop_parameters`, `pop_optimizer` and `pop_state`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="n">all_dict</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">all_dict</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">all_dict</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">])</span></div>
     <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_layer_with_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <div class="viewcode-block" id="Layer.plot_impulse"><a class="viewcode-back" href="../../docs.html#convis.base.Layer.plot_impulse">[docs]</a>    <span class="k">def</span> <span class="nf">plot_impulse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">shp</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span><span class="n">dt</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
@@ -871,18 +1255,67 @@
         <span class="k">return</span> <span class="n">o</span></div></div>
 </pre></div>
 
-      </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
-      
-        <p>
-        <a class="uplink" href="../../index.html">Contents</a>
-        </p>
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
 
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
       </div>
 
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
-    </div>
-  </body>
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

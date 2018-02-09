@@ -202,10 +202,33 @@ def shape(x):
     raise Exception('No shape found for '+str(x)+'!')
 
 class Layer(torch.nn.Module):
-    """
-        Base class for modules, layers and models.
+    """Base class for modules, layers and models.
 
-        `convis.Layer` is a `torch.nn.Module` with some added functionality::
+        `convis.Layer` is a `torch.nn.Module` with some added functionality.
+        
+        In addition to a method `forward` that performs the computation, a
+        `Layer` object also keeps track of a *state*, *parameter values* and 
+        an *optimizer*.
+
+        The *state* is defined differently than the "state" of :class:`~torch.nn.Module`s:
+        Since we process video in non-overlapping chunks, we need to save a bit of
+        information between each chunk (the kind of information depends on the computation).
+        This is the *state* of a Layer, which will change even if all parameters are held
+        constant. (In contrast a `torch.nn.Module` state, eg. in `state_dict`, includes all parameters and buffers of the model)
+        The values of *states* are only important between the processing of two consecutive
+        inputs, so they usually do not have to be saved to disk, but they have to be stored
+        and retrieved (using `get_state` and `set_state`) when moving non-continuously over the input.
+
+        The *parameters* are variables of the model that have to be configured or fitted 
+        to make the model behave in the desired way. The values of these parameters 
+        define the response of the model to input and can be optimized to recreate a 
+        response observed in some data. 
+        These values can be saved to disc to preserve them.
+
+        Layers can hold an internal *optimizer* that makes it easy to fit the parameters 
+        of a model to data.
+
+        To create a Layer, create a subclass with an `__init__` and `forward` method::
 
             import convis
             import torch.nn.functional as F
@@ -282,7 +305,7 @@ class Layer(torch.nn.Module):
         register_state(name, value)
             registers an attribute name to be a state variable
         
-        state()
+        get_state()
             returns the current state of the model
             (recursively for all submodules)
 
@@ -388,6 +411,7 @@ class Layer(torch.nn.Module):
         super(Layer, self).__init__()
         self._variables = []
         self._named_variables= {}
+        self._debug = False
         self._use_cuda = False
         self._optimizer = None
         self.set_optimizer = _OptimizerSelector(self)
@@ -551,6 +575,23 @@ class Layer(torch.nn.Module):
                         else:
                             print('has no set:',v)
         self.apply(f)
+    def compute_loss(self, inp, outp, loss_fn = lambda x,y: ((x-y)**2).sum(), dt=None, t=0):
+        """
+            Computes the loss of the model output in response to `inp`
+            compared with the provided `outp` using `loss_fn`.
+
+            Works like `optimize`, but does not use an actual optimizer.
+
+            See Also
+            --------
+            optimize
+        """
+        class DummyOpt(object):
+            def step(self, x):
+                return x()
+            def zero_grad(self):
+                pass
+        return self.optimize(inp=inp, outp=outp, optimizer=DummyOpt(), loss_fn=loss_fn, dt=dt, t=t)
     def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).sum(), dt=None, t=0):
         """
             Runs an Optimizer to fit the models parameters such that the output
@@ -597,7 +638,86 @@ class Layer(torch.nn.Module):
             closure.outp = outp
             closure.loss_fn = loss_fn
             return optimizer.step(closure)
-    def state(self):
+    def get_parameters(self):
+        """returns an OrderedDict of all parameter values of the model
+
+        The key of each entry is the respective path name
+        (eg. 'submodule_submodule_variablename'), the value
+        is a numpy array.
+
+        See Also
+        --------
+        set_parameters
+        push_parameters
+        pop_parameters
+        save_parameters
+        load_parameters
+        """
+        def _get(v):
+            if hasattr(v,'get'):
+                return v.get()
+            if isinstance(v,np.ndarray):
+                return v.copy()
+            if hasattr(v,'data'):
+                if hasattr(v.data,'numpy'):
+                    return v.data.numpy().copy()
+            raise Exception('what is v?')
+        return OrderedDict([(k,_get(v)) for (k,v) in self.p._all.__iteritems__()])
+    def set_parameters(self, d, warn=False):
+        """sets parameter values from a dictionary.
+
+        All parameters of the model will be loaded according
+        to the respective path names (eg. 'submodule_submodule_variablename').
+
+        .. note::
+            It is important that you load the parameters to a
+            model with the same structure and parameters of
+            exactly the same name!
+            Missing parameters (either in the file or the model) will be 
+            ignored silently.
+            To enable warnings, set `Layer._debug` or the argument `warn` to `True`.
+            If you changed the model structure, you can load the
+            parameters with `np.load`, convert it into a dictionary
+            and add or rename the parameters there.
+
+        Parameters
+        ----------
+        d (dict)
+            dictionary with parameter values
+        warn (bool)
+            whether to warn of mismatching parameter names
+
+        See Also
+        --------
+        get_parameters
+        push_parameters
+        pop_parameters
+        save_parameters
+        load_parameters
+        """
+        matched = 0
+        unmatched = 0
+        for (k,v) in self.p._all.__iteritems__():
+            if k in d.keys():
+                if hasattr(v,'set'):
+                    v.set(d[k])
+                elif hasattr(v,'data'):
+                    v.data = torch.FloatTensor(d[k])
+                else:
+                    Exception('what is %s?'%(str(v)))
+                matched += 1
+            else:
+                if self._debug or warn:
+                    print('No value for parameter \'%s\' in parameter values to load!'%(k))
+                    unmatched += 1
+        if self._debug or warn:
+            for k in d.keys():
+                if k not in self.p._all.__iterkeys__():
+                    print('No parameter for parameter value \'%s\'!'%(k))
+                    unmatched += 1
+            if unmatched > 0:
+                print('Matched and loaded %i parameters. Failed to match %i parameter names!'%(matched,unmatched))
+    def get_state(self):
         """
             collects the state and returns an
             OrderedDict 
@@ -654,20 +774,162 @@ class Layer(torch.nn.Module):
                     o[mod_name+'.'+s_name] = s
             return o
         return rec(self)
+    def save_parameters(self,filename,filetype='npz'):
+        """saves the model parameters to a file
+
+        This function currently only supports the npz format.
+        All parameters of the model will be saved as
+        variables of the respective path names (eg. 'submodule_submodule_variablename').
+
+        Parameters
+        ----------
+        filename (str)
+            name of the file to save to
+
+        See Also
+        --------
+        load_parameters
+        """
+        if filetype is 'npz':
+            np.savez(filename, **self.get_parameters())
+        else:
+            raise Exception('Parameters can only be saved as npz at the moment.')
+    def load_parameters(self,filename,filetype='npz',warn=False):
+        """loads saved parameter values from a file.
+
+        This function currently only supports the npz format.
+        All parameters of the model will be loaded from npz
+        variables of the respective path names (eg. 'submodule_submodule_variablename').
+
+        .. note::
+            It is important that you load the parameters to a
+            model with the same structure and parameters of
+            exactly the same name!
+            Missing parameters (either in the file or the model) will be 
+            ignored silently. To enable warnings, set `Layer._debug` or
+            the argument `warn` to `True`.
+            If you changed the model structure, you can load the
+            parameters with `np.load`, convert it into a dictionary
+            and add or rename the parameters there.
+
+        Parameters
+        ----------
+        filename (str)
+            name of the file to load from
+        warn (bool)
+            whether to warn of mismatching parameter names
+
+        See Also
+        --------
+        save_parameters
+        """
+        if filetype is 'npz':
+            parameter_dict = np.load(filename)
+            self.set_parameters(parameter_dict,warn=warn)
+        else:
+            raise Exception('Parameters can only be saved as npz at the moment.')
+    def push_parameters(self):
+        """
+            collects all parameter values and pushes their values onto a stack
+        """
+        if not hasattr(self, '_parameter_stack'):
+            self._parameter_stack = []
+        self._parameter_stack.append(self.get_parameters())
+    def pop_parameters(self):
+        """
+            retrieves the values of all parameters from a stack
+        """
+        pars = self._parameter_stack.pop()
+        self.set_parameters(pars)
     def push_state(self):
         """
-            collects all State variables and pushes they values onto a stack
+            collects all State variables and pushes their values onto a stack
         """
         if not hasattr(self, '_state_stack'):
             self._state_stack = []
-        self._state_stack.append(self.state())
+        self._state_stack.append(self.get_state())
     def pop_state(self):
         """
-            retrieves the values of all State variables and from a stack
+            retrieves the values of all State variables from a stack
         """
         if not hasattr(self, '_state_stack'):
             raise Exception('No state was pushed to the stack!')
         self.set_state(self._state_stack.pop())
+    def push_optimizer(self):
+        """
+            pushes the current optimizer onto a stack
+        """
+        if not hasattr(self, '_optimizer_stack'):
+            self._optimizer_stack = []
+        self._optimizer_stack.append(self._optimizer)
+    def pop_optimizer(self):
+        """
+            retrieves the last optimizer from a stack
+        """
+        opt = self._optimizer_stack.pop()
+        self._optimizer = opt
+    def get_all(self):
+        """
+            Returns the parameters, states and parameters in
+            a dictionary.
+        """
+        return {
+            'optimizer': self._optimizer,
+            'state': self.get_state(),
+            'parameters': self.get_parameters()
+            }
+    def set_all(self, d):
+        if not ('optimizer' in d.keys() and
+                'state' in d.keys() and
+                'parameters' in d.keys()):
+            raise Exception('The provided dictionary needs to contain \'optimizer\', \'state\' and \'parameters\' keys.')
+        self._optimizer = d['optimizer']
+        self.set_state(d['state'])
+        self.set_parameters(d['parameters'])
+    def store_all(self, name):
+        """
+            Stores parameters, states and parameter values
+            in an internal dictionary.
+        """
+        if not hasattr(self, '_all_store'):
+            self._all_store = OrderedDict()
+        self._all_store[name] = self.get_all()
+    def retrieve_all(self, name):
+        """
+            Retrieves parameters, states and parameter values
+            from an internal dictionary.
+
+            The entry is not deleted.
+        """
+        self.set_all(self._all_store[name])
+        return self._all_store[name]
+    def push_all(self):
+        """
+            Pushes the parameters, states and parameters onto
+            a shared stack.
+
+            This stack does not interfere with the separate stacks
+            of `push_parameters`, `push_optimizer` and `push_state`.
+        """
+        if not hasattr(self, '_all_stack'):
+            self._all_stack = []
+        self._all_stack.append({
+            'optimizer': self._optimizer,
+            'state': self.get_state(),
+            'parameters': self.get_parameters()
+            })
+    def pop_all(self):
+        """
+            Retrieves the parameters, states and parameters from
+            a shared stack.
+
+            This stack does not interfere with the separate stacks
+            of `pop_parameters`, `pop_optimizer` and `pop_state`.
+        """
+        all_dict = self._all_stack.pop()
+        self._optimizer = all_dict['optimizer']
+        self.set_state(all_dict['state'])
+        self.set_parameters(all_dict['parameters'])
     def _repr_html_(self):
         return variable_describe.describe_layer_with_html(self, 0)
     def plot_impulse(self,shp=(500,10,10),dt=500):

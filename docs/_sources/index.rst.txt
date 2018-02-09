@@ -8,6 +8,12 @@ Welcome to the documentation of Convis
 
 Convis lets you build vision models using PyTorch.
 
+Want to jump right in? Have a look at these quickstart guides:
+
+ - :ref:`"I'm an experimentalist and I want to fit models to my data" <quickstart_fitting>`
+ - :ref:`"I need spiking activity that looks like it's coming from the retina" <quickstart_simulator>`
+
+
 
 Installation
 ------------
@@ -31,19 +37,6 @@ I recommend installing opencv, and jupyter notebook, if you do not already have 
    sudo apt-get install python-opencv
 
 
-Contents:
-
-.. toctree::
-   :maxdepth: 3
-
-   installation
-   usage
-   examples
-   filters
-   filters_Conv3d
-   pytorch_basics
-   model
-   docs
 
 
 Found a bug or want to contribute?
@@ -74,6 +67,18 @@ General discussion is encouraged on the two mailing lists:
 
 
 
+Contents:
+
+.. toctree::
+   :maxdepth: 3
+
+   installation
+   usage
+   examples
+   filters
+   pytorch_basics
+   model
+   docs
 
 Indices
 ==================

@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Optimizers convis.optimizer &mdash; convis 0.5.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="convis 0.5.1.1 documentation" href="index.html"/>
+        <link rel="up" title="The API: Convis classes and modules" href="docs.html"/>
+        <link rel="next" title="Automatic Tests convis.tests" href="docs_tests.html"/>
+        <link rel="prev" title="Streams convis.streams" href="docs_streams.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="docs.html">The API: Convis classes and modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Optimizers <cite>convis.optimizer</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_tests.html">Automatic Tests <cite>convis.tests</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.base">Base classes <cite>convis.base</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.utils">Utilitary methods <cite>convis.utils</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.samples">Sample Data <cite>convis.samples</cite></a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">convis</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="docs.html">The API: Convis classes and modules</a> &raquo;</li>
+        
+      <li>Optimizers <cite>convis.optimizer</cite></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/docs_optimizer.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-convis.optimizer">
+<span id="optimizers-convis-optimizer"></span><h1>Optimizers <cite>convis.optimizer</cite><a class="headerlink" href="#module-convis.optimizer" title="Permalink to this headline">¶</a></h1>
+<p>Optimizer classes in addition to the ones provided by
+<cite>torch.optim</cite>.</p>
+<p>The Optimizers used here assume that they estimate one 
+set of parameters. If the model should be fitted to some
+data at one time and to other data at another time, a new
+instance of the optimizer should be used.</p>
+<p>You can set the optimizer of a model directly for that:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">LNLN</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">input_a</span><span class="p">,</span> <span class="n">goal_a</span><span class="p">)</span>
+<span class="n">a_optim</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">_optimizer</span> <span class="c1"># store the optimizer </span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span> <span class="c1"># initialize a new optimizer</span>
+<span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">input_b</span><span class="p">,</span> <span class="n">goal_b</span><span class="p">)</span> <span class="c1"># optimizing with the new optimizer</span>
+<span class="n">m</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="n">a_optim</span> <span class="c1"># using the first optimizer again</span>
+</pre></div>
+</div>
+<p>But this method can leave the optimizer confused (ie. it might not
+work as intended), as state of the model and the parameters are
+changed by running the second optimizer on some other input.</p>
+<p>To use the same model for two different fitting processes
+for two different processes that have to be estimated,
+it is recommended to backup all relevant information and
+to restore it when returning to fitting a previous process.</p>
+<dl class="docutils">
+<dt>To do that there are three options:</dt>
+<dd><ul class="first last simple">
+<li>using <cite>v = model.get_all()</cite> to retrieve the information into a variable and <cite>model.set_all(v)</cite> to restore it</li>
+<li>using <cite>model.push_all()</cite> to push the information onto a stack within the model and <cite>model.pop_all()</cite> to retrieve it. With this method the values  can only be restored once, unless pushed again onto the stack.</li>
+<li>using <cite>model.store_all(some_name)</cite> to store the information under a certain name and retrieving it with <cite>model.retrieve_all(some_name)</cite>, which can be used more than once and does not rely on user managed variables.</li>
+</ul>
+</dd>
+</dl>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">LNLN</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">store_all</span><span class="p">(</span><span class="s1">&#39;init&#39;</span><span class="p">)</span> <span class="c1"># stores state, parameter values and optimizer under a name</span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">input_a</span><span class="p">,</span> <span class="n">goal_a</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">push_all</span><span class="p">()</span> <span class="c1"># alternatively, you can save the optimizer, </span>
+<span class="c1"># state and parameters onto a stack (optimizers will </span>
+<span class="c1"># mostly assume that the parameters are not changed</span>
+<span class="c1"># between steps, but this differs per algorithm)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">retrieve_all</span><span class="p">(</span><span class="s1">&#39;init&#39;</span><span class="p">)</span> <span class="c1"># retrieves state, parameter values and optimizer from before</span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span> <span class="c1"># initialize a new optimizer</span>
+<span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">input_b</span><span class="p">,</span> <span class="n">goal_b</span><span class="p">)</span> <span class="c1"># optimizing with the new optimizer</span>
+<span class="n">m</span><span class="o">.</span><span class="n">pop_all</span><span class="p">()</span> <span class="c1"># returning to the previous parameters, state and optimizer</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="convis.optimizer.FiniteDifferenceGradientOptimizer">
+<em class="property">class </em><code class="descclassname">convis.optimizer.</code><code class="descname">FiniteDifferenceGradientOptimizer</code><span class="sig-paren">(</span><em>params</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/optimizer.html#FiniteDifferenceGradientOptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.optimizer.FiniteDifferenceGradientOptimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quasi-Newton method with a finite difference approximation
+of 2nd order gradient.</p>
+<dl class="method">
+<dt id="convis.optimizer.FiniteDifferenceGradientOptimizer.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/optimizer.html#FiniteDifferenceGradientOptimizer.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.optimizer.FiniteDifferenceGradientOptimizer.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a single optimization step.
+Arguments:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>closure (callable, optional): A closure that reevaluates the model</dt>
+<dd>and returns the loss.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.optimizer.CautiousLBFGS">
+<em class="property">class </em><code class="descclassname">convis.optimizer.</code><code class="descname">CautiousLBFGS</code><span class="sig-paren">(</span><em>params</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/optimizer.html#CautiousLBFGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.optimizer.CautiousLBFGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the LBFGS optimizer, but chooses new starting
+values if the method is instable due to the closeness
+to the true value.</p>
+<dl class="method">
+<dt id="convis.optimizer.CautiousLBFGS.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/optimizer.html#CautiousLBFGS.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.optimizer.CautiousLBFGS.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a single optimization step.
+Arguments:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>closure (callable, optional): A closure that reevaluates the model</dt>
+<dd>and returns the loss.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="docs_tests.html" class="btn btn-neutral float-right" title="Automatic Tests convis.tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="docs_streams.html" class="btn btn-neutral" title="Streams convis.streams" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.5.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

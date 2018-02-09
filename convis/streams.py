@@ -772,3 +772,42 @@ class VideoWriter(Stream):
             self.out.write(np.uint8(frame))
     def close(self):
         self.out.release()
+
+class ImageSequence(Stream):
+    """loads a sequence of images
+
+    """
+    def __init__(self,filenames='*.jpg',size=(50,50),repeats=0,offset=None,isColor=False):
+        self.repeats = repeats
+        self.offset = offset
+        self.i=0
+        if type(filenames) is str:
+            import glob
+            self.file_list = sorted(glob.glob(filenames))
+        elif type(filenames) is list:
+            self.file_list = filenames
+        else:
+            raise Exception('filenames not recognized. Has to be a string or list.')
+        super(ImageSequence,self).__init__()
+    def __len__(self):
+        return len(self.file_list)
+    def get_one_frame(self):
+        from PIL import Image
+        try:
+            frame = np.array(Image.open(self.file_list[self.i]))
+            offset = self.offset
+            if self.offset is None:
+                offset = (int(np.floor((frame.shape[0]-self.size[0])/2.0)),
+                          int(np.floor((frame.shape[1]-self.size[1])/2.0)))
+            return frame[offset[0]:(offset[0]+self.size[0]),
+                            offset[1]:(offset[1]+self.size[1])].mean(2)
+        except:
+            return np.zeros(self.size)  
+    def get_image(self):
+        return self.last_image
+    def get(self,i):
+        self.i += i
+        frames = np.asarray([self.get_one_frame() for f in range(i)])
+        self.last_image = frames[-1]
+        return frames
+    

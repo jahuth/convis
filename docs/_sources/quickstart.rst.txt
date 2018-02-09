@@ -1,0 +1,32 @@
+
+
+Quickstart:
+
+ - I'm an experimentalist and I want to fit models to my data
+ - I need some spikes that look like they came from the retina/LGN/V1/...
+ - I
+
+
+
+Fitting Data
+------------
+
+First, you need to get your data in a certain format:
+ - videos or stimuli can be `time` by `x` by `y` numpy arrays, or `1` by `channel` by `time` by `x` by `y`.
+ - all sequences have to have the same sampling frequency (bin-length)
+ - if you want to fit a spike train and you only have the spike times, you need to convert them into a time sequence
+
+
+.. code-block::
+    python
+
+    inp = np.zeros((10000,100,100))
+    out = np.zeros(10000)
+
+Then, you need to choose a model.
+
+
+Generating Spikes
+-----------------
+
+

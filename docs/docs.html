@@ -1,57 +1,188 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Convis classes and modules &#8212; convis 0.5.1.1 documentation</title>
-    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.5.1.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Filters convis.filters" href="docs_filters.html" />
-    <link rel="prev" title="A Convolutional Retina Model" href="model_McIntosh.html" /> 
-  </head>
-  <body>
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>convis 0.5.1.1 documentation</span></a></h1>
-        <h2 class="heading"><span>Convis classes and modules</span></h2>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The API: Convis classes and modules &mdash; convis 0.5.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="convis 0.5.1.1 documentation" href="index.html"/>
+        <link rel="next" title="Filters convis.filters" href="docs_filters.html"/>
+        <link rel="prev" title="A Convolutional Retina Model" href="model_McIntosh.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The API: Convis classes and modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_optimizer.html">Optimizers <cite>convis.optimizer</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_tests.html">Automatic Tests <cite>convis.tests</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-convis.base">Base classes <cite>convis.base</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#convis-base-classes">Convis base classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-convis.utils">Utilitary methods <cite>convis.utils</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-convis.samples">Sample Data <cite>convis.samples</cite></a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-        <p>
-        «&#160;&#160;<a href="model_McIntosh.html">A Convolutional Retina Model</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="docs_filters.html">Filters <cite>convis.filters</cite></a>&#160;&#160;»
-        </p>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">convis</a>
+        
+      </nav>
 
-      </div>
-      <div class="content">
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
+      <li>The API: Convis classes and modules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
-  <div class="section" id="convis-classes-and-modules">
-<h1><a class="toc-backref" href="#id5">Convis classes and modules</a><a class="headerlink" href="#convis-classes-and-modules" title="Permalink to this headline">¶</a></h1>
+            
+            <a href="_sources/docs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="the-api-convis-classes-and-modules">
+<h1><a class="toc-backref" href="#id5">The API: Convis classes and modules</a><a class="headerlink" href="#the-api-convis-classes-and-modules" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="table-of-contents">
 <p class="topic-title first">Table of Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#convis-classes-and-modules" id="id5">Convis classes and modules</a><ul>
+<li><a class="reference internal" href="#the-api-convis-classes-and-modules" id="id5">The API: Convis classes and modules</a><ul>
 <li><a class="reference internal" href="#module-convis.base" id="id6">Base classes <cite>convis.base</cite></a></li>
 <li><a class="reference internal" href="#module-convis.utils" id="id7">Utilitary methods <cite>convis.utils</cite></a></li>
 <li><a class="reference internal" href="#module-convis.samples" id="id8">Sample Data <cite>convis.samples</cite></a></li>
@@ -64,7 +195,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html#general-overview">General Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html#references">References</a></li>
@@ -73,6 +203,8 @@
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html#convis-retina-virtualretina"><cite>convis.retina_virtualretina</cite></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_optimizer.html">Optimizers <cite>convis.optimizer</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_tests.html">Automatic Tests <cite>convis.tests</cite></a></li>
 </ul>
 </div>
@@ -119,7 +251,22 @@ wrap it in a Variable and optionally move it to the GPU.</p>
 <dt id="convis.base.Layer">
 <em class="property">class </em><code class="descclassname">convis.base.</code><code class="descname">Layer</code><a class="reference internal" href="_modules/convis/base.html#Layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for modules, layers and models.</p>
-<p><cite>convis.Layer</cite> is a <cite>torch.nn.Module</cite> with some added functionality:</p>
+<p><cite>convis.Layer</cite> is a <cite>torch.nn.Module</cite> with some added functionality.</p>
+<p>In addition to a method <cite>forward</cite> that performs the computation, a
+<cite>Layer</cite> object also keeps track of a <em>state</em>, <em>parameter values</em> and 
+an <em>optimizer</em>.</p>
+<p>The <em>state</em> is defined differently than the “state” of <code class="xref py py-class docutils literal"><span class="pre">Module</span></code> state, eg. in <cite>state_dict</cite>, includes all parameters and buffers of the model)
+The values of <em>states</em> are only important between the processing of two consecutive
+inputs, so they usually do not have to be saved to disk, but they have to be stored
+and retrieved (using <cite>get_state</cite> and <cite>set_state</cite>) when moving non-continuously over the input.</p>
+<p>The <em>parameters</em> are variables of the model that have to be configured or fitted 
+to make the model behave in the desired way. The values of these parameters 
+define the response of the model to input and can be optimized to recreate a 
+response observed in some data. 
+These values can be saved to disc to preserve them.</p>
+<p>Layers can hold an internal <em>optimizer</em> that makes it easy to fit the parameters 
+of a model to data.</p>
+<p>To create a Layer, create a subclass with an <cite>__init__</cite> and <cite>forward</cite> method:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
@@ -261,7 +408,7 @@ a few special functions</p>
 <tr class="row-even"><td><strong>register_state(name, value)</strong></td>
 <td>registers an attribute name to be a state variable</td>
 </tr>
-<tr class="row-odd"><td><strong>state()</strong></td>
+<tr class="row-odd"><td><strong>get_state()</strong></td>
 <td>returns the current state of the model (recursively for all submodules)</td>
 </tr>
 <tr class="row-even"><td><strong>set_state(d)</strong></td>
@@ -312,6 +459,18 @@ of the model, not only parameters.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="convis.base.Layer.compute_loss">
+<code class="descname">compute_loss</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.compute_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.compute_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the loss of the model output in response to <cite>inp</cite>
+compared with the provided <cite>outp</cite> using <cite>loss_fn</cite>.</p>
+<p>Works like <cite>optimize</cite>, but does not use an actual optimizer.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.base.Layer.optimize" title="convis.base.Layer.optimize"><code class="xref py py-obj docutils literal"><span class="pre">optimize</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="convis.base.Layer.optimize">
 <code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs an Optimizer to fit the models parameters such that the output
@@ -330,8 +489,61 @@ of the model when presented <code class="xref py py-attr docutils literal"><span
 </dd></dl>
 
 <dl class="method">
-<dt id="convis.base.Layer.state">
-<code class="descname">state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.state" title="Permalink to this definition">¶</a></dt>
+<dt id="convis.base.Layer.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.get_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns an OrderedDict of all parameter values of the model</p>
+<p>The key of each entry is the respective path name
+(eg. ‘submodule_submodule_variablename’), the value
+is a numpy array.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.base.Layer.set_parameters" title="convis.base.Layer.set_parameters"><code class="xref py py-obj docutils literal"><span class="pre">set_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.push_parameters" title="convis.base.Layer.push_parameters"><code class="xref py py-obj docutils literal"><span class="pre">push_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.pop_parameters" title="convis.base.Layer.pop_parameters"><code class="xref py py-obj docutils literal"><span class="pre">pop_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.save_parameters" title="convis.base.Layer.save_parameters"><code class="xref py py-obj docutils literal"><span class="pre">save_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.load_parameters" title="convis.base.Layer.load_parameters"><code class="xref py py-obj docutils literal"><span class="pre">load_parameters</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.set_parameters">
+<code class="descname">set_parameters</code><span class="sig-paren">(</span><em>d</em>, <em>warn=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.set_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.set_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets parameter values from a dictionary.</p>
+<p>All parameters of the model will be loaded according
+to the respective path names (eg. ‘submodule_submodule_variablename’).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is important that you load the parameters to a
+model with the same structure and parameters of
+exactly the same name!
+Missing parameters (either in the file or the model) will be 
+ignored silently.
+To enable warnings, set <cite>Layer._debug</cite> or the argument <cite>warn</cite> to <cite>True</cite>.
+If you changed the model structure, you can load the
+parameters with <cite>np.load</cite>, convert it into a dictionary
+and add or rename the parameters there.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>d (dict)</strong></p>
+<blockquote>
+<div><p>dictionary with parameter values</p>
+</div></blockquote>
+<p><strong>warn (bool)</strong></p>
+<blockquote class="last">
+<div><p>whether to warn of mismatching parameter names</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.base.Layer.get_parameters" title="convis.base.Layer.get_parameters"><code class="xref py py-obj docutils literal"><span class="pre">get_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.push_parameters" title="convis.base.Layer.push_parameters"><code class="xref py py-obj docutils literal"><span class="pre">push_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.pop_parameters" title="convis.base.Layer.pop_parameters"><code class="xref py py-obj docutils literal"><span class="pre">pop_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.save_parameters" title="convis.base.Layer.save_parameters"><code class="xref py py-obj docutils literal"><span class="pre">save_parameters</span></code></a>, <a class="reference internal" href="#convis.base.Layer.load_parameters" title="convis.base.Layer.load_parameters"><code class="xref py py-obj docutils literal"><span class="pre">load_parameters</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.get_state">
+<code class="descname">get_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.get_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>collects the state and returns an
 OrderedDict</p>
 </dd></dl>
@@ -350,15 +562,145 @@ OrderedDict</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="convis.base.Layer.save_parameters">
+<code class="descname">save_parameters</code><span class="sig-paren">(</span><em>filename</em>, <em>filetype='npz'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.save_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.save_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>saves the model parameters to a file</p>
+<p>This function currently only supports the npz format.
+All parameters of the model will be saved as
+variables of the respective path names (eg. ‘submodule_submodule_variablename’).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename (str)</strong></p>
+<blockquote class="last">
+<div><p>name of the file to save to</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.base.Layer.load_parameters" title="convis.base.Layer.load_parameters"><code class="xref py py-obj docutils literal"><span class="pre">load_parameters</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.load_parameters">
+<code class="descname">load_parameters</code><span class="sig-paren">(</span><em>filename</em>, <em>filetype='npz'</em>, <em>warn=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.load_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.load_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>loads saved parameter values from a file.</p>
+<p>This function currently only supports the npz format.
+All parameters of the model will be loaded from npz
+variables of the respective path names (eg. ‘submodule_submodule_variablename’).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is important that you load the parameters to a
+model with the same structure and parameters of
+exactly the same name!
+Missing parameters (either in the file or the model) will be 
+ignored silently. To enable warnings, set <cite>Layer._debug</cite> or
+the argument <cite>warn</cite> to <cite>True</cite>.
+If you changed the model structure, you can load the
+parameters with <cite>np.load</cite>, convert it into a dictionary
+and add or rename the parameters there.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename (str)</strong></p>
+<blockquote>
+<div><p>name of the file to load from</p>
+</div></blockquote>
+<p><strong>warn (bool)</strong></p>
+<blockquote class="last">
+<div><p>whether to warn of mismatching parameter names</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.base.Layer.save_parameters" title="convis.base.Layer.save_parameters"><code class="xref py py-obj docutils literal"><span class="pre">save_parameters</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.push_parameters">
+<code class="descname">push_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.push_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.push_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>collects all parameter values and pushes their values onto a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.pop_parameters">
+<code class="descname">pop_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.pop_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.pop_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieves the values of all parameters from a stack</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="convis.base.Layer.push_state">
 <code class="descname">push_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.push_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.push_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>collects all State variables and pushes they values onto a stack</p>
+<dd><p>collects all State variables and pushes their values onto a stack</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="convis.base.Layer.pop_state">
 <code class="descname">pop_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.pop_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.pop_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>retrieves the values of all State variables and from a stack</p>
+<dd><p>retrieves the values of all State variables from a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.push_optimizer">
+<code class="descname">push_optimizer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.push_optimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.push_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>pushes the current optimizer onto a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.pop_optimizer">
+<code class="descname">pop_optimizer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.pop_optimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.pop_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieves the last optimizer from a stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.get_all">
+<code class="descname">get_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.get_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.get_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the parameters, states and parameters in
+a dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.store_all">
+<code class="descname">store_all</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.store_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.store_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores parameters, states and parameter values
+in an internal dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.retrieve_all">
+<code class="descname">retrieve_all</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.retrieve_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.retrieve_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves parameters, states and parameter values
+from an internal dictionary.</p>
+<p>The entry is not deleted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.push_all">
+<code class="descname">push_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.push_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.push_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes the parameters, states and parameters onto
+a shared stack.</p>
+<p>This stack does not interfere with the separate stacks
+of <cite>push_parameters</cite>, <cite>push_optimizer</cite> and <cite>push_state</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Layer.pop_all">
+<code class="descname">pop_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.pop_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.pop_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the parameters, states and parameters from
+a shared stack.</p>
+<p>This stack does not interfere with the separate stacks
+of <cite>pop_parameters</cite>, <cite>pop_optimizer</cite> and <cite>pop_state</cite>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -495,6 +837,98 @@ to <cite>matplotlib.pylab.plot()</cite></p>
 <div class="section" id="module-convis.samples">
 <span id="sample-data-convis-samples"></span><h2><a class="toc-backref" href="#id8">Sample Data <cite>convis.samples</cite></a><a class="headerlink" href="#module-convis.samples" title="Permalink to this headline">¶</a></h2>
 <p>This module provides sample kernels and inputs.</p>
+<dl class="function">
+<dt id="convis.samples.moving_grating">
+<code class="descclassname">convis.samples.</code><code class="descname">moving_grating</code><span class="sig-paren">(</span><em>t=2000</em>, <em>x=20</em>, <em>y=20</em>, <em>vt=0.005</em>, <em>vx=3.0</em>, <em>vy=2.0</em>, <em>p=0.01</em>, <em>frames_per_second=None</em>, <em>pixel_per_degree=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/samples.html#moving_grating"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.samples.moving_grating" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a moving grating stimulus.
+The actual speed and direction of the gratings is
+a combination of temporal, x and y speed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>t: int</strong></p>
+<blockquote>
+<div><p>temporal length of the stimulus</p>
+</div></blockquote>
+<p><strong>x: int</strong></p>
+<blockquote>
+<div><p>width of the stimulus</p>
+</div></blockquote>
+<p><strong>y: int</strong></p>
+<blockquote>
+<div><p>height of the stimulus</p>
+</div></blockquote>
+<p><strong>vt: float</strong></p>
+<blockquote>
+<div><p>speed of gratings</p>
+</div></blockquote>
+<p><strong>vx: float</strong></p>
+<blockquote>
+<div><p>x speed of gratings</p>
+</div></blockquote>
+<p><strong>vy: float</strong></p>
+<blockquote class="last">
+<div><p>y speed of gratings</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.samples.moving_bar">
+<code class="descclassname">convis.samples.</code><code class="descname">moving_bar</code><span class="sig-paren">(</span><em>t=2000</em>, <em>x=20</em>, <em>y=20</em>, <em>bar_pos=-1.0</em>, <em>bar_direction=0.0</em>, <em>bar_width=1.0</em>, <em>bar_v=0.01</em>, <em>frames_per_second=None</em>, <em>pixel_per_degree=None</em>, <em>sharp=False</em>, <em>temporal_smoothing=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/samples.html#moving_bar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.samples.moving_bar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a moving bar stimulus</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>t: int</strong></p>
+<blockquote>
+<div><p>temporal length of the stimulus</p>
+</div></blockquote>
+<p><strong>x: int</strong></p>
+<blockquote>
+<div><p>width of the stimulus</p>
+</div></blockquote>
+<p><strong>y: int</strong></p>
+<blockquote>
+<div><p>height of the stimulus</p>
+</div></blockquote>
+<p><strong>bar_pos: float</strong></p>
+<blockquote>
+<div><p>position of the bar from -1.0 to 1.0</p>
+</div></blockquote>
+<p><strong>bar_direction: float</strong></p>
+<blockquote>
+<div><p>direction of the bar in rad</p>
+</div></blockquote>
+<p><strong>bar_width: float</strong></p>
+<blockquote>
+<div><p>width of the bar in pixel</p>
+</div></blockquote>
+<p><strong>bar_v: float</strong></p>
+<blockquote>
+<div><p>speed of the bar</p>
+</div></blockquote>
+<p><strong>sharp: bool</strong></p>
+<blockquote>
+<div><p>whether the output is binary or smoothed</p>
+</div></blockquote>
+<p><strong>temporal_smoothing: float</strong></p>
+<blockquote class="last">
+<div><p>if greater than 0.0 and <cite>sharp=True</cite>,
+smooths the stimulus in time with a
+gaussian kernel with width <cite>temporal_smoothing</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
 <dt id="convis.samples.random_checker_stimulus">
 <code class="descclassname">convis.samples.</code><code class="descname">random_checker_stimulus</code><span class="sig-paren">(</span><em>t=2000</em>, <em>x=20</em>, <em>y=20</em>, <em>checker_size=5</em>, <em>seed=123</em>, <em>frames_per_second=None</em>, <em>pixel_per_degree=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/samples.html#random_checker_stimulus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.samples.random_checker_stimulus" title="Permalink to this definition">¶</a></dt>
@@ -699,22 +1133,76 @@ a <cite>SampleGenerator</cite> with a random kernel.</p>
 </div>
 
 
-      </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <p>
-        «&#160;&#160;<a href="model_McIntosh.html">A Convolutional Retina Model</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="docs_filters.html">Filters <cite>convis.filters</cite></a>&#160;&#160;»
-        </p>
+        <a href="docs_filters.html" class="btn btn-neutral float-right" title="Filters convis.filters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="model_McIntosh.html" class="btn btn-neutral" title="A Convolutional Retina Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
       </div>
 
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2016, Jacob Huth.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
-    </div>
-  </body>
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.5.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

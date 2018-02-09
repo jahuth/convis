@@ -57,9 +57,75 @@ def sparse_input(t=2000,x=20,y=20,p=0.01,
 def moving_grating(t=2000,x=20,y=20,vt=1.0/200.0,vx=3.0,vy=2.0,p=0.01,
                             frames_per_second=None,
                             pixel_per_degree=None):
+    """
+        Creates a moving grating stimulus.
+        The actual speed and direction of the gratings is
+        a combination of temporal, x and y speed.
+
+        Parameters
+        ----------
+        t: int
+            temporal length of the stimulus
+        x: int
+            width of the stimulus
+        y: int
+            height of the stimulus
+        vt: float
+            speed of gratings
+        vx: float
+            x speed of gratings
+        vy: float
+            y speed of gratings
+    """
     T,X,Y = np.meshgrid(np.linspace(0.0,t,t),np.linspace(-1.0,1.0,x),np.linspace(-1.0,1.0,y), indexing='ij')
     return np.sin(vt*T+vx*X+vy*Y) 
 
+def moving_bar(t=2000,x=20,y=20,
+                      bar_pos = -1.0,
+                      bar_direction=0.0,
+                      bar_width=1.0,
+                      bar_v = 0.01,
+                      frames_per_second=None,
+                      pixel_per_degree=None,
+                      sharp = False,
+                      temporal_smoothing=1.0):
+    """
+        Creates a moving bar stimulus
+
+        Parameters
+        ----------
+        t: int
+            temporal length of the stimulus
+        x: int
+            width of the stimulus
+        y: int
+            height of the stimulus
+        bar_pos: float
+            position of the bar from -1.0 to 1.0
+        bar_direction: float
+            direction of the bar in rad
+        bar_width: float
+            width of the bar in pixel
+        bar_v: float
+            speed of the bar
+        sharp: bool
+            whether the output is binary or smoothed
+        temporal_smoothing: float
+            if greater than 0.0 and `sharp=True`,
+            smooths the stimulus in time with a
+            gaussian kernel with width `temporal_smoothing`.
+    """
+    bar_width = bar_width/float(x)
+    T,X,Y = np.meshgrid(np.linspace(0.0,t,t),np.linspace(-1.0,1.0,x),np.linspace(-1.0,1.0,y), indexing='ij')
+    width = 2.0 + 0.5*bar_width
+    dist = np.abs((X*np.sin(bar_direction)-Y*np.cos(bar_direction) 
+                        - bar_pos + width*((T*bar_v)%2.0-1.0))+0.005)
+    if sharp:
+        return 1.0*(dist<=bar_width)
+    else:
+        bar = 1.0*(dist<=bar_width)
+        from scipy.ndimage import gaussian_filter1d
+        return gaussian_filter1d(bar,temporal_smoothing,axis=0)
 
 def random_checker_stimulus(t=2000,x=20,y=20,checker_size=5,seed=123,
                             frames_per_second=None,
