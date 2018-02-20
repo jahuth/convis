@@ -568,6 +568,8 @@ class Bipolar(Layer):
             self.preceding_V_bip = self.preceding_V_bip.cuda()
             self.preceding_attenuationMap = self.preceding_attenuationMap.cuda()
             self.preceding_inhibition = self.preceding_inhibition.cuda()
+            g_leak = self.g_leak.cuda()
+            lambda_amp = self.lambda_amp.cuda()
         else:
             x = x.cpu()
             y = y.cpu()
@@ -577,11 +579,13 @@ class Bipolar(Layer):
             self.preceding_V_bip = self.preceding_V_bip.cpu()
             self.preceding_attenuationMap = self.preceding_attenuationMap.cpu()
             self.preceding_inhibition = self.preceding_inhibition.cpu()
+            g_leak = self.g_leak.cpu()
+            lambda_amp = self.lambda_amp.cpu()
         preceding_V_bip = self.preceding_V_bip
         preceding_attenuationMap = self.preceding_attenuationMap
         preceding_inhibition = self.preceding_inhibition
         for i,input_image in enumerate(x.split(1,dim=2)):
-            total_conductance = self.g_leak + preceding_inhibition
+            total_conductance = g_leak + preceding_inhibition
             attenuation_map = (-self.steps*total_conductance).exp()
             try:
                 E_infinity = (self.input_amp * input_image[0,0,0,:,:] + self.inputNernst_inhibition * preceding_inhibition)/total_conductance
@@ -594,7 +598,7 @@ class Bipolar(Layer):
                 raise
             V_bip = ((preceding_V_bip - E_infinity) * attenuation_map) + E_infinity # V_bip converges to E_infinity
             
-            inhibition = (self.lambda_amp*(preceding_V_bip.unsqueeze(0).unsqueeze(0))**2.0 * self.b_0 
+            inhibition = (lambda_amp*(preceding_V_bip.unsqueeze(0).unsqueeze(0))**2.0 * self.b_0 
                                          - preceding_inhibition * self.a_1) / self.a_0
             # smoothing with mean padding
             inhibition = (self.conv2d(inhibition - inhibition.mean()) + inhibition.mean())[0,0,:,:]

@@ -13,6 +13,7 @@ from . import streams
 from . import variables
 from . import numerical_filters
 from . import utils
+from . import analysis
 
 from .base import Layer, prepare_input, Output, Runner
 from .variable_describe import help, describe, describe_text, describe_dict, describe_html

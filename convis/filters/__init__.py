@@ -242,6 +242,8 @@ class Conv3d(torch.nn.Conv3d,Layer):
                 if preserve_channels is True:
                     w = w * np.ones((self.out_channels, self.in_channels, 1, 1, 1))
             self.weight.data = torch.Tensor(w)
+            if self._use_cuda:
+                self.weight.data = self.weight.data.cuda()
             self.kernel_size = self.weight.data.shape[2:]
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
