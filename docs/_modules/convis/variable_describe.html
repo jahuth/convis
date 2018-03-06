@@ -1,0 +1,1069 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>convis.variable_describe &mdash; convis 0.5.2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="convis 0.5.2.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs.html">The API: Convis classes and modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">convis</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>convis.variable_describe</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for convis.variable_describe</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> * Describing Variables: :meth:`describe`</span>
+<span class="sd"> * Aniamting Tensors: :meth:`animate`, :meth:`animate_to_video`</span>
+<span class="sd"> * Plotting Tensors: :meth:`plot_3d_tensor_as_3d_plot`</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">types</span> <span class="k">import</span> <span class="n">ModuleType</span><span class="p">,</span> <span class="n">FunctionType</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">.o</span> <span class="k">import</span> <span class="n">save_name</span>
+<span class="c1">#from .variables import get_convis_attribute, has_convis_attribute, full_path</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">future.utils</span> <span class="k">import</span> <span class="n">iteritems</span> <span class="k">as</span> <span class="n">_iteritems</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">has_convis_attribute</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_convis_attribute</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">default</span><span class="p">)</span>
+
+<span class="n">plotting_possible</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">plotting_exceptions</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">do_3d_plot</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">matplotlib</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">IPython.core</span> <span class="k">import</span> <span class="n">pylabtools</span> <span class="k">as</span> <span class="n">pt</span>
+    <span class="n">gui</span><span class="p">,</span> <span class="n">backend</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">find_gui_and_backend</span><span class="p">(</span><span class="s1">&#39;inline&#39;</span><span class="p">,</span> <span class="s1">&#39;inline&#39;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">IPython.core.pylabtools</span> <span class="k">import</span> <span class="n">activate_matplotlib</span>
+    <span class="n">activate_matplotlib</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+    <span class="n">plotting_possible</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">plotting_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">pass</span>
+
+
+<span class="n">doc_urls</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;convis.filters.retina&#39;</span><span class="p">,</span> <span class="s1">&#39;https://jahuth.github.io/convis/docs_retina.html#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;convis.filters&#39;</span><span class="p">,</span> <span class="s1">&#39;https://jahuth.github.io/convis/docs_filters.html#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;convis.models&#39;</span><span class="p">,</span> <span class="s1">&#39;https://jahuth.github.io/convis/docs_models.html#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;convis.retina&#39;</span><span class="p">,</span> <span class="s1">&#39;https://jahuth.github.io/convis/docs_retina.html#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;convis.base&#39;</span><span class="p">,</span><span class="s1">&#39;https://jahuth.github.io/convis/docs.html#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;convis.streams&#39;</span><span class="p">,</span><span class="s1">&#39;https://jahuth.github.io/convis/docs_streams.html#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;convis.samples&#39;</span><span class="p">,</span><span class="s1">&#39;https://jahuth.github.io/convis/docs.html#&#39;</span><span class="p">)</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="describe"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.describe">[docs]</a><span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;All-purpose function to describe many convis objects</span>
+
+<span class="sd">    The output adapts itself to being displayed in a</span>
+<span class="sd">    notebook or text console.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_Descriptor</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">help</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_Descriptor</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;doc&#39;</span><span class="p">:</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">)},</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_Descriptor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">describe_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">describe_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">describe_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">describe_html</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">describe_text</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">):</span>
+    <span class="n">pure_indent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span> <span class="o">*</span> <span class="s1">&#39; &#39;</span>
+    <span class="k">def</span> <span class="nf">repr_if_not_str</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">+&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iteritems__&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">indent</span> <span class="o">+</span> <span class="s1">&#39; keys:&#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">__iteritems__</span><span class="p">()])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">indent</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;---</span><span class="se">\\</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">describe_text</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="n">indent</span><span class="o">=</span><span class="n">pure_indent</span><span class="o">+</span><span class="s1">&#39;  | &#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">__iteritems__</span><span class="p">()]))</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">describe_text</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="o">+</span><span class="s1">&#39;    &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># Tensor Variables love to raise TypeErrors when iterated over</span>
+            <span class="k">pass</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="n">vv</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">+=</span> <span class="n">f</span> <span class="o">+</span>  <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">d</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">vv</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">indent</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)]))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;simple_name&#39;</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">,</span><span class="s1">&#39;config_key&#39;</span><span class="p">,</span><span class="s1">&#39;optimizable&#39;</span><span class="p">,</span><span class="s1">&#39;node&#39;</span><span class="p">,</span><span class="s1">&#39;save&#39;</span><span class="p">,</span><span class="s1">&#39;init&#39;</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">,</span><span class="s1">&#39;set&#39;</span><span class="p">,</span><span class="s1">&#39;auto_name&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">d</span><span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="o">+</span> <span class="n">repr_if_not_str</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">+=</span> <span class="s1">&#39;value:&#39;</span> <span class="o">+</span> <span class="n">repr_if_not_str</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">+=</span> <span class="s1">&#39;got: &#39;</span> <span class="o">+</span> <span class="n">repr_if_not_str</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">,(</span><span class="n">tu</span><span class="o">.</span><span class="n">create_context_O</span><span class="p">(</span><span class="n">v</span><span class="p">))))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">indent</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)]))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">describe_dict</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">describe_dict</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span> <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># Tensor Variables love to raise TypeErrors when iterated over</span>
+            <span class="k">pass</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="n">vv</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">vv</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">d</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;simple_name&#39;</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">,</span><span class="s1">&#39;config_key&#39;</span><span class="p">,</span><span class="s1">&#39;optimizable&#39;</span><span class="p">,</span><span class="s1">&#39;node&#39;</span><span class="p">,</span><span class="s1">&#39;save&#39;</span><span class="p">,</span><span class="s1">&#39;init&#39;</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">,</span><span class="s1">&#39;set&#39;</span><span class="p">,</span><span class="s1">&#39;auto_name&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;got&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">,(</span><span class="n">tu</span><span class="o">.</span><span class="n">create_context_O</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+<span class="k">def</span> <span class="nf">_plot_to_string</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">StringIO</span><span class="o">,</span> <span class="nn">urllib</span>
+    <span class="kn">import</span> <span class="nn">base64</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="n">imgdata</span> <span class="o">=</span> <span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">imgdata</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">imgdata</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> 
+    <span class="n">image</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">encodestring</span><span class="p">(</span><span class="n">imgdata</span><span class="o">.</span><span class="n">buf</span><span class="p">)</span>  
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>    
+
+<span class="k">def</span> <span class="nf">_tensor_to_html</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span><span class="n">line_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mf">1.5</span><span class="p">),</span><span class="n">line_kwargs</span><span class="o">=</span><span class="p">{},</span><span class="n">imshow_kwargs</span><span class="o">=</span><span class="p">{},</span><span class="n">preamble</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">**</span><span class="n">other_kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function plots/prints numerical objects of 0,1,2,3 and 5 dimensions such that it can be displayed as html.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span><span class="n">title</span><span class="p">,</span><span class="s1">&#39;figsize&#39;</span><span class="p">:</span><span class="n">figsize</span><span class="p">,</span><span class="s1">&#39;line_figsize&#39;</span><span class="p">:</span><span class="n">line_figsize</span><span class="p">,</span><span class="s1">&#39;line_kwargs&#39;</span><span class="p">:</span><span class="n">line_kwargs</span><span class="p">,</span><span class="s1">&#39;imshow_kwargs&#39;</span><span class="p">:</span><span class="n">imshow_kwargs</span><span class="p">}</span>
+    <span class="n">imshow_kwargs</span><span class="p">[</span><span class="s1">&#39;interpolation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imshow_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;interpolation&#39;</span><span class="p">,</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">plotting_possible</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">preamble</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39; (1,)&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">line_figsize</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">title</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">preamble</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="s2">&quot;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+                    <span class="k">return</span> <span class="s2">&quot;Numpy array &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">preamble</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39; (1,1)&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">/</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.143</span><span class="p">:</span>
+                        <span class="c1"># for roughly square 2d objects</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">title</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="o">**</span><span class="n">imshow_kwargs</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">line_figsize</span><span class="p">)</span>
+                        <span class="c1"># for 2d objects with one long side:</span>
+                        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">preamble</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="s2">&quot;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+                    <span class="k">return</span> <span class="s2">&quot;Numpy array &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39; (1,1,1)&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">legend</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">img</span> <span class="o">=</span> <span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:],</span><span class="n">preamble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">img</span> <span class="o">=</span> <span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">t</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">preamble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1">## Todo: Plotting profiles of other dimensions iff they show interesting changes</span>
+                        <span class="c1">#</span>
+                        <span class="c1"># Right now the profile is plotted if the tensor is sufficiently small.</span>
+                        <span class="c1"># But a better way would be to determine if the profile is &quot;interesting&quot;</span>
+                        <span class="c1"># and then sampling a few lines from there.</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">title</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">221</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;mean over time&#39;</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="o">**</span><span class="n">imshow_kwargs</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">222</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;mean over x&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">30</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                            <span class="n">legend</span> <span class="o">+=</span> <span class="s1">&#39;Grey lines show the profile of the x dimension. &#39;</span>
+                        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span><span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="s1">&#39;g&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span><span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">223</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;mean over y&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">30</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                            <span class="n">legend</span> <span class="o">+=</span> <span class="s1">&#39;Red lines show the profile of the y dimension. &#39;</span>
+                        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span><span class="s1">&#39;g&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                            <span class="n">legend</span> <span class="o">+=</span> <span class="s1">&#39;Green lines show different time points. &#39;</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">224</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;mean over x and y&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="o">*</span><span class="mi">30</span><span class="p">:</span>
+                            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>
+                            <span class="n">legend</span> <span class="o">+=</span> <span class="s1">&#39;Orange lines show the spatial profile over time. &#39;</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span><span class="o">**</span><span class="n">line_kwargs</span><span class="p">)</span>  
+                        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                        <span class="n">img</span> <span class="o">=</span> <span class="s2">&quot;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+
+                        <span class="k">if</span> <span class="n">do_3d_plot</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">20</span><span class="p">:</span>
+                            <span class="c1"># TODO: create config for these cutoff values</span>
+                            <span class="k">with</span> <span class="n">OrthographicWrapper</span><span class="p">():</span>
+                                <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_3d_tensor_as_3d_plot</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                                <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                                <span class="n">img</span> <span class="o">+=</span> <span class="s2">&quot;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+                    <span class="k">if</span> <span class="n">preamble</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">img</span>
+                    <span class="k">return</span> <span class="s2">&quot;Numpy array &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&quot;</span><span class="o">+</span><span class="n">img</span><span class="o">+</span><span class="n">legend</span>            
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="c1"># we assume its actually 3d with extra dimensions</span>
+                <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s2">&quot;Numpy array &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&quot;</span><span class="o">+</span><span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">0</span><span class="p">,:,:],</span><span class="n">preamble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Numpy array &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&quot;</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                           <span class="n">s</span><span class="o">+=</span> <span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,</span><span class="n">i</span><span class="p">,:,:],</span><span class="n">preamble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&lt;br/&gt;&quot;</span>
+                        <span class="k">return</span> <span class="n">s</span>
+                    <span class="k">elif</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Numpy array &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&quot;</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                           <span class="n">s</span><span class="o">+=</span> <span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">,:,</span><span class="mi">0</span><span class="p">,:,:],</span><span class="n">preamble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&lt;br/&gt;&quot;</span>
+                        <span class="k">return</span> <span class="n">s</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="s1">&#39;5D tensor with too large first or third dimensions!&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;Numpy Array (&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;)&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">preamble</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+<span class="n">on_click_toggle</span> <span class="o">=</span>  <span class="s2">&quot;&quot;&quot;onclick=&#39;$(this).parent().children(&quot;.description_content&quot;).toggle();$(this).parent().children(&quot;.description_content_replacer&quot;).toggle();&#39;&quot;&quot;&quot;</span>
+
+<span class="n">var_name_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="animate"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.animate">[docs]</a><span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;animates a 3d or 5d array in a jupyter notebook</span>
+
+<span class="sd">    Returns a `matplotlib` animation object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ar (np.array):</span>
+<span class="sd">        3d or 5d array to animate</span>
+<span class="sd">    skip (int):</span>
+<span class="sd">        the animation skips this many timesteps</span>
+<span class="sd">        between two frames.</span>
+<span class="sd">        When generating an html plot or video for long</span>
+<span class="sd">        sequences, this should be set to a higher value</span>
+<span class="sd">        to keep the video short</span>
+<span class="sd">    interval (int):</span>
+<span class="sd">        number of milliseconds between two animation</span>
+<span class="sd">        frames</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    To use in a jupyter notebook, use a suitable matplotlib backend::</span>
+
+<span class="sd">        &gt;&gt;&gt; %matplotlib notebook</span>
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; inp = convis.samples.moving_grating(5000)</span>
+<span class="sd">        &gt;&gt;&gt; convis.animate(inp)</span>
+<span class="sd">        &lt;matplotlib.animation.FuncAnimation at 0x7f99d1d88750&gt;</span>
+
+<span class="sd">    To get a html embedded video, use `convis.variable_describe.animate_to_video`</span>
+
+<span class="sd">        &gt;&gt;&gt; %matplotlib notebook</span>
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; inp = convis.samples.moving_grating(5000)</span>
+<span class="sd">        &gt;&gt;&gt; convis.variable_describe.animate_to_video(inp)</span>
+<span class="sd">        &lt;HTML video embedded in the notebook&gt;</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    convis.variable_describe.animate_double_plot</span>
+<span class="sd">    convis.variable_describe.animate_to_video</span>
+<span class="sd">    convis.variable_describe.animate_to_html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.animation</span> <span class="k">import</span> <span class="n">FuncAnimation</span> 
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+        
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="s2">&quot;&quot;&quot;The input array has to have 3 or 5 dimensions, not </span><span class="si">%i</span><span class="s2">!</span>
+<span class="s2">        Input dimensions are: </span><span class="si">%s</span><span class="s2">&quot;&quot;&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">skipped_array</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[::</span><span class="n">skip</span><span class="p">,:,:]</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">ims</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">skipped_array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">vmin</span><span class="o">=</span><span class="n">ar</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span><span class="n">vmax</span><span class="o">=</span><span class="n">ar</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+        <span class="n">ims</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">skipped_array</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="n">skip</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ims</span>
+    <span class="n">anim</span> <span class="o">=</span> <span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped_array</span><span class="p">),</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">anim</span></div>
+
+<div class="viewcode-block" id="animate_double_plot"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.animate_double_plot">[docs]</a><span class="k">def</span> <span class="nf">animate_double_plot</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;animates two plots to show a 3d or 5d array: a spatial and a temporal scrolling line plot</span>
+
+<span class="sd">    5d arrays will be converted into 3d arrays by concatenating</span>
+<span class="sd">    the batch and channel dimensions in the x and y spatial dimensions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ar (np.array):</span>
+<span class="sd">        3d or 5d array to animate</span>
+<span class="sd">    skip (int):</span>
+<span class="sd">        the animation skips this many timesteps</span>
+<span class="sd">        between two frames.</span>
+<span class="sd">        When generating an html plot or video for long</span>
+<span class="sd">        sequences, this should be set to a higher value</span>
+<span class="sd">        to keep the video short</span>
+<span class="sd">    interval (int):</span>
+<span class="sd">        number of milliseconds between two animation</span>
+<span class="sd">        frames</span>
+<span class="sd">    window_length (int):</span>
+<span class="sd">        length of the window displayed in the </span>
+<span class="sd">        scrolling line plot</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    convis.variable_describe.animate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.animation</span> <span class="k">import</span> <span class="n">FuncAnimation</span> 
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">convis</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="s2">&quot;&quot;&quot;The input array has to have 3 or 5 dimensions, not </span><span class="si">%i</span><span class="s2">!</span>
+<span class="s2">        Input dimensions are: </span><span class="si">%s</span><span class="s2">&quot;&quot;&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">skipped_array</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[::</span><span class="n">skip</span><span class="p">,:,:]</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span><span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">ims</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">skipped_array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">vmin</span><span class="o">=</span><span class="n">ar</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span><span class="n">vmax</span><span class="o">=</span><span class="n">ar</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="n">plt_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">window_length</span><span class="p">,</span><span class="n">window_length</span><span class="p">)</span>
+    <span class="n">plt_mean</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ar</span><span class="p">[:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="n">plt_examples</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ar</span><span class="p">[:,</span><span class="nb">int</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">)],</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="n">ar_mean</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">ar_min</span>  <span class="o">=</span> <span class="n">ar</span><span class="p">[:,:,:]</span><span class="o">.</span><span class="n">min</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">ar_max</span>  <span class="o">=</span> <span class="n">ar</span><span class="p">[:,:,:]</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">plt_fill</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ar_min</span><span class="p">)),</span><span class="n">ar_min</span><span class="p">,</span><span class="n">ar_max</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ar_std_min</span>  <span class="o">=</span> <span class="n">ar_mean</span> <span class="o">-</span> <span class="n">ar</span><span class="p">[:,:,:]</span><span class="o">.</span><span class="n">std</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">ar_std_max</span>  <span class="o">=</span> <span class="n">ar_mean</span> <span class="o">+</span> <span class="n">ar</span><span class="p">[:,:,:]</span><span class="o">.</span><span class="n">std</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">plt_pointer</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">plt_fill</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ar_min</span><span class="p">)),</span><span class="n">ar_std_min</span><span class="p">,</span><span class="n">ar_std_max</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">window_length</span><span class="p">,</span><span class="mf">0.5</span><span class="o">*</span><span class="n">window_length</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+        <span class="n">ims</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">skipped_array</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="n">skip</span><span class="p">))</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="n">skip</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">window_length</span><span class="p">,(</span><span class="n">i</span><span class="o">*</span><span class="n">skip</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">window_length</span><span class="p">))</span>
+        <span class="n">plt_pointer</span><span class="o">.</span><span class="n">set_data</span><span class="p">([</span><span class="n">i</span><span class="o">*</span><span class="n">skip</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="n">skip</span><span class="p">],[</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">ims</span><span class="p">,</span><span class="n">plt_mean</span>
+    <span class="n">anim</span> <span class="o">=</span> <span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped_array</span><span class="p">),</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">anim</span></div>
+
+<div class="viewcode-block" id="animate_to_video"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.animate_to_video">[docs]</a><span class="k">def</span> <span class="nf">animate_to_video</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">scrolling_plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;animates a 3d or 5d array in a jupyter notebook</span>
+
+<span class="sd">    Returns a Jupyter HTML object containing an embedded video</span>
+<span class="sd">    that can be downloaded.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ar (np.array):</span>
+<span class="sd">        3d or 5d array to animate</span>
+<span class="sd">    skip (int):</span>
+<span class="sd">        the animation skips this many timesteps</span>
+<span class="sd">        between two frames.</span>
+<span class="sd">        When generating an html plot or video for long</span>
+<span class="sd">        sequences, this should be set to a higher value</span>
+<span class="sd">        to keep the video short</span>
+<span class="sd">    interval (int):</span>
+<span class="sd">        number of milliseconds between two animation</span>
+<span class="sd">        frames</span>
+<span class="sd">    scrolling_plot (bool):</span>
+<span class="sd">        whether to plot the spatial and temporal plots</span>
+<span class="sd">        or only the spatial animation</span>
+<span class="sd">    window_length (int):</span>
+<span class="sd">        if `scrolling_plot` is `True`, specifies</span>
+<span class="sd">        the length of the time window displayed</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        &gt;&gt;&gt; %matplotlib notebook</span>
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; inp = convis.samples.moving_grating(5000)</span>
+<span class="sd">        &gt;&gt;&gt; convis.variable_describe.animate_to_video(inp)</span>
+<span class="sd">        &lt;HTML video embedded in the notebook&gt;</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    convis.variable_describe.animate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">scrolling_plot</span><span class="p">:</span>
+        <span class="n">anim</span> <span class="o">=</span> <span class="n">animate_double_plot</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="n">window_length</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">anim</span> <span class="o">=</span> <span class="n">animate</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
+    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">anim</span><span class="o">.</span><span class="n">to_html5_video</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="animate_to_html"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.animate_to_html">[docs]</a><span class="k">def</span> <span class="nf">animate_to_html</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">scrolling_plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;animates a 3d or 5d array in a jupyter notebook</span>
+
+<span class="sd">    Returns a Jupyter HTML object containing an embedded </span>
+<span class="sd">    javascript animated plot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ar (np.array):</span>
+<span class="sd">        3d or 5d array to animate</span>
+<span class="sd">    skip (int):</span>
+<span class="sd">        the animation skips this many timesteps</span>
+<span class="sd">        between two frames.</span>
+<span class="sd">        When generating an html plot or video for long</span>
+<span class="sd">        sequences, this should be set to a higher value</span>
+<span class="sd">        to keep the video short</span>
+<span class="sd">    interval (int):</span>
+<span class="sd">        number of milliseconds between two animation</span>
+<span class="sd">        frames</span>
+<span class="sd">    scrolling_plot (bool):</span>
+<span class="sd">        whether to plot the spatial and temporal plots</span>
+<span class="sd">        or only the spatial animation</span>
+<span class="sd">    window_length (int):</span>
+<span class="sd">        if `scrolling_plot` is `True`, specifies</span>
+<span class="sd">        the length of the time window displayed</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        &gt;&gt;&gt; %matplotlib notebook</span>
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; inp = convis.samples.moving_grating(5000)</span>
+<span class="sd">        &gt;&gt;&gt; convis.variable_describe.animate_to_html(inp)</span>
+<span class="sd">        &lt;HTML javascript plot embedded in the notebook&gt;</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    convis.variable_describe.animate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">scrolling_plot</span><span class="p">:</span>
+        <span class="n">anim</span> <span class="o">=</span> <span class="n">animate_double_plot</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="n">window_length</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">anim</span> <span class="o">=</span> <span class="n">animate</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span><span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
+    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">anim</span><span class="o">.</span><span class="n">to_jshtml</span><span class="p">())</span></div>
+
+
+<span class="k">def</span> <span class="nf">describe_html</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
+    <span class="kn">import</span> <span class="nn">uuid</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">html</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">cgi</span> <span class="k">as</span> <span class="nn">html</span> <span class="c1"># fallback escape function</span>
+    <span class="c1">##       </span>
+    <span class="c1"># Handeling other datatypes</span>
+    <span class="c1">#</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__array__&#39;</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">__array__</span><span class="p">(),</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">describe_layer_with_html</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">wrap_in_html</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;div class=&#39;convis_description module&#39;&gt;&lt;b &quot;&quot;&quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&gt;&quot;&quot;&quot;</span><span class="o">+</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="s1">&#39;(nameless module)&#39;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&lt;/b&gt;&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;&#39;&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;&lt;pre&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="s2">&quot;(no doc string found)&quot;</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;&lt;/pre&gt;&#39;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">vv</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">):</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;convis_description dict_item&#39;&gt;&lt;b&gt;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;/b&gt; (module &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;)&lt;/div&gt;&quot;</span>
+                <span class="k">continue</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;convis_description dict_item&#39;&gt;&lt;b id=&quot;</span><span class="o">+</span><span class="n">uid</span><span class="o">+</span><span class="n">save_name</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot; &gt;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;/b&gt; &lt;a style=</span><span class="se">\&quot;</span><span class="s2">text-decoration: none;</span><span class="se">\&quot;</span><span class="s2"> href=&#39;#&quot;</span><span class="o">+</span><span class="n">uid</span><span class="o">+</span><span class="s2">&quot;&#39;&#39;&gt;&amp;#8617;&lt;/a&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 0px solid #ddd; padding-left: 5px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 0px solid #ddd; padding-left: 5px;&#39;&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="n">describe_html</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">FunctionType</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;div class=&#39;convis_description module&#39;&gt;&lt;b &quot;&quot;&quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&gt;&quot;&quot;&quot;</span><span class="o">+</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="s1">&#39;(nameless function)&#39;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&lt;/b&gt;&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;&#39;&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;&lt;pre&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="s2">&quot;(no doc string found)&quot;</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;&lt;/pre&gt;&#39;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;div class=&#39;convis_description module&#39;&gt;&lt;b &quot;&quot;&quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&gt;&quot;&quot;&quot;</span><span class="o">+</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="s1">&#39;(nameless class)&#39;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&lt;/b&gt;&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;&#39;&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;&lt;pre&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">,</span><span class="s2">&quot;(no doc string found)&quot;</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;&lt;/pre&gt;&#39;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iteritems__&#39;</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&lt;div class=&#39;convis_description list&#39;&gt;&quot;</span>
+        <span class="n">iteration</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">__iteritems__</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iteritems__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">_iteritems</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;b id=&quot;</span><span class="o">+</span><span class="n">uid</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot; &gt;+&lt;/b&gt;&amp;nbsp;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iteration</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;| &lt;a style=&quot;text-decoration: none; font-size: 8pt;&quot; href=&quot;#&#39;</span><span class="o">+</span><span class="n">uid</span><span class="o">+</span><span class="n">save_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/a&gt; &#39;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;&#39;&gt;&quot;</span>
+        <span class="n">iteration</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">__iteritems__</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iteritems__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">_iteritems</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iteration</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;convis_description dict_item&#39;&gt;&lt;b id=&quot;</span><span class="o">+</span><span class="n">uid</span><span class="o">+</span><span class="n">save_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot; &gt;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;/b&gt; &lt;a style=</span><span class="se">\&quot;</span><span class="s2">text-decoration: none;</span><span class="se">\&quot;</span><span class="s2"> href=&#39;#&quot;</span><span class="o">+</span><span class="n">uid</span><span class="o">+</span><span class="s2">&quot;&#39;&#39;&gt;&amp;#8617;&lt;/a&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 0px solid #ddd; padding-left: 5px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 0px solid #ddd; padding-left: 5px;&#39;&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="n">describe_html</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&lt;div class=&#39;convis_description list&#39;&gt;&lt;b &quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot;&gt;List (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;):&lt;/b&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;&#39;&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">describe_html</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="p">])</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">s</span>
+            <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># Tensor Variables love to raise TypeErrors when iterated over</span>
+            <span class="k">pass</span>
+
+    <span class="c1">##       </span>
+    <span class="c1"># Assuming its a annotated theano variable:</span>
+    <span class="c1">#</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;simple_name&#39;</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">,</span><span class="s1">&#39;config_key&#39;</span><span class="p">,</span><span class="s1">&#39;optimizable&#39;</span><span class="p">,</span><span class="s1">&#39;node&#39;</span><span class="p">,</span><span class="s1">&#39;save&#39;</span><span class="p">,</span><span class="s1">&#39;init&#39;</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">,</span><span class="s1">&#39;set&#39;</span><span class="p">,</span><span class="s1">&#39;variable_type&#39;</span><span class="p">,</span><span class="s1">&#39;auto_name&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1"># optional: None handling</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">name</span><span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;html_name&#39;</span><span class="p">):</span>
+        <span class="n">name</span><span class="o">+=</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;html_name&#39;</span><span class="p">))</span>
+    <span class="c1">#simple_name = str(d.get(&#39;simple_name&#39;,&#39;&#39;))</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;div class=&#39;convis_description variable&#39;&gt;&lt;b &quot;&quot;&quot;</span><span class="o">+</span><span class="n">on_click_toggle</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&gt;&quot;&quot;&quot;</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&lt;/b&gt; &lt;small&gt;&quot;&quot;&quot;</span><span class="o">+</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;variable_type&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&quot;&quot;&lt;/small&gt;&quot;&quot;&quot;</span>
+    <span class="c1"># default: show everything, hide on click;</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content_replacer&#39; style=&#39;border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;&#39;&gt;(&amp;#8230;)&lt;/div&gt;&quot;</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;description_content&#39; style=&#39;border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;&#39;&gt;&quot;</span>
+    <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;small&gt;&quot;</span> <span class="o">+</span> <span class="n">full_path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&lt;/small&gt;&lt;br/&gt;&quot;</span>
+    <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;&lt;p class=&quot;doc&quot; style=&quot;padding:2px;&quot;&gt;&#39;</span><span class="o">+</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/p&gt;&#39;</span>
+    <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;owner&#39;</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;tt style=&#39;color: gray;&#39;&gt;&lt;small&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">owner</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&lt;/small&gt;&lt;/tt&gt;&lt;br/&gt;&quot;</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;auto_name&#39;</span><span class="p">,</span><span class="s1">&#39;config_key&#39;</span><span class="p">,</span><span class="s1">&#39;optimizable&#39;</span><span class="p">,</span><span class="s1">&#39;node&#39;</span><span class="p">,</span><span class="s1">&#39;save&#39;</span><span class="p">,</span><span class="s1">&#39;init&#39;</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">,</span><span class="s1">&#39;set&#39;</span><span class="p">,</span><span class="s1">&#39;state_out_state&#39;</span><span class="p">,</span><span class="s1">&#39;param_init&#39;</span><span class="p">,</span><span class="s1">&#39;state_init&#39;</span><span class="p">,</span><span class="s1">&#39;state_in_state&#39;</span><span class="p">,</span><span class="s1">&#39;copied_from&#39;</span><span class="p">,</span><span class="s1">&#39;config_key&#39;</span><span class="p">,</span><span class="s1">&#39;config_default&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">s</span><span class="o">+=</span> <span class="s1">&#39;&lt;div&gt;&lt;b&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/b&gt;: &lt;tt&gt;&#39;</span><span class="o">+</span><span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">)))</span><span class="o">+</span><span class="s1">&#39;&lt;/tt&gt;&lt;/div&gt;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;get_value&#39;</span><span class="p">):</span>
+            <span class="n">s</span><span class="o">+=</span> <span class="s1">&#39;&lt;b&gt;value&lt;/b&gt;: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span><span class="n">title</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">+=</span> <span class="s1">&#39;&lt;b&gt;value&lt;/b&gt;: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">pass</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">+=</span> <span class="s1">&#39;&lt;b&gt;got&lt;/b&gt;: &#39;</span> <span class="o">+</span> <span class="n">_tensor_to_html</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">)(</span><span class="n">tu</span><span class="o">.</span><span class="n">create_context_O</span><span class="p">(</span><span class="n">v</span><span class="p">)),</span><span class="n">title</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;&lt;/div&gt;&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span>
+    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OrthographicWrapper"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.OrthographicWrapper">[docs]</a><span class="k">class</span> <span class="nc">OrthographicWrapper</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This context manager overwrites the persp_transformation function of proj3d</span>
+<span class="sd">        to perform orthographic projections.</span>
+<span class="sd">        Plots that are show()n or save()d in this context will use the projection.</span>
+
+<span class="sd">        After the context closes, the old projection is restored.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">            &gt;&gt;&gt; with convis.variable_describe.OrthographicWrapper():</span>
+<span class="sd">             ..     plot_3d_tensor_as_3d_plot(ar) # orthographic projection</span>
+<span class="sd">            &gt;&gt;&gt; plot_3d_tensor_as_3d_plot(ar) # returns to default projection</span>
+<span class="sd">            </span>
+
+<span class="sd">            &gt;&gt;&gt; orth = convis.variable_describe.OrthographicWrapper():</span>
+<span class="sd">            &gt;&gt;&gt; with orth:</span>
+<span class="sd">             ..     plot_3d_tensor_as_3d_plot(ar) </span>
+<span class="sd">            &gt;&gt;&gt; plot_3d_tensor_as_3d_plot(ar)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">proj3d</span>
+        <span class="k">def</span> <span class="nf">orthogonal_proj</span><span class="p">(</span><span class="n">zfront</span><span class="p">,</span> <span class="n">zback</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">zfront</span><span class="o">+</span><span class="n">zback</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">zfront</span><span class="o">-</span><span class="n">zback</span><span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">zfront</span><span class="o">*</span><span class="n">zback</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">zfront</span><span class="o">-</span><span class="n">zback</span><span class="p">)</span>
+            <span class="c1"># -0.0001 added for numerical stability as suggested in:</span>
+            <span class="c1"># http://stackoverflow.com/questions/23840756</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">0.0001</span><span class="p">,</span><span class="n">zback</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">proj3d</span><span class="p">,</span><span class="s1">&#39;old_persp_transformation&#39;</span><span class="p">):</span>
+            <span class="n">proj3d</span><span class="o">.</span><span class="n">old_persp_transformation</span> <span class="o">=</span> <span class="n">proj3d</span><span class="o">.</span><span class="n">persp_transformation</span>
+        <span class="n">proj3d</span><span class="o">.</span><span class="n">persp_transformation</span> <span class="o">=</span> <span class="n">orthogonal_proj</span>
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eType</span><span class="p">,</span> <span class="n">eValue</span><span class="p">,</span> <span class="n">eTrace</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">proj3d</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> <span class="c1"># we have to show all the plots before restoring the transformation</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">proj3d</span><span class="p">,</span><span class="s1">&#39;old_persp_transformation&#39;</span><span class="p">):</span>
+            <span class="n">proj3d</span><span class="o">.</span><span class="n">persp_transformation</span> <span class="o">=</span> <span class="n">proj3d</span><span class="o">.</span><span class="n">old_persp_transformation</span></div>
+
+<div class="viewcode-block" id="plot_3d_tensor_as_3d_plot"><a class="viewcode-back" href="../../docs.html#convis.variable_describe.plot_3d_tensor_as_3d_plot">[docs]</a><span class="k">def</span> <span class="nf">plot_3d_tensor_as_3d_plot</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">scale_ar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">num_levels</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">contour_cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm_r&#39;</span><span class="p">,</span> <span class="n">contourf_cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">65</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Until I come up with a 3d contour plot that shows the contours of a volume, </span>
+<span class="sd">        this function visualizes a sequence of images as contour plots stacked on top of each other.</span>
+<span class="sd">        The sides of the plot show a projection onto the xz and yz planes (at index 0).</span>
+
+<span class="sd">            ar:</span>
+<span class="sd">                the array to visualize</span>
+
+<span class="sd">            ax: (if available)</span>
+<span class="sd">                the matplotlib axis (in projection=&#39;3d&#39; mode) from eg. calling subplot</span>
+<span class="sd">                if none is provided, the current axis will be converted to 3d projection</span>
+
+<span class="sd">            scale_ar:</span>
+<span class="sd">                the array that is used for scaling (usefull if comparing arrays or visualizing only a small section)</span>
+
+<span class="sd">            num_levels: </span>
+<span class="sd">                number of levels of contours</span>
+
+<span class="sd">            contour_cmap=&#39;coolwarm_r&#39;: </span>
+<span class="sd">                color map used for line contours</span>
+
+<span class="sd">            contourf_cmap=&#39;gray&#39;: </span>
+<span class="sd">                color map used for surface contour</span>
+
+<span class="sd">            view:</span>
+<span class="sd">                tuple of two floats that give the azimuth and angle of the projection</span>
+
+
+<span class="sd">        returns:</span>
+
+<span class="sd">            axis that was used for plotting</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">proj3d</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">scale_ar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scale_ar</span> <span class="o">=</span> <span class="n">ar</span>
+    <span class="n">k_range</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scale_ar</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">scale_ar</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">scale_ar</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scale_ar</span><span class="p">),</span> <span class="n">num_levels</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ar</span><span class="p">):</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">100.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="mf">0.003</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">k_scale</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">k_scale</span><span class="o">*</span><span class="n">k</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">contourf_cmap</span><span class="p">,</span> 
+                   <span class="n">levels</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="n">k_scale</span><span class="o">*</span><span class="n">levels</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="o">*</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span><span class="n">i</span><span class="o">-</span><span class="n">k_scale</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="n">k_range</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">contour_cmap</span><span class="p">,</span> 
+                   <span class="n">levels</span><span class="o">=</span><span class="n">i</span><span class="o">-</span><span class="n">k_scale</span><span class="o">*</span><span class="n">levels</span><span class="o">/</span><span class="n">k_range</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">side_line_color</span> <span class="o">=</span> <span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">contour_cmap</span><span class="p">)(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">scale_ar</span><span class="p">))</span><span class="o">/</span><span class="n">k_range</span><span class="p">)]</span>
+        <span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">i</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+        <span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">i</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+        <span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="n">k_scale</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="n">k_range</span><span class="p">,</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">side_line_color</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="o">*</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">cset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="n">k_scale</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="n">k_range</span><span class="p">,</span> <span class="n">zdir</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">side_line_color</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="o">*</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">view_init</span><span class="p">(</span><span class="o">*</span><span class="n">view</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="n">minor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">invert_zaxis</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+<span class="k">def</span> <span class="nf">describe_layer_with_html</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">max_depth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">make_table</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="n">lst</span><span class="p">,</span> <span class="n">line_style</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
+        <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+        <span class="n">sub_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;font-weight: bold;&quot;&gt;&#39;</span><span class="o">+</span><span class="n">title</span><span class="o">+</span><span class="s1">&#39;&lt;/div&gt;&#39;</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;&#39;</span><span class="o">+</span><span class="n">line_style</span><span class="o">+</span><span class="s1">&#39;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; &lt;i&gt;(&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="s1">&#39;size&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">val</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39; &lt;i style=&quot;font-size: 80%;&quot;&gt;scalar value&lt;/i&gt;&#39;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39; &lt;i style=&quot;font-size: 80%;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s1">&#39; x &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">size</span><span class="p">()]))</span><span class="o">+</span><span class="s1">&#39;&lt;/i&gt;&#39;</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="s1">&#39;get&#39;</span><span class="p">):</span>
+                        <span class="n">v</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;size&#39;</span><span class="p">):</span>
+                            <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39; &lt;i style=&quot;font-size: 80%;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s1">&#39; x &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">size</span><span class="p">()]))</span><span class="o">+</span><span class="s1">&#39;&lt;/i&gt;&#39;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39; &lt;i style=&quot;font-size: 80%;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/i&gt;&#39;</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;)&lt;/i&gt;&#39;</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">):</span>
+                    <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;font-size: 80%;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">doc</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/div&gt;&#39;</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
+        <span class="k">return</span> <span class="n">sub_string</span>
+
+    <span class="k">def</span> <span class="nf">r</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">depth</span><span class="p">):</span>
+        <span class="n">sub_string</span> <span class="o">=</span><span class="s1">&#39;&#39;</span>
+        <span class="n">sub_string</span> <span class="o">+=</span><span class="s1">&#39;&lt;div class=&quot;doc_string&quot;&gt;&#39;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;__doc__&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;br /&gt;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__doc__</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[:</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;&#39;</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="n">sub_string</span> <span class="o">+=</span>  <span class="s1">&#39;&amp;nbsp;&amp;nbsp;&lt;tiny style=&quot;font-size:80%;&quot;&gt;(see full doc string with `help()`&#39;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;__doc_link__&#39;</span><span class="p">):</span>
+            <span class="n">sub_string</span> <span class="o">+=</span><span class="s1">&#39; or browse the documentation for &lt;a href=&quot;&#39;</span><span class="o">+</span><span class="n">model</span><span class="o">.</span><span class="n">__doc_link__</span><span class="o">+</span><span class="s1">&#39;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/a&gt;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__module__</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;convis&#39;</span><span class="p">):</span>
+                <span class="n">sphinx_path</span> <span class="o">=</span> <span class="s2">&quot;https://jahuth.github.io/convis/search.html?q=&quot;</span>
+                <span class="k">for</span> <span class="n">doc_package</span><span class="p">,</span><span class="n">doc_url</span> <span class="ow">in</span> <span class="n">doc_urls</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">doc_package</span><span class="p">):</span>
+                        <span class="n">sphinx_path</span> <span class="o">=</span> <span class="n">doc_url</span>
+                        <span class="k">break</span>
+                <span class="n">sub_string</span> <span class="o">+=</span><span class="s1">&#39; or browse the documentation for &lt;a href=&quot;&#39;</span><span class="o">+</span><span class="n">sphinx_path</span><span class="o">+</span><span class="bp">cls</span><span class="o">+</span><span class="s1">&#39;&quot; style=&quot;color:#222;&quot;&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/a&gt;&#39;</span>
+        <span class="n">sub_string</span> <span class="o">+=</span>  <span class="s1">&#39;)&lt;/tiny&gt;&#39;</span>
+        <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_state&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sub_string</span> <span class="o">+=</span> <span class="n">make_table</span><span class="p">(</span><span class="s1">&#39;State&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_state</span><span class="p">],</span> <span class="s1">&#39;margin:1px; padding:2px; background-color: #e3eb91; color: #444; margin-left:10px;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="s1">&#39;_named_variables&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_named_variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sub_string</span> <span class="o">+=</span> <span class="n">make_table</span><span class="p">(</span><span class="s1">&#39;Variables&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_named_variables</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="s1">&#39;margin:1px; padding:2px; background-color: #75bea3; color: #444; margin-left:10px;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_children</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;font-weight: bold;&quot;&gt;Modules&lt;/div&gt;&#39;</span>
+            <span class="k">for</span> <span class="n">mod_name</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_children</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">mod_name</span> <span class="ow">is</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">bg</span> <span class="o">=</span> <span class="s1">&#39;#eae2e5&#39;</span> <span class="k">if</span> <span class="n">depth</span><span class="o">%</span><span class="mi">2</span><span class="o">==</span><span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;#7a7275&#39;</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;margin:1px; padding:2px; background-color: &#39;</span><span class="o">+</span><span class="n">bg</span><span class="o">+</span><span class="s1">&#39;; color: #444; margin-left:10px;&quot;&gt;&lt;div&gt;&#39;</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39; &lt;b style:font-size:120%&gt;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/b&gt; (&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;)&lt;/div&gt;&#39;</span>
+                <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1">#if isinstance(mod, Layer) or isinstance(mod, torch.nn.Module):</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s1">&#39;named_children&#39;</span><span class="p">):</span>
+                        <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div&gt;&#39;</span><span class="o">+</span><span class="n">r</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">depth</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&lt;/div&gt;&#39;</span>
+                <span class="n">sub_string</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
+        <span class="k">return</span> <span class="n">sub_string</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="n">r</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span><span class="n">max_depth</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">wrap_in_html</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">s</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
