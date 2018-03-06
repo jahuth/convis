@@ -1,7 +1,7 @@
 """
-Describing Variables 
-----------------------
-
+ * Describing Variables: :meth:`describe`
+ * Aniamting Tensors: :meth:`animate`, :meth:`animate_to_video`
+ * Plotting Tensors: :meth:`plot_3d_tensor_as_3d_plot`
 """
 
 from types import ModuleType, FunctionType
@@ -45,6 +45,11 @@ doc_urls = [
 ]
 
 def describe(v,**kwargs):
+    """All-purpose function to describe many convis objects
+
+    The output adapts itself to being displayed in a
+    notebook or text console.
+    """
     return _Descriptor(v,**kwargs)
 
 
@@ -278,6 +283,231 @@ on_click_toggle =  """onclick='$(this).parent().children(".description_content")
 var_name_counter = 0
 
 
+def animate(ar,skip=10,interval=100):
+    """animates a 3d or 5d array in a jupyter notebook
+
+    Returns a `matplotlib` animation object.
+
+    Parameters
+    ----------
+    ar (np.array):
+        3d or 5d array to animate
+    skip (int):
+        the animation skips this many timesteps
+        between two frames.
+        When generating an html plot or video for long
+        sequences, this should be set to a higher value
+        to keep the video short
+    interval (int):
+        number of milliseconds between two animation
+        frames
+
+    Examples
+    --------
+
+    To use in a jupyter notebook, use a suitable matplotlib backend::
+
+        >>> %matplotlib notebook
+        >>> import convis
+        >>> inp = convis.samples.moving_grating(5000)
+        >>> convis.animate(inp)
+        <matplotlib.animation.FuncAnimation at 0x7f99d1d88750>
+
+    To get a html embedded video, use `convis.variable_describe.animate_to_video`
+
+        >>> %matplotlib notebook
+        >>> import convis
+        >>> inp = convis.samples.moving_grating(5000)
+        >>> convis.variable_describe.animate_to_video(inp)
+        <HTML video embedded in the notebook>
+
+    See Also
+    --------
+    convis.variable_describe.animate_double_plot
+    convis.variable_describe.animate_to_video
+    convis.variable_describe.animate_to_html
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation 
+    import numpy as np
+        
+    assert len(ar.shape) in [3,5], """The input array has to have 3 or 5 dimensions, not %i!
+        Input dimensions are: %s"""%(len(ar.shape),str(ar.shape))
+
+    if len(ar.shape) == 5:
+            ar = np.concatenate(np.concatenate(ar,axis=-1),axis=-2)
+
+    skipped_array = ar[::skip,:,:]
+    fig, ax = plt.subplots()
+    ims = plt.imshow(skipped_array[0],vmin=ar.min(),vmax=ar.max())
+    plt.colorbar()
+    plt.title(str(0))
+    def update(i):
+        ims.set_array(skipped_array[i])
+        plt.title(str(i*skip))
+        return ims
+    anim = FuncAnimation(fig, update, frames=len(skipped_array), repeat=True, interval=interval)
+    return anim
+
+def animate_double_plot(ar,skip=10,interval=200,window_length = 200):
+    """animates two plots to show a 3d or 5d array: a spatial and a temporal scrolling line plot
+
+    5d arrays will be converted into 3d arrays by concatenating
+    the batch and channel dimensions in the x and y spatial dimensions.
+
+    Parameters
+    ----------
+    ar (np.array):
+        3d or 5d array to animate
+    skip (int):
+        the animation skips this many timesteps
+        between two frames.
+        When generating an html plot or video for long
+        sequences, this should be set to a higher value
+        to keep the video short
+    interval (int):
+        number of milliseconds between two animation
+        frames
+    window_length (int):
+        length of the window displayed in the 
+        scrolling line plot
+
+    See Also
+    --------
+    convis.variable_describe.animate
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation 
+    import numpy as np
+    import convis
+
+    assert len(ar.shape) in [3,5], """The input array has to have 3 or 5 dimensions, not %i!
+        Input dimensions are: %s"""%(len(ar.shape),str(ar.shape))
+
+    if len(ar.shape) == 5:
+            ar = np.concatenate(np.concatenate(ar,axis=-1),axis=-2)
+
+    skipped_array = ar[::skip,:,:]
+    fig, (ax1,ax2) = plt.subplots(1,2)
+    plt.subplot(ax1)
+    ims = plt.imshow(skipped_array[0],vmin=ar.min(),vmax=ar.max())
+    plt_x = np.linspace(0,window_length,window_length)
+    plt_mean = ax2.plot(ar[:,:,:].mean((1,2)))
+    plt_examples = ax2.plot(ar[:,int(ar.shape[1]/2),int(ar.shape[2]/2)],alpha=0.5,color='black')
+    ar_mean = ar[:,:,:].mean((1,2))
+    ar_min  = ar[:,:,:].min((1,2))
+    ar_max  = ar[:,:,:].max((1,2))
+    plt_fill = ax2.fill_between(np.arange(len(ar_min)),ar_min,ar_max,alpha=0.5)
+    ar_std_min  = ar_mean - ar[:,:,:].std((1,2))
+    ar_std_max  = ar_mean + ar[:,:,:].std((1,2))
+    plt_pointer = ax2.axvline(0,color='red')
+    plt_fill = ax2.fill_between(np.arange(len(ar_min)),ar_std_min,ar_std_max,alpha=0.5)
+    ax2.set_xlim(-0.5*window_length,0.5*window_length)
+    plt.colorbar()
+    plt.title(str(0))
+    plt.tight_layout()
+    def update(i):
+        ims.set_array(skipped_array[i])
+        plt.title(str(i*skip))
+        ax2.set_xlim(i*skip-0.5*window_length,(i*skip+0.5*window_length))
+        plt_pointer.set_data([i*skip,i*skip],[-100,100])
+        return ims,plt_mean
+    anim = FuncAnimation(fig, update, frames=len(skipped_array), repeat=True, interval=interval)
+    return anim
+
+def animate_to_video(ar,skip=10,interval=100,scrolling_plot=False,window_length=200):
+    """animates a 3d or 5d array in a jupyter notebook
+
+    Returns a Jupyter HTML object containing an embedded video
+    that can be downloaded.
+
+    Parameters
+    ----------
+    ar (np.array):
+        3d or 5d array to animate
+    skip (int):
+        the animation skips this many timesteps
+        between two frames.
+        When generating an html plot or video for long
+        sequences, this should be set to a higher value
+        to keep the video short
+    interval (int):
+        number of milliseconds between two animation
+        frames
+    scrolling_plot (bool):
+        whether to plot the spatial and temporal plots
+        or only the spatial animation
+    window_length (int):
+        if `scrolling_plot` is `True`, specifies
+        the length of the time window displayed
+
+    Examples
+    --------
+
+        >>> %matplotlib notebook
+        >>> import convis
+        >>> inp = convis.samples.moving_grating(5000)
+        >>> convis.variable_describe.animate_to_video(inp)
+        <HTML video embedded in the notebook>
+
+    See Also
+    --------
+    convis.variable_describe.animate
+    """
+    if scrolling_plot:
+        anim = animate_double_plot(ar,skip=skip,interval=interval,window_length=window_length)
+    else:
+        anim = animate(ar,skip=skip,interval=interval)
+    from IPython.display import HTML
+    return HTML(anim.to_html5_video())
+
+def animate_to_html(ar,skip=10,interval=100,scrolling_plot=False,window_length=200):
+    """animates a 3d or 5d array in a jupyter notebook
+
+    Returns a Jupyter HTML object containing an embedded 
+    javascript animated plot.
+
+    Parameters
+    ----------
+    ar (np.array):
+        3d or 5d array to animate
+    skip (int):
+        the animation skips this many timesteps
+        between two frames.
+        When generating an html plot or video for long
+        sequences, this should be set to a higher value
+        to keep the video short
+    interval (int):
+        number of milliseconds between two animation
+        frames
+    scrolling_plot (bool):
+        whether to plot the spatial and temporal plots
+        or only the spatial animation
+    window_length (int):
+        if `scrolling_plot` is `True`, specifies
+        the length of the time window displayed
+
+    Examples
+    --------
+
+        >>> %matplotlib notebook
+        >>> import convis
+        >>> inp = convis.samples.moving_grating(5000)
+        >>> convis.variable_describe.animate_to_html(inp)
+        <HTML javascript plot embedded in the notebook>
+
+    See Also
+    --------
+    convis.variable_describe.animate
+    """
+    if scrolling_plot:
+        anim = animate_double_plot(ar,skip=skip,interval=interval,window_length=window_length)
+    else:
+        anim = animate(ar,skip=skip,interval=interval)
+    from IPython.display import HTML
+    return HTML(anim.to_jshtml())
+
+
 def describe_html(v,wrap_in_html=True,**kwargs):
     from IPython.display import HTML
     import uuid
@@ -424,14 +654,28 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     return HTML(s)
 
 class OrthographicWrapper():
-    def __init__(self):
-        """
-            This context manager overwrites the persp_transformation function of proj3d
-            to perform orthographic projections.
-            Plots that are show()n or save()d in this context will use the projection.
+    """
+        This context manager overwrites the persp_transformation function of proj3d
+        to perform orthographic projections.
+        Plots that are show()n or save()d in this context will use the projection.
 
-            After the context closes, the old projection is restored.
-        """
+        After the context closes, the old projection is restored.
+
+        Examples
+        --------
+
+            >>> with convis.variable_describe.OrthographicWrapper():
+             ..     plot_3d_tensor_as_3d_plot(ar) # orthographic projection
+            >>> plot_3d_tensor_as_3d_plot(ar) # returns to default projection
+            
+
+            >>> orth = convis.variable_describe.OrthographicWrapper():
+            >>> with orth:
+             ..     plot_3d_tensor_as_3d_plot(ar) 
+            >>> plot_3d_tensor_as_3d_plot(ar)
+
+    """
+    def __init__(self):
         pass
     def __enter__(self):
         from mpl_toolkits.mplot3d import proj3d
@@ -459,20 +703,27 @@ def plot_3d_tensor_as_3d_plot(ar,ax=None,scale_ar=None,num_levels = 20, contour_
         this function visualizes a sequence of images as contour plots stacked on top of each other.
         The sides of the plot show a projection onto the xz and yz planes (at index 0).
 
-            ar: the array to visualize
+            ar:
+                the array to visualize
 
-            ax: (if available) the matplotlib axis (in projection='3d' mode) from eg. calling subplot
+            ax: (if available)
+                the matplotlib axis (in projection='3d' mode) from eg. calling subplot
                 if none is provided, the current axis will be converted to 3d projection
 
-            scale_ar: the array that is used for scaling (usefull if comparing arrays or visualizing only a small section)
+            scale_ar:
+                the array that is used for scaling (usefull if comparing arrays or visualizing only a small section)
 
-            num_levels: number of levels of contours
+            num_levels: 
+                number of levels of contours
 
-            contour_cmap='coolwarm_r': color map used for line contours
+            contour_cmap='coolwarm_r': 
+                color map used for line contours
 
-            contourf_cmap='gray': color map used for surface contour
+            contourf_cmap='gray': 
+                color map used for surface contour
 
-            view: tuple of two floats that give the azimuth and angle of the projection
+            view:
+                tuple of two floats that give the azimuth and angle of the projection
 
 
         returns:

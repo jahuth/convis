@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Filters and Layers &mdash; convis 0.5.1.1 documentation</title>
+  <title>Filters and Layers &mdash; convis 0.5.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.5.1.1 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.5.2.0 documentation" href="index.html"/>
         <link rel="next" title="PyTorch Basics" href="pytorch_basics.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -272,24 +272,7 @@ to all input-output channel combinations.</p>
 </dd></dl>
 
 <p>Spatial gaussian filters and temporal exponential filters can be generated with functions from the <cite>convis.numerical_filters</cite> submodule.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">gauss_filter_2d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_1d</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
-</pre></div>
-</div>
 <p>(<a class="reference external" href=".//filters-1.py">Source code</a>)</p>
-<div class="figure" id="id1">
-<img alt="_images/filters-1_00.png" src="_images/filters-1_00.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-1_00.png">png</a>, <a class="reference external" href=".//filters-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-1_00.pdf">pdf</a>)</span></p>
-</div>
-<div class="figure" id="id2">
-<img alt="_images/filters-1_01.png" src="_images/filters-1_01.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-1_01.png">png</a>, <a class="reference external" href=".//filters-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-1_01.pdf">pdf</a>)</span></p>
-</div>
 </div>
 <div class="section" id="receptive-fields">
 <h2>Receptive Fields<a class="headerlink" href="#receptive-fields" title="Permalink to this headline">¶</a></h2>
@@ -402,14 +385,6 @@ However, the temporal filter is also more simplified and might not be able to fi
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//filters-3.py">Source code</a>)</p>
-<div class="figure" id="id3">
-<img alt="_images/filters-3_00.png" src="_images/filters-3_00.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-3_00.png">png</a>, <a class="reference external" href=".//filters-3_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-3_00.pdf">pdf</a>)</span></p>
-</div>
-<div class="figure" id="id4">
-<img alt="_images/filters-3_01.png" src="_images/filters-3_01.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-3_01.png">png</a>, <a class="reference external" href=".//filters-3_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-3_01.pdf">pdf</a>)</span></p>
-</div>
 </div>
 <div class="section" id="nonlinearities">
 <h2>Nonlinearities<a class="headerlink" href="#nonlinearities" title="Permalink to this headline">¶</a></h2>
@@ -489,7 +464,7 @@ that cuts off negative values after adding the bias.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.1.1',
+            VERSION:'0.5.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

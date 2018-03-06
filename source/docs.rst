@@ -1,5 +1,5 @@
 The API: Convis classes and modules
-==================================
+====================================
 
 
 .. contents:: Table of Contents
@@ -46,4 +46,9 @@ Sample Data `convis.samples`
 
 
 
+Methods to describe objects `convis.variable_describe`
+---------------------------------------------------------
+
+.. automodule:: convis.variable_describe
+   :members:
 

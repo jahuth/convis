@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
   name = 'convis',
   packages = ['convis','convis.filters'],
-  version = '0.5.1.1',
+  version = '0.5.2.0',
   install_requires = ["matplotlib", "litus", "numpy", "future"],
   description = 'Convolutional Vision Model',
   author = 'Jacob Huth',

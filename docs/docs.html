@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The API: Convis classes and modules &mdash; convis 0.5.1.1 documentation</title>
+  <title>The API: Convis classes and modules &mdash; convis 0.5.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.5.1.1 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.5.2.0 documentation" href="index.html"/>
         <link rel="next" title="Filters convis.filters" href="docs_filters.html"/>
         <link rel="prev" title="A Convolutional Retina Model" href="model_McIntosh.html"/> 
 
@@ -101,6 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">The API: Convis classes and modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_filters.html#module-convis.kernels">Kernels <cite>convis.kernels</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
@@ -112,6 +113,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-convis.utils">Utilitary methods <cite>convis.utils</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-convis.samples">Sample Data <cite>convis.samples</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-convis.variable_describe">Methods to describe objects <cite>convis.variable_describe</cite></a></li>
 </ul>
 </li>
 </ul>
@@ -186,6 +188,7 @@
 <li><a class="reference internal" href="#module-convis.base" id="id6">Base classes <cite>convis.base</cite></a></li>
 <li><a class="reference internal" href="#module-convis.utils" id="id7">Utilitary methods <cite>convis.utils</cite></a></li>
 <li><a class="reference internal" href="#module-convis.samples" id="id8">Sample Data <cite>convis.samples</cite></a></li>
+<li><a class="reference internal" href="#module-convis.variable_describe" id="id9">Methods to describe objects <cite>convis.variable_describe</cite></a></li>
 </ul>
 </li>
 </ul>
@@ -194,6 +197,10 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_filters.html#module-convis.kernels">Kernels <cite>convis.kernels</cite></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_filters.html#kernels">Kernels</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html#general-overview">General Overview</a></li>
@@ -1130,6 +1137,278 @@ a <cite>SampleGenerator</cite> with a random kernel.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-convis.variable_describe">
+<span id="methods-to-describe-objects-convis-variable-describe"></span><h2><a class="toc-backref" href="#id9">Methods to describe objects <cite>convis.variable_describe</cite></a><a class="headerlink" href="#module-convis.variable_describe" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Describing Variables: <a class="reference internal" href="#convis.variable_describe.describe" title="convis.variable_describe.describe"><code class="xref py py-meth docutils literal"><span class="pre">describe()</span></code></a></li>
+<li>Aniamting Tensors: <a class="reference internal" href="#convis.variable_describe.animate" title="convis.variable_describe.animate"><code class="xref py py-meth docutils literal"><span class="pre">animate()</span></code></a>, <a class="reference internal" href="#convis.variable_describe.animate_to_video" title="convis.variable_describe.animate_to_video"><code class="xref py py-meth docutils literal"><span class="pre">animate_to_video()</span></code></a></li>
+<li>Plotting Tensors: <a class="reference internal" href="#convis.variable_describe.plot_3d_tensor_as_3d_plot" title="convis.variable_describe.plot_3d_tensor_as_3d_plot"><code class="xref py py-meth docutils literal"><span class="pre">plot_3d_tensor_as_3d_plot()</span></code></a></li>
+</ul>
+<dl class="function">
+<dt id="convis.variable_describe.describe">
+<code class="descclassname">convis.variable_describe.</code><code class="descname">describe</code><span class="sig-paren">(</span><em>v</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variable_describe.html#describe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.describe" title="Permalink to this definition">¶</a></dt>
+<dd><p>All-purpose function to describe many convis objects</p>
+<p>The output adapts itself to being displayed in a
+notebook or text console.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variable_describe.animate">
+<code class="descclassname">convis.variable_describe.</code><code class="descname">animate</code><span class="sig-paren">(</span><em>ar</em>, <em>skip=10</em>, <em>interval=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variable_describe.html#animate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>animates a 3d or 5d array in a jupyter notebook</p>
+<p>Returns a <cite>matplotlib</cite> animation object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ar (np.array):</strong></p>
+<blockquote>
+<div><p>3d or 5d array to animate</p>
+</div></blockquote>
+<p><strong>skip (int):</strong></p>
+<blockquote>
+<div><p>the animation skips this many timesteps
+between two frames.
+When generating an html plot or video for long
+sequences, this should be set to a higher value
+to keep the video short</p>
+</div></blockquote>
+<p><strong>interval (int):</strong></p>
+<blockquote class="last">
+<div><p>number of milliseconds between two animation
+frames</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.variable_describe.animate_double_plot" title="convis.variable_describe.animate_double_plot"><code class="xref py py-obj docutils literal"><span class="pre">convis.variable_describe.animate_double_plot</span></code></a>, <a class="reference internal" href="#convis.variable_describe.animate_to_video" title="convis.variable_describe.animate_to_video"><code class="xref py py-obj docutils literal"><span class="pre">convis.variable_describe.animate_to_video</span></code></a>, <a class="reference internal" href="#convis.variable_describe.animate_to_html" title="convis.variable_describe.animate_to_html"><code class="xref py py-obj docutils literal"><span class="pre">convis.variable_describe.animate_to_html</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<p>To use in a jupyter notebook, use a suitable matplotlib backend:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">notebook</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">5000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="go">&lt;matplotlib.animation.FuncAnimation at 0x7f99d1d88750&gt;</span>
+</pre></div>
+</div>
+<p>To get a html embedded video, use <cite>convis.variable_describe.animate_to_video</cite></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">notebook</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">5000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate_to_video</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="go">&lt;HTML video embedded in the notebook&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variable_describe.animate_double_plot">
+<code class="descclassname">convis.variable_describe.</code><code class="descname">animate_double_plot</code><span class="sig-paren">(</span><em>ar</em>, <em>skip=10</em>, <em>interval=200</em>, <em>window_length=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variable_describe.html#animate_double_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.animate_double_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>animates two plots to show a 3d or 5d array: a spatial and a temporal scrolling line plot</p>
+<p>5d arrays will be converted into 3d arrays by concatenating
+the batch and channel dimensions in the x and y spatial dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ar (np.array):</strong></p>
+<blockquote>
+<div><p>3d or 5d array to animate</p>
+</div></blockquote>
+<p><strong>skip (int):</strong></p>
+<blockquote>
+<div><p>the animation skips this many timesteps
+between two frames.
+When generating an html plot or video for long
+sequences, this should be set to a higher value
+to keep the video short</p>
+</div></blockquote>
+<p><strong>interval (int):</strong></p>
+<blockquote>
+<div><p>number of milliseconds between two animation
+frames</p>
+</div></blockquote>
+<p><strong>window_length (int):</strong></p>
+<blockquote class="last">
+<div><p>length of the window displayed in the 
+scrolling line plot</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.variable_describe.animate" title="convis.variable_describe.animate"><code class="xref py py-obj docutils literal"><span class="pre">convis.variable_describe.animate</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variable_describe.animate_to_video">
+<code class="descclassname">convis.variable_describe.</code><code class="descname">animate_to_video</code><span class="sig-paren">(</span><em>ar</em>, <em>skip=10</em>, <em>interval=100</em>, <em>scrolling_plot=False</em>, <em>window_length=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variable_describe.html#animate_to_video"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.animate_to_video" title="Permalink to this definition">¶</a></dt>
+<dd><p>animates a 3d or 5d array in a jupyter notebook</p>
+<p>Returns a Jupyter HTML object containing an embedded video
+that can be downloaded.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ar (np.array):</strong></p>
+<blockquote>
+<div><p>3d or 5d array to animate</p>
+</div></blockquote>
+<p><strong>skip (int):</strong></p>
+<blockquote>
+<div><p>the animation skips this many timesteps
+between two frames.
+When generating an html plot or video for long
+sequences, this should be set to a higher value
+to keep the video short</p>
+</div></blockquote>
+<p><strong>interval (int):</strong></p>
+<blockquote>
+<div><p>number of milliseconds between two animation
+frames</p>
+</div></blockquote>
+<p><strong>scrolling_plot (bool):</strong></p>
+<blockquote>
+<div><p>whether to plot the spatial and temporal plots
+or only the spatial animation</p>
+</div></blockquote>
+<p><strong>window_length (int):</strong></p>
+<blockquote class="last">
+<div><p>if <cite>scrolling_plot</cite> is <cite>True</cite>, specifies
+the length of the time window displayed</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.variable_describe.animate" title="convis.variable_describe.animate"><code class="xref py py-obj docutils literal"><span class="pre">convis.variable_describe.animate</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">notebook</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">5000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate_to_video</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="go">&lt;HTML video embedded in the notebook&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variable_describe.animate_to_html">
+<code class="descclassname">convis.variable_describe.</code><code class="descname">animate_to_html</code><span class="sig-paren">(</span><em>ar</em>, <em>skip=10</em>, <em>interval=100</em>, <em>scrolling_plot=False</em>, <em>window_length=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variable_describe.html#animate_to_html"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.animate_to_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>animates a 3d or 5d array in a jupyter notebook</p>
+<p>Returns a Jupyter HTML object containing an embedded 
+javascript animated plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ar (np.array):</strong></p>
+<blockquote>
+<div><p>3d or 5d array to animate</p>
+</div></blockquote>
+<p><strong>skip (int):</strong></p>
+<blockquote>
+<div><p>the animation skips this many timesteps
+between two frames.
+When generating an html plot or video for long
+sequences, this should be set to a higher value
+to keep the video short</p>
+</div></blockquote>
+<p><strong>interval (int):</strong></p>
+<blockquote>
+<div><p>number of milliseconds between two animation
+frames</p>
+</div></blockquote>
+<p><strong>scrolling_plot (bool):</strong></p>
+<blockquote>
+<div><p>whether to plot the spatial and temporal plots
+or only the spatial animation</p>
+</div></blockquote>
+<p><strong>window_length (int):</strong></p>
+<blockquote class="last">
+<div><p>if <cite>scrolling_plot</cite> is <cite>True</cite>, specifies
+the length of the time window displayed</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.variable_describe.animate" title="convis.variable_describe.animate"><code class="xref py py-obj docutils literal"><span class="pre">convis.variable_describe.animate</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">notebook</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">5000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate_to_html</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="go">&lt;HTML javascript plot embedded in the notebook&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.variable_describe.OrthographicWrapper">
+<em class="property">class </em><code class="descclassname">convis.variable_describe.</code><code class="descname">OrthographicWrapper</code><a class="reference internal" href="_modules/convis/variable_describe.html#OrthographicWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.OrthographicWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>This context manager overwrites the persp_transformation function of proj3d
+to perform orthographic projections.
+Plots that are show()n or save()d in this context will use the projection.</p>
+<p>After the context closes, the old projection is restored.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">OrthographicWrapper</span><span class="p">():</span>
+<span class="go"> ..     plot_3d_tensor_as_3d_plot(ar) # orthographic projection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_3d_tensor_as_3d_plot</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="c1"># returns to default projection</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">orth</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">OrthographicWrapper</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">orth</span><span class="p">:</span>
+<span class="go"> ..     plot_3d_tensor_as_3d_plot(ar) </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_3d_tensor_as_3d_plot</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variable_describe.plot_3d_tensor_as_3d_plot">
+<code class="descclassname">convis.variable_describe.</code><code class="descname">plot_3d_tensor_as_3d_plot</code><span class="sig-paren">(</span><em>ar</em>, <em>ax=None</em>, <em>scale_ar=None</em>, <em>num_levels=20</em>, <em>contour_cmap='coolwarm_r'</em>, <em>contourf_cmap='gray'</em>, <em>view=(25</em>, <em>65)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variable_describe.html#plot_3d_tensor_as_3d_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variable_describe.plot_3d_tensor_as_3d_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Until I come up with a 3d contour plot that shows the contours of a volume, 
+this function visualizes a sequence of images as contour plots stacked on top of each other.
+The sides of the plot show a projection onto the xz and yz planes (at index 0).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>ar:</dt>
+<dd>the array to visualize</dd>
+<dt>ax: (if available)</dt>
+<dd>the matplotlib axis (in projection=‘3d’ mode) from eg. calling subplot
+if none is provided, the current axis will be converted to 3d projection</dd>
+<dt>scale_ar:</dt>
+<dd>the array that is used for scaling (usefull if comparing arrays or visualizing only a small section)</dd>
+<dt>num_levels: </dt>
+<dd>number of levels of contours</dd>
+<dt>contour_cmap=’coolwarm_r’: </dt>
+<dd>color map used for line contours</dd>
+<dt>contourf_cmap=’gray’: </dt>
+<dd>color map used for surface contour</dd>
+<dt>view:</dt>
+<dd>tuple of two floats that give the azimuth and angle of the projection</dd>
+</dl>
+</div></blockquote>
+<p>returns:</p>
+<blockquote>
+<div>axis that was used for plotting</div></blockquote>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -1176,7 +1455,7 @@ a <cite>SampleGenerator</cite> with a random kernel.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.1.1',
+            VERSION:'0.5.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

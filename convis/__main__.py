@@ -5,18 +5,12 @@ import time
 import numpy as np
 import matplotlib
 import matplotlib.pylab as plt
-import convis.interactive_server
 
-# the global model
 import convis.streams
-import convis.runner
 
 namespace = {'convis': convis, 'np': np, 'plt':plt}
-A = 100.0*(np.random.rand(220,50,50)<0.1)
-A[120,20:30,:] = 255.0
-A[150,:,20:30] = 0.0
-namespace['input'] = convis.streams.RepeatingStream(A,size=(50,50))
-namespace['runner'] = convis.runner.Runner(None,None,None,dt=0.001)
+namespace['input'] = convis.streams.RepeatingStream(np.random.rand(100,50,50),size=(50,50))
+namespace['runner'] = convis.base.Runner(None,None,None)
 namespace['tmp_output'] = convis.streams.SequenceStream()
 
 def process_argument(arg,i,argv):
@@ -67,7 +61,7 @@ Load an inr file and display it as an animation (slowed down by a factor of x10)
             raise Exception('No model loaded!')
         if namespace.get('output',None) is None:
             namespace['output'] = namespace['convis'].streams.run_visualizer()
-        namespace['runner'] = namespace['convis'].runner.Runner(namespace.get('model').run,namespace.get('input'),namespace.get('output'),dt=0.001)
+        namespace['runner'] = namespace['convis'].base.Runner(namespace.get('model').run,namespace.get('input'),namespace.get('output'),dt=0.001)
         namespace['start'] = namespace['runner'].start
         namespace['stop'] = namespace['runner'].stop
     if arg == 'stop': 
@@ -88,7 +82,7 @@ Load an inr file and display it as an animation (slowed down by a factor of x10)
     if arg == 'output_inr':
         namespace['output'] = namespace['convis'].streams.InrImageStreamWriter('output.inr',v=1,x=50,y=50,z=1)
         with namespace['output']:
-            r = namespace['convis'].runner.Runner(namespace['model'].run,namespace['input'],namespace['output'],dt=0.001)
+            r = namespace['convis'].base.Runner(namespace['model'].run,namespace['input'],namespace['output'],dt=0.001)
             while True:
                 key_press = raw_input(" > ")
                 if key_press[0] == 'a':
@@ -124,15 +118,10 @@ Load an inr file and display it as an animation (slowed down by a factor of x10)
     if arg == 'python':
         import code
         code.InteractiveConsole(locals=namespace).interact()
-    if arg == 'html':
-        convis.interactive_server.namespace = namespace # linking the namespaces
-        import thread
-        thread.start_new_thread(convis.interactive_server.start_server,tuple())
 
 for i,a in enumerate(sys.argv):
     process_argument(a,i=i,argv=sys.argv)
 
-convis.interactive_server.closing_down = True
 print('=='*10)
 print(namespace.get("model",None))
 print('=='*10)

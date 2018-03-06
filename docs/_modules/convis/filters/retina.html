@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.filters.retina &mdash; convis 0.5.1.1 documentation</title>
+  <title>convis.filters.retina &mdash; convis 0.5.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="convis 0.5.1.1 documentation" href="../../../index.html"/>
+    <link rel="top" title="convis 0.5.2.0 documentation" href="../../../index.html"/>
         <link rel="up" title="convis.filters" href="../filters.html"/> 
 
   
@@ -167,7 +167,10 @@
   <h1>Source code for convis.filters.retina</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">litus</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">plt</span> <span class="o">=</span> <span class="s1">&#39;Matplotlib could not be loaded&#39;</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">exceptions</span> <span class="k">import</span> <span class="ne">NotImplementedError</span>
@@ -735,6 +738,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">preceding_attenuationMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_attenuationMap</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">preceding_inhibition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_inhibition</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">g_leak</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_leak</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">lambda_amp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
@@ -744,11 +749,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">preceding_attenuationMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_attenuationMap</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">preceding_inhibition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_inhibition</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">g_leak</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_leak</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">lambda_amp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
         <span class="n">preceding_V_bip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_V_bip</span>
         <span class="n">preceding_attenuationMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_attenuationMap</span>
         <span class="n">preceding_inhibition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preceding_inhibition</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">input_image</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)):</span>
-            <span class="n">total_conductance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_leak</span> <span class="o">+</span> <span class="n">preceding_inhibition</span>
+            <span class="n">total_conductance</span> <span class="o">=</span> <span class="n">g_leak</span> <span class="o">+</span> <span class="n">preceding_inhibition</span>
             <span class="n">attenuation_map</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">*</span><span class="n">total_conductance</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">E_infinity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_amp</span> <span class="o">*</span> <span class="n">input_image</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputNernst_inhibition</span> <span class="o">*</span> <span class="n">preceding_inhibition</span><span class="p">)</span><span class="o">/</span><span class="n">total_conductance</span>
@@ -761,7 +768,7 @@
                 <span class="k">raise</span>
             <span class="n">V_bip</span> <span class="o">=</span> <span class="p">((</span><span class="n">preceding_V_bip</span> <span class="o">-</span> <span class="n">E_infinity</span><span class="p">)</span> <span class="o">*</span> <span class="n">attenuation_map</span><span class="p">)</span> <span class="o">+</span> <span class="n">E_infinity</span> <span class="c1"># V_bip converges to E_infinity</span>
             
-            <span class="n">inhibition</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">*</span><span class="p">(</span><span class="n">preceding_V_bip</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">**</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_0</span> 
+            <span class="n">inhibition</span> <span class="o">=</span> <span class="p">(</span><span class="n">lambda_amp</span><span class="o">*</span><span class="p">(</span><span class="n">preceding_V_bip</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">**</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_0</span> 
                                          <span class="o">-</span> <span class="n">preceding_inhibition</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_0</span>
             <span class="c1"># smoothing with mean padding</span>
             <span class="n">inhibition</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">inhibition</span> <span class="o">-</span> <span class="n">inhibition</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">+</span> <span class="n">inhibition</span><span class="o">.</span><span class="n">mean</span><span class="p">())[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:]</span>
@@ -1046,7 +1053,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.5.1.1',
+            VERSION:'0.5.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

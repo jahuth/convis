@@ -13,7 +13,7 @@ Want to jump right in? Have a look at these quickstart guides:
  - :ref:`"I'm an experimentalist and I want to fit models to my data" <quickstart_fitting>`
  - :ref:`"I need spiking activity that looks like it's coming from the retina" <quickstart_simulator>`
 
-
+Get it on `github <https://github.com/jahuth/convis>`_! 
 
 Installation
 ------------

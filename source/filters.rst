@@ -27,6 +27,7 @@ The time dimension has to be padded by another operation.
 Spatial gaussian filters and temporal exponential filters can be generated with functions from the `convis.numerical_filters` submodule.
 
 .. plot::
+
     :include-source:
 
     import convis

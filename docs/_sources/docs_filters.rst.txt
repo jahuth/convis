@@ -7,5 +7,10 @@ They can be combined into Models.
 .. automodule:: convis.filters
    :members:
 
-.. automodule:: convis.filters.simple
+
+Kernels `convis.kernels`
+------------------------
+
+
+.. automodule:: convis.kernels
    :members:
