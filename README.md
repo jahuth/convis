@@ -14,6 +14,7 @@ Also there are two mailing lists for people interested in Convis:
  * To recieve announcements of changes, please subsribe to: [convis-users@googlegroups.com](https://groups.google.com/forum/#!forum/convis-users)
  * If you want to participate in the development, please subscribe to: [convis-dev@googlegroups.com](https://groups.google.com/forum/#!forum/convis-dev)
 
+Find the documentation at: [https://jahuth.github.io/convis/](https://jahuth.github.io/convis/)
 
 Usage Example:
 
