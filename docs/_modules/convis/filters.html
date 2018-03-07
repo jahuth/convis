@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.filters &mdash; convis 0.5.2.0 documentation</title>
+  <title>convis.filters &mdash; convis 0.5.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.5.2.0 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.5.2.1 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -311,7 +311,7 @@
         <span class="n">x_out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">x_out</span><span class="p">,</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x_out</span></div>
 
-<div class="viewcode-block" id="Conv3d"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.Conv3d">[docs]</a><span class="k">class</span> <span class="nc">Conv3d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">,</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="Conv3d"><a class="viewcode-back" href="../../filters.html#convis.filters.Conv3d">[docs]</a><span class="k">class</span> <span class="nc">Conv3d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">,</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Does a convolution, but pads the input in time</span>
 <span class="sd">        with previous input and in space by replicating</span>
@@ -357,7 +357,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_pad</span> <span class="o">=</span> <span class="n">TimePadding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="n">TIME_DIMENSION</span><span class="p">])</span>
-<div class="viewcode-block" id="Conv3d.set_weight"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.Conv3d.set_weight">[docs]</a>    <span class="k">def</span> <span class="nf">set_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">preserve_channels</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Conv3d.set_weight"><a class="viewcode-back" href="../../filters.html#convis.filters.Conv3d.set_weight">[docs]</a>    <span class="k">def</span> <span class="nf">set_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">preserve_channels</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Sets a new weight for the convolution.</span>
 
@@ -460,7 +460,7 @@
             <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">autopad_mode</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Conv3d</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RF"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.RF">[docs]</a><span class="k">class</span> <span class="nc">RF</span><span class="p">(</span><span class="n">Conv3d</span><span class="p">):</span>
+<div class="viewcode-block" id="RF"><a class="viewcode-back" href="../../filters.html#convis.filters.RF">[docs]</a><span class="k">class</span> <span class="nc">RF</span><span class="p">(</span><span class="n">Conv3d</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A Receptive Field Layer</span>
 
@@ -525,7 +525,7 @@
         <span class="n">autopad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;autopad&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;autopad&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">autopad</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rf_placement_mode</span> <span class="o">=</span> <span class="n">rf_mode</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">RF</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span><span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RF</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span><span class="n">out_channels</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">reset_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
@@ -852,7 +852,7 @@
             <span class="n">o</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">y</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NLRectify"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.NLRectify">[docs]</a><span class="k">class</span> <span class="nc">NLRectify</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="NLRectify"><a class="viewcode-back" href="../../filters.html#convis.filters.NLRectify">[docs]</a><span class="k">class</span> <span class="nc">NLRectify</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rectifies the input (ie. sets values &lt; 0 to 0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -860,7 +860,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">inp</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1000000.0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NLRectifyScale"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.NLRectifyScale">[docs]</a><span class="k">class</span> <span class="nc">NLRectifyScale</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="NLRectifyScale"><a class="viewcode-back" href="../../filters.html#convis.filters.NLRectifyScale">[docs]</a><span class="k">class</span> <span class="nc">NLRectifyScale</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Rectifies the input, but transforms the input with a scale and a bias.</span>
 
 <span class="sd">        Pseudocode:</span>
@@ -876,7 +876,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">+</span><span class="n">inp</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1000000.0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NLSquare"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.NLSquare">[docs]</a><span class="k">class</span> <span class="nc">NLSquare</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="NLSquare"><a class="viewcode-back" href="../../filters.html#convis.filters.NLSquare">[docs]</a><span class="k">class</span> <span class="nc">NLSquare</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A square nonlinearity with a scalable input weight and bias.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -887,7 +887,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">+</span><span class="n">inp</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span></div>
 
-<div class="viewcode-block" id="NLRectifySquare"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.NLRectifySquare">[docs]</a><span class="k">class</span> <span class="nc">NLRectifySquare</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="NLRectifySquare"><a class="viewcode-back" href="../../filters.html#convis.filters.NLRectifySquare">[docs]</a><span class="k">class</span> <span class="nc">NLRectifySquare</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A square nonlinearity with a scalable input weight and bias</span>
 <span class="sd">    that cuts off negative values after adding the bias.</span>
 
@@ -934,7 +934,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.5.2.0',
+            VERSION:'0.5.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
