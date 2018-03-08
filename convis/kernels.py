@@ -32,7 +32,6 @@ class ExponentialKernel(torch.nn.Module):
         self.amplification = Parameter(amplification)
     def forward(self):
         tau_in_steps = self.tau*default_resolution.steps_per_second
-        print tau_in_steps
         if self.n == 0:
             a = self.amplification/tau_in_steps
             t = torch.linspace(1.0,self.length,int(self.length))

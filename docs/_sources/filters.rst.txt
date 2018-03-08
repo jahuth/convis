@@ -66,7 +66,7 @@ a receptive field filter will produce a single time series.
 
 
 Recursive Temporal Filters
--------------------------
+--------------------------
 
 There are two filters available that perform recursive temporal filtering.
 The advantage over convolutional filtering is that it uses a lot less memory and is a lot faster to compute.
@@ -124,4 +124,11 @@ Nonlinearities
    :members:
 
 .. autoclass:: convis.filters.NLRectifySquare
+   :members:
+
+
+Spike Generation
+----------------
+
+.. automodule:: convis.filters.spiking
    :members:

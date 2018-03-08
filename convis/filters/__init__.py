@@ -733,3 +733,7 @@ class NLRectifySquare(Layer):
         self.bias = convis.Parameter(0.0)
     def forward(self, inp):
         return ((self.bias+inp*self.scale).clamp(min=0.0,max=1000000.0))**2
+
+from . import simple
+from . import retina
+from . import spiking

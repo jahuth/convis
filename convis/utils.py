@@ -1,4 +1,3 @@
-import matplotlib.pylab as plt
 import numpy as np
 
 def _to_numpy(x):
@@ -25,6 +24,7 @@ def plot_5d_matshow(w,border=True, dims=[(0,1,3),(2,4)], border_val = 0.0, **kwa
         `border_val` can be a float value or 'max', 'min' or 'mean',
         in which case the corresponding value will be taken from w.
     """
+    import matplotlib.pylab as plt
     assert len(dims) == 2, "A 2d plot can only show two dimensions."
     w = _to_numpy(w)
     if len(w.shape) == 3:
@@ -54,6 +54,7 @@ def plot_5d_time(w, lsty='-', mean=tuple(), time=(2,), *args, **kwargs):
         Other arguments and keyword arguments are passed
         to `matplotlib.pylab.plot()`
     """
+    import matplotlib.pylab as plt
     w = _to_numpy(w)
     lines=(0,1,2,3,4)
     if mean is True:
@@ -66,6 +67,7 @@ def plot_5d_time(w, lsty='-', mean=tuple(), time=(2,), *args, **kwargs):
     return x
 
 def plot(x,**kwargs):
+    import matplotlib.pylab as plt
     try:
         # assuming a torch Variable on the gpu
         x = x.data.cpu().numpy()

@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pylab as plt
 from .variables import default_resolution
 
 

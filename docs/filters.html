@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Filters and Layers &mdash; convis 0.5.2.0 documentation</title>
+  <title>Filters and Layers &mdash; convis 0.5.2.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.5.2.0 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.5.2.2 documentation" href="index.html"/>
         <link rel="next" title="PyTorch Basics" href="pytorch_basics.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -100,6 +100,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#receptive-fields">Receptive Fields</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#recursive-temporal-filters">Recursive Temporal Filters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nonlinearities">Nonlinearities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-convis.filters.spiking">Spike Generation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a></li>
@@ -385,6 +386,14 @@ However, the temporal filter is also more simplified and might not be able to fi
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//filters-3.py">Source code</a>)</p>
+<div class="figure" id="id1">
+<img alt="_images/filters-3_00.png" src="_images/filters-3_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-3_00.png">png</a>, <a class="reference external" href=".//filters-3_00.hires.png">hires.png</a>, <a class="reference external" href=".//filters-3_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id2">
+<img alt="_images/filters-3_01.png" src="_images/filters-3_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//filters-3_01.png">png</a>, <a class="reference external" href=".//filters-3_01.hires.png">hires.png</a>, <a class="reference external" href=".//filters-3_01.pdf">pdf</a>)</span></p>
+</div>
 </div>
 <div class="section" id="nonlinearities">
 <h2>Nonlinearities<a class="headerlink" href="#nonlinearities" title="Permalink to this headline">¶</a></h2>
@@ -415,6 +424,126 @@ out[out &lt; 0] = 0</div></blockquote>
 <em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">NLRectifySquare</code><a class="reference internal" href="_modules/convis/filters.html#NLRectifySquare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.NLRectifySquare" title="Permalink to this definition">¶</a></dt>
 <dd><p>A square nonlinearity with a scalable input weight and bias
 that cuts off negative values after adding the bias.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-convis.filters.spiking">
+<span id="spike-generation"></span><h2>Spike Generation<a class="headerlink" href="#module-convis.filters.spiking" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.filters.spiking.Izhikevich">
+<em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">Izhikevich</code><span class="sig-paren">(</span><em>output_only_spikes=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#Izhikevich"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.Izhikevich" title="Permalink to this definition">¶</a></dt>
+<dd><p>Izhikevich Spiking Model with uniform parameters</p>
+<p>The Simple Model of Spiking Neurons after Eugene Izhikevich
+offers a wide range of neural dynamics with very few parameters.</p>
+<p>See: <a class="reference external" href="https://www.izhikevich.org/publications/spikes.htm">https://www.izhikevich.org/publications/spikes.htm</a></p>
+<p>Each pixel has two state variables: <cite>v</cite> and <cite>u</cite>.
+<cite>v</cite> corresponds roughly to the membrane potential of a neuron
+and <cite>u</cite> to a slow acting ion concentration. Both 
+variables influence each other dynamically:</p>
+<blockquote>
+<div>$$\dot{v} = 0.04 \cdot v^2 + 5 \cdot v + 140 - u + I$$
+$$\dot{u} = a \cdot (b \cdot v - u)$$</div></blockquote>
+<p>If <cite>v</cite> crosses a threshold, it will be reset to a value <cite>c</cite> and
+<cite>u</cite> will be increased by another value <cite>d</cite>.</p>
+<p>The parameters of the model are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>a</cite>: relative speed between the evolution of <cite>v</cite> and <cite>u</cite></li>
+<li><cite>b</cite>: amount of influence of <cite>v</cite> over <cite>u</cite></li>
+<li><cite>c</cite>: the reset value for <cite>v</cite> if it crosses threshold</li>
+<li><cite>d</cite>: value to add to <cite>u</cite> if <cite>v</cite> crosses threshold</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>output_only_spikes (bool)</strong></p>
+<blockquote class="last">
+<div><p>whether only spikes should be returned (binary),
+or spikes, membrane potential and slow potential
+in one channel of the output each.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="convis.filters.spiking.Izhikevich.load_parameters_by_name">
+<code class="descname">load_parameters_by_name</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#Izhikevich.load_parameters_by_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.Izhikevich.load_parameters_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to load parameters for a range of behaviors.</p>
+<p>For a list of possible options, run the method without
+parameter or look at directly at the dictionary
+<cite>convis.filters.spiking._izhikevich_parameters</cite>.</p>
+<p>The dictionary has values for a,b,c,d and the recommended
+input.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.spiking.LeakyIntegrateAndFireNeuron">
+<em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">LeakyIntegrateAndFireNeuron</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#LeakyIntegrateAndFireNeuron"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.LeakyIntegrateAndFireNeuron" title="Permalink to this definition">¶</a></dt>
+<dd><p>LIF model with refractory period.</p>
+<p>Identical to <cite>convis.filter.retina.GanglionSpiking</cite>.</p>
+<p>The ganglion cells recieve the gain controlled input and produce spikes.</p>
+<p>When the cell is not refractory, <span class="math">\(V\)</span> moves as:</p>
+<p>$$ \dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + eta_v(t)$$</p>
+<p>Otherwise it is set to 0.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="docs_retina.html#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-obj docutils literal"><span class="pre">convis.retina.Retina</span></code></a>, <code class="xref py py-obj docutils literal"><span class="pre">GanglionInput</span></code></p>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="87%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>refr_mu</strong></td>
+<td>(Parameter) The mean of the distribution of random refractory times (in seconds).</td>
+</tr>
+<tr class="row-even"><td><strong>refr_sigma</strong></td>
+<td>(Parameter) The standard deviation of the refractory time that is randomly drawn around <cite>refr_mu</cite></td>
+</tr>
+<tr class="row-odd"><td><strong>noise_sigma</strong></td>
+<td>(Parameter) Amount of noise added to the membrane potential.</td>
+</tr>
+<tr class="row-even"><td><strong>g_L</strong></td>
+<td>(Parameter) Leak current (in Hz or dimensionless firing rate).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.spiking.FitzHughNagumo">
+<em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">FitzHughNagumo</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#FitzHughNagumo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.FitzHughNagumo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Two state neural model.</p>
+<p>$$\dot{v} = v - \frac{1}{3} v^3 - w + I$$
+$$\dot{w} = \tau \cdot (v - a - b \cdot w) $$</p>
+<p>See also:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://en.wikipedia.org/wiki/FitzHugh%E2%80%93Nagumo_model">Wikipedia on FitzHugh-Nagumo models</a></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.spiking.HogkinHuxley">
+<em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">HogkinHuxley</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#HogkinHuxley"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.HogkinHuxley" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neuron model of the giant squid axon.</p>
+<p>This model contains four state variables:
+the membrane potential <cite>v</cite> and three slow acting currents <cite>n</cite>, <cite>m</cite> and <cite>h</cite>.</p>
+<p>See also:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://en.wikipedia.org/wiki/Hodgkin%E2%80%93Huxley_model">Wikipedia in Hodgkin-Huxley models</a></li>
+<li><a class="reference external" href="http://neuronaldynamics.epfl.ch/online/Ch2.S2.html">http://neuronaldynamics.epfl.ch/online/Ch2.S2.html</a></li>
+</ul>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -464,7 +593,7 @@ that cuts off negative values after adding the bias.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.2.0',
+            VERSION:'0.5.2.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

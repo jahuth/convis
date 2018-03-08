@@ -1,0 +1,609 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>convis.filters.spiking &mdash; convis 0.5.2.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="convis 0.5.2.2 documentation" href="../../../index.html"/>
+        <link rel="up" title="convis.filters" href="../filters.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs.html">The API: Convis classes and modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">convis</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../filters.html">convis.filters</a> &raquo;</li>
+        
+      <li>convis.filters.spiking</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for convis.filters.spiking</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">..variables</span> <span class="k">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">Layer</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">_izhikevich_parameters</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Tonic spiking&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">65.0</span><span class="p">,</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">14.0</span><span class="p">],</span>
+    <span class="s1">&#39;Phasic spiking&#39;</span><span class="p">:</span>   
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="o">-</span><span class="mf">65.0</span><span class="p">,</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">],</span>
+    <span class="s1">&#39;Tonic bursting&#39;</span><span class="p">:</span>        
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">50.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">15.0</span><span class="p">],</span>
+    <span class="s1">&#39;Phasic bursting&#39;</span><span class="p">:</span>        
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="o">-</span><span class="mf">55.0</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.6</span><span class="p">],</span>
+    <span class="s1">&#39;Mixed mode&#39;</span><span class="p">:</span>        
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">55.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">],</span>
+    <span class="s1">&#39;Sf. adaptation&#39;</span><span class="p">:</span>        
+        <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">65.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">30.0</span><span class="p">],</span>
+    <span class="s1">&#39;Class 1&#39;</span><span class="p">:</span>        
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="o">-</span><span class="mf">55.0</span><span class="p">,</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Class 2&#39;</span><span class="p">:</span>        
+        <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.26</span><span class="p">,</span><span class="o">-</span><span class="mf">65.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Spike latency&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">65.0</span><span class="p">,</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">7.0</span><span class="p">],</span>
+    <span class="s1">&#39;Subthreshold osc&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.26</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Resonator&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.26</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Integrator&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="o">-</span><span class="mf">55.0</span><span class="p">,</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Rebound spike&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Rebound burst&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="o">-</span><span class="mf">52.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Threshold var&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Bistability&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="o">-</span><span class="mf">65.0</span><span class="p">],</span>
+    <span class="s1">&#39;DAP&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="o">-</span><span class="mf">21.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Accomodation&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">55.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span>
+    <span class="s1">&#39;Inh-ind. spiking&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">60.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">80.0</span><span class="p">],</span>
+    <span class="s1">&#39;Inh-ind. bursting&#39;</span><span class="p">:</span>
+        <span class="p">[</span><span class="o">-</span><span class="mf">0.026</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">45.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">80.0</span><span class="p">]</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="Izhikevich"><a class="viewcode-back" href="../../../filters.html#convis.filters.spiking.Izhikevich">[docs]</a><span class="k">class</span> <span class="nc">Izhikevich</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Izhikevich Spiking Model with uniform parameters</span>
+<span class="sd">    </span>
+<span class="sd">    The Simple Model of Spiking Neurons after Eugene Izhikevich</span>
+<span class="sd">    offers a wide range of neural dynamics with very few parameters.</span>
+
+<span class="sd">    See: https://www.izhikevich.org/publications/spikes.htm</span>
+
+<span class="sd">    Each pixel has two state variables: `v` and `u`.</span>
+<span class="sd">    `v` corresponds roughly to the membrane potential of a neuron</span>
+<span class="sd">    and `u` to a slow acting ion concentration. Both </span>
+<span class="sd">    variables influence each other dynamically:</span>
+
+<span class="sd">        $$\\\\dot{v} = 0.04 \\\\cdot v^2 + 5 \\\\cdot v + 140 - u + I$$</span>
+<span class="sd">        $$\\\\dot{u} = a \\\\cdot (b \\\\cdot v - u)$$</span>
+
+<span class="sd">    If `v` crosses a threshold, it will be reset to a value `c` and</span>
+<span class="sd">    `u` will be increased by another value `d`.</span>
+
+<span class="sd">    The parameters of the model are:</span>
+
+<span class="sd">        - `a`: relative speed between the evolution of `v` and `u`</span>
+<span class="sd">        - `b`: amount of influence of `v` over `u`</span>
+<span class="sd">        - `c`: the reset value for `v` if it crosses threshold</span>
+<span class="sd">        - `d`: value to add to `u` if `v` crosses threshold</span>
+
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    output_only_spikes (bool)</span>
+<span class="sd">        whether only spikes should be returned (binary),</span>
+<span class="sd">        or spikes, membrane potential and slow potential</span>
+<span class="sd">        in one channel of the output each.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output_only_spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Izhikevich</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="c1"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.02</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="o">-</span><span class="mf">65.0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;reset value&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;increase of u when v is above threshold&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">30.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_strength</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iters</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_only_spikes</span> <span class="o">=</span> <span class="n">output_only_spikes</span>
+<div class="viewcode-block" id="Izhikevich.load_parameters_by_name"><a class="viewcode-back" href="../../../filters.html#convis.filters.spiking.Izhikevich.load_parameters_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">load_parameters_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allows to load parameters for a range of behaviors.</span>
+<span class="sd">        </span>
+<span class="sd">        For a list of possible options, run the method without</span>
+<span class="sd">        parameter or look at directly at the dictionary</span>
+<span class="sd">        `convis.filters.spiking._izhikevich_parameters`.</span>
+
+<span class="sd">        The dictionary has values for a,b,c,d and the recommended</span>
+<span class="sd">        input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_izhikevich_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">_izhikevich_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Recommendet input: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">4</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Could not find key &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Posibilities are:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> - &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_izhikevich_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
+    <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shape</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># membrane potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># slow potential</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">I_in</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;v&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_states</span><span class="p">(</span><span class="n">I_in</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">all_spikes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">I_in</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">noise_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iters</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iters</span><span class="p">):</span>
+                <span class="n">dv</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="mf">0.04</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="mf">5.0</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="mi">140</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">+</span> <span class="n">I</span><span class="p">)</span>
+                <span class="n">du</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="n">dv</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">+</span> <span class="n">du</span>
+            <span class="n">spikes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">masked_scatter_</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">masked_scatter_</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">spikes</span> <span class="o">=</span> <span class="n">spikes</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_only_spikes</span><span class="p">:</span>
+                <span class="n">all_spikes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spikes</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">all_spikes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">spikes</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:],</span>
+                                             <span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:],</span>
+                                             <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:]],</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">all_spikes</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="kc">None</span><span class="p">,:,:,:,:]</span></div>
+
+<div class="viewcode-block" id="LeakyIntegrateAndFireNeuron"><a class="viewcode-back" href="../../../filters.html#convis.filters.spiking.LeakyIntegrateAndFireNeuron">[docs]</a><span class="k">class</span> <span class="nc">LeakyIntegrateAndFireNeuron</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;LIF model with refractory period.</span>
+
+<span class="sd">    Identical to `convis.filter.retina.GanglionSpiking`.</span>
+
+<span class="sd">    The ganglion cells recieve the gain controlled input and produce spikes. </span>
+
+<span class="sd">    When the cell is not refractory, :math:`V` moves as:</span>
+
+<span class="sd">    $$ \\\\dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + \eta_v(t)$$</span>
+
+<span class="sd">    Otherwise it is set to 0.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    refr_mu : Parameter</span>
+<span class="sd">        The mean of the distribution of random refractory times (in seconds).</span>
+<span class="sd">    refr_sigma : Parameter</span>
+<span class="sd">        The standard deviation of the refractory time that is randomly drawn around `refr_mu`</span>
+<span class="sd">    noise_sigma : Parameter</span>
+<span class="sd">        Amount of noise added to the membrane potential.</span>
+<span class="sd">    g_L : Parameter</span>
+<span class="sd">        Leak current (in Hz or dimensionless firing rate).</span>
+
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    convis.retina.Retina</span>
+<span class="sd">    GanglionInput</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LeakyIntegrateAndFireNeuron</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="c1"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refr_mu</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.003</span><span class="p">,</span>
+                            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;refr-mean__sec&#39;</span><span class="p">,</span>
+                            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;The mean of the distribution of random refractory times (in seconds).&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refr_sigma</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span>
+                            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;refr-stdev__sec&#39;</span><span class="p">,</span>
+                            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;The standard deviation of the refractory time that is randomly drawn around `refr_mu`&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_sigma</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span>
+                            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;sigma-V&#39;</span><span class="p">,</span>
+                            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Amount of noise added to the membrane potential.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_L</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">50.0</span><span class="p">,</span>
+                            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;g-leak__Hz&#39;</span><span class="p">,</span>
+                            <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;Leak current (in Hz or dimensionless firing rate).&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span>
+                            <span class="n">retina_config_key</span><span class="o">=</span><span class="s1">&#39;--should be inherited&#39;</span><span class="p">,</span>
+                            <span class="n">doc</span> <span class="o">=</span> <span class="s1">&#39;Length of timesteps (ie. the steps_to_seconds(1.0) of the model.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;zeros&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;refr&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;noise_prev&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shape</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">+</span><span class="mf">0.2</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># membrane potential</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">=</span> <span class="mf">1000.0</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refr_mu</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr_sigma</span> <span class="o">*</span>
+                                <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span><span class="o">.</span><span class="n">cuda</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">=</span> <span class="mf">1000.0</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refr_mu</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr_sigma</span> <span class="o">*</span>
+                                <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">I_gang</span><span class="p">):</span>
+        <span class="n">g_infini</span> <span class="o">=</span> <span class="mf">50.0</span> <span class="c1"># apparently?</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_states</span><span class="p">(</span><span class="n">I_gang</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+            <span class="c1">#y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cuda()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_prev</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cpu()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_prev</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+        <span class="n">all_spikes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">I_gang</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+            <span class="c1">#print I.data.shape, self.V.data.shape,torch.randn(I.data.shape).shape</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+                <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">+</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_L</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_sigma</span><span class="o">*</span><span class="n">noise</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_L</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">))</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span>
+            <span class="c1"># canonical form: </span>
+            <span class="c1">#</span>
+            <span class="c1"># V = V + (E_L - V + R*I)*dt/tau </span>
+            <span class="c1">#      + self.noise_sigma*noise*torch.sqrt(2.0*dt/tau)</span>
+            <span class="c1"># with dt = self.tau</span>
+            <span class="c1">#      tau = 1/self.g_L</span>
+            <span class="c1">#      R = tau</span>
+            <span class="c1">#      E_L = 0</span>
+            <span class="c1">#</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_cuda</span><span class="p">:</span>
+                <span class="n">refr_noise</span> <span class="o">=</span> <span class="mf">1000.0</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refr_mu</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr_sigma</span> <span class="o">*</span>
+                                    <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">refr_noise</span> <span class="o">=</span> <span class="mf">1000.0</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refr_mu</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr_sigma</span> <span class="o">*</span>
+                                    <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+            <span class="n">spikes</span> <span class="o">=</span> <span class="n">V</span> <span class="o">&gt;</span> <span class="mf">1.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span><span class="o">.</span><span class="n">masked_scatter_</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="n">refr_noise</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span><span class="o">.</span><span class="n">masked_scatter_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">-</span> <span class="mf">1.0</span>
+            <span class="n">V</span><span class="o">.</span><span class="n">masked_scatter_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refr</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="p">)</span>
+            <span class="n">V</span><span class="o">.</span><span class="n">masked_scatter_</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">V</span>
+            <span class="n">all_spikes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spikes</span><span class="p">[</span><span class="kc">None</span><span class="p">,:,:])</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">all_spikes</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:]</span></div>
+
+
+<div class="viewcode-block" id="FitzHughNagumo"><a class="viewcode-back" href="../../../filters.html#convis.filters.spiking.FitzHughNagumo">[docs]</a><span class="k">class</span> <span class="nc">FitzHughNagumo</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Two state neural model.</span>
+
+<span class="sd">    $$\\\\dot{v} = v - \\\\frac{1}{3} v^3 - w + I$$</span>
+<span class="sd">    $$\\\\dot{w} = \\\\tau \\\\cdot (v - a - b \\\\cdot w) $$</span>
+
+<span class="sd">    See also:</span>
+
+<span class="sd">        - `Wikipedia on FitzHugh-Nagumo models &lt;https://en.wikipedia.org/wiki/FitzHugh%E2%80%93Nagumo_model&gt;`_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FitzHughNagumo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.08</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_strength</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iters</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shape</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># membrane potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># slow potential</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">I_in</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;v&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_states</span><span class="p">(</span><span class="n">I_in</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">all_spikes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">I_in</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">noise_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iters</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iters</span><span class="p">):</span>
+                <span class="n">dv</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="n">I</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="o">**</span><span class="mf">3.0</span><span class="p">)</span><span class="o">/</span><span class="mf">3.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+                <span class="n">dw</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="n">dv</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_strength</span> <span class="o">*</span> <span class="n">dt</span><span class="o">*</span><span class="n">noise</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">+</span> <span class="n">dw</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_strength</span> <span class="o">*</span> <span class="n">dt</span><span class="o">*</span><span class="n">noise_w</span>
+            <span class="n">all_spikes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">[</span><span class="kc">None</span><span class="p">,:,:])</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">all_spikes</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:]</span></div>
+
+
+<div class="viewcode-block" id="HogkinHuxley"><a class="viewcode-back" href="../../../filters.html#convis.filters.spiking.HogkinHuxley">[docs]</a><span class="k">class</span> <span class="nc">HogkinHuxley</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Neuron model of the giant squid axon.</span>
+
+<span class="sd">    This model contains four state variables:</span>
+<span class="sd">    the membrane potential `v` and three slow acting currents `n`, `m` and `h`.</span>
+
+<span class="sd">    See also: </span>
+
+<span class="sd">        - `Wikipedia in Hodgkin-Huxley models &lt;https://en.wikipedia.org/wiki/Hodgkin%E2%80%93Huxley_model&gt;`_</span>
+<span class="sd">        - `&lt;http://neuronaldynamics.epfl.ch/online/Ch2.S2.html&gt;`_</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HogkinHuxley</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="c1"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">36.0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;maximum conductance of Potassium channels&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gNa</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">120.0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;maximum conductance of Sodium channels&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gL</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;leak current&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cm</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s1">&#39;membrane capacitance&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">VK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="n">doc</span><span class="o">=</span><span class="s1">&#39;potential of Potassium&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">VNa</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">115.0</span><span class="p">,</span><span class="n">doc</span><span class="o">=</span><span class="s1">&#39;potential of Sodium&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vl</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">10.613</span><span class="p">,</span><span class="n">doc</span><span class="o">=</span><span class="s1">&#39;potential of leak currents&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="mf">10.0</span> <span class="o">-</span> <span class="n">v</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">v</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="mf">0.125</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">v</span> <span class="o">/</span> <span class="mf">80.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="mf">25.0</span> <span class="o">-</span> <span class="n">v</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">v</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta_m</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">v</span> <span class="o">/</span> <span class="mf">18.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="mf">0.07</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">v</span> <span class="o">/</span> <span class="mf">20.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta_h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">v</span><span class="p">))</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_inf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="n">alpha_n</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha_n</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">beta_n</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_inf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="n">alpha_m</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha_m</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">beta_m</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h_inf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span> <span class="p">:</span> <span class="n">alpha_h</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha_h</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">beta_h</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;v_n&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;v_m&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;v_h&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iters</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="k">def</span> <span class="nf">init_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_shape</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># membrane potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_n</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># slow potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_m</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># slow potential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span> <span class="o">=</span> <span class="mf">0.0</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span> <span class="c1"># slow potential</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">I_in</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;v&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_states</span><span class="p">(</span><span class="n">I_in</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">all_spikes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">I_in</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">noise_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iters</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iters</span><span class="p">):</span>
+                <span class="n">dv</span> <span class="o">=</span> <span class="p">((</span><span class="n">I</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cm</span><span class="p">)</span> 
+                    <span class="o">-</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">gK</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cm</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_n</span><span class="o">**</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">VK</span><span class="p">))</span> 
+                    <span class="o">-</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">gNa</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cm</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_m</span><span class="o">**</span><span class="mf">3.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">VNa</span><span class="p">))</span> 
+                    <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gL</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cm</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vl</span><span class="p">))</span>
+                <span class="p">)</span>
+                <span class="n">dn</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_n</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_n</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta_n</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_n</span><span class="p">)</span>
+                <span class="n">dm</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_m</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta_m</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_m</span><span class="p">)</span>
+                <span class="n">dh</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_h</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta_h</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">dv</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">v_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_n</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">dn</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">v_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_m</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">dm</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">dh</span>
+            <span class="n">all_spikes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">[</span><span class="kc">None</span><span class="p">,:,:])</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">all_spikes</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:,:]</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.5.2.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
