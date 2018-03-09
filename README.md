@@ -36,7 +36,7 @@ An even older version was published as <a href="https://github.com/jahuth/retina
 
 When using `convis` for your scientific publications, please cite:
 
-    - Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009
+ * Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009
 
 ## Installation
 
@@ -76,8 +76,8 @@ sudo apt-get install python-opencv
 `convis` provides a retina model which is identical to `VirtualRetina` and tools
 to create either simpler or more complex models.
 
-A preprint of a paper about `convis` is available at bioarxiv: 
-["Convis: A Toolbox To Fit and Simulate Filter-based Models of Early Visual Processing"](https://doi.org/10.1101/169284).
+The paper about `convis` is available in frontiers in Neuroinformatics: 
+["Convis: A Toolbox To Fit and Simulate Filter-based Models of Early Visual Processing"](https://www.frontiersin.org/articles/10.3389/fninf.2018.00009/full).
 
 ## The Retina model
 
