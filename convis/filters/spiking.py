@@ -332,6 +332,7 @@ class HogkinHuxley(Layer):
         self.VK = Parameter(-12.0,doc='potential of Potassium')
         self.VNa = Parameter(115.0,doc='potential of Sodium')
         self.Vl = Parameter(10.613,doc='potential of leak currents')
+        self.noise_strength = Parameter(0.1)
         self.alpha_n = lambda v: (0.01 * (10.0 - v)) / (torch.exp(1.0 - (0.1 * v)) - 1.0)
         self.beta_n = lambda v : 0.125 * torch.exp(-v / 80.0)
         self.alpha_m = lambda v : (0.1 * (25.0 - v)) / (torch.exp(2.5 - (0.1 * v)) - 1.0)
@@ -360,7 +361,7 @@ class HogkinHuxley(Layer):
             noise_w = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
             dt = 1.0/float(self.iters)
             for i in range(self.iters):
-                dv = ((I / self.Cm) 
+                dv = ((I + self.noise_strength*noise / self.Cm) 
                     - ((self.gK / self.Cm) * self.v_n**4.0 * (self.v - self.VK)) 
                     - ((self.gNa / self.Cm) * self.v_m**3.0 * self.v_h * (self.v - self.VNa)) 
                     - (self.gL / self.Cm * (self.v - self.Vl))
@@ -368,7 +369,7 @@ class HogkinHuxley(Layer):
                 dn = (self.alpha_n(self.v) * (1.0 - self.v_n)) - (self.beta_n(self.v) * self.v_n)
                 dm = (self.alpha_m(self.v) * (1.0 - self.v_m)) - (self.beta_m(self.v) * self.v_m)
                 dh = (self.alpha_h(self.v) * (1.0 - self.v_h)) - (self.beta_h(self.v) * self.v_h)
-                self.v = self.v + dt*dv
+                self.v = self.v + dt*dv 
                 self.v_n = self.v_n + dt*dn
                 self.v_m = self.v_m + dt*dm
                 self.v_h = self.v_h + dt*dh

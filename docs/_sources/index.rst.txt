@@ -15,6 +15,10 @@ Want to jump right in? Have a look at these quickstart guides:
 
 Get it on `github <https://github.com/jahuth/convis>`_! 
 
+When using `convis` for your scientific publications, please cite:
+
+    - Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009
+
 Installation
 ------------
 

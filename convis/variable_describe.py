@@ -36,7 +36,7 @@ except Exception as e:
 
 doc_urls = [
     ('convis.filters.retina', 'https://jahuth.github.io/convis/docs_retina.html#'),
-    ('convis.filters.spiking', 'https://jahuth.github.io/convis/docs_retina.html#'),
+    ('convis.filters.spiking', 'https://jahuth.github.io/convis/filters.html#'),
     ('convis.filters', 'https://jahuth.github.io/convis/docs_filters.html#'),
     ('convis.models', 'https://jahuth.github.io/convis/docs_models.html#'),
     ('convis.retina', 'https://jahuth.github.io/convis/docs_retina.html#'),

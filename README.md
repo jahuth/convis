@@ -34,6 +34,10 @@ plot(np.mean(out[1],(0,1,3,4)))
 An earlier version using `theano` has been put on hold, but is still available [here](http://github.com/jahuth/convis_theano). If you are interested in continued development of the `theano` version, please let me know!
 An even older version was published as <a href="https://github.com/jahuth/retina">the retina package</a>
 
+When using `convis` for your scientific publications, please cite:
+
+    - Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009
+
 ## Installation
 
 Installing `convis` and `PyTorch` itself is not complicated.
