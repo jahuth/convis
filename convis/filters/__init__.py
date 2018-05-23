@@ -734,6 +734,46 @@ class NLRectifySquare(Layer):
     def forward(self, inp):
         return ((self.bias+inp*self.scale).clamp(min=0.0,max=1000000.0))**2
 
+def sum(*args, **kwargs):
+    """concatenates and sums tensors over a given dimension `dim`.
+
+    Examples
+    --------
+
+        >>> inp = convis.prepare_input(np.ones((2,2,100,10,10)))
+        >>> o = convis.filters.sum(inp,inp,inp,dim=1)
+
+    See Also
+    --------
+    Sum
+    """
+    dim = kwargs.get('dim',0)
+    return torch.cat(args,dim=dim).sum(dim=dim,keepdim=True)
+
+class Sum(Layer):
+    """A Layer that combines all inputs into one tensor and 
+    sums over a given dimension.
+    
+    Can be used to collapse batch or filter dimensions.
+
+    Examples
+    --------
+
+        >>> s = Sum(1)
+        >>> inp = convis.prepare_input(np.ones((2,2,100,10,10)))
+        >>> o = s(inp,inp,inp)
+    
+    See Also
+    --------
+    sum
+    """
+    def __init__(self, dim=0):
+        self.dims = 5
+        self.dim = dim
+        super(Sum, self).__init__()
+    def forward(self, *args):
+        return sum(args,dim=self.dim)
+
 from . import simple
 from . import retina
 from . import spiking

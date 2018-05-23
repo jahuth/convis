@@ -89,15 +89,21 @@
               
             
             
-              <ul>
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples.html#indices">Indices</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../filters.html">Filters and Layers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html">PyTorch Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../model.html">Models</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../docs.html">The API: Convis classes and modules</a></li>
 </ul>
 
@@ -898,6 +904,46 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">+</span><span class="n">inp</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1000000.0</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span></div>
+
+<div class="viewcode-block" id="sum"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.sum">[docs]</a><span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;concatenates and sums tensors over a given dimension `dim`.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        &gt;&gt;&gt; inp = convis.prepare_input(np.ones((2,2,100,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; o = convis.filters.sum(inp,inp,inp,dim=1)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    Sum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dim&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span><span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sum"><a class="viewcode-back" href="../../docs_filters.html#convis.filters.Sum">[docs]</a><span class="k">class</span> <span class="nc">Sum</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Layer that combines all inputs into one tensor and </span>
+<span class="sd">    sums over a given dimension.</span>
+<span class="sd">    </span>
+<span class="sd">    Can be used to collapse batch or filter dimensions.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        &gt;&gt;&gt; s = Sum(1)</span>
+<span class="sd">        &gt;&gt;&gt; inp = convis.prepare_input(np.ones((2,2,100,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; o = s(inp,inp,inp)</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Sum</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span></div>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">simple</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">retina</span>

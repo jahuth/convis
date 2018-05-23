@@ -11,7 +11,6 @@ from __future__ import print_function
 from .misc_utils import unique_list, suppress
 
 import numpy as np
-import matplotlib.pylab as plt
 import uuid
 from . import io
 try:

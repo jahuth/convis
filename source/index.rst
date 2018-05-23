@@ -17,7 +17,8 @@ Get it on `github <https://github.com/jahuth/convis>`_!
 
 When using `convis` for your scientific publications, please cite:
 
-    - Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009
+    - Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009 `link <https://www.frontiersin.org/articles/10.3389/fninf.2018.00009/full>`_
+
 
 Installation
 ------------
@@ -74,14 +75,25 @@ General discussion is encouraged on the two mailing lists:
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
+   :caption: Get Started
 
    installation
    usage
    examples
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Features
+
    filters
    pytorch_basics
    model
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API
+
    docs
 
 Indices
