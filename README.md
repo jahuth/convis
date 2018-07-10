@@ -1,10 +1,14 @@
+**Note:** The latest PyTorch version (`0.4`) merged Tensors and Variables. Convis will 
+work with this change in the next minor release `convis 0.6` released early next week (July 16th 2018).
+To try out convis before that date, PyTorch versions `0.2.*` and `0.3.*` will work with `convis`.
+
 # The `convis` package
 
 This python package provides an implementation of the [Virtual Retina](http://www-sop.inria.fr/neuromathcomp/public/software/virtualretina/) developed by Adrien Wohrer. It uses `PyTorch` to simulate spike trains of retinal ganglion cells by directing the input through a number of computation layers. Each layer might do linear or nonlinear computations, eg. convolve the inpute with a spatio-temporal kernel or apply gain control.
 
 TravisCI on the master branch: [![Build Status](https://travis-ci.org/jahuth/convis.svg?branch=master)](https://travis-ci.org/jahuth/convis) 
 
-We are supporting Python 2.7 right now, but are aiming to support Python 3 as well at some point.
+We are supporting Python 3.5 and 2.7 right now, but are aiming to support Python 3.6 as well.
 
 Convis is under development and some features might not work in the current master branch or the PyPi releases.
 If you discover unexpected behaviour, please leave an Issue on github.
@@ -19,6 +23,8 @@ Find the documentation at: [https://jahuth.github.io/convis/](https://jahuth.git
 Usage Example:
 
 ```python
+import numpy as np
+import matplotlib.pylab as plt
 import convis
 
 c = convis.retina.RetinaConfiguration()
@@ -27,8 +33,8 @@ inp = np.zeros((2000,50,50))
 inp[:,20:30,20:30] = 255.0*(rand(*inp[:,20:30,20:30].shape)<0.2)
 out = ret.run(inp)
 
-plot(np.mean(out[0],(0,1,3,4)))
-plot(np.mean(out[1],(0,1,3,4)))
+plt.plot(np.mean(out[0],(0,1,3,4)))
+plt.plot(np.mean(out[1],(0,1,3,4)))
 ```
 
 An earlier version using `theano` has been put on hold, but is still available [here](http://github.com/jahuth/convis_theano). If you are interested in continued development of the `theano` version, please let me know!
@@ -39,6 +45,7 @@ An even older version was published as <a href="https://github.com/jahuth/retina
 Installing `convis` and `PyTorch` itself is not complicated.
 
 Requirements for the base installation are: Python 2.7 or Python 3.5, Numpy, SciPy.
+For the latest PyTorch version (`0.4`), a small fix is necessary which I will release after returning from a conference (July 16th 2018). Until then, the PyTorch `0.2.*` and `0.3.*` work well with convis.
 
 ```bash
 pip install convis
@@ -91,6 +98,8 @@ Here is a graph of the model:
 To use the model, supply a numpy array as an argument to the `Retina` (for short input) or to the `run` function with a `dt` keyword to split the input in smaller chunks (and automatically reassemble the output):
 
 ```python
+import numpy as np
+import matplotlib.pylab as plt
 inp = np.ones((100,20,20))
 output = retina(inp)
     
