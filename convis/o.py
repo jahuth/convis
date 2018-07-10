@@ -147,42 +147,22 @@ class O(object):
     def __iteritems__(self):
         return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self']) 
     def __setattr__(self, name, value):
-        if name in self.__dict__.keys():
-            var_to_replace = getattr(self, name)
-            import convis, theano
-            if hasattr(var_to_replace,'set_value') and hasattr(value,'__array__'):
-                #print 'has set value'
-                var_to_replace.set_value(value.__array__())
-            elif isinstance(value, convis.GraphWrapper) or isinstance(value, theano.Variable):
-                # replace parameter with paramterized parameter if possible 
-                ## only when getattr(self, name) is a parameter
-                ## only when dimensions match
-                # then
-                ## we find the parameters children and replace it in each with the graph we get from value.get_graph(name=old_name)
-                #### what about parameters that are used in multiple places?
-                from variables import get_convis_attribute, set_convis_attribute
-                
-                if hasattr(var_to_replace,'_') and hasattr(var_to_replace._,'graph'):
-                    # the variable is actually
-                    var_to_replace = var_to_replace._.graph
-                filter_node = get_convis_attribute(var_to_replace,'original_node',get_convis_attribute(var_to_replace,'node'))
-                if hasattr(value,'_as_TensorVariable'):
-                    value.name = name
-                    value = value._as_TensorVariable()
-                else:
-                    set_convis_attribute(value,'name', name)
-                set_convis_attribute(value,'original_node',filter_node)
-                convis.theano_utils.replace(filter_node.output,var_to_replace,value)
-                filter_node.label_variables(filter_node.output)
-                return
-        if self._readonly and not name.startswith('_'):
+        if name.startswith('_'):
+            object.__setattr__(self, name, value)
             return
         if name in self.__dict__.keys():
-            #print 'setting in dictionary'
-            self.__dict__[name] = value
-        else:
-            #print 'setting for object'
-            object.__setattr__(self, name, value)
+            if self._readonly:
+                var_to_replace = getattr(self, name)
+                if hasattr(var_to_replace,'set') and hasattr(value,'__array__'):
+                    #print 'has set value'
+                    var_to_replace.set(value.__array__())
+                else:
+                    try:
+                        var_to_replace.data.set_(value.__array__())
+                    except:
+                        pass
+            else:
+                object.__setattr__(self, name, value)
     def __setitem__(self,k,v):
         self.__dict__[save_name(k)] = v
     def __getitem__(self,k):

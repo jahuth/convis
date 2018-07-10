@@ -773,9 +773,10 @@ def describe_layer_with_html(layer, max_depth = 3,wrap_in_html=False):
         lst = list(lst)
         sub_string = ''
         if len(lst) > 0:
-            sub_string += '<div style="font-weight: bold;">'+title+'</div>'
+            #if title is not None:
+            #    sub_string += '<div style="font-weight: bold;">'+title+'</div>'
             for name, val in lst:
-                sub_string += '<div style="'+line_style+'">'+str(name)+' <i>('+str(val.__class__.__name__)
+                sub_string += '<div style="'+line_style+'">'+str(name)+' <i>(<b>'+title+':</b> '+str(val.__class__.__name__)
                 if hasattr(val,'size'):
                     if len(val.size()) == 1 and val.size()[0] == 1:
                         sub_string += ' <i style="font-size: 80%;">scalar value</i>'
@@ -818,15 +819,15 @@ def describe_layer_with_html(layer, max_depth = 3,wrap_in_html=False):
         if hasattr(model,'_state') and len(model._state) > 0:
             sub_string += make_table('State', [(s,getattr(model,s,None)) for s in model._state], 'margin:1px; padding:2px; background-color: #e3eb91; color: #444; margin-left:10px;')
         if hasattr(model,'_named_variables') and len(model._named_variables) > 0:
-            sub_string += make_table('Variables', model._named_variables.items(), 'margin:1px; padding:2px; background-color: #75bea3; color: #444; margin-left:10px;')
+            sub_string += make_table('Variable', model._named_variables.items(), 'margin:1px; padding:2px; background-color: #75bea3; color: #444; margin-left:10px;')
         if len(list(model.named_children())) > 0:
-            sub_string += '<div style="font-weight: bold;">Modules</div>'
+            #sub_string += '<div style="font-weight: bold;">Module</div>'
             for mod_name,mod in list(model.named_children()):
                 if mod_name is '':
                     continue
-                bg = '#eae2e5' if depth%2==0 else '#7a7275'
+                bg = '#eae2e5' if depth%2==0 else '#faf2f5'
                 sub_string += '<div style="margin:1px; padding:2px; background-color: '+bg+'; color: #444; margin-left:10px;"><div>'
-                sub_string += ' <b style:font-size:120%>'+str(mod_name)+'</b> ('+str(mod.__class__.__name__)+')</div>'
+                sub_string += '<b style:font-size:120%>'+str(mod_name)+'</b> (<b>Layer:</b> '+str(mod.__class__.__name__)+')</div>'
                 if depth > 0:
                     #if isinstance(mod, Layer) or isinstance(mod, torch.nn.Module):
                     if hasattr(mod, 'named_children'):
