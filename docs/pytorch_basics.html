@@ -90,11 +90,14 @@
               
             
             
-              <ul class="current">
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">PyTorch Basics</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#tensor-computing-with-torch-tensor">Tensor computing with <cite>torch.tensor</cite></a></li>
@@ -109,6 +112,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">The API: Convis classes and modules</a></li>
 </ul>
 
@@ -230,7 +236,7 @@ It provides three mayor submodules to make deep learning easy:</p>
 </div>
 <div class="section" id="extending-conv3d">
 <h2>Extending Conv3d<a class="headerlink" href="#extending-conv3d" title="Permalink to this headline">¶</a></h2>
-<p id="filters-conv3d">To make apparent how <a class="reference internal" href="docs.html#module-convis" title="convis"><code class="xref py py-mod docutils literal"><span class="pre">convis</span></code></a> and <a class="reference external" href="http://pytorch.org/docs/0.3.0/torch.html#module-torch" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-mod docutils literal"><span class="pre">PyTorch</span></code></a> differ,
+<p id="filters-conv3d">To make apparent how <a class="reference internal" href="docs.html#module-convis" title="convis"><code class="xref py py-mod docutils literal"><span class="pre">convis</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/0.3.0/torch.html#module-torch" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-mod docutils literal"><span class="pre">PyTorch</span></code></a> differ,
 we will first implement a custom convolution layer that wraps the <cite>PyTorch</cite>
 3d convolution.</p>
 <p>To create an output that is the same shape as the input, we need to pad

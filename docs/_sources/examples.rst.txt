@@ -270,10 +270,3 @@ More information specific to the retina model can be found :ref:`here <model_ret
 
 
 
-Indices
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

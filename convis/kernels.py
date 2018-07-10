@@ -1,9 +1,5 @@
 
 """
-                                                                             
-Kernels
--------
-
 This module collects convolution kernels.
 
 """

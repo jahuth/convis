@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Models convis.models &mdash; convis 0.5.2.2 documentation</title>
+  <title>Models in convis.models &mdash; convis 0.5.2.2 documentation</title>
   
 
   
@@ -91,19 +91,29 @@
               
             
             
-              <ul class="current">
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="docs.html">The API: Convis classes and modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs_filters.html#kernels-convis-kernels">Kernels <cite>convis.kernels</cite></a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Models <cite>convis.models</cite></a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Models in <cite>convis.models</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#combinators">Combinators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linear-nonlinear-models">Linear-Nonlinear Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#convolution-model">Convolution Model</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_optimizer.html">Optimizers <cite>convis.optimizer</cite></a></li>
@@ -160,7 +170,7 @@
         
           <li><a href="docs.html">The API: Convis classes and modules</a> &raquo;</li>
         
-      <li>Models <cite>convis.models</cite></li>
+      <li>Models in <cite>convis.models</cite></li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -179,8 +189,127 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="models-convis-models">
-<h1>Models <cite>convis.models</cite><a class="headerlink" href="#models-convis-models" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="models-in-convis-models">
+<span id="doc-models"></span><h1>Models in <cite>convis.models</cite><a class="headerlink" href="#models-in-convis-models" title="Permalink to this headline">¶</a></h1>
+<p>Models are essentially the same as filters: they are both
+classes that inherit most of their capabilities from <code class="xref py py-class docutils literal"><span class="pre">Layer</span></code>.
+The split into two submodules is an effort to sort them by
+complexity / generalizability. Eg. all filters can be combined into
+more complex models (combining models does not always make sense)
+and all models are ready to “do things”, which is not the case for eg.
+the <code class="xref py py-class docutils literal"><span class="pre">TimePadding</span></code> filter.</p>
+<p>If you feel the distinction is unnecessary, or you came up with a better
+way to separate Layers into submodules, let me know by <a class="reference external" href="https://github.com/jahuth/convis/labels/enhancement">submitting a github issue!</a></p>
+<div class="section" id="combinators">
+<h2>Combinators<a class="headerlink" href="#combinators" title="Permalink to this headline">¶</a></h2>
+<p>These classes can build simple models out of a sequence of Layers
+by either combining them sequentially (the output of one layer
+is the input of the next), or in parallel (all layers get the same
+input).</p>
+<dl class="class">
+<dt id="convis.models.Sequential">
+<em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">Sequential</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#Sequential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.Sequential" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Model that executes Layers sequentially,
+passing the output of one as the input of the next.</p>
+<p>This class inherits from torch.nn.Sequential and offers
+the same mechanism for enumerating the provided Layers.
+The <a class="reference internal" href="#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">List</span></code></a> class will give modules names starting
+with ‘<a href="#id1"><span class="problematic" id="id2">layer_</span></a>’ to make them tab-completable and offers the
+same forward function to compute layers sequentially.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.models.List" title="convis.models.List"><code class="xref py py-obj docutils literal"><span class="pre">List</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.models.List">
+<em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">List</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#List"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.List" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of Layers/Modules/functions that registers 
+its items as submodules and provides tab-completable
+names with a prefix (by default ‘<a href="#id3"><span class="problematic" id="id4">layer_</span></a>’).</p>
+<p>The list provides a forward function that sequentially
+applies each module in the list.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">List</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">l</span><span class="o">.</span><span class="n">layer_2</span>
+<span class="go">Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">some_input</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_gratings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="convis.models.List.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>module</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#List.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.List.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends a module to the end of the list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the list itself</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.models.List.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>modules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#List.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.List.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends the list with modules from a Python iterable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the list itself</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.models.Parallel">
+<em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">Parallel</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#Parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.Parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container to execute layers in parallel.
+Modules will be added to it in the order they are passed in the constructor.
+Alternatively, an ordered dict of modules can also be passed in.</p>
+<p class="rubric">Examples</p>
+<p>To make it easier to understand, here is a small example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Example of using Parallel</span>
+<span class="n">conv1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">time_pad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">conv2</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">time_pad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span>
+        <span class="n">conv1</span><span class="p">,</span>
+        <span class="n">conv2</span><span class="p">,</span>
+        <span class="n">combine</span> <span class="o">=</span> <span class="s1">&#39;cat_1&#39;</span>
+    <span class="p">)</span> <span class="c1"># concatenates the output at dimension 1</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span>
+        <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">time_pad</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">time_pad</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="nb">sum</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">Sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span> <span class="c1"># concatenates and sums the input at dimension 0</span>
+    <span class="c1"># all other output dimensions MUST be the same!</span>
+
+<span class="c1"># Example of using Sequential with OrderedDict</span>
+<span class="n">conv1</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">time_pad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">conv2</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">time_pad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([</span>
+          <span class="p">(</span><span class="s1">&#39;conv1&#39;</span><span class="p">,</span> <span class="n">conv1</span><span class="p">),</span>
+          <span class="p">(</span><span class="s1">&#39;relu1&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()),</span>
+          <span class="p">(</span><span class="s1">&#39;conv2&#39;</span><span class="p">,</span> <span class="n">conv2</span><span class="p">),</span>
+          <span class="p">(</span><span class="s1">&#39;relu2&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
+        <span class="p">]),</span> <span class="nb">sum</span> <span class="o">=</span> <span class="s1">&#39;sum_0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="linear-nonlinear-models">
+<h2>Linear-Nonlinear Models<a class="headerlink" href="#linear-nonlinear-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="convis.models.L">
 <em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">L</code><span class="sig-paren">(</span><em>kernel_dim=(1</em>, <em>1</em>, <em>1)</em>, <em>bias=False</em>, <em>population=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#L"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.L" title="Permalink to this definition">¶</a></dt>
@@ -378,6 +507,9 @@ one output time series.</p>
 </table>
 </dd></dl>
 
+</div>
+<div class="section" id="convolution-model">
+<h2>Convolution Model<a class="headerlink" href="#convolution-model" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="convis.models.McIntosh">
 <em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">McIntosh</code><span class="sig-paren">(</span><em>filter_size=(10</em>, <em>5</em>, <em>5)</em>, <em>random_init=True</em>, <em>out_channels=1</em>, <em>filter_2_size=(1</em>, <em>1</em>, <em>1)</em>, <em>layer1_channels=8</em>, <em>layer2_channels=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#McIntosh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.McIntosh" title="Permalink to this definition">¶</a></dt>
@@ -406,6 +538,7 @@ Advances in Neural Information Processing Systems 29 (NIPS), (Nips), 1-9.
 Also: arXiv:1702.01825 [q-bio.NC]</p>
 </dd></dl>
 
+</div>
 </div>
 
 

@@ -89,15 +89,21 @@
               
             
             
-              <ul>
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html">PyTorch Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Models</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">The API: Convis classes and modules</a></li>
 </ul>
 
@@ -173,6 +179,12 @@
 </ul>
 </div></blockquote>
 <p>Get it on <a class="reference external" href="https://github.com/jahuth/convis">github</a>!</p>
+<p>When using <cite>convis</cite> for your scientific publications, please cite:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Huth J, Masquelier T and Arleo A (2018) Convis: A Toolbox to Fit and Simulate Filter-Based Models of Early Visual Processing. Front. Neuroinform. 12:9. doi: 10.3389/fninf.2018.00009 <a class="reference external" href="https://www.frontiersin.org/articles/10.3389/fninf.2018.00009/full">link</a></li>
+</ul>
+</div></blockquote>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Installing <cite>convis</cite> and <cite>PyTorch</cite> itself is not complicated.
@@ -221,18 +233,12 @@ change to a fork on your own github account and submit a pull request.</p>
 </dl>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#running-a-model">Running a model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usage.html#switching-between-cpu-and-gpu-usage">Switching between CPU and GPU usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="usage.html#using-runner-objects">Using Runner objects</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#optimizing-a-model">Optimizing a Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usage.html#using-an-optimizer-by-hand">Using an Optimizer by Hand</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#running-a-model">Running a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#optimizing-a-model">Optimizing a Model</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
@@ -241,7 +247,11 @@ change to a fork on your own github account and submit a pull request.</p>
 <li class="toctree-l2"><a class="reference internal" href="examples.html#running-a-model">Running a Model</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html#indices">Indices</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="filters.html">Filters and Layers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="filters.html#convolution-filters">Convolution Filters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="filters.html#receptive-fields">Receptive Fields</a></li>
@@ -263,45 +273,24 @@ change to a fork on your own github account and submit a pull request.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Models</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="model_retina.html">Retina Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="model_retina.html#general-overview">General Overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="model_retina.html#the-retina-model-class-and-configuration">The Retina Model class and Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="model_retina.html#retina-filters">Retina Filters</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="model_ln.html">Linear-Nonlinear Models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="model_ln.html#usage">Usage</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="model_McIntosh.html">A Convolutional Retina Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="model_McIntosh.html#use-it">Use it</a></li>
-<li class="toctree-l3"><a class="reference internal" href="model_McIntosh.html#build-it-yourself">Build it yourself</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_retina.html">Retina Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_ln.html">Linear-Nonlinear Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_McIntosh.html">A Convolutional Retina Model</a></li>
 </ul>
 </li>
 </ul>
-</li>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">The API: Convis classes and modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs_filters.html">Filters <cite>convis.filters</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs_filters.html#kernels-convis-kernels">Kernels <cite>convis.kernels</cite></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="docs_filters.html#kernels">Kernels</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models <cite>convis.models</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="docs_retina.html#general-overview">General Overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="docs_retina.html#references">References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="docs_retina.html#module-convis.retina"><cite>convis.retina</cite></a></li>
-<li class="toctree-l3"><a class="reference internal" href="docs_retina.html#module-convis.filters.retina"><cite>convis.filters.retina</cite></a></li>
-<li class="toctree-l3"><a class="reference internal" href="docs_retina.html#convis-retina-virtualretina"><cite>convis.retina_virtualretina</cite></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models in <cite>convis.models</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_optimizer.html">Optimizers <cite>convis.optimizer</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_tests.html">Automatic Tests <cite>convis.tests</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.base">Base classes <cite>convis.base</cite></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="docs.html#convis-base-classes">Convis base classes</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.base">Base classes <cite>convis.base</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.utils">Utilitary methods <cite>convis.utils</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#sample-data-convis-samples">Sample Data <cite>convis.samples</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.variable_describe">Methods to describe objects <cite>convis.variable_describe</cite></a></li>

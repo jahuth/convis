@@ -12,6 +12,10 @@ Find out which models are available by asking the :mod:`convis.models` module.
                       LNFDSNF
                       McIntosh
                       Retina
+                      ...
+
+You can also have a look at :ref:`doc-models` for a a list of the available models.
+
 
 .. toctree::
    :maxdepth: 1

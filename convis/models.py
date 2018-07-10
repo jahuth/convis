@@ -19,6 +19,98 @@ from .retina import Retina
 
 __all__ = ['L','RF','LN','LNLN','LNFDLNF','LNFDSNF','McIntosh','Retina','LNCascade','List']
 
+class Sequential(nn.Sequential,Layer):
+    """A Model that executes Layers sequentially,
+    passing the output of one as the input of the next.
+
+    This class inherits from torch.nn.Sequential and offers
+    the same mechanism for enumerating the provided Layers.
+    The :class:`List` class will give modules names starting
+    with 'layer_' to make them tab-completable and offers the
+    same forward function to compute layers sequentially.
+
+    See Also
+    ---------
+    List
+    """
+    def __init__(self, *args):
+        super(Sequential, self).__init__(*args)
+
+class Parallel(Layer):
+    r"""A container to execute layers in parallel.
+    Modules will be added to it in the order they are passed in the constructor.
+    Alternatively, an ordered dict of modules can also be passed in.
+
+
+    Examples
+    ---------
+
+    To make it easier to understand, here is a small example::
+
+        # Example of using Parallel
+        conv1 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)
+        conv2 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)
+        model = nn.Parallel(
+                conv1,
+                conv2,
+                combine = 'cat_1'
+            ) # concatenates the output at dimension 1
+        model = convis.models.Parallel(
+                convis.filters.Conv3d(1,2,(10,1,1),time_pad=True),
+                convis.filters.Conv3d(1,2,(10,1,1),time_pad=True),
+                sum = convis.filter.Sum(0)
+            ) # concatenates and sums the input at dimension 0
+            # all other output dimensions MUST be the same!
+
+        # Example of using Sequential with OrderedDict
+        conv1 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)
+        conv2 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)
+        model = nn.Parallel(OrderedDict([
+                  ('conv1', conv1),
+                  ('relu1', torch.nn.ReLU()),
+                  ('conv2', conv2),
+                  ('relu2', torch.nn.ReLU())
+                ]), sum = 'sum_0')
+
+    Note
+    -----
+
+    To combine the output of different layers, they usually have to have
+    the same shape, except for the dimension in which they are concatenated
+    or summed over.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(Parallel, self).__init__()
+        if len(args) == 1 and isinstance(args[0], OrderedDict):
+            for key, module in args[0].items():
+                self.add_module(key, module)
+        else:
+            for idx, module in enumerate(args):
+                self.add_module('layer_'+str(idx), module)
+        self.sum = 'cat'
+        if 'sum' in kwargs.keys():
+            self.sum = kwargs['sum']
+    def forward(self, input):
+        outputs = []
+        for key,module in self._modules.items():
+            if key is not 'sum':
+                outputs.append(module(input))
+        if self.sum == 'sum':
+            return filters.sum(*outputs, dim=0)
+        if self.sum == 'sum_0':
+            return filters.sum(*outputs, dim=0)
+        if self.sum == 'sum_1':
+            return filters.sum(*outputs, dim=1)
+        if self.sum == 'cat':
+            return torch.cat(outputs, dim=0)
+        if self.sum == 'cat_0':
+            return torch.cat(outputs, dim=0)
+        if self.sum == 'cat_1':
+            return torch.cat(outputs, dim=1)
+        if type(self.sum) is str:
+            raise Exception('Method not implemented `%s`, please supply a function or Layer.'%str(self.sum))
+        return self.sum(*outputs)
 
 class List(Layer):
     """A sequential list of Layers
