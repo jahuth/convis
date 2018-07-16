@@ -93,7 +93,8 @@ class Output(object):
     def plot(self,k=0,**kwargs):
         utils.plot(self[k],**kwargs)
     def array(self,k=0):
-        if type(self[k]) == torch.autograd.variable.Variable:
+        from distutils.version import LooseVersion
+        if (LooseVersion(torch.__version__) < LooseVersion('0.4.0')) and (type(self[k]) == torch.autograd.variable.Variable):
             return self[k].data.cpu().numpy()
         else:
             return np.array(self[k])
@@ -168,7 +169,7 @@ class _OptimizerSelector(object):
         if type(opt) is str and issubclass(getattr(torch.optim, opt),torch.optim.Optimizer):
             self(getattr(torch.optim, opt),*args,**kwargs)
 
-def prepare_input(a, dims= 5, cuda=False, volatile=False, requires_grad = False):
+def prepare_input(a, dims= 5, cuda=False, volatile=False, requires_grad = False, dtype='float32'):
     """
         Utility function to broadcast input to 5 dimensions, make it a Tensor,
         wrap it in a Variable and optionally move it to the GPU.
@@ -181,13 +182,20 @@ def prepare_input(a, dims= 5, cuda=False, volatile=False, requires_grad = False)
             from convis.base import prepare_input
             a_var = prepare_input(a, cuda=True, requires_grad=True)
 
+        volatile is ignored for PyTorch 0.4 and above.
+
     """
-    if not type(a) is torch.autograd.Variable:
-        if hasattr(a, 'numpy'):
-            # its hopefully a torch.Tensor
-            a = torch.autograd.Variable(a, volatile=volatile, requires_grad=requires_grad)
-        else:
-            a = torch.autograd.Variable(torch.Tensor(a), volatile=volatile, requires_grad=requires_grad)
+    from distutils.version import LooseVersion
+    if (LooseVersion(torch.__version__) < LooseVersion('0.4.0')):
+        if not type(a) is torch.autograd.Variable:
+            if hasattr(a, 'numpy'):
+                # its hopefully a torch.Tensor
+                a = torch.autograd.Variable(a, volatile=volatile, requires_grad=requires_grad)
+            else:
+                a = torch.autograd.Variable(torch.Tensor(a), volatile=volatile, requires_grad=requires_grad)
+    else:
+        if not isinstance(a, torch.Tensor):
+            a = torch.tensor(np.array(a, dtype=dtype), requires_grad=requires_grad)
     if dims is not None:
         if dims == 5:
             if len(a.data.shape) == 3:
@@ -569,7 +577,7 @@ class Layer(torch.nn.Module):
         if name in self._state.keys():
             self._state[name] = value
         if is_variable(value):
-            if type(value) == Parameter:
+            if type(value) == Parameter or type(value) == VirtualParameter:
                 self._parameters[name] = value
             self._variables.append(value)
             self._named_variables[name] = value

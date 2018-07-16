@@ -10,6 +10,7 @@ X_DIMENSION = 3
 Y_DIMENSION = 4
 
 
+
 class TimePadding(Layer):
     """
         Remembers references to previous time slices
@@ -122,12 +123,12 @@ class VariableDelay(Layer):
     def __init__(self, delays = None):
         super(VariableDelay, self).__init__()
         if delays is None:
-            delays = torch.zeros((1,1,1,1,1))
+            delays = variables.zeros((1,1,1,1,1))
         self.delays = torch.nn.Parameter(delays)
         self.all_delay = Delay()
     def forward(self, x):
         if self.delays is None or self.delays.size()[-2:] != x.size()[-2:]:
-            self.delays = torch.nn.Parameter(torch.ones(x.size()[-2:]))
+            self.delays = torch.nn.Parameter(variables.ones(x.size()[-2:]))
         self.all_delay.delay = int(torch.min(self.delays))
         self.all_delay.length = int(torch.max(self.delays)-torch.min(self.delays))
         x_delayed = self.all_delay(x)
@@ -233,6 +234,7 @@ class Conv3d(torch.nn.Conv3d,Layer):
 
         """
         if type(w) in [int,float]:
+            #self.weight.data = variables.ones(self.weight.data.shape) * w
             self.weight.data = torch.ones(self.weight.data.shape) * w
         else:
             if len(w.shape) == 5:
@@ -400,7 +402,7 @@ class Conv2d(nn.Conv2d):
         self.weight.data = torch.zeros(self.weight.data.shape)
     def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
-            self.weight.data = torch.ones(self.weight.data.shape) * w
+            self.weight.data = torch.ones(self.weight.data.shape).data * w
         else:
             if self.weight.data.shape == w.shape:
                 self.weight.data = torch.Tensor(w)
@@ -439,13 +441,13 @@ class Conv1d(nn.Conv1d):
         super(Conv1d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
-        self.weight.data = torch.zeros(self.weight.data.shape)
+        self.weight.data = variables.zeros(self.weight.data.shape)
     @property
     def filter_length(self):
         return self.weight.data.shape[0]
     def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
-            self.weight.data = torch.ones(self.weight.data.shape) * w
+            self.weight.data = torch.ones(self.weight.data.shape).data * w
         else:
             self.weight.data = torch.Tensor(w)
         if normalize:
@@ -501,7 +503,7 @@ class TemporalLowPassFilterRecursive(Layer):
         if self.last_y is not None:
             y = self.last_y
         else:
-            y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
+            y = variables.zeros(1,1,1,x.data.shape[3],x.data.shape[4])
         if self._use_cuda:
             y = y.cuda()
         o = []
@@ -534,7 +536,7 @@ class TemporalHighPassFilterRecursive(Layer):
         if self.last_y is not None:
             y = self.last_y
         else:
-            y = torch.autograd.Variable(torch.zeros(1,1,1,x.data.shape[3],x.data.shape[4]))
+            y = variables.zeros(1,1,1,x.data.shape[3],x.data.shape[4])
         if self._use_cuda:
             y = y.cuda()
         o = []
@@ -578,9 +580,9 @@ class SpatialRecursiveFilter(Layer):
         def smooth_forward(x,a1,a2,b1,b2,dim):
             x1 = _select_(x,dim,0)
             o = []
-            y1 = torch.autograd.Variable(torch.zeros_like(x1.data))
-            y2 = torch.autograd.Variable(torch.zeros_like(x1.data))
-            x2 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            y1 = variables.zeros_like(x1.data)
+            y2 = variables.zeros_like(x1.data)
+            x2 = variables.zeros_like(x1.data)
             for i in range(x.data.shape[dim]):
                 x1,x2 = _select_(x,dim,i),x1
                 y = (a1 * x1 + a2 * x2 + b1 * y1 + b2 * y2)
@@ -591,9 +593,9 @@ class SpatialRecursiveFilter(Layer):
         def smooth_backward(x,a1,a2,b1,b2,dim):
             x1 = _select_(x,dim,0)
             o = []
-            y1 = torch.autograd.Variable(torch.zeros_like(x1.data))
-            y2 = torch.autograd.Variable(torch.zeros_like(x1.data))
-            x2 = torch.autograd.Variable(torch.zeros_like(x1.data))
+            y1 = variables.zeros_like(x1.data)
+            y2 = variables.zeros_like(x1.data)
+            x2 = variables.zeros_like(x1.data)
             for i in range(x.data.shape[dim]-1,-1,-1):
                 y = (a1 * x1 + a2 * x2 + b1 * y1 + b2 * y2)
                 x1,x2 = _select_(x,dim,i),x1

@@ -108,18 +108,58 @@ class ResolutionInfo(object):
 default_resolution = ResolutionInfo(10.0,1000.0,1.0,filter_epsilon=0.001)
 
 import torch
+from distutils.version import LooseVersion
 
-class Variable(torch.autograd.Variable):
-    _is_convis_variable = True
-    def __new__(self,x, **kwargs):
-        if type(x) in [int, float]:
-            x = np.array([x])
-        for k,v in kwargs.items():
-            setattr(self,k,v)
-        return super(Variable, self).__new__(self,torch.Tensor(x))
-    def __init__(self,x, **kwargs):
-        for k,v in kwargs.items():
-            setattr(self,k,v)
+if LooseVersion(torch.__version__) < LooseVersion('0.4'):
+    class Variable(torch.autograd.Variable):
+        _is_convis_variable = True
+        def __new__(self,x, **kwargs):
+            if type(x) in [int, float]:
+                x = np.array([x])
+            for k,v in kwargs.items():
+                setattr(self,k,v)
+            return super(Variable, self).__new__(self,torch.Tensor(x))
+        def __init__(self,x, **kwargs):
+            for k,v in kwargs.items():
+                setattr(self,k,v)
+    def zeros(*shp):
+        return torch.autograd.Variable(torch.zeros(*shp))
+    def ones(*shp):
+        return torch.autograd.Variable(torch.ones(*shp))
+    def zeros_like(x):
+        return torch.autograd.Variable(torch.zeros_like(x))
+    def rand(shp):
+        return torch.autograd.Variable(torch.rand(shp))
+    def randn(shp):
+        return torch.autograd.Variable(torch.randn(shp))
+else:
+    # PyTorch 0.4 and upwards
+    class Variable(torch.Tensor):
+        _is_convis_variable = True
+        def __new__(self,x, **kwargs):
+            if type(x) in [int, float]:
+                x = np.array([x])
+            for k,v in kwargs.items():
+                setattr(self,k,v)
+            return super(Variable, self).__new__(self,x)
+        def __init__(self,x, **kwargs):
+            for k,v in kwargs.items():
+                setattr(self,k,v)
+        def set(self,val):
+            if type(val) in [int,float]:
+                return self.set_(torch.Tensor([val]))
+            else:
+                return self.set_(torch.Tensor(val))
+    def zeros(*shp):
+        return torch.zeros(*shp)
+    def ones(*shp):
+        return torch.ones(*shp)
+    def zeros_like(x):
+        return torch.zeros_like(x)
+    def rand(*shp):
+        return torch.autograd.Variable(torch.rand(*shp))
+    def randn(*shp):
+        return torch.autograd.Variable(torch.randn(*shp))
 
 class State(Variable):
     def __new__(self,x, **kwargs):
@@ -128,6 +168,7 @@ class State(Variable):
         super(State, self).__init__(x,**kwargs)
 
 class Parameter(Variable,torch.nn.Parameter):
+    name = '' # this name is different than the name of Tensor
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
             x = np.array([x])
@@ -169,10 +210,10 @@ def dict_with_dots_to_hierarchical_dict(d):
     d = copy.copy(d)
     # move the empty string key (the module itself)
     # to another key
-    if '' in d.keys():
+    if '' in list(d.keys()):
         d['_self'] = d['']
         del d['']
-    for k in d.keys():
+    for k in list(d.keys()):
         if '.' in k:
             val = d[k]
             del d[k]

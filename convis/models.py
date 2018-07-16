@@ -262,7 +262,11 @@ class LNCascade(Layer):
         self.nonlinearities.append(nonlinear)
     def forward(self, x):
         import itertools
-        for l,n in itertools.izip_longest(iter(self.linearities),iter(self.nonlinearities)):
+        try:
+            zip_longest = itertools.izip_longest
+        except:
+            zip_longest = itertools.zip_longest
+        for l,n in zip_longest(iter(self.linearities),iter(self.nonlinearities)):
             if n is None:
                 n = self.default_nonlinearity
             if l is None:

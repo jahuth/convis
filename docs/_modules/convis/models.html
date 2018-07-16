@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.models &mdash; convis 0.5.2.2 documentation</title>
+  <title>convis.models &mdash; convis 0.6.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.5.2.2 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.0 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.5
+                0.6
               </div>
             
           
@@ -284,8 +284,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="List"><a class="viewcode-back" href="../../docs_models.html#convis.models.List">[docs]</a><span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A list of Layers/Modules/functions that registers </span>
-<span class="sd">    its items as submodules and provides tab-completable</span>
+    <span class="sd">&quot;&quot;&quot;A sequential list of Layers</span>
+<span class="sd">    that registers its items as submodules and provides tab-completable</span>
 <span class="sd">    names with a prefix (by default &#39;layer_&#39;).</span>
 
 <span class="sd">    The list provides a forward function that sequentially</span>
@@ -433,7 +433,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nonlinearities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nonlinear</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">itertools</span>
-        <span class="k">for</span> <span class="n">l</span><span class="p">,</span><span class="n">n</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip_longest</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linearities</span><span class="p">),</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nonlinearities</span><span class="p">)):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zip_longest</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip_longest</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">zip_longest</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">zip_longest</span>
+        <span class="k">for</span> <span class="n">l</span><span class="p">,</span><span class="n">n</span> <span class="ow">in</span> <span class="n">zip_longest</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linearities</span><span class="p">),</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nonlinearities</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_nonlinearity</span>
             <span class="k">if</span> <span class="n">l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -915,7 +919,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.5.2.2',
+            VERSION:'0.6.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

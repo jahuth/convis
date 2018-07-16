@@ -1,6 +1,5 @@
 import litus
 import numpy as np
-import matplotlib.pylab as plt
 import uuid
 try:
     from exceptions import NotImplementedError
@@ -113,7 +112,7 @@ class SeperatableOPLFilter(Layer):
             self.surround_E.bias.data[0] = 0.0
         self.surround_E.weight.data[0,0,2,0,0] = 1.0
         self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,adjust_padding=False,resolution=variables.default_resolution)
-        self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.input_state = State(np.zeros((1,1,1,1,1)))
         self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
     @property
     def filter_length(self):
@@ -135,7 +134,7 @@ class SeperatableOPLFilter(Layer):
         if not (self.input_state.data.shape[TIME_DIMENSION] == 2*self.filter_length and
             self.input_state.data.shape[3] == x.data.shape[3] and
             self.input_state.data.shape[4] == x.data.shape[4]):
-            self.input_state = torch.autograd.Variable(torch.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
+            self.input_state = State(np.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
             x_init = x[:,:,:2*self.filter_length,:,:]
             self.input_state[:,:,(-x_init.data.shape[2]):,:,:] = x_init
             #torch.zeros((1,1,self.filter_length,x.data.shape[3],x.data.shape[4]))
@@ -151,7 +150,6 @@ class SeperatableOPLFilter(Layer):
         y = self.center_undershoot(y)
         s = self.surround_G(y)
         s = self.surround_E(nn.functional.pad(y,((0,0,0,0,len(self.surround_E),0)),'replicate'))
-        # torch.autograd.Variable(torch.f rom_numpy(np.array(1.0,dtype='float32'))) *
 
         y = y - self.relative_weight * s[:,:,-y.data.shape[TIME_DIMENSION]:,:,:]
         self.input_state = x_pad[:,:,-(2*self.filter_length):,:,:]
@@ -239,7 +237,7 @@ class HalfRecursiveOPLFilter(Layer):
         self.sigma_surround.set(0.05)
         self.surround_E = TemporalLowPassFilterRecursive()
         self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec',var=self.surround_E.tau)
-        self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.input_state = State(np.zeros((1,1,1,1,1)))
         self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
     def clear(self):
@@ -352,7 +350,7 @@ class RecursiveOPLFilter(Layer):
         self.sigma_surround.set(0.15)
         self.surround_E = TemporalLowPassFilterRecursive()
         self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec',var=self.surround_E.tau)
-        self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.input_state = State(np.zeros((1,1,1,1,1)))
         self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
     def clear(self):
@@ -550,11 +548,11 @@ class Bipolar(Layer):
         self.register_state('preceding_attenuationMap', None)
         self.register_state('preceding_inhibition', None)
     def init_states(self,input_shapes):
-        self.preceding_V_bip = Variable(torch.zeros((input_shapes[3],input_shapes[4])))
-        self.preceding_attenuationMap = Variable(torch.ones((input_shapes[3],input_shapes[4])))
-        self.preceding_inhibition = Variable(torch.ones((input_shapes[3],input_shapes[4])))
+        self.preceding_V_bip = variables.zeros((input_shapes[3],input_shapes[4]))
+        self.preceding_attenuationMap = variables.ones((input_shapes[3],input_shapes[4]))
+        self.preceding_inhibition = variables.ones((input_shapes[3],input_shapes[4]))
     def forward(self, x):
-        y = self.y = torch.autograd.Variable(torch.zeros(x.data.shape))
+        y = self.y = variables.zeros(x.data.shape)
         # initial slices
         if self.preceding_V_bip is None:
             self.init_states(x.data.shape)
@@ -708,7 +706,7 @@ class GanglionInput(Layer):
         self.v_0 = Parameter(0.0, retina_config_key='bipolar-linear-threshold')
         self.lambda_G = Parameter(100.0, retina_config_key='bipolar-amplification__Hz')
         #self.high_pass = nn.Conv1d()
-        self.input_state = State(torch.zeros((1,1,1,1,1)))
+        self.input_state = State(np.zeros((1,1,1,1,1)))
         self.spatial_pooling = Conv3d(1,1,(1,9,9))
         self.sigma_surround = variables.VirtualParameter(
             self.spatial_pooling.gaussian,
@@ -723,7 +721,7 @@ class GanglionInput(Layer):
         if not (self.input_state.data.shape[TIME_DIMENSION] == 2*self.filter_length and
             self.input_state.data.shape[3] == x.data.shape[3] and
             self.input_state.data.shape[4] == x.data.shape[4]):
-            self.input_state = State(torch.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
+            self.input_state = State(np.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
         if self._use_cuda:
             self.input_state = self.input_state.cuda()
         x_pad = torch.cat([self.input_state, x], dim=TIME_DIMENSION)
@@ -790,15 +788,15 @@ class GanglionSpiking(Layer):
         self.register_state('refr',None)
         self.register_state('noise_prev',None)
     def init_states(self,input_shape):
-        self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
-        self.V = 0.5+0.2*torch.autograd.Variable(torch.rand((input_shape[3],input_shape[4]))) # membrane potential
+        self.zeros = variables.zeros((input_shape[3],input_shape[4]))
+        self.V = 0.5+0.2*variables.rand((input_shape[3],input_shape[4])) # membrane potential
         if self._use_cuda:
             self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
-                                torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))).cuda())
+                                variables.randn((input_shape[3],input_shape[4])).cuda())
         else:
             self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
-                                torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))).cpu())
-        self.noise_prev = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
+                                variables.randn((input_shape[3],input_shape[4])).cpu())
+        self.noise_prev = variables.zeros((input_shape[3],input_shape[4]))
     def forward(self, I_gang):
         g_infini = 50.0 # apparently?
         if not hasattr(self,'V') or self.V is None:
@@ -819,9 +817,9 @@ class GanglionSpiking(Layer):
         for t, I in enumerate(I_gang.squeeze(0).squeeze(0)):
             #print I.data.shape, self.V.data.shape,torch.randn(I.data.shape).shape
             if self._use_cuda:
-                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cuda()
+                noise = variables.randn(I.data.shape).cuda()
             else:
-                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+                noise = variables.randn(I.data.shape).cpu()
             V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
             # canonical form: 
             #
@@ -834,10 +832,10 @@ class GanglionSpiking(Layer):
             #
             if self._use_cuda:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
-                                    torch.autograd.Variable(torch.randn(I.data.shape)).cuda())
+                                    variables.randn(I.data.shape).cuda())
             else:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
-                                    torch.autograd.Variable(torch.randn(I.data.shape)).cpu())
+                                    variables.randn(I.data.shape).cpu())
             spikes = V > 1.0
             self.refr.masked_scatter_(spikes, refr_noise)
             self.refr.masked_scatter_(self.refr < 0.0, self.zeros)

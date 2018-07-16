@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The API: Convis classes and modules &mdash; convis 0.5.2.2 documentation</title>
+  <title>The API: Convis classes and modules &mdash; convis 0.6.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.5.2.2 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.0 documentation" href="index.html"/>
         <link rel="next" title="Filters convis.filters" href="docs_filters.html"/>
         <link rel="prev" title="A Convolutional Retina Model" href="model_McIntosh.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                0.5
+                0.6
               </div>
             
           
@@ -240,11 +240,21 @@ To make this meaningfull, provide a name to your output variables.</p>
 <p>In the case of name collisions, the behavior of OrderedDict will use the last variable added.</p>
 <p>The full path names of all variables are also added to this objects __dict__,
 allowing for tab completion.</p>
+<dl class="method">
+<dt id="convis.base.Output.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><em>axis=None</em>, <em>k=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the mean along the supplied axis..
+<cite>axis = None</cite> will compute the mean over all <cite>axis</cite>.</p>
+<p>Equivalent to:</p>
+<blockquote>
+<div>o.array(k).mean(axis)</div></blockquote>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
 <dt id="convis.base.prepare_input">
-<code class="descclassname">convis.base.</code><code class="descname">prepare_input</code><span class="sig-paren">(</span><em>a</em>, <em>dims=5</em>, <em>cuda=False</em>, <em>volatile=False</em>, <em>requires_grad=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#prepare_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.prepare_input" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">convis.base.</code><code class="descname">prepare_input</code><span class="sig-paren">(</span><em>a</em>, <em>dims=5</em>, <em>cuda=False</em>, <em>volatile=False</em>, <em>requires_grad=False</em>, <em>dtype='float32'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#prepare_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.prepare_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Utility function to broadcast input to 5 dimensions, make it a Tensor,
 wrap it in a Variable and optionally move it to the GPU.</p>
 <p>Short hand for:</p>
@@ -255,6 +265,7 @@ wrap it in a Variable and optionally move it to the GPU.</p>
 <span class="n">a_var</span> <span class="o">=</span> <span class="n">prepare_input</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>volatile is ignored for PyTorch 0.4 and above.</p>
 </dd></dl>
 
 <dl class="function">
@@ -488,7 +499,7 @@ compared with the provided <cite>outp</cite> using <cite>loss_fn</cite>.</p>
 
 <dl class="method">
 <dt id="convis.base.Layer.optimize">
-<code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em>, <em>dt=None</em>, <em>t=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">optimize</code><span class="sig-paren">(</span><em>inp</em>, <em>outp</em>, <em>optimizer=None</em>, <em>loss_fn=&lt;function &lt;lambda&gt;&gt;</em>, <em>dt=None</em>, <em>t=0</em>, <em>t_skip=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Layer.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Layer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs an Optimizer to fit the models parameters such that the output
 of the model when presented <code class="xref py py-attr docutils literal"><span class="pre">inp</span></code> approximates <code class="xref py py-attr docutils literal"><span class="pre">outp</span></code>.</p>
 <p>To use this function, an <a class="reference external" href="https://pytorch.org/docs/0.3.0/optim.html#torch.optim.Optimizer" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-class docutils literal"><span class="pre">torch.optim.Optimizer</span></code></a> has to be selected:</p>
@@ -502,6 +513,8 @@ of the model when presented <code class="xref py py-attr docutils literal"><span
 </pre></div>
 </div>
 <p>It is important to specify a chunk length <code class="xref py py-attr docutils literal"><span class="pre">dt</span></code>, if the complete input does not fit into memory.</p>
+<p>With t_skip an initial portion of the input will be evaluated by the model,
+without calling the optimizer.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1465,7 +1478,7 @@ if none is provided, the current axis will be converted to 3d projection</dd>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.2.2',
+            VERSION:'0.6.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

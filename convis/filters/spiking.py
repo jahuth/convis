@@ -1,4 +1,5 @@
 from ..variables import Parameter
+from .. import variables
 from ..base import Layer
 import torch
 
@@ -124,16 +125,16 @@ class Izhikevich(Layer):
             print('Could not find key '+str(name))
             print('Posibilities are:\n'+'\n - '.join(_izhikevich_parameters.keys()))
     def init_states(self,input_shape):
-        self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
-        self.v = self.c*torch.autograd.Variable(torch.ones((input_shape[3],input_shape[4]))) # membrane potential
-        self.u = self.b*self.c*torch.autograd.Variable(torch.ones((input_shape[3],input_shape[4]))) # slow potential
+        self.zeros = variables.zeros((input_shape[3],input_shape[4]))
+        self.v = self.c*variables.ones((input_shape[3],input_shape[4])) # membrane potential
+        self.u = self.b*self.c*variables.ones((input_shape[3],input_shape[4])) # slow potential
     def forward(self, I_in):
         if not hasattr(self,'v') or self.v is None:
             self.init_states(I_in.data.shape)
         all_spikes = []
         for t, I in enumerate(I_in.squeeze(0).squeeze(0)):
-            noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
-            noise_w = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+            noise = variables.randn(I.data.shape).cpu()
+            noise_w = variables.randn(I.data.shape).cpu()
             dt = 1.0/float(self.iters)
             for i in range(self.iters):
                 dv = dt*(0.04*self.v*self.v + 5.0* self.v + 140 - self.u + I)
@@ -210,27 +211,25 @@ class RefractoryLeakyIntegrateAndFireNeuron(Layer):
         self.register_state('refr',None)
         self.register_state('noise_prev',None)
     def init_states(self,input_shape):
-        self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
-        self.V = 0.5+0.2*torch.autograd.Variable(torch.rand((input_shape[3],input_shape[4]))) # membrane potential
+        self.zeros = variables.zeros((input_shape[3],input_shape[4]))
+        self.V = 0.5+0.2*variables.rand((input_shape[3],input_shape[4])) # membrane potential
         if self._use_cuda:
             self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
-                                torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))).cuda())
+                                variables.randn((input_shape[3],input_shape[4])).cuda())
         else:
             self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
-                                torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))).cpu())
-        self.noise_prev = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
+                                variables.randn((input_shape[3],input_shape[4])).cpu())
+        self.noise_prev = variables.zeros((input_shape[3],input_shape[4]))
     def forward(self, I_gang):
         g_infini = 50.0 # apparently?
         if not hasattr(self,'V') or self.V is None:
             self.init_states(I_gang.data.shape)
         if self._use_cuda:
-            #y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cuda()
             self.V = self.V.cuda()
             self.refr = self.refr.cuda()
             self.zeros = self.zeros.cuda()
             self.noise_prev = self.noise_prev.cuda()
         else:
-            #y = torch.autograd.Variable(torch.zeros(I_gang.data.shape)).cpu()
             self.V = self.V.cpu()
             self.refr = self.refr.cpu()
             self.zeros = self.zeros.cpu()
@@ -239,9 +238,9 @@ class RefractoryLeakyIntegrateAndFireNeuron(Layer):
         for t, I in enumerate(I_gang.squeeze(0).squeeze(0)):
             #print I.data.shape, self.V.data.shape,torch.randn(I.data.shape).shape
             if self._use_cuda:
-                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cuda()
+                noise = variables.randn(I.data.shape).cuda()
             else:
-                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+                noise = variables.randn(I.data.shape).cpu()
             V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
             # canonical form: 
             #
@@ -254,10 +253,10 @@ class RefractoryLeakyIntegrateAndFireNeuron(Layer):
             #
             if self._use_cuda:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
-                                    torch.autograd.Variable(torch.randn(I.data.shape)).cuda())
+                                     variables.randn(I.data.shape).cuda())
             else:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
-                                    torch.autograd.Variable(torch.randn(I.data.shape)).cpu())
+                                     variables.randn(I.data.shape).cpu())
             spikes = V > 1.0
             self.refr.masked_scatter_(spikes, refr_noise)
             self.refr.masked_scatter_(self.refr < 0.0, self.zeros)
@@ -305,9 +304,9 @@ class LeakyIntegrateAndFireNeuron(Layer):
         self.register_state('zeros',None)
         self.register_state('noise_prev',None)
     def init_states(self,input_shape):
-        self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
-        self.V = 0.5+0.2*torch.autograd.Variable(torch.rand((input_shape[3],input_shape[4]))) # membrane potential
-        self.noise_prev = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
+        self.zeros = variables.zeros((input_shape[3],input_shape[4]))
+        self.V = 0.5+0.2*variables.rand((input_shape[3],input_shape[4])) # membrane potential
+        self.noise_prev = variables.zeros((input_shape[3],input_shape[4]))
     def forward(self, I_gang):
         g_infini = 50.0 # apparently?
         if not hasattr(self,'V') or self.V is None:
@@ -323,9 +322,9 @@ class LeakyIntegrateAndFireNeuron(Layer):
         all_spikes = []
         for t, I in enumerate(I_gang.squeeze(0).squeeze(0)):
             if self._use_cuda:
-                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cuda()
+                noise = variables.randn(I.data.shape).cuda()
             else:
-                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+                noise = variables.randn(I.data.shape).cpu()
             V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
             spikes = V > 1.0
             V.masked_scatter_(spikes, self.zeros)
@@ -355,15 +354,15 @@ class FitzHughNagumo(Layer):
         self.register_state('w',None)
         self.iters = 10
     def init_states(self,input_shape):
-        self.v = 0.0*torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))) # membrane potential
-        self.w = 0.0*torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))) # slow potential
+        self.v = 0.0*variables.randn((input_shape[3],input_shape[4])) # membrane potential
+        self.w = 0.0*variables.randn((input_shape[3],input_shape[4])) # slow potential
     def forward(self, I_in):
         if not hasattr(self,'v') or self.v is None:
             self.init_states(I_in.data.shape)
         all_spikes = []
         for t, I in enumerate(I_in.squeeze(0).squeeze(0)):
-            noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
-            noise_w = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+            noise = variables.randn(I.data.shape).cpu()
+            noise_w = variables.randn(I.data.shape).cpu()
             dt = 1.0/float(self.iters)
             for i in range(self.iters):
                 dv = dt*(I + self.v - (self.v**3.0)/3.0 - self.w)
@@ -413,17 +412,17 @@ class HogkinHuxley(Layer):
         self.register_state('v_h',None)
         self.iters = 20
     def init_states(self,input_shape):
-        self.v = 0.0*torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))) # membrane potential
-        self.v_n = 0.0*torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))) # slow potential
-        self.v_m = 0.0*torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))) # slow potential
-        self.v_h = 0.0*torch.autograd.Variable(torch.randn((input_shape[3],input_shape[4]))) # slow potential
+        self.v = 0.0*variables.randn((input_shape[3],input_shape[4])) # membrane potential
+        self.v_n = 0.0*variables.randn((input_shape[3],input_shape[4])) # slow potential
+        self.v_m = 0.0*variables.randn((input_shape[3],input_shape[4])) # slow potential
+        self.v_h = 0.0*variables.randn((input_shape[3],input_shape[4])) # slow potential
     def forward(self, I_in):
         if not hasattr(self,'v') or self.v is None:
             self.init_states(I_in.data.shape)
         all_spikes = []
         for t, I in enumerate(I_in.squeeze(0).squeeze(0)):
-            noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
-            noise_w = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+            noise = variables.randn(I.data.shape).cpu()
+            noise_w = variables.randn(I.data.shape).cpu()
             dt = 1.0/float(self.iters)
             for i in range(self.iters):
                 dv = ((I + self.noise_strength*noise / self.Cm) 

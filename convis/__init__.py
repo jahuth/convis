@@ -5,7 +5,7 @@ except ImportError:
     print('Please download the torch package from https://pytorch.org')
     raise
 
-__version__ = '0.5.2.2'
+__version__ = '0.6'
 
 from . import base
 from . import retina

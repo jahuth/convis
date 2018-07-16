@@ -1,6 +1,7 @@
-**Note:** The latest PyTorch version (`0.4`) merged Tensors and Variables. Convis will 
-work with this change in the next minor release `convis 0.6` released early next week (July 16th 2018).
-To try out convis before that date, PyTorch versions `0.2.*` and `0.3.*` will work with `convis`.
+**Note:** The latest PyTorch version (`0.4`) merged Tensors and Variables.
+The current convis release was adapted to this change, but it is still possible
+that something broke in the change, so please report any Exceptions thrown by
+PyTorch [in the issue tracker](https://github.com/jahuth/convis/labels/bug).
 
 # The `convis` package
 
@@ -48,23 +49,33 @@ When using `convis` for your scientific publications, please cite:
 
 Installing `convis` and `PyTorch` itself is not complicated.
 
-Requirements for the base installation are: Python 2.7 or Python 3.5, Numpy, SciPy.
-For the latest PyTorch version (`0.4`), a small fix is necessary which I will release after returning from a conference (July 16th 2018). Until then, the PyTorch `0.2.*` and `0.3.*` work well with convis.
 
+Requirements for the base installation are: Python 2.7 or Python 3.5, Numpy, SciPy.
+
+The current PyTorch version built for CUDA 8 can be installed via conda or pip:
+```bash
+conda install pytorch -c pytorch 
+# or
+pip install torch torchvision
+```
+For other CUDA versions, installing via pip on Windows etc., see the [PyTorch website](https://pytorch.org/).
+
+Once the requirements are installed, `convis` can be installed via pip for the latest release:
 ```bash
 pip install convis
 ```
 
-or install the latest version from github:
+or from the most up-to-date version from github:
 
 ```bash
 pip install git+https://github.com/jahuth/convis.git
 ```
 
-or clone the repository and install it locally:
+Alternatively, you can clone the repository and install it locally:
 
 ```bash
 git clone https://github.com/jahuth/convis.git
+cd convis
 # change something in the source code
 pip install -e convis
 ```

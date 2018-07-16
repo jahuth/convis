@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.retina &mdash; convis 0.5.2.2 documentation</title>
+  <title>convis.retina &mdash; convis 0.6.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.5.2.2 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.0 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.5
+                0.6
               </div>
             
           
@@ -250,8 +250,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">keep_timing_info</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timing_info</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Retina</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">OPL</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">Bipolar</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">opl</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">OPL</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opl</span> <span class="o">=</span> <span class="n">opl</span>
+        <span class="k">if</span> <span class="n">bipolar</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">Bipolar</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span> <span class="o">=</span> <span class="n">bipolar</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionInput</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionSpiking</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">GanglionInput</span><span class="p">()</span>
@@ -296,12 +302,18 @@
             <span class="n">config_file</span> <span class="o">=</span> <span class="n">config</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">RetinaConfiguration</span><span class="p">()</span>
             <span class="n">config</span><span class="o">.</span><span class="n">read_xml</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;outer-plexiform-layers.0.linear-version.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;contrast-gain-control.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.0.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.0.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="p">,</span><span class="s1">&#39;parse_config&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opl</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;outer-plexiform-layers.0.linear-version.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span><span class="p">,</span><span class="s1">&#39;parse_config&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;contrast-gain-control.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span><span class="p">,</span><span class="s1">&#39;parse_config&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.0.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span><span class="p">,</span><span class="s1">&#39;parse_config&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gang_0_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.0.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span><span class="p">,</span><span class="s1">&#39;parse_config&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_input</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span><span class="p">,</span><span class="s1">&#39;parse_config&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gang_1_spikes</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ganglion-layers.1.spiking-channel.&#39;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inp</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timing</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="kn">import</span> <span class="nn">datetime</span>
@@ -358,7 +370,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.5.2.2',
+            VERSION:'0.6.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

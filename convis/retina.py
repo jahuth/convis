@@ -79,8 +79,14 @@ class Retina(Layer):
         self.keep_timing_info = False
         self.timing_info = []
         super(Retina,self).__init__()
-        self.opl = rf.OPL()
-        self.bipolar = rf.Bipolar()
+        if opl is True:
+            self.opl = rf.OPL()
+        else:
+            self.opl = opl
+        if bipolar is True:
+            self.bipolar = rf.Bipolar()
+        else:
+            self.bipolar = bipolar
         self.gang_0_input = rf.GanglionInput()
         self.gang_0_spikes = rf.GanglionSpiking()
         self.gang_1_input = rf.GanglionInput()
@@ -125,12 +131,18 @@ class Retina(Layer):
             config_file = config
             config = RetinaConfiguration()
             config.read_xml(config_file)
-        self.opl.parse_config(config,prefix='outer-plexiform-layers.0.linear-version.',key=key)
-        self.bipolar.parse_config(config,prefix='contrast-gain-control.',key=key)
-        self.gang_0_input.parse_config(config,prefix='ganglion-layers.0.',key=key)
-        self.gang_0_spikes.parse_config(config,prefix='ganglion-layers.0.spiking-channel.',key=key)
-        self.gang_1_input.parse_config(config,prefix='ganglion-layers.1.',key=key)
-        self.gang_1_spikes.parse_config(config,prefix='ganglion-layers.1.spiking-channel.',key=key)
+        if hasattr(self.opl,'parse_config'):
+            self.opl.parse_config(config,prefix='outer-plexiform-layers.0.linear-version.',key=key)
+        if hasattr(self.bipolar,'parse_config'):
+            self.bipolar.parse_config(config,prefix='contrast-gain-control.',key=key)
+        if hasattr(self.gang_0_input,'parse_config'):
+            self.gang_0_input.parse_config(config,prefix='ganglion-layers.0.',key=key)
+        if hasattr(self.gang_0_spikes,'parse_config'):
+            self.gang_0_spikes.parse_config(config,prefix='ganglion-layers.0.spiking-channel.',key=key)
+        if hasattr(self.gang_1_input,'parse_config'):
+            self.gang_1_input.parse_config(config,prefix='ganglion-layers.1.',key=key)
+        if hasattr(self.gang_1_spikes,'parse_config'):
+            self.gang_1_spikes.parse_config(config,prefix='ganglion-layers.1.spiking-channel.',key=key)
     def forward(self,inp):
         self._timing = []
         import datetime
