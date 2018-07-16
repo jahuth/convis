@@ -96,6 +96,17 @@ class Output(object):
             return self[k].data.cpu().numpy()
         else:
             return np.array(self[k])
+    def mean(self,axis=None,k=0):
+        """
+            Computes the mean along the supplied axis..
+            `axis = None` will compute the mean over all `axis`.
+
+            Equivalent to:
+
+                o.array(k).mean(axis)
+
+        """
+        return self.array(k).mean(axis)
     def __getitem__(self,k):
         if type(k) is int:
             return self._outs[k]
