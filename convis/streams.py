@@ -684,7 +684,27 @@ except:
             raise Exception('h5py needs to be installed!')
 
 class NumpyReader(Stream):
-    pass
+    """
+        Reads a numpy file.
+    """
+    def __init__(self, file_ref, size=None, pixel_per_degree=10):
+        self.file = file_ref
+        with np.load(self.file) as data:
+            if hasattr(data,'files'): 
+                self.sequence = data[data.files[0]]
+            else:
+                self.sequence = data
+            if len(self.sequence.shape) == 3:
+                self.size = self.sequence.shape[1:]
+            elif len(self.sequence.shape) == 5:
+                self.size = self.sequence.shape[3:]
+        self.i = 0
+    def get(self,i=1):
+        d = self.sequence[self.i:self.i+i,:,:]
+        self.i += i
+        return d
+    def __len__(self):
+        return len(self.sequence)
 
 class NumpyWriter(Stream):
     pass

@@ -190,7 +190,13 @@ class Conv3d(torch.nn.Conv3d,Layer):
         super(Conv3d, self).__init__(in_channels,out_channels,kernel_size,bias=bias,*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
-        self.weight.data = torch.zeros(self.weight.data.shape)
+        #self.weight.data = torch.zeros(self.weight.data.shape)
+        #self.w = self.weight
+        self.weight = variables.Parameter(np.zeros(self.weight.data.shape),
+                        doc="""The weight tensor of the convolution""")
+        if bias is True:
+            self.bias = variables.Parameter(np.zeros(self.bias.data.shape),
+                            doc="""The bias of the convolution""")
         self.time_pad = TimePadding(self.weight.size()[TIME_DIMENSION])
     def set_weight(self,w,normalize=False,preserve_channels=False):
         """
@@ -448,7 +454,7 @@ class Conv1d(nn.Conv1d):
         if self.do_time_pad:
             self.time_pad.length = self.filter_length
             x = self.time_pad(x)
-        return super(Conv3d, self).forward(x)
+        return super(Conv1d, self).forward(x)
     def exponential(self,*args,**kwargs):
         self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)
 
@@ -706,8 +712,8 @@ class NLRectifyScale(Layer):
     """
     def __init__(self):
         super(NLRectifyScale, self).__init__()
-        self.scale = convis.Parameter(1.0)
-        self.bias = convis.Parameter(0.0)
+        self.scale = variables.Parameter(1.0)
+        self.bias = variables.Parameter(0.0)
     def forward(self, inp):
         return (self.bias+inp*self.scale).clamp(min=0.0,max=1000000.0)
 
@@ -717,8 +723,8 @@ class NLSquare(Layer):
     """
     def __init__(self):
         super(NLSquare, self).__init__()
-        self.scale = convis.Parameter(1.0)
-        self.bias = convis.Parameter(0.0)
+        self.scale = variables.Parameter(1.0)
+        self.bias = variables.Parameter(0.0)
     def forward(self, inp):
         return (self.bias+inp*self.scale)**2
 
@@ -729,8 +735,8 @@ class NLRectifySquare(Layer):
     """
     def __init__(self):
         super(NLRectifySquare, self).__init__()
-        self.scale = convis.Parameter(1.0)
-        self.bias = convis.Parameter(0.0)
+        self.scale = variables.Parameter(1.0)
+        self.bias = variables.Parameter(0.0)
     def forward(self, inp):
         return ((self.bias+inp*self.scale).clamp(min=0.0,max=1000000.0))**2
 

@@ -152,7 +152,7 @@ class Izhikevich(Layer):
                                              self.u[None,None,:,:]],dim=0))
         return torch.cat(all_spikes,dim=1)[None,:,:,:,:]
 
-class LeakyIntegrateAndFireNeuron(Layer):
+class RefractoryLeakyIntegrateAndFireNeuron(Layer):
     """LIF model with refractory period.
 
     Identical to `convis.filter.retina.GanglionSpiking`.
@@ -184,10 +184,10 @@ class LeakyIntegrateAndFireNeuron(Layer):
 
     convis.retina.Retina
     GanglionInput
-
+    LeakyIntegrateAndFireNeuron
     """
     def __init__(self,**kwargs):
-        super(LeakyIntegrateAndFireNeuron, self).__init__()
+        super(RefractoryLeakyIntegrateAndFireNeuron, self).__init__()
         self.dims = 5
         # parameters
         self.refr_mu = Parameter(0.003,
@@ -263,6 +263,71 @@ class LeakyIntegrateAndFireNeuron(Layer):
             self.refr.masked_scatter_(self.refr < 0.0, self.zeros)
             self.refr = self.refr - 1.0
             V.masked_scatter_(self.refr >= 0.5, self.zeros)
+            V.masked_scatter_(spikes, self.zeros)
+            self.V = V
+            all_spikes.append(spikes[None,:,:])
+        return torch.cat(all_spikes,dim=0)[None,None,:,:,:]
+
+class LeakyIntegrateAndFireNeuron(Layer):
+    """LIF model.
+
+    $$ \\\\dfrac{ dV_n }{dt} = I_{Gang}(x_n,y_n,t) - g^L V_n(t) + \eta_v(t)$$
+
+
+    Attributes
+    ----------
+
+    noise_sigma : Parameter
+        Amount of noise added to the membrane potential.
+    g_L : Parameter
+        Leak current (in Hz or dimensionless firing rate).
+
+
+    See Also
+    --------
+
+    RefractoryLeakyIntegrateAndFireNeuron
+    """
+    def __init__(self,**kwargs):
+        super(LeakyIntegrateAndFireNeuron, self).__init__()
+        self.dims = 5
+        # parameters
+        self.noise_sigma = Parameter(0.1,
+                            retina_config_key='sigma-V',
+                            doc='Amount of noise added to the membrane potential.')
+        self.g_L = Parameter(50.0,
+                            retina_config_key='g-leak__Hz',
+                            doc='Leak current (in Hz or dimensionless firing rate).')
+        self.tau = Parameter(0.001,
+                            retina_config_key='--should be inherited',
+                            doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.')
+        self.register_state('V',None)
+        self.register_state('zeros',None)
+        self.register_state('noise_prev',None)
+    def init_states(self,input_shape):
+        self.zeros = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
+        self.V = 0.5+0.2*torch.autograd.Variable(torch.rand((input_shape[3],input_shape[4]))) # membrane potential
+        self.noise_prev = torch.autograd.Variable(torch.zeros((input_shape[3],input_shape[4])))
+    def forward(self, I_gang):
+        g_infini = 50.0 # apparently?
+        if not hasattr(self,'V') or self.V is None:
+            self.init_states(I_gang.data.shape)
+        if self._use_cuda:
+            self.V = self.V.cuda()
+            self.zeros = self.zeros.cuda()
+            self.noise_prev = self.noise_prev.cuda()
+        else:
+            self.V = self.V.cpu()
+            self.zeros = self.zeros.cpu()
+            self.noise_prev = self.noise_prev.cpu()
+        all_spikes = []
+        for t, I in enumerate(I_gang.squeeze(0).squeeze(0)):
+            if self._use_cuda:
+                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cuda()
+            else:
+                noise = torch.autograd.Variable(torch.randn(I.data.shape)).cpu()
+            V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
+            spikes = V > 1.0
             V.masked_scatter_(spikes, self.zeros)
             self.V = V
             all_spikes.append(spikes[None,:,:])

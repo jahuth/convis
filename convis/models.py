@@ -113,8 +113,8 @@ class Parallel(Layer):
         return self.sum(*outputs)
 
 class List(Layer):
-    """A list of Layers/Modules/functions that registers 
-    its items as submodules and provides tab-completable
+    """A sequential list of Layers
+    that registers its items as submodules and provides tab-completable
     names with a prefix (by default 'layer_').
 
     The list provides a forward function that sequentially

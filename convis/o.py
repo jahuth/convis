@@ -148,7 +148,6 @@ class O(object):
     def __iteritems__(self):
         return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self']) 
     def __setattr__(self, name, value):
-        # TODO make it work with pytorch
         if name.startswith('_'):
             object.__setattr__(self, name, value)
             return
@@ -156,6 +155,8 @@ class O(object):
             if name in self._keys():
                 if hasattr(self[name],'set'):
                     self[name].set(value)
+                elif hasattr(self[name],'data'):
+                    self[name].data.set_(value)                 
                 else:
                     raise Exception('Only objects with a `set` method can be assigned values in _readonly mode! If you want to replace the item itself, use `o[key] = value`.')
             else:

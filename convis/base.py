@@ -26,6 +26,7 @@ from .variables import *
 from . import utils
 from . import o
 from . import optimizer
+from . import streams
 from .o import O, Ox, save_name
 from collections import OrderedDict
 
@@ -204,6 +205,8 @@ def shape(x):
     """
         Return the shape of a Tensor or Variable containing a Tensor.
     """
+    if hasattr(x,'available'):
+        return tuple(-1,x.size[0],x.size[1])
     if hasattr(x,'shape'):
         return x.shape
     if hasattr(x,'data'):
@@ -471,23 +474,36 @@ class Layer(torch.nn.Module):
         if dt is not None:
             return self._run_in_chunks(the_input,dt=dt,t=t)
         else:
-            return Output(self(the_input),keys=['output'])
+            return Output([self(the_input)],keys=['output'])
     def _run_in_chunks(self,the_input,dt=100,t=0):
         chunked_output = []
         keys = ['output']
-        if len(shape(the_input)) == 3:
-            the_input = the_input[None,None,:,:,:]
-        while t < shape(the_input)[2]:
-            oo = self(the_input[:,:,t:(t+dt),:,:])
-            if type(oo) is not Output:
-                oo = [oo]
-            else:
-                keys=oo.keys
-            for i,o in enumerate(oo):
-                while len(chunked_output) < i+1:
-                    chunked_output.append([])
-                chunked_output[i].append(o)
-            t += dt
+        if issubclass(type(the_input),streams.Stream):
+            while t < len(the_input):
+                oo = self(the_input.get(dt)[None,None,:,:,:])
+                if type(oo) is not Output:
+                    oo = [oo]
+                else:
+                    keys=oo.keys
+                for i,o in enumerate(oo):
+                    while len(chunked_output) < i+1:
+                        chunked_output.append([])
+                    chunked_output[i].append(o)
+                t += dt
+        else:
+            if len(shape(the_input)) == 3:
+                the_input = the_input[None,None,:,:,:]
+            while t < shape(the_input)[2]:
+                oo = self(the_input[:,:,t:(t+dt),:,:])
+                if type(oo) is not Output:
+                    oo = [oo]
+                else:
+                    keys=oo.keys
+                for i,o in enumerate(oo):
+                    while len(chunked_output) < i+1:
+                        chunked_output.append([])
+                    chunked_output[i].append(o)
+                t += dt
         outs = []
         for co in chunked_output:
             try:
@@ -602,7 +618,7 @@ class Layer(torch.nn.Module):
             def zero_grad(self):
                 pass
         return self.optimize(inp=inp, outp=outp, optimizer=DummyOpt(), loss_fn=loss_fn, dt=dt, t=t)
-    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).sum(), dt=None, t=0):
+    def optimize(self, inp, outp, optimizer = None, loss_fn = lambda x,y: ((x-y)**2).sum(), dt=None, t=0, t_skip=0):
         """
             Runs an Optimizer to fit the models parameters such that the output
             of the model when presented :attr:`inp` approximates :attr:`outp`.
@@ -619,6 +635,8 @@ class Layer(torch.nn.Module):
 
             It is important to specify a chunk length :attr:`dt`, if the complete input does not fit into memory.
 
+            With t_skip an initial portion of the input will be evaluated by the model,
+            without calling the optimizer.
         """
         if optimizer is None:
             assert self._optimizer is not None, 'Optimizer has to be set! Use .set_optimizer.<tab>'
@@ -636,6 +654,13 @@ class Layer(torch.nn.Module):
         self.push_state()
         if dt is not None:
             steps = []
+            while t < t_skip:
+                closure.inp = inp[:,:,t:(t+dt),:,:]
+                closure.outp = outp[:,:,t:(t+dt),:,:]
+                t += dt
+                self(closure.inp) # evaluating without using the output
+                if t > t_skip:
+                    t = t_skip
             while t < shape(inp)[TIME_DIMENSION]:
                 closure.inp = inp[:,:,t:(t+dt),:,:]
                 closure.outp = outp[:,:,t:(t+dt),:,:]
