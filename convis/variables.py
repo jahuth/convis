@@ -1,3 +1,6 @@
+"""
+
+"""
 try:
     import new
 except:
@@ -110,8 +113,14 @@ default_resolution = ResolutionInfo(10.0,1000.0,1.0,filter_epsilon=0.001)
 import torch
 from distutils.version import LooseVersion
 
-if LooseVersion(torch.__version__) < LooseVersion('0.4'):
-    class Variable(torch.autograd.Variable):
+
+class _OldVariable(torch.autograd.Variable):
+        """
+
+        .. note::
+
+            This version is for PyTorch < 0.4
+        """
         _is_convis_variable = True
         def __new__(self,x, **kwargs):
             if type(x) in [int, float]:
@@ -122,19 +131,22 @@ if LooseVersion(torch.__version__) < LooseVersion('0.4'):
         def __init__(self,x, **kwargs):
             for k,v in kwargs.items():
                 setattr(self,k,v)
-    def zeros(*shp):
-        return torch.autograd.Variable(torch.zeros(*shp))
-    def ones(*shp):
-        return torch.autograd.Variable(torch.ones(*shp))
-    def zeros_like(x):
-        return torch.autograd.Variable(torch.zeros_like(x))
-    def rand(shp):
-        return torch.autograd.Variable(torch.rand(shp))
-    def randn(shp):
-        return torch.autograd.Variable(torch.randn(shp))
-else:
-    # PyTorch 0.4 and upwards
-    class Variable(torch.Tensor):
+        def __array__(self):
+            return self.data.cpu().numpy()
+        def __repr__(self):
+            from . import variable_describe
+            return variable_describe.describe_text(self)
+        def _repr_html_(self):
+            from . import variable_describe
+            return variable_describe.describe_html(self,wrap_in_html=False)
+
+class _NewVariable(torch.Tensor):
+        """A Tensor
+
+        .. note::
+
+            This version is for PyTorch >= 0.4
+        """
         _is_convis_variable = True
         def __new__(self,x, **kwargs):
             if type(x) in [int, float]:
@@ -150,6 +162,30 @@ else:
                 return self.set_(torch.Tensor([val]))
             else:
                 return self.set_(torch.Tensor(val))
+        def __array__(self):
+            return self.detach().cpu().numpy()
+        def __repr__(self):
+            from . import variable_describe
+            return variable_describe.describe_text(self)
+        def _repr_html_(self):
+            from . import variable_describe
+            return variable_describe.describe_html(self,wrap_in_html=False)
+
+if LooseVersion(torch.__version__) < LooseVersion('0.4'):
+    Variable = _OldVariable
+    def zeros(*shp):
+        return torch.autograd.Variable(torch.zeros(*shp))
+    def ones(*shp):
+        return torch.autograd.Variable(torch.ones(*shp))
+    def zeros_like(x):
+        return torch.autograd.Variable(torch.zeros_like(x))
+    def rand(shp):
+        return torch.autograd.Variable(torch.rand(shp))
+    def randn(shp):
+        return torch.autograd.Variable(torch.randn(shp))
+else:
+    # PyTorch 0.4 and upwards
+    Variable = _NewVariable
     def zeros(*shp):
         return torch.zeros(*shp)
     def ones(*shp):
@@ -343,7 +379,7 @@ def create_context_O(var=None, **kwargs):
     """
     if var is None:
         return O(resolution=default_resolution)(**kwargs)
-    node = get_convis_attribute(var,'node')
+    node = None
     model = None
     get_config = None
     get_config_value = None
@@ -481,7 +517,11 @@ class VirtualParameter(object):
         self.var = v
     def set(self,v):
         if self.func is not None:
-            self.value = self.func(v)
+            ret = self.func(v)
+            if ret is not None:
+                self.value = ret
+            else:
+                self.value = v
         else:
             self.value = v
         for c in self.callbacks:

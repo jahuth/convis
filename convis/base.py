@@ -569,7 +569,7 @@ class Layer(torch.nn.Module):
         return self
     def __dir__(self):
         if hasattr(self,'_state'):
-            return self._state.keys() + self.__dict__.keys() + super(Layer, self).__dir__()
+            return list(self._state.keys()) + list(self.__dict__.keys()) + list(super(Layer, self).__dir__())
         return self.__dict__.keys() + super(Layer, self).__dir__()
     def __setattr__(self, name, value):
         if name.startswith('_'):
@@ -582,6 +582,7 @@ class Layer(torch.nn.Module):
             self._variables.append(value)
             self._named_variables[name] = value
             self.__dict__[name] = value
+            value._name = name
         else:
             super(Layer, self).__setattr__(name, value)
     def __getattr__(self, name):

@@ -4,14 +4,15 @@
  * Plotting Tensors: :meth:`plot_3d_tensor_as_3d_plot`
 """
 
-from types import ModuleType, FunctionType
+from types import ModuleType, FunctionType, MethodType
 import re
 import numpy as np
-from .o import save_name
+from .o import save_name, O, Ox
 #from .variables import get_convis_attribute, has_convis_attribute, full_path
 import inspect
 from future.utils import iteritems as _iteritems
 import torch
+from . import variables
 
 def has_convis_attribute(o,k):
     return hasattr(o,k)
@@ -77,6 +78,14 @@ def describe_text(v, indent=' '):
         if type(s) is str:
             return s
         return re.sub( '\n+', '\n', repr(s) )
+    if isinstance(v, variables.Parameter) or isinstance(v, variables.Variable):
+        lines = [indent+'Variable',indent+'----------']
+        for k in ['name','doc']:
+            if hasattr(v,k):
+                lines.append(indent + '  ' + str(k)+': '+str(getattr(v,k)))
+        if hasattr(v,'__array__'):
+                lines.append(indent+'  value: ' + repr(v.__array__()))
+        return '\n'.join(lines)
     if hasattr(v,'__iteritems__'):
         return (indent + ' keys:' + ', '.join([k for k,vv in v.__iteritems__()]) + '\n' +
                 '\n'.join([indent[:-1] + '---\\ ' + k + '\n'+describe_text(vv,indent=pure_indent+'  | ')+'\n' for k,vv in v.__iteritems__()]))
@@ -102,7 +111,7 @@ def describe_text(v, indent=' '):
     except:
         pass
     try:
-        d+= 'got: ' + repr_if_not_str(get_convis_attribute(v,'get',(tu.create_context_O(v)))) + '\n'
+        d+= 'got: ' + repr_if_not_str(get_convis_attribute(v,'get',(variables.create_context_O(v)))) + '\n'
     except:
         pass
     return ('\n'.join([indent + line for line in d.split('\n')])).replace('\n\n','\n')
@@ -129,7 +138,7 @@ def describe_dict(v):
     except:
         pass
     try:
-        d['got'] = get_convis_attribute(v,'get',(tu.create_context_O(v)))
+        d['got'] = get_convis_attribute(v,'get',(variables.create_context_O(v)))
     except:
         pass
     return d
@@ -162,7 +171,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                 if t.shape[0] == 1:
                     if preamble is False:
                         return str(t[0])
-                    return str(t[0]) + ' (1,)'
+                    return str(t[0]) + ' (shape 1,)'
                 else:
                     plt.figure(figsize=line_figsize)
                     if title != '':
@@ -176,7 +185,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                 if t.shape[0] == 1 and t.shape[1] == 1:
                     if preamble is False:
                         return str(t[0])
-                    return str(t[0]) + ' (1,1)'
+                    return str(t[0]) + ' (shape 1,1)'
                 else:
                     if np.abs(float(t.shape[0] - t.shape[1]))/(t.shape[0]+t.shape[1]) < 0.143:
                         # for roughly square 2d objects
@@ -198,7 +207,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                     return "Numpy array "+str(t.shape)+"<br/><img src='data:image/png;base64," + _plot_to_string() + "'>"
             elif len(t.shape) == 3:
                 if t.shape[0] == 1 and t.shape[1] == 1 and t.shape[2] == 1:
-                    return str(t[0]) + ' (1,1,1)'
+                    return str(t[0]) + ' (shape 1,1,1)'
                 else:
                     legend = ""
                     if t.shape[0] == 1:
@@ -273,7 +282,7 @@ def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={}
                         return s
                     else:
                         return '5D tensor with too large first or third dimensions!'
-        return 'Numpy Array ('+str(t.shape)+')'
+        return 'Numpy Array (shape '+str(t.shape)+')'
     else:
         if preamble is False:
             return str(t[0])
@@ -516,6 +525,62 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         import html
     except:
         import cgi as html # fallback escape function
+
+    if isinstance(v, variables.Parameter) or isinstance(v, variables.Variable) or isinstance(v, torch.nn.parameter.Parameter):
+        d = {}
+        for k in ['name','_name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type','auto_name']:
+            if has_convis_attribute(v,k):
+                d[k] = get_convis_attribute(v,k)
+        name = d.get('name','') # optional: None handling
+        if not type(name) is str or name is '':
+            name= d.get('_name','')
+        if not type(name) is str or name is '':
+            name= repr(v)
+        if type(v) is torch.nn.parameter.Parameter:
+            name = 'torch.nn.Parameter'
+        if has_convis_attribute(v,'html_name'):
+            name+=' '+str(get_convis_attribute(v,'html_name'))
+        #simple_name = str(d.get('simple_name',''))
+        s = """<div class='convis_description variable'><b """+on_click_toggle+""">"""+name+"""</b> <small>"""+d.get('variable_type','')+"""</small>"""
+        # default: show everything, hide on click;
+        s += "<div class='description_content_replacer' style='border-left: 2px solid #eee; padding-left: 5px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
+        s += "<div class='description_content' style='border-left: 2px solid #eee; border-top: 2px solid #f8f8f8;  padding-left: 5px; margin-bottom: 10px;  margin-top: 2px;'>"
+        if has_convis_attribute(v,'path'):
+            s += "<small>" + full_path(v) + "</small><br/>"
+        if has_convis_attribute(v,'doc') and get_convis_attribute(v,'doc') != '':
+            s += '<p class="doc" style="padding:2px;">'+get_convis_attribute(v,'doc')+'</p>'
+        if has_convis_attribute(v,'owner'):
+            s += "<tt style='color: gray;'><small>" + str(v.owner) + "</small></tt><br/>"
+        for k in ['auto_name','config_key','optimizable','node','save','init','get','set','state_out_state','param_init','state_init','state_in_state','copied_from','config_key','config_default']:
+            if has_convis_attribute(v,k):
+                if isinstance(get_convis_attribute(v,k), MethodType):
+                    s+= '<div><b>'+str(k)+'</b>: <tt>method</tt></div>'
+                elif isinstance(get_convis_attribute(v,k), FunctionType):
+                    s+= '<div><b>'+str(k)+'</b>: <tt>function</tt></div>'
+                else:
+                    s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(get_convis_attribute(v,k)))+'</tt></div>'
+        try:
+            if hasattr(v,'get_value'):
+                s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),title=name,**kwargs))
+        except Exception as e:
+            s+= '<b>value</b>: ' + str(e)
+            pass
+        try:
+            s+= '<b>got</b>: ' + _tensor_to_html(get_convis_attribute(v,'get')(variables.create_context_O(v)),title=name,**kwargs)
+        except:
+            pass
+        vv = v
+        if hasattr(v,'detach'):
+            vv = v.detach()
+        if hasattr(vv,'__array__'):
+            s+= '<b>value </b>: ' + _tensor_to_html(vv.__array__())
+        elif hasattr(vv,'data'):
+            s+= '<b>value </b>: ' + _tensor_to_html(vv.data.__array__())
+        s += """</div>"""
+        s += """</div>"""
+        if not wrap_in_html:
+            return s
+        return HTML(s)
     ##       
     # Handeling other datatypes
     #
@@ -525,7 +590,10 @@ def describe_html(v,wrap_in_html=True,**kwargs):
             return s
         return HTML(s)
     elif hasattr(v,'__array__'):
-        s = _tensor_to_html(v.__array__(),**kwargs)
+        if hasattr(v,'detach'):
+            s = _tensor_to_html(v.detach().__array__(),**kwargs)
+        else:
+            s = _tensor_to_html(v.__array__(),**kwargs)
         if not wrap_in_html:
             return s
         return HTML(s)
@@ -578,18 +646,19 @@ def describe_html(v,wrap_in_html=True,**kwargs):
     if type(v) in [dict] or hasattr(v,'__iteritems__'):
         uid = uuid.uuid4().hex
         s = "<div class='convis_description list'>"
-        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else _iteritems(v)
+        iteration = list(v.__iteritems__() if hasattr(v,'__iteritems__') else _iteritems(v))
         s += "<b id="+uid+" "+on_click_toggle+" >+</b>&nbsp;"
         for (k,vv) in iteration:
             s += '| <a style="text-decoration: none; font-size: 8pt;" href="#'+uid+save_name(k)+'">'+str(k)+'</a> '
         s += "<div class='description_content_replacer' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px; display: none;'>(&#8230;)</div>"
         s += "<div class='description_content' style='border-left: 4px solid #f0f0f0; border-top: 4px solid #f8f8f8; padding-left: 10px; margin-bottom: 10px;'>"
-        iteration = v.__iteritems__() if hasattr(v,'__iteritems__') else _iteritems(v)
+        iteration = list(v.__iteritems__() if hasattr(v,'__iteritems__') else _iteritems(v))
+        path = kwargs.pop('path','')
         for (k,vv) in iteration:
-            s += "<div class='convis_description dict_item'><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b> <a style=\"text-decoration: none;\" href='#"+uid+"''>&#8617;</a>"
+            s += "<div class='convis_description dict_item'><small>"+path+".</small><b id="+uid+save_name(k)+" "+on_click_toggle+" >"+str(k)+"</b> <a style=\"text-decoration: none;\" href='#"+uid+"''>&#8617;</a>"
             s += "<div class='description_content_replacer' style='border-left: 0px solid #ddd; padding-left: 5px; display: none;'>(&#8230;)</div>"
             s += "<div class='description_content' style='border-left: 0px solid #ddd; padding-left: 5px;'>"
-            s += describe_html(vv,wrap_in_html=False,**kwargs)
+            s += describe_html(vv,wrap_in_html=False,path = path + '.' + k, **kwargs)
             s += "</div>"
             s += "</div>"
         s += "</div>"
@@ -613,7 +682,7 @@ def describe_html(v,wrap_in_html=True,**kwargs):
             pass
 
     ##       
-    # Assuming its a annotated theano variable:
+    # Assuming its a annotated variable:
     #
     d = {}
     for k in ['name','simple_name','doc','config_key','optimizable','node','save','init','get','set','variable_type','auto_name']:
@@ -637,7 +706,12 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         s += "<tt style='color: gray;'><small>" + str(v.owner) + "</small></tt><br/>"
     for k in ['auto_name','config_key','optimizable','node','save','init','get','set','state_out_state','param_init','state_init','state_in_state','copied_from','config_key','config_default']:
         if has_convis_attribute(v,k):
-            s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(get_convis_attribute(v,k)))+'</tt></div>'
+            if isinstance(get_convis_attribute(v,k), MethodType):
+                s+= '<div><b>'+str(k)+'</b>: <tt>method</tt></div>'
+            elif isinstance(get_convis_attribute(v,k), FunctionType):
+                s+= '<div><b>'+str(k)+'</b>: <tt>function</tt></div>'
+            else:
+                s+= '<div><b>'+str(k)+'</b>: <tt>'+html.escape(str(get_convis_attribute(v,k)))+'</tt></div>'
     try:
         if hasattr(v,'get_value'):
             s+= '<b>value</b>: ' + str(_tensor_to_html(v.get_value(),title=name,**kwargs))
@@ -645,7 +719,7 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         s+= '<b>value</b>: ' + str(e)
         pass
     try:
-        s+= '<b>got</b>: ' + _tensor_to_html(get_convis_attribute(v,'get')(tu.create_context_O(v)),title=name,**kwargs)
+        s+= '<b>got</b>: ' + _tensor_to_html(get_convis_attribute(v,'get')(variables.create_context_O(v)),title=name,**kwargs)
     except:
         pass
     s += """</div>"""

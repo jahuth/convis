@@ -105,7 +105,13 @@ class SeperatableOPLFilter(Layer):
         self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9))
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
-        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
+        self.sigma_surround = variables.VirtualParameter(
+                                    self.surround_G.gaussian,
+                                    value=0.05,
+                                    retina_config_key='surround-sigma__deg'
+                                ).set_callback_arguments(
+                                    resolution=variables.default_resolution
+                                )
         self.sigma_surround.set(0.05)
         self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0))
         if hasattr(self.surround_E,'bias') and self.surround_E.bias is not None:
@@ -523,7 +529,8 @@ class Bipolar(Layer):
         self.dims = 5
         self.lambda_amp = as_parameter(0.0,
                                         name="lambda_amp",
-                                        retina_config_key='adaptation-feedback-amplification__Hz')
+                                        retina_config_key='adaptation-feedback-amplification__Hz',
+                                        doc='Amplification of the gain control. When `lambda_amp`=0, there is no gain control.')
         self.g_leak = as_parameter(50.0,init=lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)),
                                     name="g_leak",
                                     retina_config_key='bipolar-inert-leaks__Hz')
