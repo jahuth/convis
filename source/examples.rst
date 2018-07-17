@@ -7,9 +7,26 @@ Examples
 There are two quickstart examples that show how to use Convis
 for the two main use cases it was designed for:
 
+ - :ref:`"I want to convert luminance into spikes" <quickstart_spikes>`
  - :ref:`"I'm an experimentalist and I want to fit models to my data" <quickstart_fitting>`
  - :ref:`"I need spiking activity that looks like it's coming from the retina" <quickstart_simulator>`
 
+
+Quickstart: Generating Spikes
+-----------------
+.. _quickstart_spikes:
+
+    .. plot::
+        :include-source:
+
+        import convis
+        import numpy as np
+        some_input = convis.samples.moving_grating()
+        spk = convis.filters.spiking.LeakyIntegrateAndFireNeuron()
+        spk.p.g_L = 1.0
+        o = spk.run(20.0*some_input,dt=100)
+        plt.figure()
+        o.plot(mode='lines')
 
 
 Quickstart: Fitting models to data

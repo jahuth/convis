@@ -105,7 +105,8 @@
 <li class="toctree-l1 current"><a class="reference internal" href="model.html">Models</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Retina Model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#general-overview">General Overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-retina-model-class-and-configuration">The Retina Model class and Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-the-retina-model-directly">Configuring the Retina Model directly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configurating-the-retina-model-with-xml-files">Configurating the Retina Model with xml files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#retina-filters">Retina Filters</a></li>
 </ul>
 </li>
@@ -199,8 +200,55 @@ $$I_{Gang}(x,y,t) = G * N(eT * V_{Bip})$$</p>
 <p>with <span class="math">\(N(V) = i^0_G + \lambda(V-v^0_G)\)</span> (if  <span class="math">\(V &gt; v^0_G\)</span>)</p>
 <img alt="_images/dot_test_3.png" src="_images/dot_test_3.png" />
 </div>
-<div class="section" id="the-retina-model-class-and-configuration">
-<h2>The Retina Model class and Configuration<a class="headerlink" href="#the-retina-model-class-and-configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configuring-the-retina-model-directly">
+<h2>Configuring the Retina Model directly<a class="headerlink" href="#configuring-the-retina-model-directly" title="Permalink to this headline">¶</a></h2>
+<p>The best way to configure the model is by exploring the
+structure with tab completion of the <cite>.p.</cite> parameter list.
+The retina model will give you first the list of layers and
+then the list of parameters of each layer.</p>
+<p>To change the values, you can use the method <cite>.set</cite>, or
+(<em>but only if you use the `.p.` list</em>) by assigning a new value
+to the parameter directly.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="go">    opl, bipolar, gang_0_input, gang_0_spikes, gang_1_input, gang_1_spikes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span>
+<span class="go">Parameter containing:</span>
+<span class="go">tensor([ 0.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span>
+<span class="go">Parameter containing:</span>
+<span class="go">tensor([ 100.])</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>What will not work:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span> <span class="o">=</span> <span class="mf">100.0</span>      <span class="c1"># &lt;- .p is missing!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="p">[</span><span class="s2">&quot;lambda_amp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="c1">#</span>
+</pre></div>
+</div>
+<p>In both cases, the Parameter will be <strong>replaced</strong> by the number <cite>100.0</cite>. It will no longer be
+Instead you can use <cite>.set()</cite>:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="p">[</span><span class="s2">&quot;lambda_amp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="p">[</span><span class="s2">&quot;lambda_amp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;new parameter replacing the old one&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Also you can get a dictionary of configuration values and change the parameters there or save and
+load them to and from a json file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;opl_opl_filter_surround_E_tau&#39;</span><span class="p">]</span>
+<span class="go">array([0.004], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;opl_opl_filter_surround_E_tau&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configurating-the-retina-model-with-xml-files">
+<h2>Configurating the Retina Model with xml files<a class="headerlink" href="#configurating-the-retina-model-with-xml-files" title="Permalink to this headline">¶</a></h2>
 <p>The retina model is <a class="reference internal" href="docs_retina.html#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-mod docutils literal"><span class="pre">convis.retina.Retina</span></code></a> and can be configured
 with a <code class="xref py py-mod docutils literal"><span class="pre">convis.retina.RetinaConfiguration</span></code> that can be loaded
 from a VirtualRetina xml file:</p>

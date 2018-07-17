@@ -522,11 +522,13 @@ class Layer(torch.nn.Module):
     @property
     def p(self):
         """
-            A hierarchical, tab-completable list of all :class:`torch.nn.parameter.Parameter` of the model.
+            A hierarchical, tab-completable list of all :class:`convis.variables.Parameter` of the model.
             If a parameters is reachable via `some_model.p.layer1.module1.parameter1`
             it will also be available directly as `some_model.layer1.module1.parameter1`.
             However for tab-completion, the later method provides *all* attributes
             of the model, not only parameters.
+
+            See also :ref:`this section in the documentation <p_list>`
         """
         return variables.create_Ox_from_torch_iterator_dicts(self.named_parameters(),
             doc='Parameters of the model (tab-completable, includes also parameters that should not be changed by the user. See also .user_parameters)')
@@ -536,10 +538,16 @@ class Layer(torch.nn.Module):
             doc='Parameters of the model that can be set by the user via `.set()`. (tab-completable)')
     @property
     def m(self):
+        """
+            A hierarchical, tab-completable list of all :class:`convis.base.Layer` of the model.
+        """
         return variables.create_Ox_from_torch_iterator_dicts(self.named_modules(),
             doc='Modules of the model (tab-completable)')
     @property
     def s(self):
+        """
+            A hierarchical, tab-completable list of all :class:`convis.variables.State` of the model.
+        """
         return variables.create_Ox_from_torch_iterator_dicts(self.state(),
             doc='Current state of the model (tab-completable)')
     def _apply(self, fn):

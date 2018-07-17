@@ -116,6 +116,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#convis-base-classes">Convis base classes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#variables-convis-variables">Variables <cite>convis.variables</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-convis.utils">Utilitary methods <cite>convis.utils</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sample-data-convis-samples">Sample Data <cite>convis.samples</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-convis.variable_describe">Methods to describe objects <cite>convis.variable_describe</cite></a></li>
@@ -191,9 +192,10 @@
 <ul class="simple">
 <li><a class="reference internal" href="#the-api-convis-classes-and-modules" id="id5">The API: Convis classes and modules</a><ul>
 <li><a class="reference internal" href="#module-convis.base" id="id6">Base classes <cite>convis.base</cite></a></li>
-<li><a class="reference internal" href="#module-convis.utils" id="id7">Utilitary methods <cite>convis.utils</cite></a></li>
-<li><a class="reference internal" href="#sample-data-convis-samples" id="id8">Sample Data <cite>convis.samples</cite></a></li>
-<li><a class="reference internal" href="#module-convis.variable_describe" id="id9">Methods to describe objects <cite>convis.variable_describe</cite></a></li>
+<li><a class="reference internal" href="#variables-convis-variables" id="id7">Variables <cite>convis.variables</cite></a></li>
+<li><a class="reference internal" href="#module-convis.utils" id="id8">Utilitary methods <cite>convis.utils</cite></a></li>
+<li><a class="reference internal" href="#sample-data-convis-samples" id="id9">Sample Data <cite>convis.samples</cite></a></li>
+<li><a class="reference internal" href="#module-convis.variable_describe" id="id10">Methods to describe objects <cite>convis.variable_describe</cite></a></li>
 </ul>
 </li>
 </ul>
@@ -472,11 +474,24 @@ returns the model itself.</p>
 <dl class="attribute">
 <dt id="convis.base.Layer.p">
 <code class="descname">p</code><a class="headerlink" href="#convis.base.Layer.p" title="Permalink to this definition">¶</a></dt>
-<dd><p>A hierarchical, tab-completable list of all <code class="xref py py-class docutils literal"><span class="pre">torch.nn.parameter.Parameter</span></code> of the model.
+<dd><p>A hierarchical, tab-completable list of all <code class="xref py py-class docutils literal"><span class="pre">convis.variables.Parameter</span></code> of the model.
 If a parameters is reachable via <cite>some_model.p.layer1.module1.parameter1</cite>
 it will also be available directly as <cite>some_model.layer1.module1.parameter1</cite>.
 However for tab-completion, the later method provides <em>all</em> attributes
 of the model, not only parameters.</p>
+<p>See also <a class="reference internal" href="usage.html#p-list"><span class="std std-ref">this section in the documentation</span></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base.Layer.m">
+<code class="descname">m</code><a class="headerlink" href="#convis.base.Layer.m" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hierarchical, tab-completable list of all <a class="reference internal" href="#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-class docutils literal"><span class="pre">convis.base.Layer</span></code></a> of the model.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="convis.base.Layer.s">
+<code class="descname">s</code><a class="headerlink" href="#convis.base.Layer.s" title="Permalink to this definition">¶</a></dt>
+<dd><p>A hierarchical, tab-completable list of all <code class="xref py py-class docutils literal"><span class="pre">convis.variables.State</span></code> of the model.</p>
 </dd></dl>
 
 <dl class="method">
@@ -835,8 +850,110 @@ when using optimize, <code class="xref py py-attr docutils literal"><span class=
 
 </div>
 </div>
+<div class="section" id="variables-convis-variables">
+<h2><a class="toc-backref" href="#id7">Variables <cite>convis.variables</cite></a><a class="headerlink" href="#variables-convis-variables" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-convis.variables"></span><dl class="attribute">
+<dt id="convis.variables.Variable">
+<code class="descclassname">convis.variables.</code><code class="descname">Variable</code><a class="headerlink" href="#convis.variables.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">_OldVariable</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variables.create_Ox_from_torch_iterator_dicts">
+<code class="descclassname">convis.variables.</code><code class="descname">create_Ox_from_torch_iterator_dicts</code><span class="sig-paren">(</span><em>iterator</em>, <em>doc=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variables.html#create_Ox_from_torch_iterator_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variables.create_Ox_from_torch_iterator_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a dictionary (or iterator with key,value pairs)
+with dots in the keys and returns a hierarchical object.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">create_Ox_from_torch_iterator_dicts</span><span class="p">(</span><span class="n">retina</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">())</span>
+<span class="go">    # the same as:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Ox</span><span class="p">(</span><span class="o">**</span><span class="n">dict_with_dots_to_hierarchical_dict</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">retina</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">())))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.&lt;</span><span class="n">tab</span> <span class="n">complete</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.&lt;</span><span class="n">tab</span> <span class="n">complete</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">g_leak</span>
+</pre></div>
+</div>
+<p><code class="xref py py-class docutils literal"><span class="pre">convis.o.Ox</span></code> objects have a few special attributes (with leading underscores)
+that help finding nodes in large hierarchies</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">_all</span> <span class="c1"># lists everything with underscore </span>
+<span class="go">           # separating hierarchies (ie. similar</span>
+<span class="go">           # to `.named_parameters()`, but each works</span>
+<span class="go">           # as an attribute instead of a string</span>
+<span class="go">           # key)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">g_leak</span><span class="o">.&lt;</span><span class="n">tab</span> <span class="n">complete</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">g_leak</span><span class="o">.</span><span class="n">bipolar_g_leak</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-obj docutils literal"><span class="pre">convis.o.Ox</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variables.create_hierarchical_dict">
+<code class="descclassname">convis.variables.</code><code class="descname">create_hierarchical_dict</code><span class="sig-paren">(</span><em>vs</em>, <em>pi=0</em>, <em>name_sanitizer=&lt;function save_name&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variables.html#create_hierarchical_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variables.create_hierarchical_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>pi: “path i” offset in the path</p>
+<blockquote>
+<div>The path will only be used from element pi onwards</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variables.create_hierarchical_dict_with_nodes">
+<code class="descclassname">convis.variables.</code><code class="descname">create_hierarchical_dict_with_nodes</code><span class="sig-paren">(</span><em>vs</em>, <em>pi=0</em>, <em>name_sanitizer=&lt;function save_name&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variables.html#create_hierarchical_dict_with_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variables.create_hierarchical_dict_with_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>name_sanitizer: eg. convis.base.save_name or str</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.variables.create_context_O">
+<code class="descclassname">convis.variables.</code><code class="descname">create_context_O</code><span class="sig-paren">(</span><em>var=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variables.html#create_context_O"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variables.create_context_O" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function creates the ‘typical’ context that annotated variables can expect when defining <cite>init</cite> functions.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>var</cite>: the variable itself</li>
+<li><cite>node</cite>: the node that wraps this part of the graph (providing eg. configuration options)</li>
+<li><cite>get_config</cite>: a function of <cite>node</cite> that provides the configuration dictionary local to this node</li>
+<li><cite>model</cite>: the model providing global options such as <cite>pixel_to_degree()</cite> and <cite>seconds_to_step()</cite></li>
+</ul>
+</div></blockquote>
+<p>During execution:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>input</cite>: the variable that is fed as input to the model (not the node!)</li>
+</ul>
+</div></blockquote>
+<p>Further, if the variable has a <cite>config_key</cite> and a <cite>config_default</cite> field,
+two short cut functions retrieve and save the configuration value to minimize code redundancy:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>value_from_config()</cite>: retrieves the configuration value from <cite>node</cite>, falling back to <cite>config_default</cite> if no option is provided</li>
+<li><cite>value_to_config(v)</cite>: calls the <cite>set_config</cite> method of the <cite>node</cite> to save a configuration value (eg. when updated when optimizing)</li>
+</ul>
+</div></blockquote>
+<p>To use these values in an <cite>init</cite> function eg:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">as_parameter</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">iscalar</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">),</span><span class="n">init</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.variables.VirtualParameter">
+<em class="property">class </em><code class="descclassname">convis.variables.</code><code class="descname">VirtualParameter</code><span class="sig-paren">(</span><em>func=None</em>, <em>var=None</em>, <em>call=None</em>, <em>value=None</em>, <em>dependencies=[]</em>, <em>kwargs_dependencies={}</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/variables.html#VirtualParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.variables.VirtualParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>VirtualParameters can generate parameter values
+from a dependency structure of other parameters.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">VirtualParameter</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">VirtualParameter</span><span class="p">(</span><span class="n">convis2</span><span class="o">.</span><span class="n">numerical_filters</span><span class="o">.</span><span class="n">exponential_filter_5d</span><span class="p">)</span><span class="o">.</span><span class="n">set_callback_arguments</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="n">a</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="n">b</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span> <span class="c1"># updating this parameter causes the function of v to be reevaluated </span>
+<span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">b</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># the function is reevaluated again</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
 <div class="section" id="module-convis.utils">
-<span id="utilitary-methods-convis-utils"></span><h2><a class="toc-backref" href="#id7">Utilitary methods <cite>convis.utils</cite></a><a class="headerlink" href="#module-convis.utils" title="Permalink to this headline">¶</a></h2>
+<span id="utilitary-methods-convis-utils"></span><h2><a class="toc-backref" href="#id8">Utilitary methods <cite>convis.utils</cite></a><a class="headerlink" href="#module-convis.utils" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="convis.utils.plot_5d_matshow">
 <code class="descclassname">convis.utils.</code><code class="descname">plot_5d_matshow</code><span class="sig-paren">(</span><em>w, border=True, dims=[(0, 1, 3), (2, 4)], border_val=0.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_5d_matshow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_5d_matshow" title="Permalink to this definition">¶</a></dt>
@@ -864,7 +981,7 @@ to <cite>matplotlib.pylab.plot()</cite></p>
 
 </div>
 <div class="section" id="sample-data-convis-samples">
-<h2><a class="toc-backref" href="#id8">Sample Data <cite>convis.samples</cite></a><a class="headerlink" href="#sample-data-convis-samples" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">Sample Data <cite>convis.samples</cite></a><a class="headerlink" href="#sample-data-convis-samples" title="Permalink to this headline">¶</a></h2>
 <p>See also <a class="reference external" href="https://jahuth.github.io/convis/Convis%20stimuli%20and%20kernels.html">this notebook</a> for sample stimuli.</p>
 <span class="target" id="module-convis.samples"></span><p>This module provides sample kernels and inputs.</p>
 <dl class="function">
@@ -1161,7 +1278,7 @@ a <cite>SampleGenerator</cite> with a random kernel.</p>
 
 </div>
 <div class="section" id="module-convis.variable_describe">
-<span id="methods-to-describe-objects-convis-variable-describe"></span><h2><a class="toc-backref" href="#id9">Methods to describe objects <cite>convis.variable_describe</cite></a><a class="headerlink" href="#module-convis.variable_describe" title="Permalink to this headline">¶</a></h2>
+<span id="methods-to-describe-objects-convis-variable-describe"></span><h2><a class="toc-backref" href="#id10">Methods to describe objects <cite>convis.variable_describe</cite></a><a class="headerlink" href="#module-convis.variable_describe" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>Describing Variables: <a class="reference internal" href="#convis.variable_describe.describe" title="convis.variable_describe.describe"><code class="xref py py-meth docutils literal"><span class="pre">describe()</span></code></a></li>
 <li>Aniamting Tensors: <a class="reference internal" href="#convis.variable_describe.animate" title="convis.variable_describe.animate"><code class="xref py py-meth docutils literal"><span class="pre">animate()</span></code></a>, <a class="reference internal" href="#convis.variable_describe.animate_to_video" title="convis.variable_describe.animate_to_video"><code class="xref py py-meth docutils literal"><span class="pre">animate_to_video()</span></code></a></li>

@@ -1,6 +1,7 @@
 Usage
 =====
 
+
 Running a model
 -----------------
 
@@ -13,6 +14,108 @@ Running a model
 
 Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling :meth:`Layer.run(input,dt=..) <convis.base.Layer.run>` with `dt` set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
 :meth:`~convis.base.Layer.run` also accepts numpy arrays as input, which will be converted into PyTorch `Tensor`s and packaged as a `Variable`.
+
+
+Configuring a Model: the `.p.` parameter list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _p_list:
+
+The best way to configure the model is by exploring the 
+structure with tab completion of the `.p.` parameter list.
+As an example. the retina model will give you first the list of layers and
+then the list of parameters of each layer (see also :class:`convis.base.Layer`).
+
+To change the values, you can use the method `.set`, or 
+(*but only if you use the `.p.` list*) by assigning a new value
+to the parameter directly:
+
+    >>> retina = convis.retina.Retina()
+    >>> retina.p.<tab>
+    opl, bipolar, gang_0_input, gang_0_spikes, gang_1_input, gang_1_spikes
+    >>> retina.p.bipolar.lambda_amp
+    Variable
+    ----------
+       name: lambda_amp
+       doc: Amplification of the gain control. When `lambda_amp`=0, there is no gain control.
+       value: array([0.], dtype=float32)
+    >>> retina.p.bipolar.lambda_amp.set(100.0)
+    >>> retina.p.bipolar.lambda_amp = 100.0
+    >>> retina.p.bipolar.lambda_amp
+    Variable
+    ----------
+       name: lambda_amp
+       doc: Amplification of the gain control. When `lambda_amp`=0, there is no gain control.
+       value: array([100.], dtype=float32)
+
+The `.p` list is collecting all the parameters of the model, so that they are
+easier for you to interact with. You can also navigate through the submodules
+yourself, but then you have to ignore all methods and attributes of the Layers
+that are not Parameters:
+
+    >>> retina.bipolar.<tab>
+    a_0, a_0, a_1, a_1, add_module, apply, b_0, b_0, children, clear_state, compute_loss, conv2d, cpu, cuda, dims, dims, double, dump_patches, eval, float, forward, g_leak, g_leak, g_leak, get_all, get_parameters, get_state, half, init_states, inputNernst_inhibition, inputNernst_inhibition, input_amp, input_amp, input_amp, lambda_amp, lambda_amp, lambda_amp, load_parameters, load_state_dict, m, modules, named_children, named_modules, named_parameters, optimize, p, parameters, parse_config, plot_impulse, plot_impulse_space, pop_all, pop_optimizer, pop_parameters, pop_state, preceding_V_bip, preceding_attenuationMap, preceding_inhibition, push_all, push_optimizer, push_parameters, push_state, register_backward_hook, register_buffer, register_forward_hook, register_forward_pre_hook, register_parameter, register_state, retrieve_all, run, s, save_parameters, set_all, set_optimizer, set_optimizer, set_parameters, set_state, share_memory, state_dict, steps, steps, store_all, tau, tau, tau, train, training, training, type, user_parameters, zero_grad
+    >>> # too many!
+    >>> retina.bipolar.lambda_amp
+    Variable
+    ----------
+       name: lambda_amp
+       doc: Amplification of the gain control. When `lambda_amp`=0, there is no gain control.
+       value: array([0.], dtype=float32)
+    >>> retina.bipolar.lambda_amp.set(42.0)
+
+Since `retina.bipolar` is itself a :class:`convis.base.Layer` object, `retina.bipolar.p.<tab>`
+works the same as `retina.p.bipolar.<tab>`.
+
+.. note::
+
+    In the following case the Parameter object will be **replaced** by the *number* `100.0`.
+    It will no longer be optimizable or exportable:
+
+        >>> retina.bipolar.lambda_amp = 100.0      # <- .p is missing!
+
+    Instead you can use `.set()` to set the value, or replace the Parameter with 
+    a new Parameter:
+
+        >>> retina.bipolar.lambda_amp.set(100.0)
+        >>> retina.p.bipolar["lambda_amp"].set(100.0)
+
+Another feature of the `.p.` list are the special attributes `_all` and `_search`.
+`.p._all.` gives you tab completable list without hierarchy, ie. all variables can
+be seen at once.
+
+
+    >>> retina.p._all.<tab>
+    gang_0_input_spatial_pooling_weight, gang_1_spikes_refr_sigma, gang_0_input_i_0, gang_1_spikes_noise_sigma, bipolar_lambda_amp, gang_1_input_sign, gang_0_input_lambda_G, gang_0_input_transient_tau_center, gang_1_spikes_refr_mu, gang_1_input_sigma_surround, gang_1_input_spatial_pooling_bias, bipolar_input_amp, gang_0_input_v_0, gang_0_spikes_tau, gang_1_input_transient_relative_weight_center, gang_1_input_transient_tau_center, bipolar_conv2d_weight, gang_0_input_sign, gang_0_spikes_refr_sigma, bipolar_g_leak, gang_0_spikes_refr_mu, gang_0_input_transient_weight, bipolar_tau, gang_1_spikes_tau, gang_1_input_f_transient, gang_0_spikes_g_L, gang_1_input_lambda_G, gang_1_spikes_g_L, gang_0_input_transient_relative_weight_center, gang_0_input_f_transient, gang_0_input_sigma_surround, gang_1_input_v_0, gang_0_spikes_noise_sigma, gang_1_input_i_0, opl_opl_filter_relative_weight, gang_1_input_transient_weight
+
+The `_search` attribute can search in this list for any substring:
+
+    >>> retina.p._search.lam.<tab>
+    gang_1_input_lambda_G, bipolar_lambda_amp, gang_0_input_lambda_G
+    >>> retina.p._search.i_0.<tab>
+    gang_0_input_i_0, gang_1_input_i_0
+
+Both of these can be iterated over instead of tab-completed:
+
+    >>> for p in retina.p._search.i_0:
+            p.set(10.0)
+    >>> for name,p in retina.p._search.i_0.__iteritems():
+            print(name)
+            p.set(10.0)
+    gang_0_input_i_0
+    gang_1_input_i_0
+
+
+Configuring a Model: exporting and importing all parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can get a dictionary of all parameter values 
+
+    >>> d = retina.get_parameters()
+    >>> d['opl_opl_filter_surround_E_tau']
+    array([0.004], dtype=float32)
+    >>> d['opl_opl_filter_surround_E_tau'][0] = 0.001
+    >>> retina.set_parameters(d)
+
 
 
 Switching between CPU and GPU usage

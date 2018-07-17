@@ -95,6 +95,8 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-model">Running a model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-the-p-parameter-list">Configuring a Model: the <cite>.p.</cite> parameter list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-exporting-and-importing-all-parameters">Configuring a Model: exporting and importing all parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#switching-between-cpu-and-gpu-usage">Switching between CPU and GPU usage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-runner-objects">Using Runner objects</a></li>
 </ul>
@@ -192,6 +194,102 @@
 </div>
 <p>Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">Layer.run(input,dt=..)</span></code></a> with <cite>dt</cite> set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
 <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a> also accepts numpy arrays as input, which will be converted into PyTorch <cite>Tensor`s and packaged as a `Variable</cite>.</p>
+<div class="section" id="configuring-a-model-the-p-parameter-list">
+<h3>Configuring a Model: the <cite>.p.</cite> parameter list<a class="headerlink" href="#configuring-a-model-the-p-parameter-list" title="Permalink to this headline">¶</a></h3>
+<p id="p-list">The best way to configure the model is by exploring the
+structure with tab completion of the <cite>.p.</cite> parameter list.
+As an example. the retina model will give you first the list of layers and
+then the list of parameters of each layer (see also <a class="reference internal" href="docs.html#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-class docutils literal"><span class="pre">convis.base.Layer</span></code></a>).</p>
+<p>To change the values, you can use the method <cite>.set</cite>, or
+(<em>but only if you use the `.p.` list</em>) by assigning a new value
+to the parameter directly:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="go">opl, bipolar, gang_0_input, gang_0_spikes, gang_1_input, gang_1_spikes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span>
+<span class="go">Variable</span>
+<span class="go">----------</span>
+<span class="go">   name: lambda_amp</span>
+<span class="go">   doc: Amplification of the gain control. When `lambda_amp`=0, there is no gain control.</span>
+<span class="go">   value: array([0.], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span>
+<span class="go">Variable</span>
+<span class="go">----------</span>
+<span class="go">   name: lambda_amp</span>
+<span class="go">   doc: Amplification of the gain control. When `lambda_amp`=0, there is no gain control.</span>
+<span class="go">   value: array([100.], dtype=float32)</span>
+</pre></div>
+</div>
+<p>The <cite>.p</cite> list is collecting all the parameters of the model, so that they are
+easier for you to interact with. You can also navigate through the submodules
+yourself, but then you have to ignore all methods and attributes of the Layers
+that are not Parameters:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="go">a_0, a_0, a_1, a_1, add_module, apply, b_0, b_0, children, clear_state, compute_loss, conv2d, cpu, cuda, dims, dims, double, dump_patches, eval, float, forward, g_leak, g_leak, g_leak, get_all, get_parameters, get_state, half, init_states, inputNernst_inhibition, inputNernst_inhibition, input_amp, input_amp, input_amp, lambda_amp, lambda_amp, lambda_amp, load_parameters, load_state_dict, m, modules, named_children, named_modules, named_parameters, optimize, p, parameters, parse_config, plot_impulse, plot_impulse_space, pop_all, pop_optimizer, pop_parameters, pop_state, preceding_V_bip, preceding_attenuationMap, preceding_inhibition, push_all, push_optimizer, push_parameters, push_state, register_backward_hook, register_buffer, register_forward_hook, register_forward_pre_hook, register_parameter, register_state, retrieve_all, run, s, save_parameters, set_all, set_optimizer, set_optimizer, set_parameters, set_state, share_memory, state_dict, steps, steps, store_all, tau, tau, tau, train, training, training, type, user_parameters, zero_grad</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># too many!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span>
+<span class="go">Variable</span>
+<span class="go">----------</span>
+<span class="go">   name: lambda_amp</span>
+<span class="go">   doc: Amplification of the gain control. When `lambda_amp`=0, there is no gain control.</span>
+<span class="go">   value: array([0.], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">42.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since <cite>retina.bipolar</cite> is itself a <a class="reference internal" href="docs.html#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-class docutils literal"><span class="pre">convis.base.Layer</span></code></a> object, <cite>retina.bipolar.p.&lt;tab&gt;</cite>
+works the same as <cite>retina.p.bipolar.&lt;tab&gt;</cite>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In the following case the Parameter object will be <strong>replaced</strong> by the <em>number</em> <cite>100.0</cite>.
+It will no longer be optimizable or exportable:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span> <span class="o">=</span> <span class="mf">100.0</span>      <span class="c1"># &lt;- .p is missing!</span>
+</pre></div>
+</div>
+<p>Instead you can use <cite>.set()</cite> to set the value, or replace the Parameter with
+a new Parameter:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">bipolar</span><span class="o">.</span><span class="n">lambda_amp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">bipolar</span><span class="p">[</span><span class="s2">&quot;lambda_amp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Another feature of the <cite>.p.</cite> list are the special attributes <cite>_all</cite> and <cite>_search</cite>.
+<cite>.p._all.</cite> gives you tab completable list without hierarchy, ie. all variables can
+be seen at once.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_all</span><span class="o">.&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="go">gang_0_input_spatial_pooling_weight, gang_1_spikes_refr_sigma, gang_0_input_i_0, gang_1_spikes_noise_sigma, bipolar_lambda_amp, gang_1_input_sign, gang_0_input_lambda_G, gang_0_input_transient_tau_center, gang_1_spikes_refr_mu, gang_1_input_sigma_surround, gang_1_input_spatial_pooling_bias, bipolar_input_amp, gang_0_input_v_0, gang_0_spikes_tau, gang_1_input_transient_relative_weight_center, gang_1_input_transient_tau_center, bipolar_conv2d_weight, gang_0_input_sign, gang_0_spikes_refr_sigma, bipolar_g_leak, gang_0_spikes_refr_mu, gang_0_input_transient_weight, bipolar_tau, gang_1_spikes_tau, gang_1_input_f_transient, gang_0_spikes_g_L, gang_1_input_lambda_G, gang_1_spikes_g_L, gang_0_input_transient_relative_weight_center, gang_0_input_f_transient, gang_0_input_sigma_surround, gang_1_input_v_0, gang_0_spikes_noise_sigma, gang_1_input_i_0, opl_opl_filter_relative_weight, gang_1_input_transient_weight</span>
+</pre></div>
+</div>
+<p>The <cite>_search</cite> attribute can search in this list for any substring:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">lam</span><span class="o">.&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="go">gang_1_input_lambda_G, bipolar_lambda_amp, gang_0_input_lambda_G</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">i_0</span><span class="o">.&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="go">gang_0_input_i_0, gang_1_input_i_0</span>
+</pre></div>
+</div>
+<p>Both of these can be iterated over instead of tab-completed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">i_0</span><span class="p">:</span>
+<span class="go">        p.set(10.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="n">retina</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">_search</span><span class="o">.</span><span class="n">i_0</span><span class="o">.</span><span class="n">__iteritems</span><span class="p">():</span>
+<span class="go">        print(name)</span>
+<span class="go">        p.set(10.0)</span>
+<span class="go">gang_0_input_i_0</span>
+<span class="go">gang_1_input_i_0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuring-a-model-exporting-and-importing-all-parameters">
+<h3>Configuring a Model: exporting and importing all parameters<a class="headerlink" href="#configuring-a-model-exporting-and-importing-all-parameters" title="Permalink to this headline">¶</a></h3>
+<p>You can get a dictionary of all parameter values</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;opl_opl_filter_surround_E_tau&#39;</span><span class="p">]</span>
+<span class="go">array([0.004], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;opl_opl_filter_surround_E_tau&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="switching-between-cpu-and-gpu-usage">
 <h3>Switching between CPU and GPU usage<a class="headerlink" href="#switching-between-cpu-and-gpu-usage" title="Permalink to this headline">¶</a></h3>
 <p>PyTorch objects can move between GPU memory and RAM by calling <cite>.cuda()</cite> and <cite>.cpu()</cite> methods respectively. This can be done on a single Tensor or on an entire model.</p>

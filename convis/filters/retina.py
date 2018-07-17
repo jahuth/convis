@@ -335,30 +335,44 @@ class RecursiveOPLFilter(Layer):
         self.dims = 5
         self.center_G = SpatialRecursiveFilter()
         self.center_G.gaussian(0.05)
-        self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
+        self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,
+            retina_config_key='center-sigma__deg',
+            doc='Size of the center receptive field (calls self.center_G.gaussian)').set_callback_arguments(resolution=variables.default_resolution)
         self.center_E = TemporalLowPassFilterRecursive()
-        self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec',var=self.center_E.tau)
-        self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
+        self.tau_center = variables.VirtualParameter(float,value=0.01,
+            retina_config_key='center-tau__sec',var=self.center_E.tau,
+            doc='Time constant of the center receptive field (sets self.center_E.tau)')
+        self.n_center = variables.VirtualParameter(int,value=0,
+            retina_config_key='center-n__uint',
+            doc='Number of successive exponential filters in the filter cascade (n=0: a single exponential filter).')
         self.center_undershoot = TemporalHighPassFilterRecursive()
         self.undershoot_tau_center = variables.VirtualParameter(
             float,
             value=0.1,
             retina_config_key='undershoot.tau__sec',
-            var=self.center_undershoot.tau)
+            var=self.center_undershoot.tau,
+            doc='time constant of the high pass filter (sets self.center_undershoot.tau)')
         self.undershoot_relative_weight_center = variables.VirtualParameter(
             float,
             value=0.8,
             retina_config_key='undershoot.relative-weight',
-            var=self.center_undershoot.k)
+            var=self.center_undershoot.k,
+            doc='relative weight of the high pass filter (sets self.center_undershoot.k)')
         self.surround_G = SpatialRecursiveFilter()
         self.surround_G.gaussian(0.15)
-        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.15,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=variables.default_resolution)
+        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.15,
+            retina_config_key='surround-sigma__deg',
+            doc='Size of the surround receptive field (calls self.surround_G.gaussian)').set_callback_arguments(resolution=variables.default_resolution)
         self.sigma_surround.set(0.15)
         self.surround_E = TemporalLowPassFilterRecursive()
-        self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec',var=self.surround_E.tau)
+        self.tau_surround = variables.VirtualParameter(float,value=0.004,
+            retina_config_key='surround-tau__sec',var=self.surround_E.tau,
+            doc='Time constant of the surround receptive field (sets self.surround_E.tau)')
         self.input_state = State(np.zeros((1,1,1,1,1)))
-        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
-        self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
+        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight',
+            doc='relative weight between center and surround')
+        self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification',
+            doc='Linear amplification of the output')
     def clear(self):
         self.center_E.clear()
         self.center_undershoot.clear()
@@ -379,7 +393,12 @@ class RecursiveOPLFilter(Layer):
         return y
 
 class FullConvolutionOPLFilter(Layer):
-    """
+    """Convolution OPL Filter
+
+        The VirtualParameters of the model create a 3d convolution filter.
+        Any time they are changed, the current filter will be replaced!
+        The VirtualParameters can not be optimized, only the 
+        convolution filter will change when using an optimizer.
         
 
         See Also
@@ -530,20 +549,23 @@ class Bipolar(Layer):
         self.lambda_amp = as_parameter(0.0,
                                         name="lambda_amp",
                                         retina_config_key='adaptation-feedback-amplification__Hz',
-                                        doc='Amplification of the gain control. When `lambda_amp`=0, there is no gain control.')
+                                        doc='Amplification of the gain control. When `lambda_amp=0`, there is no gain control.')
         self.g_leak = as_parameter(50.0,init=lambda x: float(x.node.config.get('bipolar-inert-leaks__Hz',50)),
                                     name="g_leak",
-                                    retina_config_key='bipolar-inert-leaks__Hz')
+                                    retina_config_key='bipolar-inert-leaks__Hz',
+                                    doc='leak current of the adaptation map (see also `tau`)')
         self.input_amp = as_parameter(50.0,
                                        init=lambda x: float(x.node.config.get('opl-amplification__Hz',100)),
                                        name="input_amp",
-                                       retina_config_key='opl-amplification__Hz')
+                                       retina_config_key='opl-amplification__Hz',
+                                       doc='linear input amplification')
         self.inputNernst_inhibition = 0.0
                                     #as_parameter(0.0,init=lambda x: float(x.node.config.get('inhibition_nernst',0.0)),
                                     #               name="inputNernst_inhibition",
                                     #               retina_config_key='inhibition_nernst')
         self.tau = as_parameter(5.0,init=lambda x: x.resolution.seconds_to_steps(float(x.get_config_value('adaptation-tau__sec',0.005))),
-                           name = 'tau', retina_config_key='adaptation-tau__sec')
+                           name = 'tau', retina_config_key='adaptation-tau__sec',
+                           doc='time constant of the adaptation map (see also `g_leak`)')
         self.steps = Variable(0.001)
         self.a_0 = Variable(1.0)
         self.a_1 = -(-self.steps/self.tau).exp()
@@ -698,20 +720,26 @@ class GanglionInput(Layer):
         self.transient_tau_center = variables.VirtualParameter(
             float,
             value=0.02,
-            retina_config_key='transient-tau__sec')
+            retina_config_key='transient-tau__sec',
+            doc='The time constant of the transient filter component.')
         self.transient_relative_weight_center = variables.VirtualParameter(
             float,
             value=0.7,
-            retina_config_key='transient-relative-weight').set_callback_arguments(resolution=variables.default_resolution)
+            retina_config_key='transient-relative-weight',
+            doc='''The weight between the initial signal and the subtracted low-pass filtered signal.
+0 is no change; 1 is equal weight to both signals resulting in a zero mean.''').set_callback_arguments(resolution=variables.default_resolution)
         self.f_transient = variables.VirtualParameter(
             self.transient.highpass_exponential).set_callback_arguments(
                 tau=self.transient_tau_center,
                 relative_weight=self.transient_relative_weight_center,
                 resolution=variables.default_resolution,
                 adjust_padding=False)
-        self.i_0 = Parameter(37.0, retina_config_key='value-at-linear-threshold__Hz')
-        self.v_0 = Parameter(0.0, retina_config_key='bipolar-linear-threshold')
-        self.lambda_G = Parameter(100.0, retina_config_key='bipolar-amplification__Hz')
+        self.i_0 = Parameter(37.0, retina_config_key='value-at-linear-threshold__Hz',
+            doc='Parameter of the static non-linearity: output value at the input level `bipolar-linear-threshold`')
+        self.v_0 = Parameter(0.0, retina_config_key='bipolar-linear-threshold',
+            doc='Parameter of the static non-linearity: inputs above this value will be treated linearly.')
+        self.lambda_G = Parameter(100.0, retina_config_key='bipolar-amplification__Hz',
+            doc='Parameter of the static non-linearity: linear amplification of the input')
         #self.high_pass = nn.Conv1d()
         self.input_state = State(np.zeros((1,1,1,1,1)))
         self.spatial_pooling = Conv3d(1,1,(1,9,9))

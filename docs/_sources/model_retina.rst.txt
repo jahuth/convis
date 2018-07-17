@@ -27,7 +27,56 @@ with :math:`N(V) = i^0_G + \lambda(V-v^0_G)` (if  :math:`V > v^0_G`)
 
 .. image:: _static/dot_test_3.png
 
-The Retina Model class and Configuration
+
+Configuring the Retina Model directly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The best way to configure the model is by exploring the 
+structure with tab completion of the `.p.` parameter list.
+The retina model will give you first the list of layers and
+then the list of parameters of each layer.
+
+To change the values, you can use the method `.set`, or 
+(*but only if you use the `.p.` list*) by assigning a new value
+to the parameter directly.
+
+    >>> retina = convis.retina.Retina()
+    >>> retina.p.<tab>
+        opl, bipolar, gang_0_input, gang_0_spikes, gang_1_input, gang_1_spikes
+    >>> retina.p.bipolar.lambda_amp
+    Parameter containing:
+    tensor([ 0.])
+    >>> retina.p.bipolar.lambda_amp.set(100.0)
+    >>> retina.p.bipolar.lambda_amp = 100.0
+    >>> retina.p.bipolar.lambda_amp
+    Parameter containing:
+    tensor([ 100.])
+
+.. note::
+
+    What will not work: 
+
+        >>> retina.bipolar.lambda_amp = 100.0      # <- .p is missing!
+        >>> retina.p.bipolar["lambda_amp"] = 100.0 # 
+
+    In both cases, the Parameter will be **replaced** by the number `100.0`. It will no longer be 
+    Instead you can use `.set()`: 
+
+        >>> retina.bipolar.lambda_amp.set(100.0)
+        >>> retina.p.bipolar["lambda_amp"].set(100.0)
+        >>> retina.p.bipolar["lambda_amp"] = Parameter(100.0, doc="new parameter replacing the old one")   
+
+Also you can get a dictionary of configuration values and change the parameters there or save and
+load them to and from a json file:
+
+    >>> d = retina.get_parameters()
+    >>> d['opl_opl_filter_surround_E_tau']
+    array([0.004], dtype=float32)
+    >>> d['opl_opl_filter_surround_E_tau'][0] = 0.001
+    >>> retina.set_parameters(d)
+
+
+Configurating the Retina Model with xml files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The retina model is :mod:`convis.retina.Retina` and can be configured

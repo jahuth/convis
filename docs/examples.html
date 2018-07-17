@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart-generating-spikes">Quickstart: Generating Spikes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#quickstart-fitting-models-to-data">Quickstart: Fitting models to data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#quickstart-running-convis-as-a-simulator">Quickstart: Running Convis as a simulator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-model">Running a Model</a></li>
@@ -180,10 +181,30 @@
 for the two main use cases it was designed for:</p>
 <blockquote>
 <div><ul class="simple">
+<li><a class="reference internal" href="#quickstart-spikes"><span class="std std-ref">“I want to convert luminance into spikes”</span></a></li>
 <li><a class="reference internal" href="#quickstart-fitting"><span class="std std-ref">“I’m an experimentalist and I want to fit models to my data”</span></a></li>
 <li><a class="reference internal" href="#quickstart-simulator"><span class="std std-ref">“I need spiking activity that looks like it’s coming from the retina”</span></a></li>
 </ul>
 </div></blockquote>
+<div class="section" id="quickstart-generating-spikes">
+<h2>Quickstart: Generating Spikes<a class="headerlink" href="#quickstart-generating-spikes" title="Permalink to this headline">¶</a></h2>
+<blockquote id="quickstart-spikes">
+<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="n">some_input</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">()</span>
+<span class="n">spk</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">spiking</span><span class="o">.</span><span class="n">LeakyIntegrateAndFireNeuron</span><span class="p">()</span>
+<span class="n">spk</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">g_L</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">spk</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mf">20.0</span><span class="o">*</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//examples-1.py">Source code</a>, <a class="reference external" href=".//examples-1.png">png</a>, <a class="reference external" href=".//examples-1.hires.png">hires.png</a>, <a class="reference external" href=".//examples-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/examples-1.png" src="_images/examples-1.png" />
+</div>
+</div></blockquote>
+</div>
 <div class="section" id="quickstart-fitting-models-to-data">
 <h2>Quickstart: Fitting models to data<a class="headerlink" href="#quickstart-fitting-models-to-data" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note" id="quickstart-fitting">

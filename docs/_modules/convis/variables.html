@@ -1,0 +1,793 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>convis.variables &mdash; convis 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="convis 0.6.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> convis
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../filters.html">Filters and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html">PyTorch Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch_basics.html#pytorch-extensions-in-convis">PyTorch Extensions in Convis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Models</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs.html">The API: Convis classes and modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">convis</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>convis.variables</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for convis.variables</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">new</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">new</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="kn">from</span> <span class="nn">.misc_utils</span> <span class="k">import</span> <span class="n">unique_list</span>
+<span class="kn">from</span> <span class="nn">.o</span> <span class="k">import</span> <span class="n">O</span><span class="p">,</span> <span class="n">Ox</span><span class="p">,</span> <span class="n">save_name</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="n">replaceable_theano_vars</span> <span class="o">=</span> <span class="p">[]</span><span class="c1">#[TensorVariable,ScalarSharedVariable]</span>
+
+<span class="n">global_lookup_table</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">only_use_lookup_table</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">if</span> <span class="s1">&#39;__convis_global_lookup_table&#39;</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+    <span class="n">global_lookup_table</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;__convis_global_lookup_table&#39;</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;__convis_global_lookup_table&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_lookup_table</span>
+
+<span class="k">def</span> <span class="nf">get_convis_attribute</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">default</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">default</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+<span class="k">def</span> <span class="nf">has_convis_attribute</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+<span class="k">def</span> <span class="nf">set_convis_attribute</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">full_path</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">save_name</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])])</span>
+
+<span class="k">class</span> <span class="nc">ResolutionInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pixel_per_degree</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span><span class="n">steps_per_second</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span><span class="n">input_luminosity_range</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">filter_epsilon</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            A resolution object tells a model how the dimensions of a</span>
+<span class="sd">            discreet filter relate to the input in terms of:</span>
+
+<span class="sd">                `pixel_per_degree`: the number of pixel (x or y) that correspond to one visual degree</span>
+<span class="sd">                `steps_per_second`: the number of time steps that correspond to one second</span>
+
+<span class="sd">            The functions `steps_to_seconds` and `seconds_to_steps`</span>
+<span class="sd">            convert a float value from timesteps to seconds or vice versa.</span>
+<span class="sd">            The functions `pixel_to_degree` and `degree_to_pixel`</span>
+<span class="sd">            convert a float value from pixel to visual degree or vice versa.</span>
+
+<span class="sd">            The attributes `var_pixel_per_degree` and `var_steps_per_second`</span>
+<span class="sd">            provide theano variables that are updated every time either</span>
+<span class="sd">            numerical attribute is changed.</span>
+
+<span class="sd">            Use as such::</span>
+
+<span class="sd">                res = convis.variables.Resolution()</span>
+<span class="sd">                value_in_pixel = convis.as_parameter(100.0,&#39;value_in_pixel&#39;)</span>
+<span class="sd">                value_in_degree = convis.as_parameter(10.0,&#39;value_in_degree&#39;)</span>
+<span class="sd">                new_value_in_degree = value_in_pixel / res.var_pixel_per_degree</span>
+<span class="sd">                new_value_in_pixel = value_in_degree * res.var_pixel_per_degree</span>
+
+
+<span class="sd">            Please note: The singular of pixel is used for naming these functions:</span>
+<span class="sd">            &quot;pixel&quot; and not &quot;pixels&quot;. But to be compatible with</span>
+<span class="sd">            VirtualRetina, there is one exception: The configuration value</span>
+<span class="sd">            in VirtualRetina Configuration objects is named `pixels-per-degree`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_per_degree</span> <span class="o">=</span> <span class="n">pixel_per_degree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_per_second</span> <span class="o">=</span> <span class="n">steps_per_second</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_luminosity_range</span> <span class="o">=</span> <span class="n">input_luminosity_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_epsilon</span> <span class="o">=</span> <span class="n">filter_epsilon</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pixel_per_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_per_degree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_resolution</span><span class="o">.</span><span class="n">pixel_per_degree</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_per_degree</span>
+    <span class="nd">@pixel_per_degree</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pixel_per_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_per_degree</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">steps_per_second</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_per_second</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_resolution</span><span class="o">.</span><span class="n">_steps_per_second</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_per_second</span>
+    <span class="nd">@steps_per_second</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">steps_per_second</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_per_second</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">def</span> <span class="nf">degree_to_pixel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">degree</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_resolution</span><span class="o">.</span><span class="n">degree_to_pixel</span><span class="p">(</span><span class="n">degree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">degree</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span>
+    <span class="k">def</span> <span class="nf">pixel_to_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pixel</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_resolution</span><span class="o">.</span><span class="n">pixel_to_degree</span><span class="p">(</span><span class="n">pixel</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">pixel</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span>
+    <span class="k">def</span> <span class="nf">seconds_to_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_second</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_resolution</span><span class="o">.</span><span class="n">seconds_to_steps</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_second</span>
+    <span class="k">def</span> <span class="nf">steps_to_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">steps</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_second</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_resolution</span><span class="o">.</span><span class="n">steps_to_seconds</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_second</span>
+
+<span class="n">default_resolution</span> <span class="o">=</span> <span class="n">ResolutionInfo</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">1000.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">filter_epsilon</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">distutils.version</span> <span class="k">import</span> <span class="n">LooseVersion</span>
+
+
+<span class="k">class</span> <span class="nc">_OldVariable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            This version is for PyTorch &lt; 0.4</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_is_convis_variable</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Variable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variable_describe</span>
+            <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_text</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variable_describe</span>
+            <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_NewVariable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A Tensor</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            This version is for PyTorch &gt;= 0.4</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_is_convis_variable</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Variable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="nb">float</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">val</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variable_describe</span>
+            <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_text</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variable_describe</span>
+            <span class="k">return</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">describe_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">wrap_in_html</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="s1">&#39;0.4&#39;</span><span class="p">):</span>
+    <span class="n">Variable</span> <span class="o">=</span> <span class="n">_OldVariable</span>
+    <span class="k">def</span> <span class="nf">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">ones</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">rand</span><span class="p">(</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">randn</span><span class="p">(</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># PyTorch 0.4 and upwards</span>
+    <span class="n">Variable</span> <span class="o">=</span> <span class="n">_NewVariable</span>
+    <span class="k">def</span> <span class="nf">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ones</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">rand</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">randn</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">shp</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">State</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">State</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="n">Variable</span><span class="p">,</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="c1"># this name is different than the name of Tensor</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Parameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1">#if type(x) in [int,float]:</span>
+        <span class="c1">#    x = np.array([x])</span>
+        <span class="c1">#super(Parameter, self).__init__(torch.Tensor(x))</span>
+        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">default</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Parameter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">as_parameter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">is_variable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="s1">&#39;_is_convis_variable&#39;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">def</span> <span class="nf">dict_with_dots_to_hierarchical_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="c1"># move the empty string key (the module itself)</span>
+    <span class="c1"># to another key</span>
+    <span class="k">if</span> <span class="s1">&#39;&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;_self&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">ks</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dict_with_dots_to_hierarchical_dict</span><span class="p">({</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ks</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span> <span class="n">val</span><span class="p">}))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">old_val</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;_self&#39;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]}</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dict_with_dots_to_hierarchical_dict</span><span class="p">({</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ks</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span> <span class="n">val</span><span class="p">}))</span>
+                    <span class="c1">#raise Exception(&#39;Key collision! %s and %s&#39;%(ks[0],k))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">ks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dict_with_dots_to_hierarchical_dict</span><span class="p">({</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ks</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span> <span class="n">val</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+<div class="viewcode-block" id="create_Ox_from_torch_iterator_dicts"><a class="viewcode-back" href="../../docs.html#convis.variables.create_Ox_from_torch_iterator_dicts">[docs]</a><span class="k">def</span> <span class="nf">create_Ox_from_torch_iterator_dicts</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span><span class="n">doc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes a dictionary (or iterator with key,value pairs)</span>
+<span class="sd">        with dots in the keys and returns a hierarchical object.</span>
+
+<span class="sd">            &gt;&gt;&gt; p = convis.variables.create_Ox_from_torch_iterator_dicts(retina.named_parameters())</span>
+<span class="sd">                # the same as:</span>
+<span class="sd">            &gt;&gt;&gt; p = Ox(**dict_with_dots_to_hierarchical_dict(dict(retina.named_parameters())))</span>
+<span class="sd">            &gt;&gt;&gt; p.&lt;tab complete&gt;</span>
+<span class="sd">            &gt;&gt;&gt; p.bipolar.&lt;tab complete&gt;</span>
+<span class="sd">            &gt;&gt;&gt; p.bipolar.g_leak</span>
+
+
+<span class="sd">        :class:`convis.o.Ox` objects have a few special attributes (with leading underscores)</span>
+<span class="sd">        that help finding nodes in large hierarchies</span>
+
+<span class="sd">            &gt;&gt;&gt; p._all # lists everything with underscore </span>
+<span class="sd">                       # separating hierarchies (ie. similar</span>
+<span class="sd">                       # to `.named_parameters()`, but each works</span>
+<span class="sd">                       # as an attribute instead of a string</span>
+<span class="sd">                       # key)</span>
+<span class="sd">            &gt;&gt;&gt; p._search.g_leak.&lt;tab complete&gt;</span>
+<span class="sd">            &gt;&gt;&gt; p._search.g_leak.bipolar_g_leak</span>
+
+<span class="sd">        See also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        convis.o.Ox</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Ox</span><span class="p">(</span><span class="n">_doc</span><span class="o">=</span><span class="n">doc</span><span class="p">,</span><span class="o">**</span><span class="n">dict_with_dots_to_hierarchical_dict</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">iterator</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="create_hierarchical_dict"><a class="viewcode-back" href="../../docs.html#convis.variables.create_hierarchical_dict">[docs]</a><span class="k">def</span> <span class="nf">create_hierarchical_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span><span class="n">pi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">name_sanitizer</span><span class="o">=</span><span class="n">save_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        pi: &quot;path i&quot; offset in the path</span>
+
+<span class="sd">            The path will only be used from element pi onwards</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">unique_list</span><span class="p">([</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])[</span><span class="n">pi</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">pi</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">leaves</span> <span class="o">=</span> <span class="n">unique_list</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">]))</span> <span class="o">==</span> <span class="n">pi</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">name_sanitizer</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">)):</span> <span class="n">create_hierarchical_dict</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])</span> 
+                                                                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">pi</span> 
+                                                                <span class="ow">and</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])[</span><span class="n">pi</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">],</span> <span class="n">pi</span><span class="o">+</span><span class="mi">1</span><span class="p">)})</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">o</span><span class="p">[</span><span class="n">name_sanitizer</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">))][</span><span class="s1">&#39;_original&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span> 
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">leaves</span><span class="p">:</span>
+        <span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">name_sanitizer</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">)):</span> <span class="n">l</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">o</span></div>
+
+<span class="k">def</span> <span class="nf">create_hierarchical_Ox</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span><span class="n">pi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">name_sanitizer</span><span class="o">=</span><span class="n">save_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Ox</span><span class="p">(</span><span class="o">**</span><span class="n">create_hierarchical_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span><span class="n">pi</span><span class="p">,</span><span class="n">name_sanitizer</span><span class="o">=</span><span class="n">name_sanitizer</span><span class="p">))</span>
+
+<div class="viewcode-block" id="create_hierarchical_dict_with_nodes"><a class="viewcode-back" href="../../docs.html#convis.variables.create_hierarchical_dict_with_nodes">[docs]</a><span class="k">def</span> <span class="nf">create_hierarchical_dict_with_nodes</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span><span class="n">pi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">name_sanitizer</span><span class="o">=</span><span class="n">save_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        name_sanitizer: eg. convis.base.save_name or str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">unique_list</span><span class="p">([</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])[</span><span class="n">pi</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">pi</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">leaves</span> <span class="o">=</span> <span class="n">unique_list</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">]))</span> <span class="o">==</span> <span class="n">pi</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">p</span><span class="p">:</span> <span class="n">create_hierarchical_dict_with_nodes</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> 
+                                                        <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])</span> 
+                                                        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">pi</span> 
+                                                        <span class="ow">and</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;path&#39;</span><span class="p">,[</span><span class="n">v</span><span class="p">])[</span><span class="n">pi</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">],</span> <span class="n">pi</span><span class="o">+</span><span class="mi">1</span><span class="p">)})</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">leaves</span><span class="p">:</span>
+        <span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">name_sanitizer</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">)):</span> <span class="n">l</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">o</span></div>
+
+
+<span class="k">def</span> <span class="nf">unindent</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">textwrap</span> <span class="k">import</span> <span class="n">dedent</span>
+    <span class="k">if</span> <span class="n">text</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">dedent</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dedent</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">add_kwargs_to_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">update_convis_attributes</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;doc&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">set_convis_attribute</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="s1">&#39;doc&#39;</span><span class="p">,</span> <span class="n">unindent</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;doc&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">v</span>
+
+<span class="k">def</span> <span class="nf">raise_exception</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">e</span>
+<div class="viewcode-block" id="create_context_O"><a class="viewcode-back" href="../../docs.html#convis.variables.create_context_O">[docs]</a><span class="k">def</span> <span class="nf">create_context_O</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function creates the &#39;typical&#39; context that annotated variables can expect when defining `init` functions.</span>
+
+<span class="sd">            * `var`: the variable itself</span>
+<span class="sd">            * `node`: the node that wraps this part of the graph (providing eg. configuration options)</span>
+<span class="sd">            * `get_config`: a function of `node` that provides the configuration dictionary local to this node</span>
+<span class="sd">            * `model`: the model providing global options such as `pixel_to_degree()` and `seconds_to_step()`</span>
+<span class="sd">    </span>
+<span class="sd">        During execution:</span>
+
+<span class="sd">            * `input`: the variable that is fed as input to the model (not the node!)</span>
+
+<span class="sd">        Further, if the variable has a `config_key` and a `config_default` field,</span>
+<span class="sd">        two short cut functions retrieve and save the configuration value to minimize code redundancy:</span>
+
+<span class="sd">            * `value_from_config()`: retrieves the configuration value from `node`, falling back to `config_default` if no option is provided</span>
+<span class="sd">            * `value_to_config(v)`: calls the `set_config` method of the `node` to save a configuration value (eg. when updated when optimizing)</span>
+
+<span class="sd">        To use these values in an `init` function eg::</span>
+
+<span class="sd">            as_parameter(T.iscalar(&quot;k&quot;),init=lambda x: x.input.shape[0])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">O</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="n">default_resolution</span><span class="p">)(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">get_config</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">get_config_value</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+        <span class="n">get_config</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_config</span>
+        <span class="n">get_config_value</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_config_value</span>
+    <span class="n">config_key</span> <span class="o">=</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;config_key&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;config_key&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;get_value&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">O</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="s1">&#39;resolution&#39;</span><span class="p">,</span><span class="n">default_resolution</span><span class="p">),</span>
+                 <span class="n">get_config</span><span class="o">=</span><span class="n">get_config</span><span class="p">,</span>
+                 <span class="n">get_config_value</span><span class="o">=</span><span class="n">get_config_value</span><span class="p">,</span>
+                 <span class="n">value_from_config</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="n">config_key</span><span class="p">,</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;config_default&#39;</span><span class="p">,</span><span class="n">var</span><span class="o">.</span><span class="n">get_value</span><span class="p">())),</span>
+                 <span class="n">value_to_config</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">set_config_value</span><span class="p">(</span><span class="n">config_key</span><span class="p">,</span><span class="n">v</span><span class="p">))(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;config_key&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">has_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;config_default&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">O</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="s1">&#39;resolution&#39;</span><span class="p">,</span><span class="n">default_resolution</span><span class="p">),</span>
+                 <span class="n">get_config</span><span class="o">=</span><span class="n">get_config</span><span class="p">,</span>
+                 <span class="n">get_config_value</span><span class="o">=</span><span class="n">get_config_value</span><span class="p">,</span>
+                 <span class="n">value_from_config</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="n">config_key</span><span class="p">,</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;config_default&#39;</span><span class="p">,</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;config_default&#39;</span><span class="p">))),</span>
+                 <span class="n">value_to_config</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">set_config_value</span><span class="p">(</span><span class="n">config_key</span><span class="p">,</span><span class="n">v</span><span class="p">))(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">O</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span><span class="n">get_config_value</span><span class="o">=</span><span class="n">get_config_value</span><span class="p">,</span><span class="n">get_config</span><span class="o">=</span><span class="n">get_config</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="s1">&#39;resolution&#39;</span><span class="p">,</span><span class="n">default_resolution</span><span class="p">),</span>
+             <span class="n">value_from_config</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">raise_exception</span><span class="p">(</span><span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No config key and default value available. &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;name&#39;</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)))(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">get_convis_attribute</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;update&#39;</span><span class="p">)(</span><span class="n">create_context_O</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combining Virtual Parameters</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">is_callback</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">CallbackParameter</span><span class="p">,</span><span class="n">VirtualParameter</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">get_if_callback</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">v</span>
+
+<span class="k">class</span> <span class="nc">IndirectParameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">_is_convis_variable</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">*</span><span class="n">dependencies</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs_dependencies</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span> <span class="o">=</span> <span class="n">dependencies</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span> <span class="o">=</span> <span class="n">kwargs_dependencies</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">get_if_callback</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">],</span>
+                               <span class="o">**</span><span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span><span class="n">get_if_callback</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span><span class="o">.</span><span class="n">items</span><span class="p">()]))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">CallbackParameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">_is_convis_variable</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">call</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+<span class="k">class</span> <span class="nc">FakeTensor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">cpu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="VirtualParameter"><a class="viewcode-back" href="../../docs.html#convis.variables.VirtualParameter">[docs]</a><span class="k">class</span> <span class="nc">VirtualParameter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        VirtualParameters can generate parameter values</span>
+<span class="sd">        from a dependency structure of other parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        Example::</span>
+<span class="sd">        </span>
+<span class="sd">            a = VirtualParameter(float,value=0.1)</span>
+<span class="sd">            b = VirtualParameter(int,value=0)</span>
+<span class="sd">            v = VirtualParameter(convis2.numerical_filters.exponential_filter_5d).set_callback_arguments(tau=a,n=b)</span>
+<span class="sd">            a.set(0.01) # updating this parameter causes the function of v to be reevaluated </span>
+<span class="sd">            plot(v.get()[0,:,0,0,0])</span>
+<span class="sd">            b.set(2) # the function is reevaluated again</span>
+<span class="sd">            plot(v.get()[0,:,0,0,0])</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_is_convis_variable</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">FakeTensor</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">call</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">dependencies</span><span class="o">=</span><span class="p">[],</span><span class="n">kwargs_dependencies</span><span class="o">=</span><span class="p">{},</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span> <span class="o">=</span> <span class="n">dependencies</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span> <span class="o">=</span> <span class="n">kwargs_dependencies</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;VirtualParameter(&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span><span class="o">+</span><span class="p">(</span>
+            <span class="s1">&#39; with variable &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;)&#39;</span>
+    <span class="k">def</span> <span class="nf">set_callback_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">dependencies</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs_dependencies</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span> <span class="o">=</span> <span class="n">dependencies</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span> <span class="o">=</span> <span class="n">kwargs_dependencies</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">is_callback</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">set_variable</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">ret</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="s1">&#39;update&#39;</span><span class="p">):</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">c</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;set&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39;data&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="s1">&#39;shape&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,:,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,:,:,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Do not know how to set variable &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; with value &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">get_if_callback</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">],</span>
+                               <span class="o">**</span><span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span><span class="n">get_if_callback</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_dependencies</span><span class="o">.</span><span class="n">items</span><span class="p">()]))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jacob Huth.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.6.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

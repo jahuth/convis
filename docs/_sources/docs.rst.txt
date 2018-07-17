@@ -30,6 +30,12 @@ Base classes `convis.base`
    :members:
 
 
+Variables `convis.variables`
+---------------------------
+
+.. automodule:: convis.variables
+   :members:
+
 
 Utilitary methods `convis.utils`
 ----------------------------------

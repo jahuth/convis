@@ -121,6 +121,7 @@
 <li class="toctree-l2"><a class="reference internal" href="docs_optimizer.html">Optimizers <cite>convis.optimizer</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_tests.html">Automatic Tests <cite>convis.tests</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.base">Base classes <cite>convis.base</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs.html#variables-convis-variables">Variables <cite>convis.variables</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.utils">Utilitary methods <cite>convis.utils</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#sample-data-convis-samples">Sample Data <cite>convis.samples</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs.html#module-convis.variable_describe">Methods to describe objects <cite>convis.variable_describe</cite></a></li>
@@ -551,7 +552,12 @@ trigger them to re-calculate the filters.</p>
 <dl class="class">
 <dt id="convis.filters.retina.FullConvolutionOPLFilter">
 <em class="property">class </em><code class="descclassname">convis.filters.retina.</code><code class="descname">FullConvolutionOPLFilter</code><a class="reference internal" href="_modules/convis/filters/retina.html#FullConvolutionOPLFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.retina.FullConvolutionOPLFilter" title="Permalink to this definition">¶</a></dt>
-<dd><div class="admonition seealso">
+<dd><p>Convolution OPL Filter</p>
+<p>The VirtualParameters of the model create a 3d convolution filter.
+Any time they are changed, the current filter will be replaced!
+The VirtualParameters can not be optimized, only the 
+convolution filter will change when using an optimizer.</p>
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="#convis.retina.Retina" title="convis.retina.Retina"><code class="xref py py-obj docutils literal"><span class="pre">convis.retina.Retina</span></code></a>, <a class="reference internal" href="#convis.filters.retina.OPL" title="convis.filters.retina.OPL"><code class="xref py py-obj docutils literal"><span class="pre">OPL</span></code></a>, <a class="reference internal" href="#convis.filters.retina.HalfRecursiveOPLFilter" title="convis.filters.retina.HalfRecursiveOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">HalfRecursiveOPLFilter</span></code></a>, <a class="reference internal" href="#convis.filters.retina.SeperatableOPLFilter" title="convis.filters.retina.SeperatableOPLFilter"><code class="xref py py-obj docutils literal"><span class="pre">SeperatableOPLFilter</span></code></a></p>
 </div>
