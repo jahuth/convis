@@ -5,11 +5,15 @@ import math
 from .. import numerical_filters as nf
 from .. import variables
 from ..base import Layer
+from .. import _get_default_resolution
 TIME_DIMENSION = 2
 X_DIMENSION = 3
 Y_DIMENSION = 4
 
-
+__all__ = ['TimePadding','Delay','VariableDelay','Conv3d','Conv2d','Conv1d','RF','L','LN',
+           'TemporalLowPassFilterRecursive','TemporalHighPassFilterRecursive','SpatialRecursiveFilter',
+           'SmoothConv','NLRectify','NLSquare','NLRectifyScale','NLRectifySquare',
+           'Sum','sum']
 
 class TimePadding(Layer):
     """
@@ -123,12 +127,12 @@ class VariableDelay(Layer):
     def __init__(self, delays = None):
         super(VariableDelay, self).__init__()
         if delays is None:
-            delays = variables.zeros((1,1,1,1,1))
-        self.delays = torch.nn.Parameter(delays)
+            delays = torch.zeros((1,1,1,1,1))
+        self.delays = variables.Parameter(delays)
         self.all_delay = Delay()
     def forward(self, x):
         if self.delays is None or self.delays.size()[-2:] != x.size()[-2:]:
-            self.delays = torch.nn.Parameter(variables.ones(x.size()[-2:]))
+            self.delays = variables.Parameter(variables.ones(x.size()[-2:]))
         self.all_delay.delay = int(torch.min(self.delays))
         self.all_delay.length = int(torch.max(self.delays)-torch.min(self.delays))
         x_delayed = self.all_delay(x)
@@ -398,8 +402,8 @@ class Conv2d(nn.Conv2d):
             del kwargs['autopad']
         super(Conv2d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
-            self.bias.data[0] = 0.0
-        self.weight.data = torch.zeros(self.weight.data.shape)
+            self.bias = variables.Parameter(0.0)
+        self.weight = variables.Parameter(torch.zeros(self.weight.data.shape))
     def set_weight(self,w,normalize=False):
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape).data * w
@@ -441,7 +445,7 @@ class Conv1d(nn.Conv1d):
         super(Conv1d, self).__init__(*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
-        self.weight.data = variables.zeros(self.weight.data.shape)
+        self.weight.data = torch.zeros(self.weight.data.shape)
     @property
     def filter_length(self):
         return self.weight.data.shape[0]
@@ -488,13 +492,13 @@ class TemporalLowPassFilterRecursive(Layer):
         self.dim = 5
         super(TemporalLowPassFilterRecursive, self).__init__()
         #self.tau = Parameter(0.01,requires_grad=True)
-        self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
+        self.tau = variables.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
         self.register_state('last_y',None)
     def clear(self):
         if hasattr(self,'last_y'):
             self.last_y = None
     def forward(self, x):
-        steps = variables.Parameter(1.0/variables.default_resolution.steps_per_second,requires_grad=False)
+        steps = variables.Parameter(1.0/_get_default_resolution().steps_per_second,requires_grad=False)
         if self._use_cuda:
             steps = steps.cuda()
         a_0 = 1.0
@@ -520,14 +524,14 @@ class TemporalHighPassFilterRecursive(Layer):
         self.dim = 5
         super(TemporalHighPassFilterRecursive, self).__init__()
         #self.tau = Parameter(0.01,requires_grad=True)
-        self.tau = torch.nn.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
-        self.k = torch.nn.Parameter(torch.Tensor([0.5]),requires_grad=requires_grad)
+        self.tau = variables.Parameter(torch.Tensor([0.01]),requires_grad=requires_grad)
+        self.k = variables.Parameter(torch.Tensor([0.5]),requires_grad=requires_grad)
         self.register_state('last_y',None)
     def clear(self):
         if hasattr(self,'last_y'):
             self.last_y = None
     def forward(self, x):
-        steps = variables.Parameter(1.0/variables.default_resolution.steps_per_second,requires_grad=False)
+        steps = variables.Parameter(1.0/_get_default_resolution().steps_per_second,requires_grad=False)
         if self._use_cuda:
             steps = steps.cuda()
         a_0 = 1.0
@@ -565,7 +569,7 @@ class SpatialRecursiveFilter(Layer):
     def __init__(self,kernel_dim=(1,1,1),requires_grad=True):
         self.dim = 5
         super(SpatialRecursiveFilter, self).__init__()
-        self.density = torch.nn.Parameter(torch.Tensor([1.0]))
+        self.density = variables.Parameter(torch.Tensor([1.0]))
     def forward(self, x):
         config = {}
         alpha = 1.695 * self.density
@@ -614,7 +618,7 @@ class SpatialRecursiveFilter(Layer):
             approximate a gaussian filter with 
             sigma standard deviation.
         """
-        self.density.data[0] = 1.0/(sigma*variables.default_resolution.pixel_per_degree)
+        self.density.data[0] = 1.0/(sigma*_get_default_resolution().pixel_per_degree)
 
 
 class SmoothConv(Layer):
@@ -697,6 +701,15 @@ class SmoothConv(Layer):
 
 class NLRectify(Layer):
     """Rectifies the input (ie. sets values < 0 to 0)
+
+    Note
+    ----
+
+    To implement simple nonlinearities, you can also
+    use lambda expressions::
+
+        model = convis.mdoels.LN()
+        model.nonlinearity = lambda inp: (inp).clamp(min=0.0,max=1000000.0)
     """
     def __init__(self):
         super(NLRectify, self).__init__()
@@ -706,9 +719,9 @@ class NLRectify(Layer):
 class NLRectifyScale(Layer):
     """Rectifies the input, but transforms the input with a scale and a bias.
 
-        Pseudocode:
+        Pseudocode::
 
-            out = bias + in * scale
+            out = bias + the_input * scale
             out[out < 0] = 0
 
     """

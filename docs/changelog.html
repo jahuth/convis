@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; convis 0.6.1 documentation</title>
+  <title>Changelog &mdash; convis 0.6.1 documentation</title>
   
 
   
@@ -36,8 +36,8 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="convis 0.6.1 documentation" href="index.html"/>
-        <link rel="next" title="Usage" href="usage.html"/>
-        <link rel="prev" title="Welcome to the documentation of Convis" href="index.html"/> 
+        <link rel="next" title="Filters and Layers" href="filters.html"/>
+        <link rel="prev" title="Examples" href="examples.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -92,10 +92,14 @@
             
               <p class="caption"><span class="caption-text">Get Started</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.6.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">0.6</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">Features</span></p>
 <ul>
@@ -151,13 +155,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Installation</li>
+      <li>Changelog</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/changelog.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -170,17 +174,50 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>0.6.1<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
-<li>install pytorch for your Python and CUDA version from <a class="reference external" href="http://pytorch.org/">http://pytorch.org/</a></li>
-<li>install <cite>convis</cite> via pip</li>
+<li>It is now possible to disable the computational graph see  <a class="reference internal" href="usage.html#disable-graph"><span class="std std-ref">these examples</span></a></li>
+<li><dl class="first docutils">
+<dt>The documentation now has <a class="reference internal" href="usage.html#global-configuration"><span class="std std-ref">a section</span></a> about changing the global configuration parameters.</dt>
+<dd><ul class="first last">
+<li><cite>default_resolution</cite> now lives directly in <cite>convis</cite>, no longer in <cite>convis.variables</cite></li>
+<li>other submodules now use <cite>convis._get_default_resolution()</cite> to get the current <cite>default_resolution</cite> to avoid copies that don’t update</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>some issues with creating inline plots in Python 3 were fixed</li>
+<li><dl class="first docutils">
+<dt>feeding an <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object to a <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a> function will now take the first output and process it as input</dt>
+<dd><ul class="first last">
+<li>this way, it is now easier to continue a graph through multiple models</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>a new submodule <a class="reference internal" href="docs_models.html#module-convis.layers" title="convis.layers"><code class="xref py py-mod docutils literal"><span class="pre">convis.layers</span></code></a> now contains all <code class="xref py py-class docutils literal"><span class="pre">Layers</span></code> from <a class="reference internal" href="docs_filters.html#module-convis.filters" title="convis.filters"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters</span></code></a> and <code class="xref py py-mod docutils literal"><span class="pre">convis.models</span></code>! If you are unsure whether something is only a “filter” or a already a “model”, they can all be found in the same module now. Still, <a class="reference internal" href="docs_filters.html#module-convis.filters" title="convis.filters"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters</span></code></a> and <code class="xref py py-mod docutils literal"><span class="pre">convis.models</span></code> will continue to be available separately.</li>
+<li><dl class="first docutils">
+<dt>added an unfinished class <code class="xref py py-class docutils literal"><span class="pre">convis.models.Dict</span></code> which will be similar to <a class="reference internal" href="docs_models.html#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">convis.models.List</span></code></a>, but can name its layers arbitrarily.</dt>
+<dd><ul class="first last">
+<li>possibly both classes will be merged and replace the <a class="reference internal" href="docs_models.html#convis.models.Sequential" title="convis.models.Sequential"><code class="xref py py-class docutils literal"><span class="pre">convis.models.Sequential</span></code></a> and <a class="reference internal" href="docs_models.html#convis.models.Parallel" title="convis.models.Parallel"><code class="xref py py-class docutils literal"><span class="pre">convis.models.Parallel</span></code></a> classes</li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
-<p>It is recommended to install the package directly from github to get the latest version</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install git+https://github.com/jahuth/convis.git
-</pre></div>
+</div>
+<div class="section" id="id2">
+<h2>0.6<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>This version fixed an issue with the new PyTorch version (&gt;0.4)</li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 
@@ -194,10 +231,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="filters.html" class="btn btn-neutral float-right" title="Filters and Layers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Welcome to the documentation of Convis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

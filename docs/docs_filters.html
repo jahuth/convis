@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Filters convis.filters &mdash; convis 0.6.0 documentation</title>
+  <title>Filters convis.filters &mdash; convis 0.6.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.0 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.1 documentation" href="index.html"/>
         <link rel="up" title="The API: Convis classes and modules" href="docs.html"/>
         <link rel="next" title="Models in convis.models" href="docs_models.html"/>
         <link rel="prev" title="The API: Convis classes and modules" href="docs.html"/> 
@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Features</span></p>
 <ul>
@@ -112,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="docs_models.html">Models in <cite>convis.models</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_models.html#module-convis.layers">Finding all Layers in one submodules <cite>convis.layers</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_retina.html">VirtualRetina-like Simulator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_streams.html">Streams <cite>convis.streams</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs_optimizer.html">Optimizers <cite>convis.optimizer</cite></a></li>
@@ -431,9 +433,10 @@ so that they are not fittable.</p>
 <em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">NLRectifyScale</code><a class="reference internal" href="_modules/convis/filters.html#NLRectifyScale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.NLRectifyScale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rectifies the input, but transforms the input with a scale and a bias.</p>
 <p>Pseudocode:</p>
-<blockquote>
-<div>out = bias + in * scale
-out[out &lt; 0] = 0</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">bias</span> <span class="o">+</span> <span class="n">the_input</span> <span class="o">*</span> <span class="n">scale</span>
+<span class="n">out</span><span class="p">[</span><span class="n">out</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -546,7 +549,7 @@ when fitted.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.0',
+            VERSION:'0.6.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

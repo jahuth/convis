@@ -5,6 +5,9 @@
 Models in `convis.models`
 --------------------------
 
+.. automodule:: convis.modules
+   :members:
+
 
 Models are essentially the same as filters: they are both
 classes that inherit most of their capabilities from :class:`Layer`.
@@ -57,3 +60,19 @@ Convolution Model
 .. autoclass:: convis.models.McIntosh
    :members:
 
+Finding all Layers in one submodules `convis.layers` 
+-----------------------------------------------------
+
+.. automodule:: convis.layers
+
+:mod:`convis.layers` now contains all :class:`~convis.base.Layers`
+from :mod:`convis.filters` and :mod:`convis.models`. If you are 
+unsure whether something is only a "filter" or a already a "model", 
+they can all be found in the same module now. Still, :mod:`convis.filters` 
+and :mod:`convis.models` will continue to be available separately.
+
+
+.. code-block:: python
+
+    import convis
+    len(dir(convis.layers))

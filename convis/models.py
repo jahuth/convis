@@ -17,17 +17,191 @@ from .filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION, Delay, VariableDela
 from . import variables, filters
 from .retina import Retina
 
-__all__ = ['L','RF','LN','LNLN','LNFDLNF','LNFDSNF','McIntosh','Retina','LNCascade','List']
+__all__ = ['L','RF','LN','LNLN','LNFDLNF','LNFDSNF','McIntosh','Retina','LNCascade','List', 'Dict', 'Sequential', 'Parallel',
+           'make_parallel_sequential_model','make_sequential_parallel_model']
+
+
+class List(Layer):
+    """A sequential list of Layers that registers its items as submodules and provides tab-completable names with a prefix (by default 'layer_').
+
+    The list provides a forward function that sequentially
+    applies each module in the list.
+
+    Arguments
+    ---------
+    Any modules that should be added to the list
+
+    The argument `mode` can be 'sequential' or 'parallel' and changes
+    if the `forward` function will apply Layers one after another,
+    or feed the same input to all Layers and combine the output.
+
+    Providing an argument `sum_if_parallel` will change how the outputs will be
+    combined if `mode='parallel`. This can be a string ('cat' for concatenation on axis 0 (batch channel),
+    'cat_1' for concatenating at axis 1 (color channel),
+    'cat_2' for concatenating at time channel, 'cat_2' or 'cat_3' for concatenating in space,
+    'sum' for total sum,'sum_0' for summing over axis 0, etc.)
+
+
+    Examples
+    --------
+
+        >>> l = convis.models.List()
+        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
+        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
+        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
+        >>> print l.layer_2
+        Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)
+        >>> some_input = convis.samples.moving_gratings()
+        >>> o = l.run(some_input,dt=200)
+
+    See Also
+    --------
+    make_parallel_sequential_model
+    make_sequential_parallel_model
+    """
+    def __init__(self, *args, **kwargs):
+        super(List, self).__init__()
+        self._prefix = 'layer_'
+        self._idx = 0
+        self.mode=kwargs.pop('mode','sequential')
+        self.sum = kwargs.pop('sum_if_parallel','cat')
+        for module in args:
+            self.append(module)
+    def __getitem__(self, idx):
+        if idx < 0:
+            idx = len(self) - idx
+        if idx < 0 or idx >= len(self._modules):
+            raise IndexError('index {} is out of range'.format(idx))
+        it = iter(self._modules.values())
+        for i in range(idx):
+            next(it)
+        return next(it)
+    def __setitem__(self, idx, val):
+        if idx < 0:
+            idx = len(self) - idx
+        if idx < 0 or idx > len(self._modules):
+            raise IndexError('index {} is out of range'.format(idx))
+        if idx == len(self._modules):
+            self.append(val)
+        else:
+            self._modules[self._prefix+str(idx)] = val
+    def __iter__(self):
+        return iter(self._modules.values())
+    def __iadd__(self, modules):
+        return self.extend(modules)
+    def append(self,module):
+        """Appends a module to the end of the list.
+
+        Arguments
+        ---------
+        module (torch.nn.Module, convis.Layer or function): module to append
+        
+        Returns
+        -------
+        the list itself
+        """
+        try:
+            self.add_module(self._prefix+str(self._idx), module)
+        except TypeError:
+            self._modules[self._prefix+str(self._idx)] = module
+        self._idx += 1
+        return self
+    def __len__(self):
+        return len(self._modules)
+    def extend(self, modules):
+        """Extends the list with modules from a Python iterable.
+
+        Arguments
+        ---------
+        modules (iterable): modules to append
+
+        Returns
+        -------
+        the list itself
+        """
+        for module in modules:
+            self.append(module)
+        return self
+    def forward(self, input):
+        if self.mode == 'sequential':
+            for module in self._modules.values():
+                input = module(input)
+            return input
+        elif self.mode == 'parallel':
+            outputs = []
+            for key,module in self._modules.items():
+                if key is not 'sum':
+                    outputs.append(module(input))
+            if self.sum == 'sum':
+                return filters.sum(*outputs, dim=0)
+            if self.sum == 'sum_0':
+                return filters.sum(*outputs, dim=0)
+            if self.sum == 'sum_1':
+                return filters.sum(*outputs, dim=1)
+            if self.sum == 'cat':
+                return torch.cat(outputs, dim=0)
+            if self.sum == 'cat_0':
+                return torch.cat(outputs, dim=0)
+            if self.sum == 'cat_1':
+                return torch.cat(outputs, dim=1)
+            if type(self.sum) is str:
+                raise Exception('Method not implemented `%s`, please supply a function or Layer.'%str(self.sum))
+            return self.sum(*outputs)
+
+class Dict(List):
+    """A dictionary of Layers that registers its items as submodules
+    and provides tab-completable names  of unnamed Layers 
+    with a prefix (by default 'layer_').
+
+    The dict provides a forward function that sequentially
+    applies each module in the list *in insertion order*.
+
+    Arguments
+    ---------
+    Any modules that should be added to the list
+
+    Examples
+    --------
+
+        >>> l = convis.models.List()
+        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
+        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
+        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
+        >>> print l.layer_2
+        Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)
+        >>> some_input = convis.samples.moving_gratings()
+        >>> o = l.run(some_input,dt=200)
+
+    """
+    def __init__(self, *args, **kwargs):
+        super(Dict, self).__init__()
+        self.mode=kwargs.pop('mode','sequential')
+        self.sum = kwargs.pop('sum_if_parallel','cat')
+        self._prefix = 'layer_'
+        self._idx = 0
+        from collections import OrderedDict
+        for idx, module in enumerate(args):
+            if isinstance(module, OrderedDict):
+                for key, module_in_dict in module.items():
+                    self._modules[key]  = module_in_dict
+            elif isinstance(module, tuple) and len(module) == 2:
+                self._modules[module[0]] = module[1]
+            else:
+                self._modules['layer_'+str(idx)] = module
+        for name, module in kwargs.items():
+            self[name] = module
 
 class Sequential(nn.Sequential,Layer):
     """A Model that executes Layers sequentially,
     passing the output of one as the input of the next.
 
-    This class inherits from torch.nn.Sequential and offers
+    This class inherits from :class:`torch.nn.Sequential` and offers
     the same mechanism for enumerating the provided Layers.
     The :class:`List` class will give modules names starting
     with 'layer_' to make them tab-completable and offers the
-    same forward function to compute layers sequentially.
+    a similar forward function to compute layers sequentially.
+
+    Using :class:`List` is recommended over :class:`Sequential`.
 
     See Also
     ---------
@@ -36,11 +210,21 @@ class Sequential(nn.Sequential,Layer):
     def __init__(self, *args):
         super(Sequential, self).__init__(*args)
 
+
+
 class Parallel(Layer):
     r"""A container to execute layers in parallel.
     Modules will be added to it in the order they are passed in the constructor.
     Alternatively, an ordered dict of modules can also be passed in.
 
+    Using :class:`List` with `mode='parallel'` is recommended over 
+    :class:`Parallel` if the names of the modules are not relevant.
+
+    Providing an argument `sum` will change how the outputs will be
+    combined. This can be a string ('cat' for concatenation on axis 0 (batch channel),
+    'cat_1' for concatenating at axis 1 (color channel),
+    'cat_2' for concatenating at time channel, 'cat_2' or 'cat_3' for concatenating in space,
+    'sum' for total sum,'sum_0' for summing over axis 0, etc.)
 
     Examples
     ---------
@@ -53,7 +237,7 @@ class Parallel(Layer):
         model = nn.Parallel(
                 conv1,
                 conv2,
-                combine = 'cat_1'
+                sum = 'cat_1'
             ) # concatenates the output at dimension 1
         model = convis.models.Parallel(
                 convis.filters.Conv3d(1,2,(10,1,1),time_pad=True),
@@ -62,7 +246,7 @@ class Parallel(Layer):
             ) # concatenates and sums the input at dimension 0
             # all other output dimensions MUST be the same!
 
-        # Example of using Sequential with OrderedDict
+        # Example of using Parallel with OrderedDict
         conv1 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)
         conv2 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)
         model = nn.Parallel(OrderedDict([
@@ -111,94 +295,83 @@ class Parallel(Layer):
         if type(self.sum) is str:
             raise Exception('Method not implemented `%s`, please supply a function or Layer.'%str(self.sum))
         return self.sum(*outputs)
-
-class List(Layer):
-    """A sequential list of Layers
-    that registers its items as submodules and provides tab-completable
-    names with a prefix (by default 'layer_').
-
-    The list provides a forward function that sequentially
-    applies each module in the list.
-
-    Arguments
-    ---------
-    Any modules that should be added to the list
-
-    Examples
-    --------
-
-        >>> l = convis.models.List()
-        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
-        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
-        >>> l.append(convis.filters.Conv3d(1, 1, (1,10,10)))
-        >>> print l.layer_2
-        Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)
-        >>> some_input = convis.samples.moving_gratings()
-        >>> o = l.run(some_input,dt=200)
-
-    """
-    def __init__(self, *args):
-        super(List, self).__init__()
-        self._prefix = 'layer_'
-        self._idx = 0
-        for module in args:
-            self.append(module)
-    def __getitem__(self, idx):
-        if idx < 0:
-            idx = len(self) - idx
-        if idx < 0 or idx >= len(self._modules):
-            raise IndexError('index {} is out of range'.format(idx))
-        it = iter(self._modules.values())
-        for i in range(idx):
-            next(it)
-        return next(it)
-    def __setitem__(self, idx, val):
-        if idx < 0:
-            idx = len(self) - idx
-        if idx < 0 or idx > len(self._modules):
-            raise IndexError('index {} is out of range'.format(idx))
-        if idx == len(self._modules):
-            self.append(val)
-        else:
-            self._modules[self._prefix+str(idx)] = val
-    def __iter__(self):
-        return iter(self._modules.values())
-    def __iadd__(self, modules):
-        return self.extend(modules)
-    def append(self,module):
-        """Appends a module to the end of the list.
-
-        Arguments
-        ---------
-        module (torch.nn.Module, convis.Layer or function): module to append
         
-        Returns
-        -------
-        the list itself
-        """
-        self.add_module(self._prefix+str(self._idx), module)
-        self._idx += 1
-        return self
-    def __len__(self):
-        return len(self._modules)
-    def extend(self, modules):
-        """Extends the list with modules from a Python iterable.
 
-        Arguments
-        ---------
-        modules (iterable): modules to append
+def make_sequential_parallel_model(list_of_layers):
+    """Creates an alternating sequential/parallel model starting with a sequential layer.
 
-        Returns
-        -------
-        the list itself
-        """
-        for module in modules:
-            self.append(module)
-        return self
-    def forward(self, input):
-        for module in self._modules.values():
-            input = module(input)
-        return input
+    Example
+    -------
+
+        >>> import convis
+        >>> A = convis.filters.Conv3d(1,1,(10,1,1))
+        >>> B = convis.filters.Conv3d(1,1,(10,1,1))
+        >>> C = convis.filters.Conv3d(1,1,(10,1,1))
+        >>> m = make_sequential_parallel_model([A,[B,C]])
+
+    Will create a model that executes first `A` and then (sequential)
+    feeds the output to both `B` and `C`, concatenating
+    the ouput in dimension 0 (parallel).
+
+    For each stage, the `mode` (sequential/parallel) can 
+    be switched, since both are implemented by a :class:`List` object.
+
+        >>> # to switch from sequential->parallel to parallel->sequential
+        >>> m = make_sequential_parallel_model([A,[B,C]])
+        >>> m.mode = 'parallel'
+        >>> m.sum = 'cat_1' # concatenating at dimension 1 instead of 0
+        >>> m.layer_1.mode = 'sequential'
+
+    See Also
+    --------
+    List
+    make_sequential_parallel_model
+    """
+    model = List(mode='sequential')
+    for layer in list_of_layers:
+        if type(layer) is list:
+            model.append(make_parallel_sequential_model(layer))
+        else:
+            model.append(layer)
+    return model
+
+def make_parallel_sequential_model(list_of_layers):
+    """Creates an alternating sequential/parallel model starting with a parallel layer.
+
+    Example
+    -------
+
+        >>> import convis
+        >>> A = convis.filters.Conv3d(1,1,(10,1,1))
+        >>> B = convis.filters.Conv3d(1,1,(10,1,1))
+        >>> C = convis.filters.Conv3d(1,1,(10,1,1))
+        >>> m = make_parallel_sequential_model([A,[B,C]])
+
+    Will create a model that feeds the input to `A` as well
+    as to `B` (parallel). Then the output of `B` is fed to `C` (sequential) and the
+    result is concatenated to the output of `A`.
+
+    For each stage, the `mode` (sequential/parallel) can 
+    be switched, since both are implemented by a :class:`List` object.
+
+        >>> # to switch from parallel->sequential to sequential->parallel
+        >>> m = make_parallel_sequential_model([A,[B,C]])
+        >>> m.mode = 'sequential'
+        >>> m.layer_1.mode = 'parallel'
+        >>> m.layer_1.sum = 'cat_1' # concatenating at dimension 1 instead of 0
+
+    See Also
+    --------
+    List
+    make_parallel_sequential_model
+    """
+    model = List(mode='parallel')
+    for layer in list_of_layers:
+        if type(layer) is list:
+            model.append(make_parallel_sequential_model(layer))
+        else:
+            model.append(layer)
+    return model
 
 class LNCascade(Layer):
     """

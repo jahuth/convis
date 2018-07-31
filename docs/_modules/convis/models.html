@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.models &mdash; convis 0.6.0 documentation</title>
+  <title>convis.models &mdash; convis 0.6.1 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.0 documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+    <link rel="top" title="convis 0.6.1 documentation" href="../../index.html"/>
+        <link rel="up" title="convis" href="../convis.html"/> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Features</span></p>
 <ul>
@@ -151,6 +152,8 @@
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
+          <li><a href="../convis.html">convis</a> &raquo;</li>
+        
       <li>convis.models</li>
     
     
@@ -188,17 +191,191 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variables</span><span class="p">,</span> <span class="n">filters</span>
 <span class="kn">from</span> <span class="nn">.retina</span> <span class="k">import</span> <span class="n">Retina</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">,</span><span class="s1">&#39;RF&#39;</span><span class="p">,</span><span class="s1">&#39;LN&#39;</span><span class="p">,</span><span class="s1">&#39;LNLN&#39;</span><span class="p">,</span><span class="s1">&#39;LNFDLNF&#39;</span><span class="p">,</span><span class="s1">&#39;LNFDSNF&#39;</span><span class="p">,</span><span class="s1">&#39;McIntosh&#39;</span><span class="p">,</span><span class="s1">&#39;Retina&#39;</span><span class="p">,</span><span class="s1">&#39;LNCascade&#39;</span><span class="p">,</span><span class="s1">&#39;List&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">,</span><span class="s1">&#39;RF&#39;</span><span class="p">,</span><span class="s1">&#39;LN&#39;</span><span class="p">,</span><span class="s1">&#39;LNLN&#39;</span><span class="p">,</span><span class="s1">&#39;LNFDLNF&#39;</span><span class="p">,</span><span class="s1">&#39;LNFDSNF&#39;</span><span class="p">,</span><span class="s1">&#39;McIntosh&#39;</span><span class="p">,</span><span class="s1">&#39;Retina&#39;</span><span class="p">,</span><span class="s1">&#39;LNCascade&#39;</span><span class="p">,</span><span class="s1">&#39;List&#39;</span><span class="p">,</span> <span class="s1">&#39;Dict&#39;</span><span class="p">,</span> <span class="s1">&#39;Sequential&#39;</span><span class="p">,</span> <span class="s1">&#39;Parallel&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;make_parallel_sequential_model&#39;</span><span class="p">,</span><span class="s1">&#39;make_sequential_parallel_model&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="List"><a class="viewcode-back" href="../../docs_models.html#convis.models.List">[docs]</a><span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A sequential list of Layers that registers its items as submodules and provides tab-completable names with a prefix (by default &#39;layer_&#39;).</span>
+
+<span class="sd">    The list provides a forward function that sequentially</span>
+<span class="sd">    applies each module in the list.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    Any modules that should be added to the list</span>
+
+<span class="sd">    The argument `mode` can be &#39;sequential&#39; or &#39;parallel&#39; and changes</span>
+<span class="sd">    if the `forward` function will apply Layers one after another,</span>
+<span class="sd">    or feed the same input to all Layers and combine the output.</span>
+
+<span class="sd">    Providing an argument `sum_if_parallel` will change how the outputs will be</span>
+<span class="sd">    combined if `mode=&#39;parallel`. This can be a string (&#39;cat&#39; for concatenation on axis 0 (batch channel),</span>
+<span class="sd">    &#39;cat_1&#39; for concatenating at axis 1 (color channel),</span>
+<span class="sd">    &#39;cat_2&#39; for concatenating at time channel, &#39;cat_2&#39; or &#39;cat_3&#39; for concatenating in space,</span>
+<span class="sd">    &#39;sum&#39; for total sum,&#39;sum_0&#39; for summing over axis 0, etc.)</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        &gt;&gt;&gt; l = convis.models.List()</span>
+<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; print l.layer_2</span>
+<span class="sd">        Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)</span>
+<span class="sd">        &gt;&gt;&gt; some_input = convis.samples.moving_gratings()</span>
+<span class="sd">        &gt;&gt;&gt; o = l.run(some_input,dt=200)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    make_parallel_sequential_model</span>
+<span class="sd">    make_sequential_parallel_model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">List</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="s1">&#39;layer_&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span><span class="s1">&#39;sequential&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sum_if_parallel&#39;</span><span class="p">,</span><span class="s1">&#39;cat&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;index </span><span class="si">{}</span><span class="s1"> is out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+            <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;index </span><span class="si">{}</span><span class="s1"> is out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span>
+<div class="viewcode-block" id="List.append"><a class="viewcode-back" href="../../docs_models.html#convis.models.List.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">module</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Appends a module to the end of the list.</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        module (torch.nn.Module, convis.Layer or function): module to append</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        the list itself</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">),</span> <span class="n">module</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">)</span>
+<div class="viewcode-block" id="List.extend"><a class="viewcode-back" href="../../docs_models.html#convis.models.List.extend">[docs]</a>    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extends the list with modules from a Python iterable.</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        modules (iterable): modules to append</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        the list itself</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;sequential&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="nb">input</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">input</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;parallel&#39;</span><span class="p">:</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
+                    <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">filters</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">==</span> <span class="s1">&#39;sum_0&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">filters</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">==</span> <span class="s1">&#39;sum_1&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">filters</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">==</span> <span class="s1">&#39;cat&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">==</span> <span class="s1">&#39;cat_0&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">==</span> <span class="s1">&#39;cat_1&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Method not implemented `</span><span class="si">%s</span><span class="s1">`, please supply a function or Layer.&#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">)</span></div>
+
+<span class="k">class</span> <span class="nc">Dict</span><span class="p">(</span><span class="n">List</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A dictionary of Layers that registers its items as submodules</span>
+<span class="sd">    and provides tab-completable names  of unnamed Layers </span>
+<span class="sd">    with a prefix (by default &#39;layer_&#39;).</span>
+
+<span class="sd">    The dict provides a forward function that sequentially</span>
+<span class="sd">    applies each module in the list *in insertion order*.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    Any modules that should be added to the list</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        &gt;&gt;&gt; l = convis.models.List()</span>
+<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
+<span class="sd">        &gt;&gt;&gt; print l.layer_2</span>
+<span class="sd">        Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)</span>
+<span class="sd">        &gt;&gt;&gt; some_input = convis.samples.moving_gratings()</span>
+<span class="sd">        &gt;&gt;&gt; o = l.run(some_input,dt=200)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Dict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span><span class="s1">&#39;sequential&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sum_if_parallel&#39;</span><span class="p">,</span><span class="s1">&#39;cat&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="s1">&#39;layer_&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">module_in_dict</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="o">=</span> <span class="n">module_in_dict</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="n">module</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">module</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="s1">&#39;layer_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">module</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
 
 <div class="viewcode-block" id="Sequential"><a class="viewcode-back" href="../../docs_models.html#convis.models.Sequential">[docs]</a><span class="k">class</span> <span class="nc">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">,</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A Model that executes Layers sequentially,</span>
 <span class="sd">    passing the output of one as the input of the next.</span>
 
-<span class="sd">    This class inherits from torch.nn.Sequential and offers</span>
+<span class="sd">    This class inherits from :class:`torch.nn.Sequential` and offers</span>
 <span class="sd">    the same mechanism for enumerating the provided Layers.</span>
 <span class="sd">    The :class:`List` class will give modules names starting</span>
 <span class="sd">    with &#39;layer_&#39; to make them tab-completable and offers the</span>
-<span class="sd">    same forward function to compute layers sequentially.</span>
+<span class="sd">    a similar forward function to compute layers sequentially.</span>
+
+<span class="sd">    Using :class:`List` is recommended over :class:`Sequential`.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    ---------</span>
@@ -207,11 +384,21 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Sequential</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
 
+
+
 <div class="viewcode-block" id="Parallel"><a class="viewcode-back" href="../../docs_models.html#convis.models.Parallel">[docs]</a><span class="k">class</span> <span class="nc">Parallel</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A container to execute layers in parallel.</span>
 <span class="sd">    Modules will be added to it in the order they are passed in the constructor.</span>
 <span class="sd">    Alternatively, an ordered dict of modules can also be passed in.</span>
 
+<span class="sd">    Using :class:`List` with `mode=&#39;parallel&#39;` is recommended over </span>
+<span class="sd">    :class:`Parallel` if the names of the modules are not relevant.</span>
+
+<span class="sd">    Providing an argument `sum` will change how the outputs will be</span>
+<span class="sd">    combined. This can be a string (&#39;cat&#39; for concatenation on axis 0 (batch channel),</span>
+<span class="sd">    &#39;cat_1&#39; for concatenating at axis 1 (color channel),</span>
+<span class="sd">    &#39;cat_2&#39; for concatenating at time channel, &#39;cat_2&#39; or &#39;cat_3&#39; for concatenating in space,</span>
+<span class="sd">    &#39;sum&#39; for total sum,&#39;sum_0&#39; for summing over axis 0, etc.)</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    ---------</span>
@@ -224,7 +411,7 @@
 <span class="sd">        model = nn.Parallel(</span>
 <span class="sd">                conv1,</span>
 <span class="sd">                conv2,</span>
-<span class="sd">                combine = &#39;cat_1&#39;</span>
+<span class="sd">                sum = &#39;cat_1&#39;</span>
 <span class="sd">            ) # concatenates the output at dimension 1</span>
 <span class="sd">        model = convis.models.Parallel(</span>
 <span class="sd">                convis.filters.Conv3d(1,2,(10,1,1),time_pad=True),</span>
@@ -233,7 +420,7 @@
 <span class="sd">            ) # concatenates and sums the input at dimension 0</span>
 <span class="sd">            # all other output dimensions MUST be the same!</span>
 
-<span class="sd">        # Example of using Sequential with OrderedDict</span>
+<span class="sd">        # Example of using Parallel with OrderedDict</span>
 <span class="sd">        conv1 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)</span>
 <span class="sd">        conv2 = convis.filters.Conv3d(1,3,(10,1,1),time_pad=True)</span>
 <span class="sd">        model = nn.Parallel(OrderedDict([</span>
@@ -282,94 +469,83 @@
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Method not implemented `</span><span class="si">%s</span><span class="s1">`, please supply a function or Layer.&#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">)</span></div>
+        
 
-<div class="viewcode-block" id="List"><a class="viewcode-back" href="../../docs_models.html#convis.models.List">[docs]</a><span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A sequential list of Layers</span>
-<span class="sd">    that registers its items as submodules and provides tab-completable</span>
-<span class="sd">    names with a prefix (by default &#39;layer_&#39;).</span>
+<span class="k">def</span> <span class="nf">make_sequential_parallel_model</span><span class="p">(</span><span class="n">list_of_layers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates an alternating sequential/parallel model starting with a sequential layer.</span>
 
-<span class="sd">    The list provides a forward function that sequentially</span>
-<span class="sd">    applies each module in the list.</span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
 
-<span class="sd">    Arguments</span>
-<span class="sd">    ---------</span>
-<span class="sd">    Any modules that should be added to the list</span>
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; A = convis.filters.Conv3d(1,1,(10,1,1))</span>
+<span class="sd">        &gt;&gt;&gt; B = convis.filters.Conv3d(1,1,(10,1,1))</span>
+<span class="sd">        &gt;&gt;&gt; C = convis.filters.Conv3d(1,1,(10,1,1))</span>
+<span class="sd">        &gt;&gt;&gt; m = make_sequential_parallel_model([A,[B,C]])</span>
 
-<span class="sd">    Examples</span>
+<span class="sd">    Will create a model that executes first `A` and then (sequential)</span>
+<span class="sd">    feeds the output to both `B` and `C`, concatenating</span>
+<span class="sd">    the ouput in dimension 0 (parallel).</span>
+
+<span class="sd">    For each stage, the `mode` (sequential/parallel) can </span>
+<span class="sd">    be switched, since both are implemented by a :class:`List` object.</span>
+
+<span class="sd">        &gt;&gt;&gt; # to switch from sequential-&gt;parallel to parallel-&gt;sequential</span>
+<span class="sd">        &gt;&gt;&gt; m = make_sequential_parallel_model([A,[B,C]])</span>
+<span class="sd">        &gt;&gt;&gt; m.mode = &#39;parallel&#39;</span>
+<span class="sd">        &gt;&gt;&gt; m.sum = &#39;cat_1&#39; # concatenating at dimension 1 instead of 0</span>
+<span class="sd">        &gt;&gt;&gt; m.layer_1.mode = &#39;sequential&#39;</span>
+
+<span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-
-<span class="sd">        &gt;&gt;&gt; l = convis.models.List()</span>
-<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
-<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
-<span class="sd">        &gt;&gt;&gt; l.append(convis.filters.Conv3d(1, 1, (1,10,10)))</span>
-<span class="sd">        &gt;&gt;&gt; print l.layer_2</span>
-<span class="sd">        Conv3d (1, 1, kernel_size=(1, 10, 10), stride=(1, 1, 1), bias=False)</span>
-<span class="sd">        &gt;&gt;&gt; some_input = convis.samples.moving_gratings()</span>
-<span class="sd">        &gt;&gt;&gt; o = l.run(some_input,dt=200)</span>
-
+<span class="sd">    List</span>
+<span class="sd">    make_sequential_parallel_model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">List</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="s1">&#39;layer_&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;index </span><span class="si">{}</span><span class="s1"> is out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
-        <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
-            <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s1">&#39;index </span><span class="si">{}</span><span class="s1"> is out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;sequential&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">list_of_layers</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_parallel_sequential_model</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span>
-    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="k">def</span> <span class="nf">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span>
-<div class="viewcode-block" id="List.append"><a class="viewcode-back" href="../../docs_models.html#convis.models.List.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">module</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Appends a module to the end of the list.</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
-<span class="sd">        module (torch.nn.Module, convis.Layer or function): module to append</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        the list itself</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">),</span> <span class="n">module</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
-    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">)</span>
-<div class="viewcode-block" id="List.extend"><a class="viewcode-back" href="../../docs_models.html#convis.models.List.extend">[docs]</a>    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Extends the list with modules from a Python iterable.</span>
+<span class="k">def</span> <span class="nf">make_parallel_sequential_model</span><span class="p">(</span><span class="n">list_of_layers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates an alternating sequential/parallel model starting with a parallel layer.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
-<span class="sd">        modules (iterable): modules to append</span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        the list itself</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="nb">input</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">input</span></div>
+<span class="sd">        &gt;&gt;&gt; import convis</span>
+<span class="sd">        &gt;&gt;&gt; A = convis.filters.Conv3d(1,1,(10,1,1))</span>
+<span class="sd">        &gt;&gt;&gt; B = convis.filters.Conv3d(1,1,(10,1,1))</span>
+<span class="sd">        &gt;&gt;&gt; C = convis.filters.Conv3d(1,1,(10,1,1))</span>
+<span class="sd">        &gt;&gt;&gt; m = make_parallel_sequential_model([A,[B,C]])</span>
+
+<span class="sd">    Will create a model that feeds the input to `A` as well</span>
+<span class="sd">    as to `B` (parallel). Then the output of `B` is fed to `C` (sequential) and the</span>
+<span class="sd">    result is concatenated to the output of `A`.</span>
+
+<span class="sd">    For each stage, the `mode` (sequential/parallel) can </span>
+<span class="sd">    be switched, since both are implemented by a :class:`List` object.</span>
+
+<span class="sd">        &gt;&gt;&gt; # to switch from parallel-&gt;sequential to sequential-&gt;parallel</span>
+<span class="sd">        &gt;&gt;&gt; m = make_parallel_sequential_model([A,[B,C]])</span>
+<span class="sd">        &gt;&gt;&gt; m.mode = &#39;sequential&#39;</span>
+<span class="sd">        &gt;&gt;&gt; m.layer_1.mode = &#39;parallel&#39;</span>
+<span class="sd">        &gt;&gt;&gt; m.layer_1.sum = &#39;cat_1&#39; # concatenating at dimension 1 instead of 0</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    List</span>
+<span class="sd">    make_parallel_sequential_model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;parallel&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">list_of_layers</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_parallel_sequential_model</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
 
 <div class="viewcode-block" id="LNCascade"><a class="viewcode-back" href="../../docs_models.html#convis.models.LNCascade">[docs]</a><span class="k">class</span> <span class="nc">LNCascade</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -919,7 +1095,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.0',
+            VERSION:'0.6.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

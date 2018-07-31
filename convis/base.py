@@ -473,22 +473,44 @@ class Layer(torch.nn.Module):
         if hasattr(self, 'outputs'):
             o = Output([o] + [getattr(self,k) for k in self.outputs], keys = ['output']+self.outputs)
         return o
-    def run(self,the_input,dt=None,t=0):
+    def run(self,the_input,dt=None,t=0,detach=True):
         """
             Runs the model either once, or multiple times to process chunks of size `dt`.
 
-            Returns an `Output` object.
+            `the_input` can be:
+
+                - a 3d :class:`numpy.ndarray` or :class:`torch.Tensor`
+                - a :class:`convis.streams.Stream`
+                - a :class:`Output` containing at least one :class:`torch.Tensor`
+                    - the first one will be used
+
+            Returns an :class:`Output` object.
         """
         if dt is not None:
-            return self._run_in_chunks(the_input,dt=dt,t=t)
+            return self._run_in_chunks(the_input,dt=dt,t=t,detach=detach)
         else:
             return Output([self(the_input)],keys=['output'])
-    def _run_in_chunks(self,the_input,dt=100,t=0):
+    def _run_in_chunks(self,the_input,dt=100,t=0,detach=True):
         chunked_output = []
         keys = ['output']
         if issubclass(type(the_input),streams.Stream):
             while t < len(the_input):
                 oo = self(the_input.get(dt)[None,None,:,:,:])
+                if type(oo) is not Output:
+                    oo = [oo]
+                else:
+                    keys=oo.keys
+                for i,o in enumerate(oo):
+                    while len(chunked_output) < i+1:
+                        chunked_output.append([])
+                    chunked_output[i].append(o)
+                t += dt
+        elif issubclass(type(the_input),Output):
+            while t < shape(the_input[0])[2]:
+                if detach:
+                    oo = self(the_input[0][:,:,t:(t+dt),:,:].detach())
+                else:
+                    oo = self(the_input[0][:,:,t:(t+dt),:,:])
                 if type(oo) is not Output:
                     oo = [oo]
                 else:
@@ -804,6 +826,20 @@ class Layer(torch.nn.Module):
                         new_sub_state_dict[s_name[len(mod_name+'.'):]] = s
                 rec(mod, new_sub_state_dict)
         return rec(self, state_dict)
+    def requires_grad_(self,requires_grad):
+        """Changes the `requires_grad` attribute of all contained parameters.
+
+        Setting this top `False` will disable the computational graph, 
+        making it impossible to use gradient descent on computations
+        until you enable it again.
+
+        See also :ref:`the documentation <disable_graph>` on how to 
+        enable/disable graphs globally, for a :class:`~convis.base.Layer` or for a :class:`~convis.variables.Parameter`.
+
+        """
+        for k,p in self.p._all.__iteritems__():
+            if hasattr(p,'requires_grad_'):
+                p.requires_grad_(requires_grad)
     def clear_state(self):
         """
             resets the state to default values

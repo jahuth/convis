@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.samples &mdash; convis 0.6.0 documentation</title>
+  <title>convis.samples &mdash; convis 0.6.1 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.0 documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+    <link rel="top" title="convis 0.6.1 documentation" href="../../index.html"/>
+        <link rel="up" title="convis" href="../convis.html"/> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Features</span></p>
 <ul>
@@ -150,6 +151,8 @@
       <li><a href="../../index.html">Docs</a> &raquo;</li>
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../convis.html">convis</a> &raquo;</li>
         
       <li>convis.samples</li>
     
@@ -261,7 +264,8 @@
                       <span class="n">sharp</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                       <span class="n">temporal_smoothing</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Creates a moving bar stimulus</span>
+<span class="sd">        Creates a moving bar stimulus.</span>
+<span class="sd">        By default, this bar is smoothed in time, ie. its fuzzyness is determined by its speed and `temporal_smoothing`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -282,7 +286,7 @@
 <span class="sd">        sharp: bool</span>
 <span class="sd">            whether the output is binary or smoothed</span>
 <span class="sd">        temporal_smoothing: float</span>
-<span class="sd">            if greater than 0.0 and `sharp=True`,</span>
+<span class="sd">            if greater than 0.0 and `sharp=False`,</span>
 <span class="sd">            smooths the stimulus in time with a</span>
 <span class="sd">            gaussian kernel with width `temporal_smoothing`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -445,6 +449,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 <div class="viewcode-block" id="SampleGenerator.generate"><a class="viewcode-back" href="../../docs.html#convis.samples.SampleGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">input</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -569,7 +574,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.0',
+            VERSION:'0.6.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

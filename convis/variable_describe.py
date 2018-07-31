@@ -144,15 +144,24 @@ def describe_dict(v):
     return d
 
 def _plot_to_string():
-    import StringIO, urllib
+    try:
+        from StringIO import StringIO
+        make_bytes = lambda x: x.buf
+    except ImportError:
+        from io import BytesIO as StringIO
+        make_bytes = lambda x: x.getbuffer()
+    try:
+        from urllib import quote
+    except:
+        from urllib.parse import quote
     import base64
     import matplotlib.pylab as plt
-    imgdata = StringIO.StringIO()
+    imgdata = StringIO()
     plt.savefig(imgdata)
     plt.close()
     imgdata.seek(0) 
-    image = base64.encodestring(imgdata.buf)  
-    return str(urllib.quote(image))    
+    image = base64.encodestring(make_bytes(imgdata))
+    return str(quote(image))
 
 def _tensor_to_html(t,title='',figsize=(5,4),line_figsize=(5,1.5),line_kwargs={},imshow_kwargs={},preamble=True,**other_kwargs):
     """

@@ -1,7 +1,13 @@
 Changelog
 ==========
 
+See also the more complete changelog [in the documentation](https://jahuth.github.io/convis/changelog.html).
 
+Version 0.6.1
+---------------
+
+ - It is now possible to disable the computational graph.
+ - some issues with creating inline plots in Python 3 were fixed
 
 Version 0.6
 -----------

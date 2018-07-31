@@ -16,6 +16,39 @@ Usually PyTorch Layers are callable and will perform their forward computation w
 :meth:`~convis.base.Layer.run` also accepts numpy arrays as input, which will be converted into PyTorch `Tensor`s and packaged as a `Variable`.
 
 
+Global configurations
+~~~~~~~~~~~~~~~~~~~~~~
+.. _global_configuration:
+
+There are a few global parameters that can change the behaviour of convis.
+They can be found by tab completing `convis.default_(...)`.
+
+To enable or disable whether Parameters should by default keep their computational graph you can set `convis.default_grad_enabled` to either `True` or `False`.
+If you are not planning on using the optimization features of `convis`, you can disable all computational graphs to save memory! 
+By default, graphs are enabled (`convis.default_grad_enabled = True`).
+
+.. code-block:: python
+
+    import convis
+    convis.default_grad_enabled = False # disables computational graphs by default
+
+
+`convis` has default scaling parameters for spatial and temporal dimensions.
+
+.. code-block:: python
+
+    import convis
+    # 20 pixel correspond to 1 degree of the visual field
+    convis.default_resolution.pixel_per_degree = 20   
+    # a bin is by default 1 ms long
+    convis.default_resolution.steps_per_second = 1000 
+
+    # making all computations faster, but less accurate:
+    convis.default_resolution.pixel_per_degree = 10  # spatial scale is half the default
+    convis.default_resolution.steps_per_second = 200 # 5ms time bins
+
+
+
 Configuring a Model: the `.p.` parameter list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. _p_list:
@@ -122,6 +155,51 @@ Switching between CPU and GPU usage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PyTorch objects can move between GPU memory and RAM by calling `.cuda()` and `.cpu()` methods respectively. This can be done on a single Tensor or on an entire model.
+
+
+Enabling and disabling the computational graph
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _disable_graph:
+
+Each :class:`~convis.variables.Parameter` has by default its `requires_grad` attribute set to `True`, 
+which means that every operation done with this Parameter will be recorded, so that
+we can use backpropagation at some later timepoint. This can use a lot of memory,
+especially in recursive filters, and you might not even need the computational graph.
+
+To disable the graph for a **single Parameter** or Variable, supply the constructor with the
+keyword argument `requires_grad` or call its :meth:`~convis.variables.Parameter.requires_grad_`
+method after the Parameter was created. The trailing underscore signifies that the method
+will be executed *in place* and does not produce a copy of the variable.
+
+.. code-block:: python
+
+    import convis
+    p = convis.variables.Parameter(42, requires_grad=False)
+    # or later:
+    import convis
+    p = convis.variables.Parameter(42)
+    p.requires_grad_(False)
+
+For a **complete Layer**, there is a helper function :meth:`~convis.base.Layer.requires_grad_`
+that will set the flag for all the contained Parameters:
+
+.. code-block:: python
+
+    import convis
+    m = convis.models.LN()
+    m.requires_grad_(False)
+
+
+
+**Globally**, graphs can be disabled with the `convis.default_grad_enabled` variable:
+
+.. code-block:: python
+
+    import convis
+    convis.default_grad_enabled = False # disables computational graphs by default
+
+
 
 
 Using Runner objects

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; convis 0.6.0 documentation</title>
+  <title>Usage &mdash; convis 0.6.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.0 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.1 documentation" href="index.html"/>
         <link rel="next" title="Examples" href="examples.html"/>
         <link rel="prev" title="Installation" href="installation.html"/> 
 
@@ -95,9 +95,11 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-model">Running a model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#global-configurations">Global configurations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-the-p-parameter-list">Configuring a Model: the <cite>.p.</cite> parameter list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-exporting-and-importing-all-parameters">Configuring a Model: exporting and importing all parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#switching-between-cpu-and-gpu-usage">Switching between CPU and GPU usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enabling-and-disabling-the-computational-graph">Enabling and disabling the computational graph</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-runner-objects">Using Runner objects</a></li>
 </ul>
 </li>
@@ -108,6 +110,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Features</span></p>
 <ul>
@@ -194,6 +197,30 @@
 </div>
 <p>Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">Layer.run(input,dt=..)</span></code></a> with <cite>dt</cite> set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
 <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a> also accepts numpy arrays as input, which will be converted into PyTorch <cite>Tensor`s and packaged as a `Variable</cite>.</p>
+<div class="section" id="global-configurations">
+<h3>Global configurations<a class="headerlink" href="#global-configurations" title="Permalink to this headline">¶</a></h3>
+<p id="global-configuration">There are a few global parameters that can change the behaviour of convis.
+They can be found by tab completing <cite>convis.default_(…)</cite>.</p>
+<p>To enable or disable whether Parameters should by default keep their computational graph you can set <cite>convis.default_grad_enabled</cite> to either <cite>True</cite> or <cite>False</cite>.
+If you are not planning on using the optimization features of <cite>convis</cite>, you can disable all computational graphs to save memory!
+By default, graphs are enabled (<cite>convis.default_grad_enabled = True</cite>).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">default_grad_enabled</span> <span class="o">=</span> <span class="bp">False</span> <span class="c1"># disables computational graphs by default</span>
+</pre></div>
+</div>
+<p><cite>convis</cite> has default scaling parameters for spatial and temporal dimensions.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="c1"># 20 pixel correspond to 1 degree of the visual field</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">default_resolution</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="c1"># a bin is by default 1 ms long</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">default_resolution</span><span class="o">.</span><span class="n">steps_per_second</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="c1"># making all computations faster, but less accurate:</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">default_resolution</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># spatial scale is half the default</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">default_resolution</span><span class="o">.</span><span class="n">steps_per_second</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># 5ms time bins</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="configuring-a-model-the-p-parameter-list">
 <h3>Configuring a Model: the <cite>.p.</cite> parameter list<a class="headerlink" href="#configuring-a-model-the-p-parameter-list" title="Permalink to this headline">¶</a></h3>
 <p id="p-list">The best way to configure the model is by exploring the
@@ -293,6 +320,37 @@ be seen at once.</p>
 <div class="section" id="switching-between-cpu-and-gpu-usage">
 <h3>Switching between CPU and GPU usage<a class="headerlink" href="#switching-between-cpu-and-gpu-usage" title="Permalink to this headline">¶</a></h3>
 <p>PyTorch objects can move between GPU memory and RAM by calling <cite>.cuda()</cite> and <cite>.cpu()</cite> methods respectively. This can be done on a single Tensor or on an entire model.</p>
+</div>
+<div class="section" id="enabling-and-disabling-the-computational-graph">
+<h3>Enabling and disabling the computational graph<a class="headerlink" href="#enabling-and-disabling-the-computational-graph" title="Permalink to this headline">¶</a></h3>
+<p id="disable-graph">Each <a class="reference internal" href="docs.html#convis.variables.Parameter" title="convis.variables.Parameter"><code class="xref py py-class docutils literal"><span class="pre">Parameter</span></code></a> has by default its <cite>requires_grad</cite> attribute set to <cite>True</cite>,
+which means that every operation done with this Parameter will be recorded, so that
+we can use backpropagation at some later timepoint. This can use a lot of memory,
+especially in recursive filters, and you might not even need the computational graph.</p>
+<p>To disable the graph for a <strong>single Parameter</strong> or Variable, supply the constructor with the
+keyword argument <cite>requires_grad</cite> or call its <a class="reference internal" href="docs.html#convis.variables.Parameter.requires_grad_" title="convis.variables.Parameter.requires_grad_"><code class="xref py py-meth docutils literal"><span class="pre">requires_grad_()</span></code></a>
+method after the Parameter was created. The trailing underscore signifies that the method
+will be executed <em>in place</em> and does not produce a copy of the variable.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c1"># or later:</span>
+<span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For a <strong>complete Layer</strong>, there is a helper function <a class="reference internal" href="docs.html#convis.base.Layer.requires_grad_" title="convis.base.Layer.requires_grad_"><code class="xref py py-meth docutils literal"><span class="pre">requires_grad_()</span></code></a>
+that will set the flag for all the contained Parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Globally</strong>, graphs can be disabled with the <cite>convis.default_grad_enabled</cite> variable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">default_grad_enabled</span> <span class="o">=</span> <span class="bp">False</span> <span class="c1"># disables computational graphs by default</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="using-runner-objects">
 <h3>Using Runner objects<a class="headerlink" href="#using-runner-objects" title="Permalink to this headline">¶</a></h3>
@@ -483,7 +541,7 @@ The execution can also happen in a separate thread:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.0',
+            VERSION:'0.6.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

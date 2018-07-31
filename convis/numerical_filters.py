@@ -1,5 +1,5 @@
 import numpy as np
-from .variables import default_resolution
+from . import _get_default_resolution
 
 
 def conv(a,b,padding_things_equal=[1,3,4],padding_things_tail=[1],*args,**kwargs):
@@ -24,7 +24,7 @@ def exponential_filter_5d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
 
 def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,amplification=1.0, max_length=1000,min_steps=10,even=None):
     if resolution is None:
-        resolution = default_resolution
+        resolution = _get_default_resolution()
     tau_in_steps = resolution.seconds_to_steps(tau)
     if n == 0:
         a = amplification/tau_in_steps
@@ -81,7 +81,7 @@ def gauss_filter_2d(x_sig,y_sig,normalize=False,resolution=None,minimize=False, 
         if :py:obj:`even` is not None, the kernel will be either made to have even or uneven side lengths, depending on the truth value of :py:obj:`even`.
     """
     if resolution is None:
-        resolution = default_resolution
+        resolution = _get_default_resolution()
     if x_sig == 0 or y_sig == 0:
         return np.ones((1,1))
     x_sig = resolution.degree_to_pixel(x_sig)

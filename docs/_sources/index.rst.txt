@@ -81,6 +81,7 @@ Contents:
    installation
    usage
    examples
+   changelog
 
 .. toctree::
    :maxdepth: 2

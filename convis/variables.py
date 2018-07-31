@@ -5,8 +5,10 @@ try:
     import new
 except:
     new = False
+from . import _get_default_grad_enabled,_get_default_resolution
 from .misc_utils import unique_list
 from .o import O, Ox, save_name
+
 import numpy as np
 import copy
 
@@ -76,7 +78,7 @@ class ResolutionInfo(object):
     @property
     def pixel_per_degree(self):
         if self._pixel_per_degree is None:
-            return default_resolution.pixel_per_degree
+            return _get_default_resolution().pixel_per_degree
         return self._pixel_per_degree
     @pixel_per_degree.setter
     def pixel_per_degree(self,v):
@@ -85,7 +87,7 @@ class ResolutionInfo(object):
     @property
     def steps_per_second(self):
         if self._steps_per_second is None:
-            return default_resolution._steps_per_second
+            return _get_default_resolution()._steps_per_second
         return self._steps_per_second
     @steps_per_second.setter
     def steps_per_second(self,v):
@@ -93,22 +95,21 @@ class ResolutionInfo(object):
         self._steps_per_second = v
     def degree_to_pixel(self,degree):
         if self.pixel_per_degree is None:
-            return default_resolution.degree_to_pixel(degree)
+            return _get_default_resolution().degree_to_pixel(degree)
         return float(degree) * self.pixel_per_degree
     def pixel_to_degree(self,pixel):
         if self.pixel_per_degree is None:
-            return default_resolution.pixel_to_degree(pixel)
+            return _get_default_resolution().pixel_to_degree(pixel)
         return float(pixel) / self.pixel_per_degree
     def seconds_to_steps(self,t):
         if self.steps_per_second is None:
-            return default_resolution.seconds_to_steps(t)
+            return _get_default_resolution().seconds_to_steps(t)
         return float(t) * self.steps_per_second
     def steps_to_seconds(self,steps):
         if self.steps_per_second is None:
-            return default_resolution.steps_to_seconds(steps)
+            return _get_default_resolution().steps_to_seconds(steps)
         return float(steps) / self.steps_per_second
 
-default_resolution = ResolutionInfo(10.0,1000.0,1.0,filter_epsilon=0.001)
 
 import torch
 from distutils.version import LooseVersion
@@ -172,6 +173,7 @@ class _NewVariable(torch.Tensor):
             return variable_describe.describe_html(self,wrap_in_html=False)
 
 if LooseVersion(torch.__version__) < LooseVersion('0.4'):
+    _old_variable_mode = True
     Variable = _OldVariable
     def zeros(*shp):
         return torch.autograd.Variable(torch.zeros(*shp))
@@ -185,6 +187,7 @@ if LooseVersion(torch.__version__) < LooseVersion('0.4'):
         return torch.autograd.Variable(torch.randn(shp))
 else:
     # PyTorch 0.4 and upwards
+    _old_variable_mode = False
     Variable = _NewVariable
     def zeros(*shp):
         return torch.zeros(*shp)
@@ -203,7 +206,15 @@ class State(Variable):
     def __init__(self,x, **kwargs):
         super(State, self).__init__(x,**kwargs)
 
+
 class Parameter(Variable,torch.nn.Parameter):
+    """A parameter of a model
+
+    Similar to a Variable, but by default has `requires_grad` set to `True`.
+
+    To disable the computational graph see  :ref:`this section in the documentation <disable_graph>`
+
+    """
     name = '' # this name is different than the name of Tensor
     def __new__(self,x, **kwargs):
         if type(x) in [int, float]:
@@ -218,6 +229,8 @@ class Parameter(Variable,torch.nn.Parameter):
         else:
             self.default = np.copy(x)
         super(Parameter, self).__init__(x,**kwargs)
+        if _get_default_grad_enabled() is False or kwargs.get('requires_grad',True) is False:
+            self.requires_grad_(False)
     @property
     def shape(self):
         return self.data.shape
@@ -232,6 +245,23 @@ class Parameter(Variable,torch.nn.Parameter):
         if type(v) in [int, float]:
             v = np.array([v])
         self.data = torch.Tensor(v)
+    def requires_grad_(self,requires_grad=True):
+        """Changes the `requires_grad` attribute for this parameter *in place*.
+
+        Setting this top `False` will disable the computational graph, 
+        making it impossible to use gradient descent on computations
+        tracking back to this parameter until you enable it again.
+
+        See also :ref:`the documentation <disable_graph>` on how to 
+        enable/disable graphs globally, for a :class:`~convis.base.Layer` or for a :class:`~convis.variables.Parameter`.
+
+        """
+
+        if hasattr(super(Parameter, self),'requires_grad_'):
+            return super(Parameter, self).requires_grad_(requires_grad)
+        else:
+            self.requires_grad = False
+            return self
 
 def as_parameter(x,**kwargs):
     return Parameter(x, **kwargs)

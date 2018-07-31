@@ -474,11 +474,9 @@ class StreamVisualizer():
         from PIL import Image, ImageTk
         from ttk import Frame, Button, Style
         import time
-        import cStringIO
         import socket
         self.root = tk.Toplevel() #Tk()
         self.root.title('Display')
-        #self.buffer = cStringIO.StringIO()
         self.image = Image.fromarray(np.zeros((200,200))).convert('RGB')
         self.image1 = ImageTk.PhotoImage(self.image)
         self.panel1 = tk.Label(self.root, image=self.image1)

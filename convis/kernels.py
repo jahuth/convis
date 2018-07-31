@@ -9,6 +9,7 @@ from .numerical_filters import exponential_highpass_filter_1d, exponential_highp
 from .numerical_filters import gauss_filter_2d, gauss_filter_3d, gauss_filter_5d
 from .samples import text_kernel, gabor_kernel
 from . import variables
+from . import _get_default_resolution
 import torch
 
 class ExponentialKernel(torch.nn.Module):
@@ -24,11 +25,11 @@ class ExponentialKernel(torch.nn.Module):
     def __init__(self, tau = 0.01, n=0, amplification=1.0, length=100):
         super(ExponentialKernel, self).__init__()
         self.length = length
-        self.tau = Parameter(tau)
+        self.tau = variables.Parameter(tau)
         self.n = n
-        self.amplification = Parameter(amplification)
+        self.amplification = variables.Parameter(amplification)
     def forward(self):
-        tau_in_steps = self.tau*default_resolution.steps_per_second
+        tau_in_steps = self.tau*_get_default_resolution().steps_per_second
         if self.n == 0:
             a = self.amplification/tau_in_steps
             t = torch.linspace(1.0,self.length,int(self.length))
@@ -37,7 +38,7 @@ class ExponentialKernel(torch.nn.Module):
             kernel = kernel * a
         else:
             a = self.amplification
-            length = (int(-tau_in_steps*torch.log(default_resolution.filter_epsilon/a))-self.n)
+            length = (int(-tau_in_steps*torch.log(_get_default_resolution().filter_epsilon/a))-self.n)
             t = variables.Variable(torch.linspace(1.0,self.n*self.length,int(self.n*self.length)))
             kernel = self.amplification * (self.n*t)**self.n * torch.exp(-self.n*t/tau_in_steps) / (np.math.factorial(self.n-1) * tau_in_steps**(self.n+1))
         return kernel

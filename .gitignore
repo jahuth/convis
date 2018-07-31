@@ -2,5 +2,6 @@
 *~
 /build/*
 /dist/*
+/tmp_docs/*
 /convis.egg-info/*
 *.swp

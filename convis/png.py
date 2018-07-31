@@ -1,10 +1,12 @@
 from __future__ import print_function
 import socket
 import sys
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import PIL
 from PIL import Image, PngImagePlugin
-import cStringIO
 import socket
 import sys, os
 import thread
@@ -164,7 +166,7 @@ class ImageRecieverServer():
         from PIL import Image, ImageTk
         self.port = port
         self.size = size
-        self.buffer = cStringIO.StringIO()
+        self.buffer = StringIO()
         self.image = Image.fromarray(np.zeros((200,200))).convert('RGB')
         self.closed = False
         self.dirty = False
@@ -204,7 +206,7 @@ class ImageRecieverServer():
             if self.debug:
                 print("Recieving Data.")
             dirty = False
-            all_data = cStringIO.StringIO()
+            all_data = StringIO()
             last_data = b""
             while True:
                 data = connection.recv(16)
@@ -216,7 +218,7 @@ class ImageRecieverServer():
                     #print (last_data+data)
                     #print 'found IEND!'
                     self.last_buffer.append(all_data)
-                    all_data = cStringIO.StringIO()
+                    all_data = StringIO()
                     all_data.write((last_data+data)[(last_data+data).find(b"IEND")+8:])
                     dirty = False
                     last_data = (last_data+data)[(last_data+data).find(b"IEND")+8:]
@@ -272,7 +274,7 @@ def png_display():
         def __init__(self):
             self.root = tk.Tk()
             self.root.title('Display')
-            self.buffer = cStringIO.StringIO()
+            self.buffer = StringIO()
             self.image = Image.fromarray(np.zeros((200,200))).convert('RGB')
             self.image1 = ImageTk.PhotoImage(self.image)
             self.dirty = False
@@ -322,7 +324,7 @@ def png_display():
         def serve(self,connection, client_address):
             try:
                 dirty = False
-                all_data = cStringIO.StringIO()
+                all_data = StringIO()
                 last_data = b""
                 while True:
                     data = connection.recv(16)
@@ -332,7 +334,7 @@ def png_display():
                         #print (last_data+data)
                         #print 'found IEND!'
                         self.last_buffer.append(all_data)
-                        all_data = cStringIO.StringIO()
+                        all_data = StringIO()
                         all_data.write((last_data+data)[(last_data+data).find(b"IEND")+8:])
                         dirty = False
                         last_data = (last_data+data)[(last_data+data).find(b"IEND")+8:]
@@ -356,10 +358,10 @@ def png_display():
                     image_buffer = self.last_buffer.pop()
                     #print len(self.buffer.read())
                     #self.buffer.seek(0)
-                    self.image = Image.open(image_buffer)#cStringIO.StringIO(self.last_buffer))
+                    self.image = Image.open(image_buffer)#StringIO(self.last_buffer))
                     self.image.load()
                     #print len(self.buffer.read())
-                    #new_buffer = cStringIO.StringIO()
+                    #new_buffer = StringIO()
                     #new_buffer.write(self.buffer.read())
                     #self.buffer = new_buffer
                     #self.dirty = False

@@ -90,7 +90,8 @@ def moving_bar(t=2000,x=20,y=20,
                       sharp = False,
                       temporal_smoothing=1.0):
     """
-        Creates a moving bar stimulus
+        Creates a moving bar stimulus.
+        By default, this bar is smoothed in time, ie. its fuzzyness is determined by its speed and `temporal_smoothing`.
 
         Parameters
         ----------
@@ -111,7 +112,7 @@ def moving_bar(t=2000,x=20,y=20,
         sharp: bool
             whether the output is binary or smoothed
         temporal_smoothing: float
-            if greater than 0.0 and `sharp=True`,
+            if greater than 0.0 and `sharp=False`,
             smooths the stimulus in time with a
             gaussian kernel with width `temporal_smoothing`.
     """
@@ -274,6 +275,7 @@ class SampleGenerator(models.LN):
             self.kernel = kernel
         self.conv.set_weight(self.kernel)
         self.dt = dt
+        self.requires_grad_(False)
     def generate(self,input='random',size=(2000,20,20), p=0.1):
         """
         Parameters
