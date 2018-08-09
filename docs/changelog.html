@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Changelog &mdash; convis 0.6.1 documentation</title>
+  <title>Changelog &mdash; convis 0.6.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.1 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.2 documentation" href="index.html"/>
         <link rel="next" title="Filters and Layers" href="filters.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -96,8 +96,9 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">0.6.1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">0.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.6.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">0.6.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">0.6</a></li>
 </ul>
 </li>
 </ul>
@@ -177,7 +178,33 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
-<h2>0.6.1<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>0.6.2<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>A small amount of bug fixes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="first docutils">
+<dt>Fixed a bug in <a class="reference internal" href="docs_retina.html#convis.filters.retina.GanglionInput" title="convis.filters.retina.GanglionInput"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.retina.GanglionInput</span></code></a>:</dt>
+<dd><ul class="first last">
+<li>the convolution filters now initialize without having to reapply a configuration to the layer/parameters</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>made padding flags in <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a> default to True</dt>
+<dd><ul class="first last">
+<li>in contrast to PyTorch <cite>Conv3d</cite> the output will now have the same shape as the input <em>by default</em>. To disable, use <cite>time_pad=False</cite> and <cite>autopad=False</cite> as arguments.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>fixed a bug when calling <a class="reference internal" href="docs.html#convis.base.Output.array" title="convis.base.Output.array"><code class="xref py py-func docutils literal"><span class="pre">array()</span></code></a> on <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">convis.base.Output</span></code></a>.</li>
+<li>fixed a bug where <cite>resolution</cite> was not a valid argument to <a class="reference internal" href="filters.html#convis.filters.Conv3d.gaussian" title="convis.filters.Conv3d.gaussian"><code class="xref py py-func docutils literal"><span class="pre">convis.filters.Conv3d.gaussian()</span></code></a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>0.6.1<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>It is now possible to disable the computational graph see  <a class="reference internal" href="usage.html#disable-graph"><span class="std std-ref">these examples</span></a></li>
@@ -211,8 +238,8 @@
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id2">
-<h2>0.6<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h2>0.6<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>This version fixed an issue with the new PyTorch version (&gt;0.4)</li>
@@ -265,7 +292,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.1',
+            VERSION:'0.6.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.filters &mdash; convis 0.6.1 documentation</title>
+  <title>convis.filters &mdash; convis 0.6.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.1 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.2 documentation" href="../../index.html"/>
         <link rel="up" title="convis" href="../convis.html"/> 
 
   
@@ -347,8 +347,8 @@
 
 <span class="sd">        Additional convis Conv3d keyword arguments:</span>
 
-<span class="sd">            * time_pad: False (enables padding in time)</span>
-<span class="sd">            * autopad: False (enables padding in space)</span>
+<span class="sd">            * time_pad: True (enables padding in time)</span>
+<span class="sd">            * autopad: True (enables padding in space)</span>
 
 <span class="sd">        To change the weight, use the method `set_weight()`</span>
 <span class="sd">        which also accepts numpy arguments.</span>
@@ -357,8 +357,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">out_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">do_adjust_padding</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;adjust_padding&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">do_time_pad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time_pad&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">autopad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;autopad&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_time_pad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time_pad&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autopad</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;autopad&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autopad_mode</span> <span class="o">=</span> <span class="s1">&#39;replicate&#39;</span>
         <span class="k">if</span> <span class="s1">&#39;adjust_padding&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;adjust_padding&#39;</span><span class="p">]</span>
@@ -459,18 +459,21 @@
                 <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)),</span>
                 <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
                 <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">)))</span>
-    <span class="k">def</span> <span class="nf">exponential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">exponential_filter_1d</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="viewcode-block" id="Conv3d.exponential"><a class="viewcode-back" href="../../filters.html#convis.filters.Conv3d.exponential">[docs]</a>    <span class="k">def</span> <span class="nf">exponential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the weight to be a 1d temporal lowpass filter with time constant `tau`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">exponential_filter_1d</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">adjust_padding</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adjust_padding</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">highpass_exponential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">exponential_highpass_filter_1d</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adjust_padding</span><span class="p">()</span></div>
+<div class="viewcode-block" id="Conv3d.highpass_exponential"><a class="viewcode-back" href="../../filters.html#convis.filters.Conv3d.highpass_exponential">[docs]</a>    <span class="k">def</span> <span class="nf">highpass_exponential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the weight to be a 1d temporal highpass filter with time constant `tau`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">exponential_highpass_filter_1d</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">adjust_padding</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adjust_padding</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sig</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">gauss_filter_5d</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="n">sig</span><span class="p">),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adjust_padding</span><span class="p">()</span></div>
+<div class="viewcode-block" id="Conv3d.gaussian"><a class="viewcode-back" href="../../filters.html#convis.filters.Conv3d.gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sig</span><span class="p">,</span><span class="n">adjust_padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the weight to be a 2d gaussian filter with width `sig`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">nf</span><span class="o">.</span><span class="n">gauss_filter_5d</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="n">sig</span><span class="p">,</span><span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">),</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">adjust_padding</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adjust_padding</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adjust_padding</span><span class="p">()</span></div>
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
@@ -1008,7 +1011,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.1',
+            VERSION:'0.6.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

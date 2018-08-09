@@ -90,14 +90,35 @@ class Output(object):
         return len(self._outs)
     def __iter__(self):
         return iter(self._outs)
-    def plot(self,k=0,**kwargs):
-        utils.plot(self[k],**kwargs)
+    def plot(self,k=0,mode='lines',**kwargs):
+        """Plots the contents of the Output object.
+
+        To get a line plot:
+
+            o.plot(mode='lines') # default
+
+        To get a matshow plot:
+
+            o.plot(mode='matshow')
+
+        To get plot depending on the shape of the output:
+
+            o.plot(mode=None)
+
+        
+
+        """
+        utils.plot(self[k],mode=mode,**kwargs)
     def array(self,k=0):
+        """Returns the contents of the Output object as a numpy array.
+
+        k: number of output (default=0)
+        """
         from distutils.version import LooseVersion
         if (LooseVersion(torch.__version__) < LooseVersion('0.4.0')) and (type(self[k]) == torch.autograd.variable.Variable):
             return self[k].data.cpu().numpy()
         else:
-            return np.array(self[k])
+            return np.array(self[k].detach())
     def mean(self,axis=None,k=0):
         """
             Computes the mean along the supplied axis..

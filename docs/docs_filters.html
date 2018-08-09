@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Filters convis.filters &mdash; convis 0.6.1 documentation</title>
+  <title>Filters convis.filters &mdash; convis 0.6.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.1 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.2 documentation" href="index.html"/>
         <link rel="up" title="The API: Convis classes and modules" href="docs.html"/>
         <link rel="next" title="Models in convis.models" href="docs_models.html"/>
         <link rel="prev" title="The API: Convis classes and modules" href="docs.html"/> 
@@ -275,8 +275,8 @@ the edge.</p>
 <p>Additional convis Conv3d keyword arguments:</p>
 <blockquote>
 <div><ul class="simple">
-<li>time_pad: False (enables padding in time)</li>
-<li>autopad: False (enables padding in space)</li>
+<li>time_pad: True (enables padding in time)</li>
+<li>autopad: True (enables padding in space)</li>
 </ul>
 </div></blockquote>
 <p>To change the weight, use the method <cite>set_weight()</cite>
@@ -328,6 +328,24 @@ to all input-output channel combinations.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.filters.Conv3d.exponential">
+<code class="descname">exponential</code><span class="sig-paren">(</span><em>tau=0.0</em>, <em>adjust_padding=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.exponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the weight to be a 1d temporal lowpass filter with time constant <cite>tau</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.filters.Conv3d.highpass_exponential">
+<code class="descname">highpass_exponential</code><span class="sig-paren">(</span><em>tau=0.0</em>, <em>adjust_padding=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.highpass_exponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.highpass_exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the weight to be a 1d temporal highpass filter with time constant <cite>tau</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.filters.Conv3d.gaussian">
+<code class="descname">gaussian</code><span class="sig-paren">(</span><em>sig</em>, <em>adjust_padding=False</em>, <em>resolution=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the weight to be a 2d gaussian filter with width <cite>sig</cite>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -549,7 +567,7 @@ when fitted.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.1',
+            VERSION:'0.6.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

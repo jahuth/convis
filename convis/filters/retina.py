@@ -79,12 +79,12 @@ class SeperatableOPLFilter(Layer):
     def __init__(self):
         super(SeperatableOPLFilter, self).__init__()
         self.dims = 5
-        self.center_G = Conv3d(1, 1, (1,10,10))
+        self.center_G = Conv3d(1, 1, (1,10,10), time_pad=False, autopad=False)
         self.center_G.set_weight(1.0)
         self.center_G.gaussian(0.05)
         self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
-        self.center_E = Conv3d(1, 1, (5,1,1))
-        self.center_undershoot = Conv3d(1, 1, (5,1,1))
+        self.center_E = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
+        self.center_undershoot = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
         self.center_E.weight.data[0,0,-5,0,0] = 1.0
         self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec')
         self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
@@ -103,7 +103,7 @@ class SeperatableOPLFilter(Layer):
                 tau=self.undershoot_tau_center,
                 relative_weight=self.undershoot_relative_weight_center,
                 resolution=_get_default_resolution())
-        self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9))
+        self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9), autopad=False)
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
         self.sigma_surround = variables.VirtualParameter(
@@ -114,7 +114,7 @@ class SeperatableOPLFilter(Layer):
                                     resolution=_get_default_resolution()
                                 )
         self.sigma_surround.set(0.05)
-        self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0))
+        self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0), time_pad=False, autopad=False)
         if hasattr(self.surround_E,'bias') and self.surround_E.bias is not None:
             self.surround_E.bias.data[0] = 0.0
         self.surround_E.weight.data[0,0,2,0,0] = 1.0
@@ -219,7 +219,7 @@ class HalfRecursiveOPLFilter(Layer):
     def __init__(self):
         super(HalfRecursiveOPLFilter, self).__init__()
         self.dims = 5
-        self.center_G = Conv3d(1, 1, (1,10,10))
+        self.center_G = Conv3d(1, 1, (1,10,10), time_pad=False, autopad=False)
         self.center_G.set_weight(1.0)
         self.center_G.gaussian(0.05)
         self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
@@ -237,7 +237,7 @@ class HalfRecursiveOPLFilter(Layer):
             value=0.8,
             retina_config_key='undershoot.relative-weight',
             var=self.center_undershoot.k)
-        self.surround_G = Conv3d(1, 1, (1,19,19), adjust_padding=False)
+        self.surround_G = Conv3d(1, 1, (1,19,19), adjust_padding=False, time_pad=False, autopad=False)
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
         self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
@@ -414,7 +414,7 @@ class FullConvolutionOPLFilter(Layer):
     def __init__(self):
         super(FullConvolutionOPLFilter, self).__init__()
         self.dims = 5
-        self.conv = nn.Conv3d(1, 1, (20,10,10))
+        self.conv = nn.Conv3d(1, 1, (20,10,10), time_pad=False, autopad=False)
         self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0
         self.sigma_center = variables.VirtualParameter(float,value=0.05,retina_config_key='center-sigma__deg')
@@ -717,7 +717,7 @@ class GanglionInput(Layer):
         super(GanglionInput, self).__init__()
         self.dims = 5
         self.sign = Parameter(1.0, retina_config_key='sign')
-        self.transient = Conv3d(1, 1, (5,1,1))
+        self.transient = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
         self.transient_tau_center = variables.VirtualParameter(
             float,
             value=0.02,
@@ -735,6 +735,7 @@ class GanglionInput(Layer):
                 relative_weight=self.transient_relative_weight_center,
                 resolution=_get_default_resolution(),
                 adjust_padding=False)
+        self.f_transient.update()
         self.i_0 = Parameter(37.0, retina_config_key='value-at-linear-threshold__Hz',
             doc='Parameter of the static non-linearity: output value at the input level `bipolar-linear-threshold`')
         self.v_0 = Parameter(0.0, retina_config_key='bipolar-linear-threshold',
@@ -743,13 +744,14 @@ class GanglionInput(Layer):
             doc='Parameter of the static non-linearity: linear amplification of the input')
         #self.high_pass = nn.Conv1d()
         self.input_state = State(np.zeros((1,1,1,1,1)))
-        self.spatial_pooling = Conv3d(1,1,(1,9,9))
+        self.spatial_pooling = Conv3d(1,1,(1,9,9), time_pad=False, autopad=False)
         self.sigma_surround = variables.VirtualParameter(
             self.spatial_pooling.gaussian,
             value=0.0,
             retina_config_key='sigma-pool__deg').set_callback_arguments(
                 adjust_padding=True,
                 resolution=_get_default_resolution())
+        self.sigma_surround.set(0.0)
     @property
     def filter_length(self):
         return self.transient.weight.data.shape[TIME_DIMENSION] - 1 

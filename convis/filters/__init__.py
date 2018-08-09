@@ -173,8 +173,8 @@ class Conv3d(torch.nn.Conv3d,Layer):
 
         Additional convis Conv3d keyword arguments:
 
-            * time_pad: False (enables padding in time)
-            * autopad: False (enables padding in space)
+            * time_pad: True (enables padding in time)
+            * autopad: True (enables padding in space)
 
         To change the weight, use the method `set_weight()`
         which also accepts numpy arguments.
@@ -183,8 +183,8 @@ class Conv3d(torch.nn.Conv3d,Layer):
     """
     def __init__(self,in_channels=1,out_channels=1,kernel_size=(1,1,1),bias=True,*args,**kwargs):
         self.do_adjust_padding = kwargs.get('adjust_padding',False)
-        self.do_time_pad = kwargs.get('time_pad',False)
-        self.autopad = kwargs.get('autopad',False)
+        self.do_time_pad = kwargs.get('time_pad',True)
+        self.autopad = kwargs.get('autopad',True)
         self.autopad_mode = 'replicate'
         if 'adjust_padding' in kwargs.keys():
             del kwargs['adjust_padding']
@@ -285,16 +285,19 @@ class Conv3d(torch.nn.Conv3d,Layer):
                 int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
                 int(math.floor((k[0])/2.0))-1,
                 int(math.ceil(k[0]))-int(math.floor((k[0])/2)))
-    def exponential(self,adjust_padding=False,*args,**kwargs):
-        self.set_weight(nf.exponential_filter_1d(*args,**kwargs)[::-1].copy(),normalize=False)
+    def exponential(self,tau=0.0,adjust_padding=False,*args,**kwargs):
+        """Sets the weight to be a 1d temporal lowpass filter with time constant `tau`."""
+        self.set_weight(nf.exponential_filter_1d(tau,*args,**kwargs)[::-1].copy(),normalize=False)
         if adjust_padding:
             self.adjust_padding()
-    def highpass_exponential(self,adjust_padding=False,*args,**kwargs):
-        self.set_weight(nf.exponential_highpass_filter_1d(*args,**kwargs)[::-1].copy(),normalize=False)
+    def highpass_exponential(self,tau=0.0,adjust_padding=False,*args,**kwargs):
+        """Sets the weight to be a 1d temporal highpass filter with time constant `tau`."""
+        self.set_weight(nf.exponential_highpass_filter_1d(tau,*args,**kwargs)[::-1].copy(),normalize=False)
         if adjust_padding:
             self.adjust_padding()
-    def gaussian(self,sig,adjust_padding=False):
-        self.set_weight(nf.gauss_filter_5d(sig,sig),normalize=False)
+    def gaussian(self,sig,adjust_padding=False,resolution=None):
+        """Sets the weight to be a 2d gaussian filter with width `sig`."""
+        self.set_weight(nf.gauss_filter_5d(sig,sig,resolution=resolution),normalize=False)
         if adjust_padding:
             self.adjust_padding()
     def __len__(self):

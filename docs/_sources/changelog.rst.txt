@@ -1,6 +1,19 @@
 Changelog
 ==========
 
+
+0.6.2
+-----
+
+A small amount of bug fixes:
+
+ - Fixed a bug in :class:`convis.filters.retina.GanglionInput`:
+    - the convolution filters now initialize without having to reapply a configuration to the layer/parameters
+ - made padding flags in :class:`convis.filters.Conv3d` default to True
+    - in contrast to PyTorch `Conv3d` the output will now have the same shape as the input *by default*. To disable, use `time_pad=False` and `autopad=False` as arguments.
+ - fixed a bug when calling :func:`~convis.base.Output.array` on :class:`convis.base.Output`.
+ - fixed a bug where `resolution` was not a valid argument to :func:`convis.filters.Conv3d.gaussian`
+
 0.6.1
 -----
 

@@ -3,6 +3,18 @@ Changelog
 
 See also the more complete changelog [in the documentation](https://jahuth.github.io/convis/changelog.html).
 
+Version 0.6.2
+--------------
+
+A small amount of bug fixes:
+
+ - Fixed a bug in `convis.filters.retina.GanglionInput`:
+    - the convolution filters now initialize without having to reapply a configuration to the layer/parameters
+ - made padding flags in `convis.filters.Conv3d` default to True
+    - in contrast to PyTorch `Conv3d` the output will now have the same shape as the input *by default*. To disable, use `time_pad=False` and `autopad=False` as arguments.
+ - fixed a bug when calling `.array()` on `convis.base.Output`s.
+ - fixed a bug where `resolution` was not a valid argument to `convis.filters.Conv3d.gaussian`
+
 Version 0.6.1
 ---------------
 

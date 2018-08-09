@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The API: Convis classes and modules &mdash; convis 0.6.1 documentation</title>
+  <title>The API: Convis classes and modules &mdash; convis 0.6.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.1 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.2 documentation" href="index.html"/>
         <link rel="next" title="Filters convis.filters" href="docs_filters.html"/>
         <link rel="prev" title="A Convolutional Retina Model" href="model_McIntosh.html"/> 
 
@@ -261,6 +261,28 @@ To make this meaningfull, provide a name to your output variables.</p>
 <p>In the case of name collisions, the behavior of OrderedDict will use the last variable added.</p>
 <p>The full path names of all variables are also added to this objects __dict__,
 allowing for tab completion.</p>
+<dl class="method">
+<dt id="convis.base.Output.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>k=0</em>, <em>mode='lines'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the contents of the Output object.</p>
+<p>To get a line plot:</p>
+<blockquote>
+<div>o.plot(mode=’lines’) # default</div></blockquote>
+<p>To get a matshow plot:</p>
+<blockquote>
+<div>o.plot(mode=’matshow’)</div></blockquote>
+<p>To get plot depending on the shape of the output:</p>
+<blockquote>
+<div>o.plot(mode=None)</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.base.Output.array">
+<code class="descname">array</code><span class="sig-paren">(</span><em>k=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the contents of the Output object as a numpy array.</p>
+<p>k: number of output (default=0)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="convis.base.Output.mean">
 <code class="descname">mean</code><span class="sig-paren">(</span><em>axis=None</em>, <em>k=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.mean" title="Permalink to this definition">¶</a></dt>
@@ -1660,7 +1682,7 @@ if none is provided, the current axis will be converted to 3d projection</dd>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.1',
+            VERSION:'0.6.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
