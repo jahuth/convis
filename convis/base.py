@@ -54,6 +54,15 @@ def len_parents(n):
         return len_parents(n.parent)+1
     return 0
 
+def _array(t):
+    from distutils.version import LooseVersion
+    if (LooseVersion(torch.__version__) < LooseVersion('0.4.0')) and (type(t) == torch.autograd.variable.Variable):
+        return t.data.cpu().numpy()
+    else:
+        if hasattr(t,'detach'):
+            return np.array(t.detach())
+        return np.array(t)
+
 class Output(object):
     """
         This object provides a container for output numpy arrays which are labeled with theano variables.
@@ -79,7 +88,10 @@ class Output(object):
         self._out_dict = OrderedDict({})
         self._out_dict_by_full_names = OrderedDict({})
         self._out_dict_by_short_names = OrderedDict({})
-        self._outs = outs
+        if type(outs) is list:
+            self._outs = outs
+        else:
+            self._outs = [outs]
         self.keys = keys
         if keys is not None:
             self._out_dict = OrderedDict(zip(keys,outs))
@@ -114,11 +126,7 @@ class Output(object):
 
         k: number of output (default=0)
         """
-        from distutils.version import LooseVersion
-        if (LooseVersion(torch.__version__) < LooseVersion('0.4.0')) and (type(self[k]) == torch.autograd.variable.Variable):
-            return self[k].data.cpu().numpy()
-        else:
-            return np.array(self[k].detach())
+        return _array(self[k])
     def mean(self,axis=None,k=0):
         """
             Computes the mean along the supplied axis..
@@ -143,6 +151,59 @@ class Output(object):
         if str(k) != save_name(k):
             raise IndexError('Key not found: '+str(k)+' / '+save_name(k))
         raise IndexError('Key not found: '+str(k))
+    def _repr_html_(self):
+        def _shape(t):
+            try:
+                shp = list(t.size())
+                return 'x'.join([str(s) for s in shp])
+            except:
+                shp = list(t.shape)
+                return 'x'.join([str(s) for s in shp])
+        def _plot(t):
+            import matplotlib.pylab as plt
+            t = _array(t)
+            if len(t.shape) > 5:
+                while len(t.shape) > 5:
+                    t = t[0]
+            if len(t.shape) == 4:
+                t = t[None]
+            if len(t.shape) == 3:
+                t = t[None,None]
+            if len(t.shape) == 2:
+                t = t[None,None,None]
+            if len(t.shape) == 1:
+                t = t[None,None,:,None,None]
+            o_mean= np.mean(t,(0,1,3,4))
+            o_min= np.min(t,(0,1,3,4))
+            o_max= np.max(t,(0,1,3,4))
+            ax1 = plt.subplot2grid((2, 5), (0, 0), colspan=5)
+            plt.fill_between(np.arange(len(o_min)),o_min,o_max,alpha=0.5)
+            plt.plot(np.arange(len(o_min)),o_mean)
+            line_steps = int(min(t.shape[3],t.shape[4])/min(4,min(t.shape[3],t.shape[4])))
+            for i in np.arange(0,t.shape[3],line_steps):
+                for j in np.arange(0,t.shape[4],line_steps):
+                    plt.plot(np.arange(len(o_min)),t[0,0,:,i,j],'-',color='orange',alpha=0.2)
+
+            ax1.spines['right'].set_visible(False)
+            ax1.spines['top'].set_visible(False)
+            ax1.yaxis.set_ticks_position('left')
+            ax1.xaxis.set_ticks_position('bottom')
+            plt.title('Output Tensor')
+            for i,_t in enumerate(np.linspace(0,t.shape[2]-1,5)):
+                ax2 = plt.subplot2grid((2, 5), (1, i))
+                plt.imshow(t[0,0,int(_t),:,:],vmin=np.min(t),vmax=np.max(t))
+                plt.axis('off')
+                plt.title(str(int(_t)))
+            return "<img src='data:image/png;base64," + variable_describe._plot_to_string() + "'>"
+        if len(self) == 1:
+            return "<b>Output</b> containing a "+_shape(self._outs[0])+" Tensor.<br/>"+_plot(self._outs[0])+""
+        else:
+            s = "<b>Output</b> containing "+str(len(self))+" Tensors."
+            s += "<div style='background:#ff;padding:10px'>"
+            for t in self._outs:
+                s += "<div style='background:#fff; margin:10px;padding:10px; border-left: 4px solid #eee;'>"+_shape(t)+" Tensor<br/> "+_plot(t)+"</div>"
+            s += "</div>"
+            return s
 
 class _OptimizerSelection(object):
     """
