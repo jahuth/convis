@@ -263,7 +263,7 @@ To make this meaningfull, provide a name to your output variables.</p>
 allowing for tab completion.</p>
 <dl class="method">
 <dt id="convis.base.Output.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>k=0</em>, <em>mode='lines'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot</code><span class="sig-paren">(</span><em>k=0</em>, <em>mode=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/base.html#Output.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.base.Output.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the contents of the Output object.</p>
 <p>To get a line plot:</p>
 <blockquote>
@@ -1052,6 +1052,27 @@ will correspond to the two dimensions of the image.</p>
 to <cite>matplotlib.pylab.plot()</cite></p>
 <p><cite>border_val</cite> can be a float value or ‘max’, ‘min’ or ‘mean’,
 in which case the corresponding value will be taken from w.</p>
+<p class="rubric">Examples</p>
+<p>By default this will generate a very long plot where you can see almost nothing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_5d_matshow</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-1.py">Source code</a>, <a class="reference external" href=".//docs-1.png">png</a>, <a class="reference external" href=".//docs-1.hires.png">hires.png</a>, <a class="reference external" href=".//docs-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-1.png" src="_images/docs-1.png" />
+</div>
+<p>By limiting the number of frames, the plot shows the frames next to each other:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_5d_matshow</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,::</span><span class="mi">200</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-2.py">Source code</a>, <a class="reference external" href=".//docs-2.png">png</a>, <a class="reference external" href=".//docs-2.hires.png">hires.png</a>, <a class="reference external" href=".//docs-2.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-2.png" src="_images/docs-2.png" />
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -1063,6 +1084,102 @@ If <cite>mean</cite> is <cite>True</cite>, all 4 non-time dimensions will be
 averaged.</p>
 <p>Other arguments and keyword arguments are passed
 to <cite>matplotlib.pylab.plot()</cite></p>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_5d_time</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-3.py">Source code</a>, <a class="reference external" href=".//docs-3.png">png</a>, <a class="reference external" href=".//docs-3.hires.png">hires.png</a>, <a class="reference external" href=".//docs-3.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-3.png" src="_images/docs-3.png" />
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.utils.plot">
+<code class="descclassname">convis.utils.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>x</em>, <em>mode=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a tensor/numpy array</p>
+<blockquote>
+<div>If the array has no spatial extend, it will
+draw only a single line plot. If the array
+has no temporal extend (and no color channels etc.),
+it will plot a single frame.
+Otherwise it will use <cite>plot_tensor</cite>.</div></blockquote>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.utils.plot_tensor" title="convis.utils.plot_tensor"><code class="xref py py-obj docutils literal"><span class="pre">plot_tensor</span></code></a>, <a class="reference internal" href="#convis.utils.plot_5d_matshow" title="convis.utils.plot_5d_matshow"><code class="xref py py-obj docutils literal"><span class="pre">plot_5d_matshow</span></code></a>, <a class="reference internal" href="#convis.utils.plot_5d_time" title="convis.utils.plot_5d_time"><code class="xref py py-obj docutils literal"><span class="pre">plot_5d_time</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-4.py">Source code</a>, <a class="reference external" href=".//docs-4.png">png</a>, <a class="reference external" href=".//docs-4.hires.png">hires.png</a>, <a class="reference external" href=".//docs-4.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-4.png" src="_images/docs-4.png" />
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="convis.utils.plot_tensor">
+<code class="descclassname">convis.utils.</code><code class="descname">plot_tensor</code><span class="sig-paren">(</span><em>t</em>, <em>n_examples=5</em>, <em>max_lines=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a 5d tensor as a line plot (min,max,mean and example timeseries) and a sequence of image plots.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-5.py">Source code</a>, <a class="reference external" href=".//docs-5.png">png</a>, <a class="reference external" href=".//docs-5.hires.png">hires.png</a>, <a class="reference external" href=".//docs-5.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-5.png" src="_images/docs-5.png" />
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>t (numpy array or PyTorch tensor):</strong></p>
+<blockquote>
+<div><p>The tensor that should be visualized</p>
+</div></blockquote>
+<p><strong>n_examples (int):</strong></p>
+<blockquote>
+<div><p>how many frames (distributed equally over the
+length of the tensor) should be</p>
+</div></blockquote>
+<p><strong>max_lines (int):</strong></p>
+<blockquote class="last">
+<div><p>the maximum number of line plots of exemplary
+timeseries that should be added to the temporal 
+plot. The lines will be distributed roughly equally.
+If the tensor is not square in time (x!=y) or either 
+dimension is too small, it is possible that there 
+will be less than <cite>max_lines</cite> lines.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">],</span><span class="n">n_examples</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">max_lines</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-6.py">Source code</a>, <a class="reference external" href=".//docs-6.png">png</a>, <a class="reference external" href=".//docs-6.hires.png">hires.png</a>, <a class="reference external" href=".//docs-6.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-6.png" src="_images/docs-6.png" />
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">],</span><span class="n">n_examples</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">max_lines</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs-7.py">Source code</a>, <a class="reference external" href=".//docs-7.png">png</a>, <a class="reference external" href=".//docs-7.hires.png">hires.png</a>, <a class="reference external" href=".//docs-7.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs-7.png" src="_images/docs-7.png" />
+</div>
 </dd></dl>
 
 </div>

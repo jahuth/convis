@@ -13,7 +13,7 @@ for the two main use cases it was designed for:
 
 
 Quickstart: Generating Spikes
------------------
+------------------------------
 .. _quickstart_spikes:
 
     .. plot::

@@ -102,7 +102,7 @@ class Output(object):
         return len(self._outs)
     def __iter__(self):
         return iter(self._outs)
-    def plot(self,k=0,mode='lines',**kwargs):
+    def plot(self,k=0,mode=None,**kwargs):
         """Plots the contents of the Output object.
 
         To get a line plot:
@@ -160,40 +160,7 @@ class Output(object):
                 shp = list(t.shape)
                 return 'x'.join([str(s) for s in shp])
         def _plot(t):
-            import matplotlib.pylab as plt
-            t = _array(t)
-            if len(t.shape) > 5:
-                while len(t.shape) > 5:
-                    t = t[0]
-            if len(t.shape) == 4:
-                t = t[None]
-            if len(t.shape) == 3:
-                t = t[None,None]
-            if len(t.shape) == 2:
-                t = t[None,None,None]
-            if len(t.shape) == 1:
-                t = t[None,None,:,None,None]
-            o_mean= np.mean(t,(0,1,3,4))
-            o_min= np.min(t,(0,1,3,4))
-            o_max= np.max(t,(0,1,3,4))
-            ax1 = plt.subplot2grid((2, 5), (0, 0), colspan=5)
-            plt.fill_between(np.arange(len(o_min)),o_min,o_max,alpha=0.5)
-            plt.plot(np.arange(len(o_min)),o_mean)
-            line_steps = int(min(t.shape[3],t.shape[4])/min(4,min(t.shape[3],t.shape[4])))
-            for i in np.arange(0,t.shape[3],line_steps):
-                for j in np.arange(0,t.shape[4],line_steps):
-                    plt.plot(np.arange(len(o_min)),t[0,0,:,i,j],'-',color='orange',alpha=0.2)
-
-            ax1.spines['right'].set_visible(False)
-            ax1.spines['top'].set_visible(False)
-            ax1.yaxis.set_ticks_position('left')
-            ax1.xaxis.set_ticks_position('bottom')
-            plt.title('Output Tensor')
-            for i,_t in enumerate(np.linspace(0,t.shape[2]-1,5)):
-                ax2 = plt.subplot2grid((2, 5), (1, i))
-                plt.imshow(t[0,0,int(_t),:,:],vmin=np.min(t),vmax=np.max(t))
-                plt.axis('off')
-                plt.title(str(int(_t)))
+            utils.plot_tensor(t)
             return "<img src='data:image/png;base64," + variable_describe._plot_to_string() + "'>"
         if len(self) == 1:
             return "<b>Output</b> containing a "+_shape(self._outs[0])+" Tensor.<br/>"+_plot(self._outs[0])+""
