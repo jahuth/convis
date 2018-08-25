@@ -11,6 +11,7 @@ def _to_numpy(x):
 
 
 def _array(t):
+    import torch
     from distutils.version import LooseVersion
     if (LooseVersion(torch.__version__) < LooseVersion('0.4.0')) and (type(t) == torch.autograd.variable.Variable):
         return t.data.cpu().numpy()

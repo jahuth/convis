@@ -245,6 +245,8 @@ class Parameter(Variable,torch.nn.Parameter):
         if type(v) in [int, float]:
             v = np.array([v])
         self.data = torch.Tensor(v)
+    def get(self):
+        return self.__array__()
     def requires_grad_(self,requires_grad=True):
         """Changes the `requires_grad` attribute for this parameter *in place*.
 
@@ -449,7 +451,7 @@ def update(var,**kwargs):
 def is_callback(v):
     return type(v) in [CallbackParameter,VirtualParameter]
 def get_if_callback(v):
-    if is_callback(v):
+    if is_callback(v) or hasattr(v,'get'):
         return v.get()
     return v
 

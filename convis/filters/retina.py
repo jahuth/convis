@@ -7,6 +7,7 @@ except ImportError:
     pass
 
 from ..base import *
+from .. import base
 from ..filters import Conv1d, Conv2d, Conv3d, TIME_DIMENSION
 from .. import variables
 from .. import _get_default_resolution
@@ -80,16 +81,16 @@ class SeperatableOPLFilter(Layer):
         super(SeperatableOPLFilter, self).__init__()
         self.dims = 5
         self.center_G = Conv3d(1, 1, (1,10,10), time_pad=False, autopad=False)
-        self.center_G.set_weight(1.0)
-        self.center_G.gaussian(0.05)
         self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
+        self.sigma_center.set(0.05)
         self.center_E = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
-        self.center_undershoot = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
         self.center_E.weight.data[0,0,-5,0,0] = 1.0
         self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec')
         self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
         self.f_exp_center = variables.VirtualParameter(
             self.center_E.exponential).set_callback_arguments(tau=self.tau_center,n=self.n_center,resolution=_get_default_resolution())
+        self.f_exp_center.update()
+        self.center_undershoot = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
         self.undershoot_tau_center = variables.VirtualParameter(
             float,
             value=0.1,
@@ -103,6 +104,7 @@ class SeperatableOPLFilter(Layer):
                 tau=self.undershoot_tau_center,
                 relative_weight=self.undershoot_relative_weight_center,
                 resolution=_get_default_resolution())
+        self.f_undershoot.update()
         self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9), autopad=False)
         self.surround_G.set_weight(1.0)
         self.surround_G.gaussian(0.15)
@@ -117,8 +119,8 @@ class SeperatableOPLFilter(Layer):
         self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0), time_pad=False, autopad=False)
         if hasattr(self.surround_E,'bias') and self.surround_E.bias is not None:
             self.surround_E.bias.data[0] = 0.0
-        self.surround_E.weight.data[0,0,2,0,0] = 1.0
         self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,adjust_padding=False,resolution=_get_default_resolution())
+        self.tau_surround.set(0.004)
         self.input_state = State(np.zeros((1,1,1,1,1)))
         self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
     @property
@@ -411,10 +413,10 @@ class FullConvolutionOPLFilter(Layer):
         SeperatableOPLFilter
 
     """
-    def __init__(self):
+    def __init__(self,shp=(100,10,10)):
         super(FullConvolutionOPLFilter, self).__init__()
         self.dims = 5
-        self.conv = nn.Conv3d(1, 1, (20,10,10), time_pad=False, autopad=False)
+        self.conv = Conv3d(1, 1, shp, time_pad=True, autopad=True)
         self.conv.bias.data[0] = 0.0
         self.conv.weight.data[:,:,:,:,:] = 0.0
         self.sigma_center = variables.VirtualParameter(float,value=0.05,retina_config_key='center-sigma__deg')
@@ -445,6 +447,7 @@ class FullConvolutionOPLFilter(Layer):
                             relative_weight = self.relative_weight,
                             lambda_opl = self.lambda_opl
                         )
+        self._callback.update()
     def create_kernel(self, sigma_center,
                             tau_center,
                             n_center,
@@ -454,9 +457,24 @@ class FullConvolutionOPLFilter(Layer):
                             tau_surround,
                             relative_weight,
                             lambda_opl):
-        print('updating!')
-        pass
-
+        tmp_opl = RecursiveOPLFilter()
+        self.tmp_opl = tmp_opl
+        tmp_opl.sigma_center.set(sigma_center)
+        tmp_opl.tau_center.set(tau_center)
+        tmp_opl.n_center.set(n_center)
+        tmp_opl.undershoot_tau_center.set(undershoot_tau_center)
+        tmp_opl.undershoot_relative_weight_center.set(undershoot_relative_weight_center)
+        tmp_opl.sigma_surround.set(sigma_surround)
+        tmp_opl.tau_surround.set(tau_surround)
+        tmp_opl.relative_weight.set(relative_weight)
+        tmp_opl.lambda_opl.set(lambda_opl)
+        shp=tuple(self.conv.weight.shape)
+        #tmp_opl.clear_state()
+        inp = np.zeros(shp)
+        inp[0,0,0,int(shp[3]/2),int(shp[4]/2)] = 1.0
+        w = tmp_opl.run(inp,dt=100)[0]
+        self.conv.set_weight(base._array(w[0,0])[::-1,::-1,::-1].copy())
+        return w
     def forward(self, x):
         return self.conv(x)
 
