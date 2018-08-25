@@ -874,11 +874,11 @@ class GanglionSpiking(Layer):
             else:
                 refr_noise = 1000.0*(self.refr_mu + self.refr_sigma *
                                     variables.randn(I.data.shape).cpu())
+            self.refr = self.refr - 1.0
+            V.masked_scatter_(self.refr >= 0.5, self.zeros)
             spikes = V > 1.0
             self.refr.masked_scatter_(spikes, refr_noise)
             self.refr.masked_scatter_(self.refr < 0.0, self.zeros)
-            self.refr = self.refr - 1.0
-            V.masked_scatter_(self.refr >= 0.5, self.zeros)
             V.masked_scatter_(spikes, self.zeros)
             self.V = V
             all_spikes.append(spikes[None,:,:])

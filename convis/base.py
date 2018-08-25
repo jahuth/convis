@@ -538,7 +538,10 @@ class Layer(torch.nn.Module):
         if dt is not None:
             return self._run_in_chunks(the_input,dt=dt,t=t,detach=detach)
         else:
-            return Output([self(the_input)],keys=['output'])
+            o = self(the_input)
+            if type(o) is not Output:
+                return Output([o],keys=['output'])
+            return o
     def _run_in_chunks(self,the_input,dt=100,t=0,detach=True):
         chunked_output = []
         keys = ['output']
