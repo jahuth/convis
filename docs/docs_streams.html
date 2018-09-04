@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Streams convis.streams &mdash; convis 0.6.2 documentation</title>
+  <title>Streams convis.streams &mdash; convis 0.6.3 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.2 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.3 documentation" href="index.html"/>
         <link rel="up" title="The API: Convis classes and modules" href="docs.html"/>
         <link rel="next" title="Optimizers convis.optimizer" href="docs_optimizer.html"/>
         <link rel="prev" title="VirtualRetina-like Simulator" href="docs_retina.html"/> 
@@ -189,11 +189,49 @@
             
   <div class="section" id="module-convis.streams">
 <span id="streams-convis-streams"></span><h1>Streams <cite>convis.streams</cite><a class="headerlink" href="#module-convis.streams" title="Permalink to this headline">¶</a></h1>
+<p>The streams module contains <cite>Stream</cite> classes that can load different kinds of data.</p>
+<p>Streams that are usable currently are: <a class="reference internal" href="#convis.streams.RandomStream" title="convis.streams.RandomStream"><code class="xref py py-class docutils literal"><span class="pre">RandomStream</span></code></a>, <a class="reference internal" href="#convis.streams.SequenceStream" title="convis.streams.SequenceStream"><code class="xref py py-class docutils literal"><span class="pre">SequenceStream</span></code></a> and <a class="reference internal" href="#convis.streams.ImageSequence" title="convis.streams.ImageSequence"><code class="xref py py-class docutils literal"><span class="pre">ImageSequence</span></code></a>.
+All others are experimental. If you plan on using any of them, you can open a  <a class="reference external" href="https://github.com/jahuth/convis/labels/enhancement">enhancement</a> issue on the issue tracker.</p>
+<p>Since some streams do not have a defined end, the argument <cite>max_t</cite> can specify for how long a model should be executed.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">RandomStream</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span><span class="n">mean</span><span class="o">=</span><span class="mi">127</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_t</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_streams-1.py">Source code</a>, <a class="reference external" href=".//docs_streams-1.png">png</a>, <a class="reference external" href=".//docs_streams-1.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-1.png" src="_images/docs_streams-1.png" />
+</div>
 <dl class="class">
 <dt id="convis.streams.InrImageStreamer">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">InrImageStreamer</code><span class="sig-paren">(</span><em>filename</em>, <em>z=False</em>, <em>slice_at=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageStreamer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageStreamer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a large inr file and is an iterator over all images.</p>
-<p>By default, the z dimension is ignored. Setting <cite>z</cite> to True changes this, such that each image is 3d instead of 2d.</p>
+<blockquote>
+<div>By default, the z dimension is ignored. Setting <cite>z</cite> to True changes this, such that each image is 3d instead of 2d.</div></blockquote>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.InrImageStreamWriter">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">InrImageStreamWriter</code><span class="sig-paren">(</span><em>filename</em>, <em>v=1</em>, <em>x=1</em>, <em>y=1</em>, <em>z=1</em>, <em>time_dimension='VDIM'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageStreamWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageStreamWriter" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.InrImageFileStreamer">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">InrImageFileStreamer</code><span class="sig-paren">(</span><em>filenames</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageFileStreamer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageFileStreamer" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -205,33 +243,160 @@ or <cite>put</cite> a frame.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="convis.streams.RandomStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">RandomStream</code><span class="sig-paren">(</span><em>size=(50</em>, <em>50)</em>, <em>pixel_per_degree=10</em>, <em>level=1.0</em>, <em>mean=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#RandomStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.RandomStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>creates a stream of random frames.</p>
+<p class="rubric">Examples</p>
+<p>(<a class="reference external" href=".//docs_streams-2.py">Source code</a>, <a class="reference external" href=".//docs_streams-2.png">png</a>, <a class="reference external" href=".//docs_streams-2.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-2.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-2.png" src="_images/docs_streams-2.png" />
+</div>
+</dd></dl>
+
+<dl class="class">
 <dt id="convis.streams.SequenceStream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">SequenceStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em>, <em>max_frames=5000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#SequenceStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.SequenceStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>3d Numpy array that represents a sequence of images</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
+</div></blockquote>
+<p class="rubric">Examples</p>
+<p>(<a class="reference external" href=".//docs_streams-3.py">Source code</a>, <a class="reference external" href=".//docs_streams-3.png">png</a>, <a class="reference external" href=".//docs_streams-3.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-3.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-3.png" src="_images/docs_streams-3.png" />
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.RepeatingStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">RepeatingStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#RepeatingStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.RepeatingStream" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.TimedSequenceStream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">TimedSequenceStream</code><span class="sig-paren">(</span><em>sequence=array([]</em>, <em>shape=(0</em>, <em>50</em>, <em>50)</em>, <em>dtype=float64)</em>, <em>size=None</em>, <em>pixel_per_degree=10</em>, <em>t_zero=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#TimedSequenceStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.TimedSequenceStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>3d Numpy array that represents a sequence of images</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.TimedResampleStream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">TimedResampleStream</code><span class="sig-paren">(</span><em>stream</em>, <em>t_zero=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#TimedResampleStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.TimedResampleStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>3d Numpy array that represents a sequence of images</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.NumpyReader">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">NumpyReader</code><span class="sig-paren">(</span><em>file_ref</em>, <em>size=None</em>, <em>pixel_per_degree=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#NumpyReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.NumpyReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads a numpy file.</p>
+<dd><p>reads a numpy file.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
 </dd></dl>
 
 <dl class="class">
 <dt id="convis.streams.ImageSequence">
-<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">ImageSequence</code><span class="sig-paren">(</span><em>filenames='*.jpg'</em>, <em>size=(50</em>, <em>50)</em>, <em>repeats=0</em>, <em>offset=None</em>, <em>isColor=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#ImageSequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.ImageSequence" title="Permalink to this definition">¶</a></dt>
-<dd><p>loads a sequence of images</p>
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">ImageSequence</code><span class="sig-paren">(</span><em>filenames='*.jpg'</em>, <em>size=(50</em>, <em>50)</em>, <em>repeat=1</em>, <em>offset=None</em>, <em>is_color=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#ImageSequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.ImageSequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>loads a sequence of images so they can be processed by convis</p>
+<p>The image values will be scaled between 0 and 256.</p>
+<p>When <cite>is_color</cite> is True, it returns a 5d array with dimensions [0,color_channel,time,x,y].</p>
+<p>If <cite>offset</cite> is <cite>None</cite>, the crop will be chosen as the center of the image.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This function is not stable and might change without notice between releases.
+To create stable code it is currently recommended to load input manually into numpy arrays.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filenames</strong> :  str or list</p>
+<blockquote>
+<div><p>List of filenames or a wildcard expression (eg. ‘frame_*.jpeg’) of the images to load.</p>
+</div></blockquote>
+<p><strong>size</strong> : two tuple (int,int)</p>
+<blockquote>
+<div><p>the size the output image should be cropped to</p>
+</div></blockquote>
+<p><strong>repeat</strong> : int</p>
+<blockquote>
+<div><p>how often each image should be repeated (eg. 100 to show a new image after 100 frames)</p>
+</div></blockquote>
+<p><strong>offset</strong> : None or (int,int)</p>
+<blockquote>
+<div><p>offset of the crop from the top left corner of the image</p>
+</div></blockquote>
+<p><strong>is_color</strong> : bool</p>
+<blockquote class="last">
+<div><p>Whether images should be interpreted as color or grayscale. If <cite>is_color</cite> is True, this stream gives a 5d output.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Choosing a crop with <cite>size</cite> and <cite>offset</cite>:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">(</span><span class="s1">&#39;cat.png&#39;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">50</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Creating a 500 frame input:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">([</span><span class="s1">&#39;cat.png&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">(</span><span class="s1">&#39;cat.png&#39;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Loading multiple images:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">(</span><span class="s1">&#39;frame_*.png&#39;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">([</span><span class="s1">&#39;cat.png&#39;</span><span class="p">,</span><span class="s1">&#39;dog.png&#39;</span><span class="p">,</span><span class="s1">&#39;parrot.png&#39;</span><span class="p">],</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="45%" />
+<col width="55%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>self.i (int) :</strong></td>
+<td>internal frame counter</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="87%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>get(i)</strong></td>
+<td>retrieve a sequence of <cite>i</cite> frames. Advances the internal counter.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -280,7 +445,7 @@ or <cite>put</cite> a frame.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.2',
+            VERSION:'0.6.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

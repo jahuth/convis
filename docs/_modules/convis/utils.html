@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.utils &mdash; convis 0.6.2 documentation</title>
+  <title>convis.utils &mdash; convis 0.6.3 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.2 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.3 documentation" href="../../index.html"/>
         <link rel="up" title="convis" href="../convis.html"/> 
 
   
@@ -175,12 +175,179 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="k">def</span> <span class="nf">_to_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="c1"># should become obsolete. use _array instead.</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># assuming a torch Variable on the gpu</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">x</span>   
+
+
+<span class="k">def</span> <span class="nf">_array</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">torch</span>
+    <span class="kn">from</span> <span class="nn">distutils.version</span> <span class="k">import</span> <span class="n">LooseVersion</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">LooseVersion</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="s1">&#39;0.4.0&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">Variable</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="s1">&#39;detach&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+<div class="viewcode-block" id="make_tensor_5d"><a class="viewcode-back" href="../../docs.html#convis.utils.make_tensor_5d">[docs]</a><span class="k">def</span> <span class="nf">make_tensor_5d</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extends a tensor or numpy array to have exactly 5 dimensions.</span>
+<span class="sd">    </span>
+<span class="sd">    In doing so, it interprets 1d tensors as being aligned</span>
+<span class="sd">    in time, 2d tensors to be aligned in space, etc.</span>
+
+<span class="sd">        - 1d: t[None,None,:,None,None]</span>
+<span class="sd">        - 2d: t[None,None,None,:,:]</span>
+<span class="sd">        - 3d: t[None,None,:,:,:]</span>
+<span class="sd">        - 4d: t[None,:,:,:,:]</span>
+<span class="sd">        - 5d: t</span>
+<span class="sd">        - 6d and more: selects the first element of t until t has 5 dimensions</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="c1"># for numpy arrays</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>    
+        <span class="k">return</span> <span class="n">t</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># for pytorch tensors</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>    
+        <span class="k">return</span> <span class="n">t</span></div>
+
+
+<div class="viewcode-block" id="extend_to_match"><a class="viewcode-back" href="../../docs.html#convis.utils.extend_to_match">[docs]</a><span class="k">def</span> <span class="nf">extend_to_match</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">align</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;linear_ramp&#39;</span><span class="p">,</span><span class="n">end_values</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">dims</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extends tensor :attr:`a` to have a shape *at least* as big as `b`.</span>
+
+<span class="sd">    If `dims` is equal to 5, :func:`make_tensor_5d` is used</span>
+<span class="sd">    to add dimensions until both tensors have 5 dimensions.</span>
+
+<span class="sd">    By default, the first three dimensions will</span>
+<span class="sd">    be padded by aligning the smaller tensor at</span>
+<span class="sd">    the beginning of the larger tensor and the last</span>
+<span class="sd">    two (spatial) dimensions are aligned centered</span>
+<span class="sd">    in the larger tensor.</span>
+
+<span class="sd">    If `dim` is *not* equal to 5, all dimensions</span>
+<span class="sd">    are centered.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">        a (numpy array or tensor):</span>
+<span class="sd">            the tensor being extended</span>
+<span class="sd">        b (numpy array or tensor):</span>
+<span class="sd">            the tensor with (potentially) larger dimensions</span>
+<span class="sd">        align (list or string):</span>
+<span class="sd">            if a list: determines the alignment for each dimension</span>
+<span class="sd">            if a sting: gives the alignment mode for all dimensions</span>
+<span class="sd">            possible values:  strings starting with : `&#39;c&#39;`, `&#39;b&#39;` and `&#39;e&#39;`</span>
+<span class="sd">            standing for: `&#39;center&#39;`, `&#39;begin&#39;`, `&#39;end&#39;`</span>
+<span class="sd">        mode (`str`):</span>
+<span class="sd">            see `mode` argument of :func:`numpy.pad`</span>
+<span class="sd">            default: `&#39;linear_ramp&#39;`,</span>
+<span class="sd">        end_values (`float`):</span>
+<span class="sd">            see `end_values` argument of :func:`numpy.pad`</span>
+<span class="sd">            default: `0.0`</span>
+<span class="sd">        dims (`int`, specifically 5 or anything else):</span>
+<span class="sd">            if 5, tensors will be extended so that they have exactly 5 dimensions using :func:`make_tensor_5d`</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    To make sure both have the same shape:</span>
+
+<span class="sd">        &gt;&gt;&gt; a = convis.utils.extend_to_match(a,b)</span>
+<span class="sd">        &gt;&gt;&gt; b = convis.utils.extend_to_match(b,a)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dims</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">make_tensor_5d</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">make_tensor_5d</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">align</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">align</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;begin&#39;</span><span class="p">,</span><span class="s1">&#39;begin&#39;</span><span class="p">,</span><span class="s1">&#39;begin&#39;</span><span class="p">,</span><span class="s1">&#39;center&#39;</span><span class="p">,</span><span class="s1">&#39;center&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">align</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">align</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">align</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">align</span> <span class="o">=</span> <span class="p">[</span><span class="n">align</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">shp</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)]</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">align</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">):</span>
+                <span class="n">shp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">d</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">align</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">):</span>
+                <span class="n">shp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">align</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">):</span>
+                <span class="n">shp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Alignment &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">align</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39; not undestood! Must be one of (c)enter, (b)egin, (e)nd&#39;</span><span class="p">)</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">shp</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span><span class="n">end_values</span><span class="o">=</span><span class="n">end_values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a</span></div>
+
+<div class="viewcode-block" id="subtract_tensors"><a class="viewcode-back" href="../../docs.html#convis.utils.subtract_tensors">[docs]</a><span class="k">def</span> <span class="nf">subtract_tensors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">align</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">dims</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Makes it easy to subtract two 5d tensors from each other, even if they have different shapes!</span>
+
+<span class="sd">    If `dims` is equal to 5, :func:`make_tensor_5d` is used</span>
+<span class="sd">    to add dimensions until both tensors have 5 dimensions.</span>
+
+<span class="sd">    By default, the first three dimensions will</span>
+<span class="sd">    be padded by aligning the smaller tensor at</span>
+<span class="sd">    the beginning of the larger tensor and the last</span>
+<span class="sd">    two (spatial) dimensions are aligned centered</span>
+<span class="sd">    in the larger tensor.</span>
+
+<span class="sd">    If `dim` is *not* equal to 5, all dimensions</span>
+<span class="sd">    are centered.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">        a (numpy array or tensor):</span>
+<span class="sd">            the first of the two tensors</span>
+<span class="sd">        b (numpy array or tensor):</span>
+<span class="sd">            the second of the two tensors</span>
+<span class="sd">        align (list or string):</span>
+<span class="sd">            if a list: determines the alignment for each dimension</span>
+<span class="sd">            if a sting: gives the alignment mode for all dimensions</span>
+<span class="sd">            possible values: </span>
+<span class="sd">                strings starting with : &#39;c&#39;,&#39;b&#39; and &#39;e&#39;</span>
+<span class="sd">                standing for: &#39;center&#39;, &#39;begin&#39;, &#39;end&#39;</span>
+<span class="sd">        dims (int, specifically 5 or anything else):</span>
+<span class="sd">            if 5, tensors will be extended so that they have exactly 5 dimensions using :func:`make_tensor_5d`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dims</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">make_tensor_5d</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">make_tensor_5d</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">extend_to_match</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">align</span><span class="o">=</span><span class="n">align</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">extend_to_match</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">align</span><span class="o">=</span><span class="n">align</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span>       </div>
 
 <div class="viewcode-block" id="plot_5d_matshow"><a class="viewcode-back" href="../../docs.html#convis.utils.plot_5d_matshow">[docs]</a><span class="k">def</span> <span class="nf">plot_5d_matshow</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">border</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">)],</span> <span class="n">border_val</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -224,7 +391,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;A 2d plot can only show two dimensions.&quot;</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="n">_to_numpy</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">border</span><span class="p">:</span>
@@ -266,7 +433,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="n">_to_numpy</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
     <span class="n">lines</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mean</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
@@ -335,7 +502,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;x has dimensions:&#39;</span><span class="p">,</span><span class="n">shp</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="plot_tensor"><a class="viewcode-back" href="../../docs.html#convis.utils.plot_tensor">[docs]</a><span class="k">def</span> <span class="nf">plot_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">n_examples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">max_lines</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_tensor"><a class="viewcode-back" href="../../docs.html#convis.utils.plot_tensor">[docs]</a><span class="k">def</span> <span class="nf">plot_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">n_examples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">max_lines</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span><span class="n">tlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plots a 5d tensor as a line plot (min,max,mean and example timeseries) and a sequence of image plots.</span>
 
 
@@ -361,7 +528,12 @@
 <span class="sd">            If the tensor is not square in time (x!=y) or either </span>
 <span class="sd">            dimension is too small, it is possible that there </span>
 <span class="sd">            will be less than `max_lines` lines.</span>
-
+<span class="sd">        tlim (tuple or int):</span>
+<span class="sd">            time range included in the plot</span>
+<span class="sd">        xlim (tuple or int):</span>
+<span class="sd">            x range included in the example frames</span>
+<span class="sd">        ylim (tuple or int):</span>
+<span class="sd">            y range included in the example frames</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -398,26 +570,152 @@
         <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">t_0</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">t_end</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tlim</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">,</span><span class="nb">list</span><span class="p">]:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,:,</span><span class="n">tlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">tlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],:,:]</span>
+            <span class="n">t_0</span> <span class="o">=</span> <span class="n">tlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_end</span> <span class="o">=</span> <span class="n">tlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,:,:</span><span class="n">tlim</span><span class="p">,:,:]</span>
+            <span class="n">t_end</span> <span class="o">=</span> <span class="n">tlim</span>
+    <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">,</span><span class="nb">list</span><span class="p">]:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,:,:,</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,:,:,:</span><span class="n">xlim</span><span class="p">,:]</span>
+    <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">,</span><span class="nb">list</span><span class="p">]:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,:,:,:,</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,:,:,:,:</span><span class="n">ylim</span><span class="p">]</span>
     <span class="n">o_mean</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">t</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
     <span class="n">o_min</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
     <span class="n">o_max</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">t</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_examples</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">colspan</span><span class="o">=</span><span class="n">n_examples</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">o_min</span><span class="p">,</span><span class="n">o_max</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">o_mean</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">t_0</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">o_min</span><span class="p">,</span><span class="n">o_max</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_0</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">o_mean</span><span class="p">)</span>
     <span class="n">line_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">/</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">max_lines</span><span class="p">),</span><span class="nb">min</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">line_steps</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">line_steps</span><span class="p">):</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_0</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">t_0</span><span class="p">,</span><span class="n">t_end</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Output Tensor&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">_t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">n_examples</span><span class="p">)):</span>
         <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_examples</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">_t</span><span class="p">),:,:],</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_t</span><span class="p">)))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t_0</span><span class="o">+</span><span class="n">_t</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_tensor_with_channels"><a class="viewcode-back" href="../../docs.html#convis.utils.plot_tensor_with_channels">[docs]</a><span class="k">def</span> <span class="nf">plot_tensor_with_channels</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">n_examples</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">max_lines</span><span class="o">=</span><span class="mi">9</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots a 5d tensor as a line plot (min,max,mean and example timeseries) and a sequence of image plots and respects channels and batches.</span>
+
+<span class="sd">        (might replace plot_tensor if it is more reliable and looks nicer)</span>
+
+
+<span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            inp = convis.samples.moving_grating(2000,50,50)</span>
+<span class="sd">            inp = np.concatenate([-1.0*inp[None,None],2.0*inp[None,None],inp[None,None]],axis=0)</span>
+<span class="sd">            convis.utils.plot_tensor_with_channels(inp)</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t (numpy array or PyTorch tensor):</span>
+<span class="sd">            The tensor that should be visualized</span>
+<span class="sd">        n_examples (int):</span>
+<span class="sd">            how many frames (distributed equally over the</span>
+<span class="sd">            length of the tensor) should be </span>
+<span class="sd">        max_lines (int):</span>
+<span class="sd">            the maximum number of line plots of exemplary</span>
+<span class="sd">            timeseries that should be added to the temporal </span>
+<span class="sd">            plot. The lines will be distributed roughly equally.</span>
+<span class="sd">            If the tensor is not square in time (x!=y) or either </span>
+<span class="sd">            dimension is too small, it is possible that there </span>
+<span class="sd">            will be less than `max_lines` lines.</span>
+
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+
+<span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            inp = convis.samples.moving_grating(2000,50,50)</span>
+<span class="sd">            inp = np.concatenate([-1.0*inp[None,None],2.0*inp[None,None],inp[None,None]],axis=0)</span>
+<span class="sd">            convis.utils.plot_tensor_with_channels(inp,n_examples=10,max_lines=42)</span>
+
+
+<span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            inp = convis.samples.moving_grating(2000,50,50)</span>
+<span class="sd">            inp = np.concatenate([-1.0*inp[None,None],2.0*inp[None,None],inp[None,None]],axis=1)</span>
+<span class="sd">            convis.utils.plot_tensor_with_channels(inp[None,None],n_examples=2,max_lines=2)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">convis</span> <span class="k">import</span> <span class="n">base</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">_array</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">num_lines</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">2</span><span class="o">+</span><span class="mf">1.2</span><span class="o">*</span><span class="n">num_lines</span><span class="p">))</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">1</span><span class="o">+</span><span class="n">num_lines</span><span class="p">,</span> <span class="n">n_examples</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">colspan</span><span class="o">=</span><span class="n">n_examples</span><span class="p">)</span>
+    <span class="n">prop_cycle</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.prop_cycle&#39;</span><span class="p">]</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">prop_cycle</span><span class="o">.</span><span class="n">by_key</span><span class="p">()[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+    <span class="n">colors_i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">o_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">],(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">o_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">],(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">o_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">],(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">o_min</span><span class="p">,</span><span class="n">o_max</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">colors_i</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">o_mean</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">colors_i</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)])</span>
+            <span class="n">line_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">/</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">max_lines</span><span class="p">),</span><span class="nb">min</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">line_steps</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">line_steps</span><span class="p">):</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">o_min</span><span class="p">)),</span><span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">colors_i</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)],</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="n">colors_i</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Output Tensor&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_lines</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">_t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">n_examples</span><span class="p">)):</span>
+            <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">1</span><span class="o">+</span><span class="n">num_lines</span><span class="p">,</span> <span class="n">n_examples</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="o">%</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="o">/</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">_t</span><span class="p">),:,:],</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">num_lines</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;,..] &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_t</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_t</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span></div>
 
 <span class="k">def</span> <span class="nf">mean_as_float</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
@@ -463,7 +761,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.2',
+            VERSION:'0.6.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Changelog &mdash; convis 0.6.2 documentation</title>
+  <title>Changelog &mdash; convis 0.6.3 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.2 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.3 documentation" href="index.html"/>
         <link rel="next" title="Filters and Layers" href="filters.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -96,9 +96,10 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">0.6.2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">0.6.1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">0.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.6.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">0.6.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">0.6.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">0.6</a></li>
 </ul>
 </li>
 </ul>
@@ -178,7 +179,29 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
-<h2>0.6.2<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>0.6.3<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="docs_retina.html#convis.filters.retina.GanglionSpiking" title="convis.filters.retina.GanglionSpiking"><code class="xref py py-class docutils literal"><span class="pre">GanglionSpiking</span></code></a> had a bug in the refractory period</li>
+<li>the different implementations of OPL Layers now produce roughly the same output</li>
+<li>FullConvolutionOPLFilter now creates a filter from configuration options</li>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> now always returns an <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object</dt>
+<dd><ul class="first last">
+<li>fixed a bug where it returned an <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object wrapped in a <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a>  object</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> can now process infinite streams if it gets an argument <cite>max_t</cite></li>
+<li>added warnings to <a class="reference internal" href="docs_streams.html#module-convis.streams" title="convis.streams"><code class="xref py py-mod docutils literal"><span class="pre">convis.streams</span></code></a> classes that are unstable</li>
+<li>fixed <a class="reference internal" href="docs_streams.html#convis.streams.ImageSequence" title="convis.streams.ImageSequence"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.ImageSequence</span></code></a></li>
+<li><a class="reference internal" href="docs.html#convis.utils.plot_tensor" title="convis.utils.plot_tensor"><code class="xref py py-func docutils literal"><span class="pre">convis.utils.plot_tensor()</span></code></a> is now available as <cite>convis.plot_tensor</cite></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>0.6.2<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>A small amount of bug fixes:</p>
 <blockquote>
 <div><ul class="simple">
@@ -203,8 +226,8 @@
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id2">
-<h2>0.6.1<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h2>0.6.1<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>It is now possible to disable the computational graph see  <a class="reference internal" href="usage.html#disable-graph"><span class="std std-ref">these examples</span></a></li>
@@ -238,8 +261,8 @@
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id3">
-<h2>0.6<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>0.6<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>This version fixed an issue with the new PyTorch version (&gt;0.4)</li>
@@ -292,7 +315,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.2',
+            VERSION:'0.6.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

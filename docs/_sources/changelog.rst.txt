@@ -1,6 +1,19 @@
 Changelog
 ==========
 
+0.6.3
+------
+
+ - :class:`~convis.filters.retina.GanglionSpiking` had a bug in the refractory period
+ - the different implementations of OPL Layers now produce roughly the same output
+ - FullConvolutionOPLFilter now creates a filter from configuration options
+ - :func:`~convis.base.Layer.run()` now always returns an :class:`~convis.base.Output` object
+     + fixed a bug where it returned an :class:`~convis.base.Output` object wrapped in a :class:`~convis.base.Output`  object
+ - :func:`~convis.base.Layer.run()` can now process infinite streams if it gets an argument `max_t`
+ - added warnings to :mod:`convis.streams` classes that are unstable
+ - fixed :class:`convis.streams.ImageSequence`
+ - :func:`convis.utils.plot_tensor` is now available as `convis.plot_tensor` 
+
 
 0.6.2
 -----

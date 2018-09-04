@@ -2,7 +2,7 @@
 The streams module contains `Stream` classes that can load different kinds of data.
 
 Streams that are usable currently are: :class:`RandomStream`, :class:`SequenceStream` and :class:`ImageSequence`.
-All others are experimental. If you plan on using any of them, you can open a feature issue on the issue tracker.
+All others are experimental. If you plan on using any of them, you can open a  `enhancement <https://github.com/jahuth/convis/labels/enhancement>`_ issue on the issue tracker.
 
 
 Since some streams do not have a defined end, the argument `max_t` can specify for how long a model should be executed.

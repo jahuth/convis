@@ -3,6 +3,20 @@ Changelog
 
 See also the more complete changelog [in the documentation](https://jahuth.github.io/convis/changelog.html).
 
+
+Version 0.6.3
+--------------
+
+ - GanglionSpiking had a bug in the refractory period
+ - the different implementations of OPL Layers now produce roughly the same output
+ - FullConvolutionOPLFilter now creates a filter from configuration options
+ - `Layer.run()` now always returns an `Output` object
+     + fixed a bug where it returned an `Output` object wrapped in a `Output` object
+ - `Layer.run()` can now process infinite streams if it gets an argument `max_t`
+ - added warnings to `convis.streams` classes that are unstable
+ - fixed `convis.streams.ImageSequence`
+ - `utils.plot_tensor` is now available as `convis.plot_tensor` 
+
 Version 0.6.2
 --------------
 

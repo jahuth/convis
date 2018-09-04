@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.streams &mdash; convis 0.6.2 documentation</title>
+  <title>convis.streams &mdash; convis 0.6.3 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.2 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.3 documentation" href="../../index.html"/>
         <link rel="up" title="convis" href="../convis.html"/> 
 
   
@@ -173,6 +173,22 @@
             
   <h1>Source code for convis.streams</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The streams module contains `Stream` classes that can load different kinds of data.</span>
+
+<span class="sd">Streams that are usable currently are: :class:`RandomStream`, :class:`SequenceStream` and :class:`ImageSequence`.</span>
+<span class="sd">All others are experimental. If you plan on using any of them, you can open a  `enhancement &lt;https://github.com/jahuth/convis/labels/enhancement&gt;`_ issue on the issue tracker.</span>
+
+
+<span class="sd">Since some streams do not have a defined end, the argument `max_t` can specify for how long a model should be executed.</span>
+
+<span class="sd">.. plot ::</span>
+<span class="sd">    :include-source:</span>
+
+<span class="sd">    import convis</span>
+<span class="sd">    model = convis.models.Retina()</span>
+<span class="sd">    inp = convis.streams.RandomStream((20,20),mean=127,level=100.0)</span>
+<span class="sd">    o = model.run(inp,dt=100, max_t=1000)</span>
+<span class="sd">    convis.plot(o[0])</span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -197,6 +213,11 @@
     <span class="sd">&quot;&quot;&quot; Reads a large inr file and is an iterator over all images.</span>
 
 <span class="sd">        By default, the z dimension is ignored. Setting `z` to True changes this, such that each image is 3d instead of 2d.</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">slice_at</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
@@ -282,7 +303,21 @@
     <span class="k">def</span> <span class="nf">buffered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
-<span class="k">class</span> <span class="nc">InrImageStreamWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="InrImageStreamWriter"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.InrImageStreamWriter">[docs]</a><span class="k">class</span> <span class="nc">InrImageStreamWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+
+<span class="sd">        s = convis.streams.InrImageStreamWriter(&#39;stim.inr&#39;,x=inp.shape[1],y=inp.shape[2],time_dimension=&#39;ZDIM&#39;)</span>
+<span class="sd">        with s:</span>
+<span class="sd">            for i in inp:</span>
+<span class="sd">                s.put(i[None,:,:])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">time_dimension</span><span class="o">=</span><span class="s1">&#39;VDIM&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Usage::</span>
@@ -344,9 +379,15 @@
         <span class="k">return</span> <span class="n">s</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">buffered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
 
-<span class="k">class</span> <span class="nc">InrImageFileStreamer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="InrImageFileStreamer"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.InrImageFileStreamer">[docs]</a><span class="k">class</span> <span class="nc">InrImageFileStreamer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filenames</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
             <span class="n">filenames</span> <span class="o">=</span> <span class="n">litus</span><span class="o">.</span><span class="n">natural_sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">filenames</span><span class="p">))</span>
@@ -410,7 +451,7 @@
         <span class="k">return</span> <span class="n">s</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">buffered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="Stream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.Stream">[docs]</a><span class="k">class</span> <span class="nc">Stream</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -460,7 +501,19 @@
     <span class="k">def</span> <span class="nf">buffered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
-<span class="k">class</span> <span class="nc">RandomStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+<div class="viewcode-block" id="RandomStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.RandomStream">[docs]</a><span class="k">class</span> <span class="nc">RandomStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;creates a stream of random frames.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        .. plot::</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            inp = convis.streams.RandomStream((20,20),level=3.0,mean=10.0)</span>
+<span class="sd">            convis.plot(inp.get(100))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span>
@@ -476,10 +529,31 @@
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="p">([</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not implemented for read only stream.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not implemented for read only stream.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SequenceStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.SequenceStream">[docs]</a><span class="k">class</span> <span class="nc">SequenceStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; 3d Numpy array that represents a sequence of images&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot; 3d Numpy array that represents a sequence of images</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            This class is not currently maintained and might change without notice between releases.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        .. plot::</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            x = np.ones((200,50,50))</span>
+<span class="sd">            x[:,10,:] = 0.0 </span>
+<span class="sd">            x[:,20,:] = 0.0 </span>
+<span class="sd">            x[:,30,:] = 0.0 </span>
+<span class="sd">            x *= np.sin(np.linspace(0.0,12.0,x.shape[0]))[:,None,None]</span>
+<span class="sd">            x += np.sin(np.linspace(0.0,12.0,x.shape[1]))[None,:,None]</span>
+<span class="sd">            inp = convis.streams.SequenceStream(x)</span>
+<span class="sd">            convis.plot(inp.get(100))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_frames</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="n">pixel_per_degree</span>
@@ -516,7 +590,12 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">s</span></div>
 
-<span class="k">class</span> <span class="nc">RepeatingStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+<div class="viewcode-block" id="RepeatingStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.RepeatingStream">[docs]</a><span class="k">class</span> <span class="nc">RepeatingStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            This class is not currently maintained and might change without notice between releases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="n">pixel_per_degree</span>
@@ -543,11 +622,16 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="n">pre_index</span><span class="p">:],</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">,</span><span class="n">s</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">,</span><span class="n">s</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TimedSequenceStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.TimedSequenceStream">[docs]</a><span class="k">class</span> <span class="nc">TimedSequenceStream</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; 3d Numpy array that represents a sequence of images&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot; 3d Numpy array that represents a sequence of images</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">t_zero</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pixel_per_degree</span> <span class="o">=</span> <span class="n">pixel_per_degree</span>
@@ -583,7 +667,13 @@
         
         
 <div class="viewcode-block" id="TimedResampleStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.TimedResampleStream">[docs]</a><span class="k">class</span> <span class="nc">TimedResampleStream</span><span class="p">(</span><span class="n">TimedSequenceStream</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; 3d Numpy array that represents a sequence of images&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot; 3d Numpy array that represents a sequence of images</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">t_zero</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t_zero</span> <span class="o">=</span> <span class="n">t_zero</span>
@@ -856,8 +946,12 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;h5py needs to be installed!&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NumpyReader"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.NumpyReader">[docs]</a><span class="k">class</span> <span class="nc">NumpyReader</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reads a numpy file.</span>
+    <span class="sd">&quot;&quot;&quot;reads a numpy file.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            This class is not currently maintained and might change without notice between releases.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_ref</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file_ref</span>
@@ -890,6 +984,10 @@
 
 <span class="sd">            If only one camera is connected, it can be selected with `0`.</span>
 <span class="sd">            If more than one camera is connected, </span>
+
+<span class="sd">            .. warning::</span>
+
+<span class="sd">                This class is not currently maintained and might change without notice between releases.</span>
 
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -949,6 +1047,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            possible `codec`s: &#39;DIVX&#39;, &#39;XVID&#39;, &#39;MJPG&#39;, &#39;X264&#39;, &#39;WMV1&#39;, &#39;WMV2&#39;</span>
 
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            This class is not currently maintained and might change without notice between releases.</span>
+<span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">cv2</span>
@@ -965,13 +1067,111 @@
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">_OrderedDict</span>
+
+<span class="k">class</span> <span class="nc">_LimitedSizeDict</span><span class="p">(</span><span class="n">_OrderedDict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;size_limit&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">_OrderedDict</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_size_limit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">_OrderedDict</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_size_limit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_size_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">popitem</span><span class="p">(</span><span class="n">last</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        
 <div class="viewcode-block" id="ImageSequence"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.ImageSequence">[docs]</a><span class="k">class</span> <span class="nc">ImageSequence</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;loads a sequence of images</span>
+    <span class="sd">&quot;&quot;&quot;loads a sequence of images so they can be processed by convis</span>
+
+<span class="sd">    The image values will be scaled between 0 and 256.</span>
+<span class="sd">    </span>
+<span class="sd">    When `is_color` is True, it returns a 5d array with dimensions [0,color_channel,time,x,y].</span>
+
+<span class="sd">    If `offset` is `None`, the crop will be chosen as the center of the image.</span>
+<span class="sd">    </span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This function is not stable and might change without notice between releases.</span>
+<span class="sd">        To create stable code it is currently recommended to load input manually into numpy arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filenames :  str or list</span>
+<span class="sd">        List of filenames or a wildcard expression (eg. &#39;frame_*.jpeg&#39;) of the images to load.</span>
+<span class="sd">    </span>
+<span class="sd">    size : two tuple (int,int)</span>
+<span class="sd">        the size the output image should be cropped to</span>
+
+<span class="sd">    repeat : int</span>
+<span class="sd">        how often each image should be repeated (eg. 100 to show a new image after 100 frames) </span>
+<span class="sd">    </span>
+<span class="sd">    offset : None or (int,int)</span>
+<span class="sd">        offset of the crop from the top left corner of the image</span>
+
+<span class="sd">    is_color : bool</span>
+<span class="sd">        Whether images should be interpreted as color or grayscale. If `is_color` is True, this stream gives a 5d output.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self.i (int) : </span>
+<span class="sd">        internal frame counter</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    get(i)</span>
+<span class="sd">        retrieve a sequence of `i` frames. Advances the internal counter.</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    Choosing a crop with `size` and `offset`:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        inp = convis.streams.ImageSequence(&#39;cat.png&#39;, repeat=100, size=(10,10), offset=(10,50))</span>
+<span class="sd">    </span>
+<span class="sd">    Creating a 500 frame input:</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        inp = convis.streams.ImageSequence([&#39;cat.png&#39;]*500)</span>
+<span class="sd">        convis.plot(inp.get(100))</span>
+
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        inp = convis.streams.ImageSequence(&#39;cat.png&#39;, repeat=500)</span>
+<span class="sd">        convis.plot(inp.get(100))</span>
+
+
+<span class="sd">    Loading multiple images:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        inp = convis.streams.ImageSequence(&#39;frame_*.png&#39;, repeat=10)</span>
+<span class="sd">        convis.plot(inp.get(100))</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        inp = convis.streams.ImageSequence([&#39;cat.png&#39;,&#39;dog.png&#39;,&#39;parrot.png&#39;], repeat=200)</span>
+<span class="sd">        convis.plot(inp.get(100))</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filenames</span><span class="o">=</span><span class="s1">&#39;*.jpg&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">repeats</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">isColor</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repeats</span> <span class="o">=</span> <span class="n">repeats</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filenames</span><span class="o">=</span><span class="s1">&#39;*.jpg&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">is_color</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span> <span class="o">=</span> <span class="n">repeat</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">_LimitedSizeDict</span><span class="p">(</span><span class="n">size_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span> <span class="o">=</span> <span class="n">is_color</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">glob</span>
@@ -981,28 +1181,81 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;filenames not recognized. Has to be a string or list.&#39;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ImageSequence</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;convis.streams.ImageSequence size: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; [frame &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;]&quot;</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;convis.streams.ImageSequence size=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;, [frame &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;]&gt;&quot;</span>
+    <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">variable_describe</span>
+        <span class="k">def</span> <span class="nf">_plot</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fn</span><span class="p">))</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_crop</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s2">&quot;&lt;img src=&#39;data:image/png;base64,&quot;</span> <span class="o">+</span> <span class="n">variable_describe</span><span class="o">.</span><span class="n">_plot_to_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&lt;br/&gt;Failed to open.&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&lt;b&gt;ImageSequence&lt;/b&gt; size=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;, offset = &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;, repeat = &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;, is_color = &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_color</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;, [frame &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;]&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div style=&#39;background:#ff;padding:10px&#39;&gt;&lt;b&gt;Input Images:&lt;/b&gt;&quot;</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div style=&#39;background:#fff; margin:10px;padding:10px; border-left: 4px solid #eee;&#39;&gt;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;: &quot;</span><span class="o">+</span><span class="n">_plot</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&lt;/div&gt;&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+        <span class="k">return</span> <span class="n">s</span>
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;is_color&#39;</span><span class="p">]:</span>
+            <span class="c1"># &#39;size&#39; and &#39;offset&#39; don&#39;t affect the cache</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">_LimitedSizeDict</span><span class="p">(</span><span class="n">size_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ImageSequence</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">)</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">frame</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)),</span>
+                      <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                     <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>  
     <span class="k">def</span> <span class="nf">get_one_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]))</span>
-            <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)),</span>
-                          <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)))</span>
-            <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-                            <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>  
+        <span class="n">file_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">file_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">file_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;2 to 3d&#39;</span><span class="p">)</span>
+                    <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[:,:,</span><span class="kc">None</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">frame</span><span class="p">[:,:,</span><span class="kc">None</span><span class="p">],</span><span class="mi">3</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[:,:,:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">file_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">frame</span>
+        <span class="n">cropped_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="n">cropped_frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">cropped_frame</span>
     <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span>
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ImageSequence is at its end.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;+&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; &gt;= &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_one_frame</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">frames</span></div>
-    
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,:,:,:,:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">frames</span></div>
 </pre></div>
 
            </div>
@@ -1039,7 +1292,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.2',
+            VERSION:'0.6.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
