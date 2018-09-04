@@ -47,7 +47,7 @@ from . import layers
 from .base import Layer, prepare_input, Output, Runner
 from .variable_describe import help, describe, describe_text, describe_dict, describe_html, animate, animate_to_video
 from .variables import Parameter
-from .utils import plot, plot_5d_matshow, plot_5d_time
+from .utils import plot, plot_5d_matshow, plot_5d_time, plot_tensor
 
 
 def main():

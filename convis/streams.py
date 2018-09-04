@@ -1,4 +1,20 @@
 """
+The streams module contains `Stream` classes that can load different kinds of data.
+
+Streams that are usable currently are: :class:`RandomStream`, :class:`SequenceStream` and :class:`ImageSequence`.
+All others are experimental. If you plan on using any of them, you can open a feature issue on the issue tracker.
+
+
+Since some streams do not have a defined end, the argument `max_t` can specify for how long a model should be executed.
+
+.. plot ::
+    :include-source:
+
+    import convis
+    model = convis.models.Retina()
+    inp = convis.streams.RandomStream((20,20),mean=127,level=100.0)
+    o = model.run(inp,dt=100, max_t=1000)
+    convis.plot(o[0])
 
 
 """
@@ -23,6 +39,11 @@ class InrImageStreamer(object):
     """ Reads a large inr file and is an iterator over all images.
 
         By default, the z dimension is ignored. Setting `z` to True changes this, such that each image is 3d instead of 2d.
+
+    .. warning::
+
+        This class is not currently maintained and might change without notice between releases.
+
     """
     def __init__(self,filename,z=False, slice_at = None):
         self.filename = filename
@@ -109,6 +130,20 @@ class InrImageStreamer(object):
         return 0
 
 class InrImageStreamWriter(object):
+    """
+    .. warning::
+
+        This class is not currently maintained and might change without notice between releases.
+
+    Example
+    -------
+
+        s = convis.streams.InrImageStreamWriter('stim.inr',x=inp.shape[1],y=inp.shape[2],time_dimension='ZDIM')
+        with s:
+            for i in inp:
+                s.put(i[None,:,:])
+
+    """
     def __init__(self,filename,v=1,x=1,y=1,z=1,time_dimension='VDIM'):
         """
             Usage::
@@ -173,6 +208,12 @@ class InrImageStreamWriter(object):
         return 0
 
 class InrImageFileStreamer(object):
+    """
+    .. warning::
+
+        This class is not currently maintained and might change without notice between releases.
+
+    """
     def __init__(self,filenames):
         if type(filenames) is str:
             filenames = litus.natural_sorted(glob.glob(filenames))
@@ -287,6 +328,18 @@ class Stream(object):
         return 0
 
 class RandomStream(Stream):
+    """creates a stream of random frames.
+
+    Examples
+    --------
+
+        .. plot::
+
+            import convis
+            inp = convis.streams.RandomStream((20,20),level=3.0,mean=10.0)
+            convis.plot(inp.get(100))
+
+    """
     def __init__(self, size=(50,50), pixel_per_degree=10, level=1.0, mean=0.0):
         self.level = level
         self.mean = mean
@@ -305,7 +358,28 @@ class RandomStream(Stream):
         raise Exception("Not implemented for read only stream.")
 
 class SequenceStream(Stream):
-    """ 3d Numpy array that represents a sequence of images"""
+    """ 3d Numpy array that represents a sequence of images
+
+        .. warning::
+
+            This class is not currently maintained and might change without notice between releases.
+
+    Examples
+    --------
+
+        .. plot::
+
+            import convis
+            x = np.ones((200,50,50))
+            x[:,10,:] = 0.0 
+            x[:,20,:] = 0.0 
+            x[:,30,:] = 0.0 
+            x *= np.sin(np.linspace(0.0,12.0,x.shape[0]))[:,None,None]
+            x += np.sin(np.linspace(0.0,12.0,x.shape[1]))[None,:,None]
+            inp = convis.streams.SequenceStream(x)
+            convis.plot(inp.get(100))
+
+    """
     def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10, max_frames = 5000):
         self.size = sequence.shape[1:]
         self.pixel_per_degree = pixel_per_degree
@@ -343,6 +417,11 @@ class SequenceStream(Stream):
                 self.sequence = s
 
 class RepeatingStream(Stream):
+    """
+        .. warning::
+
+            This class is not currently maintained and might change without notice between releases.
+    """
     def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10):
         self.size = sequence.shape[1:]
         self.pixel_per_degree = pixel_per_degree
@@ -373,7 +452,12 @@ class RepeatingStream(Stream):
 
 
 class TimedSequenceStream(object):
-    """ 3d Numpy array that represents a sequence of images"""
+    """ 3d Numpy array that represents a sequence of images
+
+    .. warning::
+
+        This class is not currently maintained and might change without notice between releases.
+    """
     def __init__(self, sequence=np.zeros((0,50,50)), size=None, pixel_per_degree=10, t_zero = 0.0, dt = 0.001):
         self.size = sequence.shape[1:]
         self.pixel_per_degree = pixel_per_degree
@@ -409,7 +493,13 @@ class TimedSequenceStream(object):
         
         
 class TimedResampleStream(TimedSequenceStream):
-    """ 3d Numpy array that represents a sequence of images"""
+    """ 3d Numpy array that represents a sequence of images
+
+    .. warning::
+
+        This class is not currently maintained and might change without notice between releases.
+
+    """
     def __init__(self, stream, t_zero = 0.0, dt = 0.001):
         self.stream = stream
         self.t_zero = t_zero
@@ -682,8 +772,12 @@ except:
             raise Exception('h5py needs to be installed!')
 
 class NumpyReader(Stream):
-    """
-        Reads a numpy file.
+    """reads a numpy file.
+
+        .. warning::
+
+            This class is not currently maintained and might change without notice between releases.
+
     """
     def __init__(self, file_ref, size=None, pixel_per_degree=10):
         self.file = file_ref
@@ -716,6 +810,10 @@ class VideoReader(Stream):
 
             If only one camera is connected, it can be selected with `0`.
             If more than one camera is connected, 
+
+            .. warning::
+
+                This class is not currently maintained and might change without notice between releases.
 
 
         """
@@ -775,6 +873,10 @@ class VideoWriter(Stream):
         """
             possible `codec`s: 'DIVX', 'XVID', 'MJPG', 'X264', 'WMV1', 'WMV2'
 
+        .. warning::
+
+            This class is not currently maintained and might change without notice between releases.
+        
         """
         try:
             import cv2
@@ -791,13 +893,111 @@ class VideoWriter(Stream):
     def close(self):
         self.out.release()
 
+from collections import OrderedDict as _OrderedDict
+
+class _LimitedSizeDict(_OrderedDict):
+    def __init__(self, *args, **kwds):
+        self.size_limit = kwds.pop("size_limit", None)
+        _OrderedDict.__init__(self, *args, **kwds)
+        self._check_size_limit()
+
+    def __setitem__(self, key, value):
+        _OrderedDict.__setitem__(self, key, value)
+        self._check_size_limit()
+
+    def _check_size_limit(self):
+        if self.size_limit is not None:
+            while len(self) > self.size_limit:
+                self.popitem(last=False)
+        
 class ImageSequence(Stream):
-    """loads a sequence of images
+    """loads a sequence of images so they can be processed by convis
+
+    The image values will be scaled between 0 and 256.
+    
+    When `is_color` is True, it returns a 5d array with dimensions [0,color_channel,time,x,y].
+
+    If `offset` is `None`, the crop will be chosen as the center of the image.
+    
+
+    .. warning::
+
+        This function is not stable and might change without notice between releases.
+        To create stable code it is currently recommended to load input manually into numpy arrays.
+
+    Parameters
+    ----------
+    filenames :  str or list
+        List of filenames or a wildcard expression (eg. 'frame_*.jpeg') of the images to load.
+    
+    size : two tuple (int,int)
+        the size the output image should be cropped to
+
+    repeat : int
+        how often each image should be repeated (eg. 100 to show a new image after 100 frames) 
+    
+    offset : None or (int,int)
+        offset of the crop from the top left corner of the image
+
+    is_color : bool
+        Whether images should be interpreted as color or grayscale. If `is_color` is True, this stream gives a 5d output.
+
+    Attributes
+    ----------
+    self.i (int) : 
+        internal frame counter
+
+    Methods
+    -------
+
+    get(i)
+        retrieve a sequence of `i` frames. Advances the internal counter.
+
+
+    Examples
+    --------
+    
+    Choosing a crop with `size` and `offset`:
+    
+    .. code::
+
+        import convis
+        inp = convis.streams.ImageSequence('cat.png', repeat=100, size=(10,10), offset=(10,50))
+    
+    Creating a 500 frame input:
+
+    .. code::
+
+        inp = convis.streams.ImageSequence(['cat.png']*500)
+        convis.plot(inp.get(100))
+
+
+    .. code::
+
+        inp = convis.streams.ImageSequence('cat.png', repeat=500)
+        convis.plot(inp.get(100))
+
+
+    Loading multiple images:
+    
+    .. code::
+
+        inp = convis.streams.ImageSequence('frame_*.png', repeat=10)
+        convis.plot(inp.get(100))
+
+    .. code::
+
+        inp = convis.streams.ImageSequence(['cat.png','dog.png','parrot.png'], repeat=200)
+        convis.plot(inp.get(100))
+        
+        
 
     """
-    def __init__(self,filenames='*.jpg',size=(50,50),repeats=0,offset=None,isColor=False):
-        self.repeats = repeats
+    def __init__(self,filenames='*.jpg',size=(50,50),repeat=1,offset=None,is_color=False):
+        self.repeat = repeat
         self.offset = offset
+        self.cache = _LimitedSizeDict(size_limit=20)
+        self.is_color = is_color
         self.i=0
         if type(filenames) is str:
             import glob
@@ -807,25 +1007,78 @@ class ImageSequence(Stream):
         else:
             raise Exception('filenames not recognized. Has to be a string or list.')
         super(ImageSequence,self).__init__()
+        self.size = size
+    def __str__(self):
+        return "convis.streams.ImageSequence size: "+str(self.size)+" [frame "+str(self.i)+"/"+str(len(self))+"]"
+    def __repr__(self):
+        return "<convis.streams.ImageSequence size="+str(self.size)+", [frame "+str(self.i)+"/"+str(len(self))+"]>"
+    def _repr_html_(self):
+        from . import variable_describe
+        def _plot(fn):
+            from PIL import Image
+            try:
+                import matplotlib.pylab as plt
+                t = np.array(Image.open(fn))
+                plt.figure()
+                plt.imshow(self._crop(t))
+                plt.axis('off')
+                return "<img src='data:image/png;base64," + variable_describe._plot_to_string() + "'>"
+            except:
+                return "<br/>Failed to open."
+        s = "<b>ImageSequence</b> size="+str(self.size)
+        s += ", offset = "+str(self.offset)
+        s += ", repeat = "+str(self.repeat)
+        s += ", is_color = "+str(self.is_color)
+        s += ", [frame "+str(self.i)+"/"+str(len(self))+"]"
+        s += "<div style='background:#ff;padding:10px'><b>Input Images:</b>"
+        for t in np.unique(self.file_list)[:10]:
+            s += "<div style='background:#fff; margin:10px;padding:10px; border-left: 4px solid #eee;'>"+str(t)+": "+_plot(t)+"</div>"
+        s += "</div>"
+        return s
+    def __setattr__(self,k,v):
+        if k in ['is_color']:
+            # 'size' and 'offset' don't affect the cache
+            self.cache = _LimitedSizeDict(size_limit=20)
+        super(ImageSequence,self).__setattr__(k,v)
     def __len__(self):
-        return len(self.file_list)
+        file_list = list(np.repeat(self.file_list,self.repeat))
+        return len(file_list)
+    def _crop(self,frame):
+        offset = self.offset
+        if self.offset is None:
+            offset = (int(np.floor((frame.shape[0]-self.size[0])/2.0)),
+                      int(np.floor((frame.shape[1]-self.size[1])/2.0)))
+        return frame[offset[0]:(offset[0]+self.size[0]),
+                     offset[1]:(offset[1]+self.size[1])]  
     def get_one_frame(self):
-        from PIL import Image
-        try:
-            frame = np.array(Image.open(self.file_list[self.i]))
-            offset = self.offset
-            if self.offset is None:
-                offset = (int(np.floor((frame.shape[0]-self.size[0])/2.0)),
-                          int(np.floor((frame.shape[1]-self.size[1])/2.0)))
-            return frame[offset[0]:(offset[0]+self.size[0]),
-                            offset[1]:(offset[1]+self.size[1])].mean(2)
-        except:
-            return np.zeros(self.size)  
+        file_list = list(np.repeat(self.file_list,self.repeat))
+        if file_list[self.i] in self.cache.keys():
+            frame = self.cache[file_list[self.i]]
+        else:
+            from PIL import Image
+            frame = np.array(Image.open(file_list[self.i]))
+            if not self.is_color and len(frame.shape) > 2:
+                frame = frame.mean(2)
+            if self.is_color:
+                if len(frame.shape) == 2:
+                    print('2 to 3d')
+                    frame = frame[:,:,None]
+                if frame.shape[2] < 3:
+                    frame = np.repeat(frame[:,:,None],3,axis=2)
+                if frame.shape[2] > 3:
+                    frame = frame[:,:,:3]
+            self.cache[file_list[self.i]] = frame
+        cropped_frame = self._crop(frame)
+        self.last_image = cropped_frame
+        self.i += 1
+        return cropped_frame
     def get_image(self):
         return self.last_image
     def get(self,i):
-        self.i += i
+        if self.i + i > len(self):
+            raise Exception('ImageSequence is at its end.'+str(self.i)+'+'+str(i)+' >= '+str(len(self)))
         frames = np.asarray([self.get_one_frame() for f in range(i)])
-        self.last_image = frames[-1]
-        return frames
-    
+        if self.is_color:
+            return np.moveaxis(frames,3,0)[None,:,:,:,:]
+        else:
+            return frames

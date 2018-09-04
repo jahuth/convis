@@ -522,7 +522,7 @@ class Layer(torch.nn.Module):
         if hasattr(self, 'outputs'):
             o = Output([o] + [getattr(self,k) for k in self.outputs], keys = ['output']+self.outputs)
         return o
-    def run(self,the_input,dt=None,t=0,detach=True):
+    def run(self,the_input,dt=None,t=0,detach=True,max_t=None):
         """
             Runs the model either once, or multiple times to process chunks of size `dt`.
 
@@ -535,19 +535,35 @@ class Layer(torch.nn.Module):
 
             Returns an :class:`Output` object.
         """
-        if dt is not None:
-            return self._run_in_chunks(the_input,dt=dt,t=t,detach=detach)
+        if dt is not None or max_t is not None:
+            if dt is None:
+                dt = max_t
+            return self._run_in_chunks(the_input,dt=dt,t=t,detach=detach,max_t=max_t)
         else:
             o = self(the_input)
             if type(o) is not Output:
                 return Output([o],keys=['output'])
             return o
-    def _run_in_chunks(self,the_input,dt=100,t=0,detach=True):
+    def _run_in_chunks(self,the_input,dt=100,t=0,detach=True,max_t=None):
         chunked_output = []
         keys = ['output']
         if issubclass(type(the_input),streams.Stream):
-            while t < len(the_input):
-                oo = self(the_input.get(dt)[None,None,:,:,:])
+            try:
+                end_t = len(the_input)
+            except:
+                end_t = None
+            if type(end_t) is not int:
+                if max_t is not None:
+                    end_t = max_t
+                else:
+                    raise Exception('Stream has no defined end! Use .run(..., max_t=some_number) to run the model on infinite streams.')
+            if max_t is not None and max_t < end_t:
+                end_t = max_t
+            while t < end_t:
+                if t + dt < end_t:
+                    oo = self(the_input.get(dt)[None,None,:,:,:])
+                else:
+                    oo = self(the_input.get(end_t-t-1)[None,None,:,:,:])
                 if type(oo) is not Output:
                     oo = [oo]
                 else:
@@ -558,7 +574,10 @@ class Layer(torch.nn.Module):
                     chunked_output[i].append(o)
                 t += dt
         elif issubclass(type(the_input),Output):
-            while t < shape(the_input[0])[2]:
+            end_t = shape(the_input[0])[2]
+            if max_t is not None and max_t < end_t:
+                end_t = max_t
+            while t < end_t:
                 if detach:
                     oo = self(the_input[0][:,:,t:(t+dt),:,:].detach())
                 else:
@@ -575,7 +594,10 @@ class Layer(torch.nn.Module):
         else:
             if len(shape(the_input)) == 3:
                 the_input = the_input[None,None,:,:,:]
-            while t < shape(the_input)[2]:
+            end_t = shape(the_input)[2]
+            if max_t is not None and max_t < end_t:
+                end_t = max_t
+            while t < end_t:
                 oo = self(the_input[:,:,t:(t+dt),:,:])
                 if type(oo) is not Output:
                     oo = [oo]
