@@ -189,6 +189,7 @@ class RefractoryLeakyIntegrateAndFireNeuron(Layer):
     """
     def __init__(self,**kwargs):
         super(RefractoryLeakyIntegrateAndFireNeuron, self).__init__()
+        from .. import default_resolution
         self.dims = 5
         # parameters
         self.refr_mu = Parameter(0.003,
@@ -203,7 +204,7 @@ class RefractoryLeakyIntegrateAndFireNeuron(Layer):
         self.g_L = Parameter(50.0,
                             retina_config_key='g-leak__Hz',
                             doc='Leak current (in Hz or dimensionless firing rate).')
-        self.tau = Parameter(0.001,
+        self.tau = Parameter(1.0/default_resolution.steps_per_second,
                             retina_config_key='--should be inherited',
                             doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.')
         self.register_state('V',None)
@@ -241,7 +242,7 @@ class RefractoryLeakyIntegrateAndFireNeuron(Layer):
                 noise = variables.randn(I.data.shape).cuda()
             else:
                 noise = variables.randn(I.data.shape).cpu()
-            V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
+            V = self.V + (I/self.tau - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
             # canonical form: 
             #
             # V = V + (E_L - V + R*I)*dt/tau 
@@ -289,6 +290,7 @@ class LeakyIntegrateAndFireNeuron(Layer):
     """
     def __init__(self,**kwargs):
         super(LeakyIntegrateAndFireNeuron, self).__init__()
+        from .. import default_resolution
         self.dims = 5
         # parameters
         self.noise_sigma = Parameter(0.1,
@@ -297,7 +299,7 @@ class LeakyIntegrateAndFireNeuron(Layer):
         self.g_L = Parameter(50.0,
                             retina_config_key='g-leak__Hz',
                             doc='Leak current (in Hz or dimensionless firing rate).')
-        self.tau = Parameter(0.001,
+        self.tau = Parameter(1.0/default_resolution.steps_per_second,
                             retina_config_key='--should be inherited',
                             doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.')
         self.register_state('V',None)
@@ -325,7 +327,7 @@ class LeakyIntegrateAndFireNeuron(Layer):
                 noise = variables.randn(I.data.shape).cuda()
             else:
                 noise = variables.randn(I.data.shape).cpu()
-            V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
+            V = self.V + (I/self.tau - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
             spikes = V > 1.0
             V.masked_scatter_(spikes, self.zeros)
             self.V = V

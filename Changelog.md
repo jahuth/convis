@@ -4,6 +4,15 @@ Changelog
 See also the more complete changelog [in the documentation](https://jahuth.github.io/convis/changelog.html).
 
 
+Version 0.6.4 (release pending) and current github version
+-----------------------------------------------------------
+
+  - fixed bug in convolution filter alignment in `Conv2d` and `Conv3d`: odd sized filters are now centered correctly
+  - fixed two bugs in `LeakyIntegrateAndFireNeuron` and `RefractoryLeakyIntegrateAndFireNeuron`:
+      + The default time step from `convis.default_resolution` was not copied to the internal variable `tau`. Now layers will use the value from the time of their creation.
+      + The input was not normalized with the step size, leading to different results when changing the resolution and leak simultaneously.
+
+
 Version 0.6.3
 --------------
 
