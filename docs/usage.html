@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; convis 0.6.3 documentation</title>
+  <title>Usage &mdash; convis 0.6.4 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.3 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.4 documentation" href="index.html"/>
         <link rel="next" title="Examples" href="examples.html"/>
         <link rel="prev" title="Installation" href="installation.html"/> 
 
@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-model">Running a model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input-and-output">Input and Output</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#global-configurations">Global configurations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-the-p-parameter-list">Configuring a Model: the <cite>.p.</cite> parameter list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-exporting-and-importing-all-parameters">Configuring a Model: exporting and importing all parameters</a></li>
@@ -189,14 +190,68 @@
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="running-a-model">
 <h2>Running a model<a class="headerlink" href="#running-a-model" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
-<span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
-<span class="n">retina</span><span class="p">(</span><span class="n">some_short_input</span><span class="p">)</span>
-<span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">retina</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="p">(</span><span class="n">some_short_input</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">Layer.run(input,dt=..)</span></code></a> with <cite>dt</cite> set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
 <a class="reference internal" href="docs.html#convis.base.Layer.run" title="convis.base.Layer.run"><code class="xref py py-meth docutils literal"><span class="pre">run()</span></code></a> also accepts numpy arrays as input, which will be converted into PyTorch <cite>Tensor`s and packaged as a `Variable</cite>.</p>
+<div class="section" id="input-and-output">
+<h3>Input and Output<a class="headerlink" href="#input-and-output" title="Permalink to this headline">¶</a></h3>
+<p>The in- and output of <cite>convis</cite> models is in most cases <strong>five-dimensional</strong>. Why is that?</p>
+<p>The convention comes from <a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Conv3d" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-class docutils literal"><span class="pre">Conv3d</span></code></a> processing two additional dimensions for 3d convolutions: <em>batches</em> and <em>channels</em>. They are handled differently in the way they relate to the convolution weight: each <em>batch</em> is processed completely independently and adding more batches does not require a change to the weight and there are always the same number of output as input <em>batches</em>; in turn each <em>channel</em> (eg. colour) requires an appropriate <cite>in_channel</cite> dimension in the weight and the number of output <em>channels</em> is also determined by the dimensions of the weight (see <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.Conv3d</span></code></a>).</p>
+<p>The dimensions of all output in <cite>convis</cite> is therefore:</p>
+<blockquote>
+<div><strong>[batch, channel, time, space x, space y]</strong></div></blockquote>
+<p>and the <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> objects can also contain multiple output tensors of different shapes.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+<span class="go">torch.Size([1, 1, 1000, 10, 10])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="c1"># the retina model has by default two outputs (On and Off cells)</span>
+<span class="go">torch.Size([1, 1, 1000, 10, 10])</span>
+</pre></div>
+</div>
+<p>If an input has less dimensions, it can be broadcasted with <code class="xref py py-func docutils literal"><span class="pre">convis.make_input()</span></code> from 1d, 2d and 3d to 5d, and this function also gives the option to create CPU or GPU tensors. Also 3d inputs will be automatically broadcast to 5d by all <a class="reference internal" href="docs.html#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-class docutils literal"><span class="pre">convis.base.Layer</span></code></a> s.</p>
+<p><strong>How to Plot</strong></p>
+<p>To get an overview plot of an <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object in jupyter notebooks, it is sufficient to have the output as the last line in a cell.
+This will call <code class="xref py py-func docutils literal"><span class="pre">convis.plot_tensor()</span></code> on each tensor in the <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a>.
+Alternatively one can call <a class="reference internal" href="docs.html#convis.base.Output.plot" title="convis.base.Output.plot"><code class="xref py py-func docutils literal"><span class="pre">convis.base.Output.plot()</span></code></a>, which will get a line plot of the first tensor (or the n-th tensor if an argument n is supplied).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">o</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">o</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">Output</span> <span class="n">containing</span> <span class="mi">2</span> <span class="n">Tensors</span><span class="o">.</span>
+
+        <span class="o">|</span> <span class="mi">1</span><span class="n">x1x1000x1x1</span> <span class="n">Tensor</span>
+        <span class="o">|</span> <span class="o">&lt;</span><span class="n">line</span> <span class="n">plot</span><span class="o">&gt;</span>
+        <span class="o">|</span> <span class="o">&lt;</span><span class="n">sequence</span> <span class="n">of</span> <span class="n">example</span> <span class="n">frames</span><span class="o">&gt;</span>
+
+        <span class="o">|</span> <span class="mi">1</span><span class="n">x1x1000x1x1</span> <span class="n">Tensor</span>
+        <span class="o">|</span> <span class="o">&lt;</span><span class="n">line</span> <span class="n">plot</span><span class="o">&gt;</span>
+        <span class="o">|</span> <span class="o">&lt;</span><span class="n">sequence</span> <span class="n">of</span> <span class="n">example</span> <span class="n">frames</span><span class="o">&gt;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">line</span> <span class="n">plot</span><span class="o">&gt;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">line</span> <span class="n">plot</span> <span class="p">(</span><span class="n">same</span> <span class="k">as</span> <span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">())</span><span class="o">&gt;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">convis</span><span class="o">.</span><span class="n">plot_tensor</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">line</span> <span class="n">plot</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">sequence</span> <span class="n">of</span> <span class="n">example</span> <span class="n">frames</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Most analysis will be done on <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html#numpy.array" title="(in NumPy v1.15)"><code class="xref py py-func docutils literal"><span class="pre">numpy.array()</span></code></a> s on the CPU rather than <a class="reference external" href="https://pytorch.org/docs/0.3.0/tensors.html#torch.Tensor" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-class docutils literal"><span class="pre">torch.Tensor</span></code></a> s, so the output can be turned into arrays with the function <a class="reference internal" href="docs.html#convis.base.Output.array" title="convis.base.Output.array"><code class="xref py py-func docutils literal"><span class="pre">convis.base.Output.array()</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># using first tensor in output</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span>
+<span class="go">array([[[[[0,0,0,0,0,0,0,0,0]],</span>
+<span class="go">        ... ]]], dtype=uint8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>     <span class="c1"># signal of pixel 5,5 over time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,:,:])</span> <span class="c1"># frame at time 100</span>
+</pre></div>
+</div>
+<p>If there is more than one tensor in the <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object, <cite>o.array(1)</cite> will give the second output, etc.</p>
+</div>
 <div class="section" id="global-configurations">
 <h3>Global configurations<a class="headerlink" href="#global-configurations" title="Permalink to this headline">¶</a></h3>
 <p id="global-configuration">There are a few global parameters that can change the behaviour of convis.
@@ -392,23 +447,24 @@ The execution can also happen in a separate thread:</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
 <span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
-<span class="c1">#l.conv.set_weight(np.ones((5,5,5)),normalize=True)</span>
-<span class="c1">#l.set_optimizer.LBFGS()</span>
+<span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">l</span><span class="o">.</span><span class="n">set_optimizer</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">()</span>
+<span class="c1"># optional conversion to GPU objects:</span>
 <span class="c1">#l.cuda()</span>
 <span class="c1">#l_goal.cuda()</span>
-<span class="c1">#inp = 1.0*(np.random.randn(200,10,10))</span>
-<span class="c1">#inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()</span>
-<span class="c1">#outp = l_goal(inp[None,None,:,:,:])</span>
-<span class="c1">#plt.figure()</span>
-<span class="c1">#plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),&#39;--&#39;,color=&#39;red&#39;)</span>
-<span class="c1">#for i in range(50):</span>
-<span class="c1">#    l.optimize(inp[None,None,:,:,:],outp)</span>
-<span class="c1">#    if i%10 == 2:</span>
-<span class="c1">#        plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))</span>
-<span class="c1">#plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))</span>
-<span class="c1">#plt.colorbar()</span>
-<span class="c1">#plt.figure()</span>
-<span class="c1">#h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span> <span class="c1"># .cuda() # optional: conversion to GPU object</span>
+<span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,:,:,:])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,:,:,:],</span><span class="n">outp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">10</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">((</span><span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">-</span><span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">bins</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//usage-1.py">Source code</a>)</p>
@@ -451,7 +507,7 @@ The execution can also happen in a separate thread:</p>
 <span class="n">k_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">l_goal</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">k_goal</span><span class="p">)</span>
 <span class="n">inp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
 <span class="n">outp</span> <span class="o">=</span> <span class="n">l_goal</span><span class="p">(</span><span class="n">inp</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,:,:,:])</span>
 <span class="n">l</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LN</span><span class="p">()</span>
 <span class="n">l</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)),</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -541,7 +597,7 @@ The execution can also happen in a separate thread:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.3',
+            VERSION:'0.6.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.streams &mdash; convis 0.6.3 documentation</title>
+  <title>convis.streams &mdash; convis 0.6.4 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.3 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.4 documentation" href="../../index.html"/>
         <link rel="up" title="convis" href="../convis.html"/> 
 
   
@@ -271,8 +271,9 @@
             <span class="k">return</span> <span class="n">a</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not Implemented. So far only 8 byte floats are supported&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_one_image</span><span class="p">()</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
+<div class="viewcode-block" id="InrImageStreamer.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.InrImageStreamer.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_one_image</span><span class="p">()</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span></div>
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
             <span class="n">image_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_at</span>
@@ -458,8 +459,12 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stream Base Class</span>
 
-<span class="sd">        Streams have to have methods to either `get()`</span>
+<span class="sd">        Streams have to have methods to either `get(i)`</span>
 <span class="sd">        or `put` a frame.</span>
+
+<span class="sd">         - `get(i)` takes `i` frames from the stream and changes the internal state.</span>
+<span class="sd">         - `put(t)` inserts a `torch.Tensor` or `numpy.ndarray` into the stream (eg. saving it into a file).</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">pixel_per_degree</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">t_zero</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
@@ -475,9 +480,10 @@
             <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="Stream.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.Stream.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">+=</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span></div>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not implemented for basic stream.&quot;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -500,6 +506,53 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">buffered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="ProcessingStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.ProcessingStream">[docs]</a><span class="k">class</span> <span class="nc">ProcessingStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combines a stream and a `Layer` (model or filter) into a new stream.</span>
+<span class="sd">    </span>
+<span class="sd">    Each slice will be processed at once (using `Layer.__call__`, not `Layer.run`), </span>
+<span class="sd">    so a limited number of frames should be requested at any one time.</span>
+
+<span class="sd">    .. versionadded:: 0.6.4</span>
+
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_stream : `convis.streams.Stream`</span>
+<span class="sd">        The stream that is used as input to the model</span>
+<span class="sd">    model : `convis.Layer`</span>
+<span class="sd">        The model that transforms slices of the `input_stream` into outputs</span>
+<span class="sd">    pre : function or None</span>
+<span class="sd">        Optional operation to be done one each slice before handing it to the model.</span>
+<span class="sd">    post : function or None</span>
+<span class="sd">        Optional operation to be done one each slice after the model has processed it.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    To recreate the neuromorphic MNIST stream one can combine the MNIST stream and a `Poisson` layer.</span>
+<span class="sd">    The output of the MNIST stream can be scaled with a function passed to `pre`.</span>
+
+<span class="sd">    .. codeblock::</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        stream = convis.streams.MNISTStream(&#39;../data&#39;,rep=10)</span>
+<span class="sd">        model = convis.filters.spiking.Poisson()</span>
+<span class="sd">        stream2 = convis.streams.ProcessingStream(stream,model,pre=lambda x: 0.1*x)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_stream</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">pre</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span> <span class="o">=</span> <span class="n">input_stream</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="o">=</span> <span class="n">pre</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">post</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">))))</span></div>
 
 <div class="viewcode-block" id="RandomStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.RandomStream">[docs]</a><span class="k">class</span> <span class="nc">RandomStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;creates a stream of random frames.</span>
@@ -526,8 +579,9 @@
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="p">([</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+<div class="viewcode-block" id="RandomStream.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.RandomStream.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="p">([</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span></div>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not implemented for read only stream.&quot;</span><span class="p">)</span></div>
 
@@ -575,9 +629,10 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="SequenceStream.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.SequenceStream.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span></div>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">==</span> <span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_frames</span><span class="p">:</span>
@@ -614,13 +669,14 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="RepeatingStream.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.RepeatingStream.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span>
             <span class="n">pre_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">-=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="n">pre_index</span><span class="p">:],</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span></div>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">,</span><span class="n">s</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></div>
 
@@ -903,6 +959,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">dset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">[</span><span class="n">data_set_name</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
             <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">+</span><span class="n">i</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
             <span class="k">return</span> <span class="n">d</span>
@@ -965,10 +1022,11 @@
             <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="NumpyReader.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.NumpyReader.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">+</span><span class="n">i</span><span class="p">,:,:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
-        <span class="k">return</span> <span class="n">d</span>
+        <span class="k">return</span> <span class="n">d</span></div>
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span></div>
 
@@ -1034,6 +1092,7 @@
     <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span>
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_one_frame</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -1248,14 +1307,332 @@
         <span class="k">return</span> <span class="n">cropped_frame</span>
     <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="ImageSequence.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.ImageSequence.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ImageSequence is at its end.&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;+&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; &gt;= &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_one_frame</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,:,:,:,:]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">frames</span></div>
+            <span class="k">return</span> <span class="n">frames</span></div></div>
+
+
+<div class="viewcode-block" id="MNISTStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.MNISTStream">[docs]</a><span class="k">class</span> <span class="nc">MNISTStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Downloads MNIST data and displays random digits.</span>
+<span class="sd">    </span>
+<span class="sd">        The digits are chosen pseudo randomly using a starting value `init` and a (large) advancing value.</span>
+<span class="sd">        If both values are supplied, the stream will return the same sequence of numbers.</span>
+<span class="sd">        By default, `init` is chosen randomly and `advance` is set to an arbitrary (but fixed) high prime number.</span>
+<span class="sd">        If `advance` shares factors with the number of samples in MNIST, not all examples will be covered!</span>
+<span class="sd">    </span>
+<span class="sd">        If `include_label` is True, the output will contain a second channel with the matching label.</span>
+<span class="sd">        (Currently, there is no automated way to pass this along with the other channel)</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The way the label is encoded might change depending on how people want to use it.</span>
+<span class="sd">            Please `submitting a github issue if you have in idea how to pass labels along with the input &lt;https://github.com/jahuth/convis/labels/enhancement&gt;`_!</span>
+
+<span class="sd">        The output of the stream will be frames of `28 x 28` pixels.</span>
+
+<span class="sd">        .. versionadded:: 0.6.4</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_folder : str</span>
+<span class="sd">            A (relative or absolute) path where the MNIST data should be downloaded to.</span>
+<span class="sd">            If a valid download is found at that location, the existing data will be used.</span>
+<span class="sd">            This stream uses `torchvision` to download and extract the data, more info about the downloader can be found `here &lt;https://pytorch.org/docs/stable/torchvision/datasets.html#mnist&gt;`_.</span>
+<span class="sd">        rep : int</span>
+<span class="sd">            Number of frames each digit should be repeated</span>
+<span class="sd">        max_value : float</span>
+<span class="sd">            The stimuli will have normalized values between 0 and `max_value`.</span>
+<span class="sd">        init : int or None</span>
+<span class="sd">            The starting point of the pseudo-random walk through the examples.</span>
+<span class="sd">            If the value is `None`, it is chosen randomly with uniform probability.</span>
+<span class="sd">        advance : int</span>
+<span class="sd">            A large number that determines the next sample.</span>
+<span class="sd">            If this value is not touched, it will generate pseudo-random walks starting deterministically from `init`.</span>
+<span class="sd">        include_label : bool</span>
+<span class="sd">            Whether to include an additional channel carrying the labels or not (default: `False`)</span>
+<span class="sd">        buffer : `torch.Tensor`</span>
+<span class="sd">            the MNIST dataset</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            index of current image.</span>
+<span class="sd">        j : int</span>
+<span class="sd">            number of repetitions already displayed (secondary index)</span>
+<span class="sd">        init_i  : int</span>
+<span class="sd">            The initial starting point of the walk.</span>
+
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            from matplotlib.pylab import plot, xlim, gcf</span>
+<span class="sd">            stream = convis.streams.MNISTStream(&#39;../data&#39;,rep=20)</span>
+<span class="sd">            convis.plot(stream.get(500))</span>
+<span class="sd">            gcf().show()</span>
+<span class="sd">            convis.plot(stream.get(500))</span>
+<span class="sd">            gcf().show()</span>
+<span class="sd">            stream.reset() # returning to the start</span>
+<span class="sd">            convis.plot(stream.get(500))</span>
+<span class="sd">            gcf().show()</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        convis.streams.PoissonMNISTStream</span>
+<span class="sd">        convis.streams.PseudoNMNIST</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data_folder</span><span class="o">=</span><span class="s1">&#39;./mnist_data&#39;</span><span class="p">,</span><span class="n">rep</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span><span class="n">max_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="mi">179425529</span><span class="p">,</span><span class="n">include_label</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">torch</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">torchvision</span> <span class="k">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The package &#39;torchvision&#39; needs to be installed to use the MNIST dataset.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="k">import</span> <span class="n">randint</span>
+            <span class="n">init</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_label</span> <span class="o">=</span> <span class="n">include_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_i</span> <span class="o">=</span> <span class="n">init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_value</span> <span class="o">=</span> <span class="n">max_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rep</span> <span class="o">=</span> <span class="n">rep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advance</span> <span class="o">=</span> <span class="n">advance</span>
+        <span class="n">training_data</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                           <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                           <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
+                       <span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data_folder</span><span class="o">+</span><span class="s1">&#39;/processed/test.pt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<div class="viewcode-block" id="MNISTStream.reset"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.MNISTStream.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the random walk to the starting point (`self.init_i`).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_i</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span></div>
+<div class="viewcode-block" id="MNISTStream.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.MNISTStream.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">/</span><span class="mf">255.0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:])</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rep</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">advance</span><span class="p">)</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_value</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">/</span><span class="mf">255.0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">rep</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rep</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:])</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">rep</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_label</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,:,:</span><span class="n">i</span><span class="p">,:,:]</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">[:,:,:</span><span class="n">i</span><span class="p">,:,:]</span></div></div>
+
+
+<div class="viewcode-block" id="PoissonMNISTStream"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.PoissonMNISTStream">[docs]</a><span class="k">class</span> <span class="nc">PoissonMNISTStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Downloads MNIST data and generates Poisson spiking for random digits.</span>
+<span class="sd">    </span>
+<span class="sd">        This definition of a neuromorphic version of the MNIST data set follows eg.:</span>
+
+<span class="sd">          - P. Diehl and M. Cook. Unsupervised learning of digit recognition using spike-timing-dependent plasticity. Frontiers in Computational Neuroscience, 9(99), 2015.</span>
+<span class="sd">          - D. Querlioz, O. Bichler, P. Dollfus, and C. Gamrat. Immunity to device variations in a spiking neural network with memristive nanodevices. IEEE Transactions on Nanotechnology, 12:288-295, 2013.</span>
+
+<span class="sd">        An alternative interpretation are events that are created by saccade-like movements over the images.</span>
+
+<span class="sd">        The digits are chosen pseudo randomly using a starting value `init` and a (large) advancing value.</span>
+<span class="sd">        If both values are supplied, the stream will return the same sequence of numbers.</span>
+<span class="sd">        By default, `init` is chosen randomly and `advance` is set to an arbitrary (but fixed) high prime number.</span>
+<span class="sd">        If `advance` shares factors with the number of samples in MNIST, not all examples will be covered!</span>
+<span class="sd">    </span>
+<span class="sd">        If `include_label` is True, the output will contain a second channel with the matching label.</span>
+<span class="sd">        (Currently, there is no automated way to pass this along with the other channel)</span>
+
+
+<span class="sd">        The output of the stream will be frames of `28 x 28` pixels of binary coded spike trains.</span>
+
+<span class="sd">        .. versionadded:: 0.6.4</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_folder : str</span>
+<span class="sd">            A (relative or absolute) path where the MNIST data should be downloaded to.</span>
+<span class="sd">            If a valid download is found at that location, the existing data will be used.</span>
+<span class="sd">            This stream uses `torchvision` to download and extract the data, more info about the downloader can be found `here &lt;https://pytorch.org/docs/stable/torchvision/datasets.html#mnist&gt;`_.</span>
+<span class="sd">        rep : int</span>
+<span class="sd">            Number of frames each digit should be repeated</span>
+<span class="sd">        fr : float</span>
+<span class="sd">            The firing probability at the highest possible value.</span>
+<span class="sd">        init : int or None</span>
+<span class="sd">            The starting point of the pseudo-random walk through the examples.</span>
+<span class="sd">            If the value is `None`, it is chosen randomly with uniform probability.</span>
+<span class="sd">        advance : int</span>
+<span class="sd">            A large number that determines the next sample.</span>
+<span class="sd">            If this value is not touched, it will generate pseudo-random walks starting deterministically from `init`.</span>
+<span class="sd">        include_label : bool</span>
+<span class="sd">            Whether to include an additional channel carrying the labels or not (default: `False`)</span>
+<span class="sd">        buffer : `torch.Tensor`</span>
+<span class="sd">            the MNIST dataset</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            index of current image.</span>
+<span class="sd">        j : int</span>
+<span class="sd">            number of repetitions already displayed (secondary index)</span>
+<span class="sd">        init_i  : int</span>
+<span class="sd">            The initial starting point of the walk.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
+
+<span class="sd">            import convis</span>
+<span class="sd">            from matplotlib.pylab import plot, xlim, gcf</span>
+<span class="sd">            stream = convis.streams.PoissonMNISTStream(&#39;../data&#39;,rep=20,fr=0.20) </span>
+<span class="sd">            # here we are using a very high firing rate for easy visualization</span>
+<span class="sd">            # (20% of cells are active in each frame)</span>
+<span class="sd">            convis.plot(stream.get(500))</span>
+<span class="sd">            gcf().show()</span>
+<span class="sd">            convis.plot(stream.get(500))</span>
+<span class="sd">            gcf().show()</span>
+<span class="sd">            stream.reset() # returning to the start</span>
+<span class="sd">            convis.plot(stream.get(500))</span>
+<span class="sd">            gcf().show()</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        convis.streams.MNISTStream</span>
+<span class="sd">        convis.streams.PseudoNMNIST</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data_folder</span><span class="o">=</span><span class="s1">&#39;./mnist_data&#39;</span><span class="p">,</span><span class="n">rep</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span><span class="n">fr</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                 <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="mi">179425529</span><span class="p">,</span><span class="n">include_label</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">torch</span>
+        <span class="kn">from</span> <span class="nn">.filters.spiking</span> <span class="k">import</span> <span class="n">Poisson</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">torchvision</span> <span class="k">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The package &#39;torchvision&#39; needs to be installed to use the MNIST dataset.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="k">import</span> <span class="n">randint</span>
+            <span class="n">init</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_label</span> <span class="o">=</span> <span class="n">include_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_i</span> <span class="o">=</span> <span class="n">init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fr</span> <span class="o">=</span> <span class="n">fr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rep</span> <span class="o">=</span> <span class="n">rep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advance</span> <span class="o">=</span> <span class="n">advance</span>
+        <span class="n">training_data</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                           <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                           <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
+                       <span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data_folder</span><span class="o">+</span><span class="s1">&#39;/processed/test.pt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span> <span class="o">=</span> <span class="n">Poisson</span><span class="p">()</span>
+<div class="viewcode-block" id="PoissonMNISTStream.reset"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.PoissonMNISTStream.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the random walk to the starting point (`self.init_i`).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_i</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span></div>
+<div class="viewcode-block" id="PoissonMNISTStream.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.PoissonMNISTStream.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fr</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">/</span><span class="mf">255.0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:])</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rep</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">advance</span><span class="p">)</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fr</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">/</span><span class="mf">255.0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rep</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rep</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,:])</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">rep</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_label</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,:,:</span><span class="n">i</span><span class="p">,:,:]</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">[:,:,:</span><span class="n">i</span><span class="p">,:,:]</span></div></div>
+
+<div class="viewcode-block" id="PseudoNMNIST"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.PseudoNMNIST">[docs]</a><span class="k">class</span> <span class="nc">PseudoNMNIST</span><span class="p">(</span><span class="n">ProcessingStream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A motion driven conversion of MNIST into spikes. A quick way to get spiking input.</span>
+<span class="sd">    </span>
+<span class="sd">    Internally, it defines a Layer that performs three predetermined &quot;saccades&quot; (see the source code if you want to use it as a Saccade generator in other contexts).</span>
+<span class="sd">    It uses a :class:`~convis.filters.spiking.IntegrativeMotionSensor` to generate spikes from the movement.</span>
+
+<span class="sd">    .. versionadded:: 0.6.4</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mnist_data_folder : str</span>
+<span class="sd">        Where to find (or download to) the MNIST dataset. (see :class:`convis.streams.MNISTStream`)</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        the sensitivity of the motion detection (smaller values are more sensitive)</span>
+<span class="sd">    output_size : tuple(int,int)</span>
+<span class="sd">        size of the generated output (the data is padded with zeros)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+
+
+<span class="sd">    .. plot::</span>
+<span class="sd">        :include-source:</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        n = convis.streams.PseudoNMNIST()</span>
+<span class="sd">        convis.plot(n.get(200)) </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mnist_data_folder</span><span class="o">=</span><span class="s1">&#39;../data/&#39;</span><span class="p">,</span><span class="n">threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span><span class="n">output_size</span><span class="o">=</span><span class="p">(</span><span class="mi">34</span><span class="p">,</span><span class="mi">34</span><span class="p">)):</span>
+        <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">base</span><span class="p">,</span> <span class="n">filters</span>
+        <span class="k">class</span> <span class="nc">ThreeSaccadeGenerator</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;A private Layer class that performs three predefined saccades&quot;&quot;&quot;</span>
+            <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output_size</span><span class="o">=</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">),</span><span class="n">padding_mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">5</span>
+                <span class="nb">super</span><span class="p">(</span><span class="n">ThreeSaccadeGenerator</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span> <span class="o">=</span> <span class="n">padding_mode</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">next_saccade_in</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saccade_frequency_mean</span> <span class="o">=</span> <span class="mf">100.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saccade_frequency_sd</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saccade_distance_mean</span> <span class="o">=</span> <span class="mf">5.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saccade_distance_sd</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">register_state</span><span class="p">(</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mi">100</span><span class="p">)],</span>
+                             <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">100</span><span class="p">)],</span>
+                             <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">100</span><span class="p">)]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inp</span><span class="p">):</span>
+                <span class="kn">import</span> <span class="nn">torch</span>
+                <span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">3</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">min</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">4</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_x</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">max_x</span><span class="p">,</span><span class="n">max_y</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">max_y</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">inp_padded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span><span class="n">padding</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">inps</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="mf">0.75</span><span class="o">*</span><span class="n">inp</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">%</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span><span class="o">+</span><span class="n">max_x</span><span class="p">))</span><span class="o">+</span><span class="mf">0.75</span><span class="o">*</span><span class="n">max_x</span><span class="p">)</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">%</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">4</span><span class="p">]</span><span class="o">+</span><span class="n">max_y</span><span class="p">))</span><span class="o">+</span><span class="mf">0.75</span><span class="o">*</span><span class="n">max_y</span><span class="p">)</span>
+                    <span class="n">inps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inp_padded</span><span class="p">[:,:,</span><span class="n">t</span><span class="p">:(</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">x</span><span class="p">:(</span><span class="n">x</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="n">y</span><span class="p">:(</span><span class="n">y</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+                <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">inps</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            
+        <span class="nb">super</span><span class="p">(</span><span class="n">PseudoNMNIST</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MNISTStream</span><span class="p">(</span><span class="n">mnist_data_folder</span><span class="p">,</span><span class="n">rep</span><span class="o">=</span><span class="mi">300</span><span class="p">),</span> 
+                                    <span class="n">model</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">spiking</span><span class="o">.</span><span class="n">IntegrativeMotionSensor</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span><span class="n">threshold</span><span class="p">),</span> 
+                                    <span class="n">pre</span> <span class="o">=</span> <span class="n">ThreeSaccadeGenerator</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">output_size</span><span class="p">))</span></div>
+
 </pre></div>
 
            </div>
@@ -1292,7 +1669,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.3',
+            VERSION:'0.6.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

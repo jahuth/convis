@@ -339,6 +339,9 @@ class ProcessingStream(Stream):
     Each slice will be processed at once (using `Layer.__call__`, not `Layer.run`), 
     so a limited number of frames should be requested at any one time.
 
+    .. versionadded:: 0.6.4
+
+    
     Parameters
     ----------
     input_stream : `convis.streams.Stream`
@@ -1159,6 +1162,9 @@ class MNISTStream(Stream):
 
         The output of the stream will be frames of `28 x 28` pixels.
 
+        .. versionadded:: 0.6.4
+
+
         Parameters
         ----------
         data_folder : str
@@ -1281,6 +1287,9 @@ class PoissonMNISTStream(Stream):
 
         The output of the stream will be frames of `28 x 28` pixels of binary coded spike trains.
 
+        .. versionadded:: 0.6.4
+
+
         Parameters
         ----------
         data_folder : str
@@ -1319,7 +1328,7 @@ class PoissonMNISTStream(Stream):
 
             import convis
             from matplotlib.pylab import plot, xlim, gcf
-            stream = convis.streams.NMNISTStream('../data',rep=20,fr=0.20) 
+            stream = convis.streams.PoissonMNISTStream('../data',rep=20,fr=0.20) 
             # here we are using a very high firing rate for easy visualization
             # (20% of cells are active in each frame)
             convis.plot(stream.get(500))
@@ -1390,6 +1399,8 @@ class PseudoNMNIST(ProcessingStream):
     Internally, it defines a Layer that performs three predetermined "saccades" (see the source code if you want to use it as a Saccade generator in other contexts).
     It uses a :class:`~convis.filters.spiking.IntegrativeMotionSensor` to generate spikes from the movement.
 
+    .. versionadded:: 0.6.4
+
     Parameters
     ----------
     mnist_data_folder : str
@@ -1407,7 +1418,7 @@ class PseudoNMNIST(ProcessingStream):
         :include-source:
 
         import convis
-        n = convis.streams.NMNIST()
+        n = convis.streams.PseudoNMNIST()
         convis.plot(n.get(200)) 
 
     """

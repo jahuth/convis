@@ -1,13 +1,39 @@
 Changelog
 ==========
 
-0.6.4
-------
+0.6.4 (current github version)
+------------------------------------
+
+Install with:
+
+.. code-block::
+    bash
+
+    pip install git+https://github.com/jahuth/convis.git
+
+Changes: 
 
   - fixed bug in convolution filter alignment in :class:`~convis.filters.Conv2d` and :class:`~convis.filters.Conv3d`: odd sized filters are now centered correctly
   - fixed two bugs in :class:`~convis.filters.spiking.LeakyIntegrateAndFireNeuron` and :class:`~convis.filters.spiking.RefractoryLeakyIntegrateAndFireNeuron`:
       + The default time step from `convis.default_resolution` was not copied to the internal variable `tau`. Now layers will use the value from the time of their creation.
       + The input was not normalized with the step size, leading to different results when changing the resolution and leak simultaneously.
+ - added `flip` argument (default: True) to :meth:`convis.filters.Conv3d.set_weight` to keep the filter and impulse response aligned.
+ - fixed bug in plot_impulse (impulse was too long due to padding)
+ - added Difference Layer :class:`convis.filters.Diff`
+ - added spiking layers :class:`convis.filters.spiking.Poisson` and :class:`convis.filters.spiking.IntegrativeMotionSensor`, which is a DVS like Layer
+ - added :class:`convis.streams.ProcessingStream` and :class:`convis.streams.MNISTStream` (and neuromorphic versions: :class:`~convis.streams.PoissonMNISTStream` and :class:`~convis.streams.PseudoNMNIST`)
+ - fixed bug in variable :func:`~convis.variable_describe.describe`
+ - added usage docs about inputs and outputs
+
+
+All older versions are available from PyPI. Install the most recent stable version (currently 0.6.3) with:
+
+.. code-block::
+    bash
+
+    pip install convis
+
+
 
 0.6.3
 ------

@@ -8,6 +8,9 @@ class Poisson(Layer):
     """Poisson spiking model.
 
     Input has to be a firing rate between 0.0 and 1.0.
+
+    .. versionadded:: 0.6.4    
+
     """
     def __init__(self,**kwargs):
         super(Poisson, self).__init__()
@@ -464,7 +467,9 @@ class IntegrativeMotionSensor(Layer):
     
     On spikes are fired if the values surpass a positive threshold.
     Off spikes are fired if the values fall below a negative threshold (`-threshold` for 'linear and `1/threshold` for 'log').
-    
+
+    .. versionadded:: 0.6.4
+
     Parameters
     ----------
     spiking_mode : str

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Changelog &mdash; convis 0.6.3 documentation</title>
+  <title>Changelog &mdash; convis 0.6.4 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.3 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.4 documentation" href="index.html"/>
         <link rel="next" title="Filters and Layers" href="filters.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#current-github-version">0.6.4 (current github version)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id1">0.6.3</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">0.6.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id3">0.6.1</a></li>
@@ -178,6 +179,43 @@
             
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="current-github-version">
+<h2>0.6.4 (current github version)<a class="headerlink" href="#current-github-version" title="Permalink to this headline">¶</a></h2>
+<p>Install with:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install git+https://github.com/jahuth/convis.git
+</pre></div>
+</div>
+<p>Changes:</p>
+<blockquote>
+<div><blockquote>
+<div><ul class="simple">
+<li>fixed bug in convolution filter alignment in <a class="reference internal" href="docs_filters.html#convis.filters.Conv2d" title="convis.filters.Conv2d"><code class="xref py py-class docutils literal"><span class="pre">Conv2d</span></code></a> and <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-class docutils literal"><span class="pre">Conv3d</span></code></a>: odd sized filters are now centered correctly</li>
+<li><dl class="first docutils">
+<dt>fixed two bugs in <a class="reference internal" href="filters.html#convis.filters.spiking.LeakyIntegrateAndFireNeuron" title="convis.filters.spiking.LeakyIntegrateAndFireNeuron"><code class="xref py py-class docutils literal"><span class="pre">LeakyIntegrateAndFireNeuron</span></code></a> and <a class="reference internal" href="filters.html#convis.filters.spiking.RefractoryLeakyIntegrateAndFireNeuron" title="convis.filters.spiking.RefractoryLeakyIntegrateAndFireNeuron"><code class="xref py py-class docutils literal"><span class="pre">RefractoryLeakyIntegrateAndFireNeuron</span></code></a>:</dt>
+<dd><ul class="first last">
+<li>The default time step from <cite>convis.default_resolution</cite> was not copied to the internal variable <cite>tau</cite>. Now layers will use the value from the time of their creation.</li>
+<li>The input was not normalized with the step size, leading to different results when changing the resolution and leak simultaneously.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>added <cite>flip</cite> argument (default: True) to <a class="reference internal" href="filters.html#convis.filters.Conv3d.set_weight" title="convis.filters.Conv3d.set_weight"><code class="xref py py-meth docutils literal"><span class="pre">convis.filters.Conv3d.set_weight()</span></code></a> to keep the filter and impulse response aligned.</li>
+<li>fixed bug in plot_impulse (impulse was too long due to padding)</li>
+<li>added Difference Layer <a class="reference internal" href="docs_filters.html#convis.filters.Diff" title="convis.filters.Diff"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.Diff</span></code></a></li>
+<li>added spiking layers <a class="reference internal" href="filters.html#convis.filters.spiking.Poisson" title="convis.filters.spiking.Poisson"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.spiking.Poisson</span></code></a> and <a class="reference internal" href="filters.html#convis.filters.spiking.IntegrativeMotionSensor" title="convis.filters.spiking.IntegrativeMotionSensor"><code class="xref py py-class docutils literal"><span class="pre">convis.filters.spiking.IntegrativeMotionSensor</span></code></a>, which is a DVS like Layer</li>
+<li>added <a class="reference internal" href="docs_streams.html#convis.streams.ProcessingStream" title="convis.streams.ProcessingStream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.ProcessingStream</span></code></a> and <a class="reference internal" href="docs_streams.html#convis.streams.MNISTStream" title="convis.streams.MNISTStream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.MNISTStream</span></code></a> (and neuromorphic versions: <a class="reference internal" href="docs_streams.html#convis.streams.PoissonMNISTStream" title="convis.streams.PoissonMNISTStream"><code class="xref py py-class docutils literal"><span class="pre">PoissonMNISTStream</span></code></a> and <a class="reference internal" href="docs_streams.html#convis.streams.PseudoNMNIST" title="convis.streams.PseudoNMNIST"><code class="xref py py-class docutils literal"><span class="pre">PseudoNMNIST</span></code></a>)</li>
+<li>fixed bug in variable <a class="reference internal" href="docs.html#convis.variable_describe.describe" title="convis.variable_describe.describe"><code class="xref py py-func docutils literal"><span class="pre">describe()</span></code></a></li>
+<li>added usage docs about inputs and outputs</li>
+</ul>
+</div></blockquote>
+<p>All older versions are available from PyPI. Install the most recent stable version (currently 0.6.3) with:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install convis
+</pre></div>
+</div>
+</div>
 <div class="section" id="id1">
 <h2>0.6.3<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <blockquote>
@@ -249,9 +287,9 @@
 </dd>
 </dl>
 </li>
-<li>a new submodule <a class="reference internal" href="docs_models.html#module-convis.layers" title="convis.layers"><code class="xref py py-mod docutils literal"><span class="pre">convis.layers</span></code></a> now contains all <code class="xref py py-class docutils literal"><span class="pre">Layers</span></code> from <a class="reference internal" href="docs_filters.html#module-convis.filters" title="convis.filters"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters</span></code></a> and <code class="xref py py-mod docutils literal"><span class="pre">convis.models</span></code>! If you are unsure whether something is only a “filter” or a already a “model”, they can all be found in the same module now. Still, <a class="reference internal" href="docs_filters.html#module-convis.filters" title="convis.filters"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters</span></code></a> and <code class="xref py py-mod docutils literal"><span class="pre">convis.models</span></code> will continue to be available separately.</li>
+<li>a new submodule <a class="reference internal" href="docs_models.html#module-convis.layers" title="convis.layers"><code class="xref py py-mod docutils literal"><span class="pre">convis.layers</span></code></a> now contains all <code class="xref py py-class docutils literal"><span class="pre">Layers</span></code> from <a class="reference internal" href="docs_filters.html#module-convis.filters" title="convis.filters"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters</span></code></a> and <a class="reference internal" href="docs_models.html#module-convis.models" title="convis.models"><code class="xref py py-mod docutils literal"><span class="pre">convis.models</span></code></a>! If you are unsure whether something is only a “filter” or a already a “model”, they can all be found in the same module now. Still, <a class="reference internal" href="docs_filters.html#module-convis.filters" title="convis.filters"><code class="xref py py-mod docutils literal"><span class="pre">convis.filters</span></code></a> and <a class="reference internal" href="docs_models.html#module-convis.models" title="convis.models"><code class="xref py py-mod docutils literal"><span class="pre">convis.models</span></code></a> will continue to be available separately.</li>
 <li><dl class="first docutils">
-<dt>added an unfinished class <code class="xref py py-class docutils literal"><span class="pre">convis.models.Dict</span></code> which will be similar to <a class="reference internal" href="docs_models.html#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">convis.models.List</span></code></a>, but can name its layers arbitrarily.</dt>
+<dt>added an unfinished class <a class="reference internal" href="docs_models.html#convis.models.Dict" title="convis.models.Dict"><code class="xref py py-class docutils literal"><span class="pre">convis.models.Dict</span></code></a> which will be similar to <a class="reference internal" href="docs_models.html#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">convis.models.List</span></code></a>, but can name its layers arbitrarily.</dt>
 <dd><ul class="first last">
 <li>possibly both classes will be merged and replace the <a class="reference internal" href="docs_models.html#convis.models.Sequential" title="convis.models.Sequential"><code class="xref py py-class docutils literal"><span class="pre">convis.models.Sequential</span></code></a> and <a class="reference internal" href="docs_models.html#convis.models.Parallel" title="convis.models.Parallel"><code class="xref py py-class docutils literal"><span class="pre">convis.models.Parallel</span></code></a> classes</li>
 </ul>
@@ -315,7 +353,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.3',
+            VERSION:'0.6.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

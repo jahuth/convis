@@ -47,7 +47,7 @@ Utilitary methods `convis.utils`
 Sample Data `convis.samples`
 ------------------------------
 
-See also `this notebook <https://jahuth.github.io/convis/Convis%20stimuli%20and%20kernels.html>`_ for sample stimuli. 
+See also `this notebook <https://github.com/jahuth/convis/blob/master/examples/Convis%20stimuli%20and%20kernels.ipynb>`_ for sample stimuli. 
 
 .. automodule:: convis.samples
    :members:

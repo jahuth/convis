@@ -11,6 +11,13 @@ Version 0.6.4 (release pending) and current github version
   - fixed two bugs in `LeakyIntegrateAndFireNeuron` and `RefractoryLeakyIntegrateAndFireNeuron`:
       + The default time step from `convis.default_resolution` was not copied to the internal variable `tau`. Now layers will use the value from the time of their creation.
       + The input was not normalized with the step size, leading to different results when changing the resolution and leak simultaneously.
+ - added `flip` argument (default: True) to `Conv3d.set_weight` to keep the filter and impulse response aligned.
+ - fixed bug in plot_impulse (impulse was too long due to padding)
+ - added Difference Layer `convis.filters.Diff`
+ - added spiking layers `convis.filters.spiking.Poisson` and `convis.filters.spiking.IntegrativeMotionSensor`, which is a DVS like Layer
+ - added `convis.streams.ProcessingStream` and `convis.streams.MNISTStream` (and neuromorphic versions: `PoissonMNISTStream` and `PseudoNMNIST`)
+ - fixed bug in variable describe
+ - added usage docs about inputs and outputs
 
 
 Version 0.6.3

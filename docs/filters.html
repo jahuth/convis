@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Filters and Layers &mdash; convis 0.6.3 documentation</title>
+  <title>Filters and Layers &mdash; convis 0.6.4 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.3 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.4 documentation" href="index.html"/>
         <link rel="next" title="PyTorch Basics" href="pytorch_basics.html"/>
         <link rel="prev" title="Changelog" href="changelog.html"/> 
 
@@ -230,7 +230,7 @@ the edge.</p>
 which also accepts numpy arguments.</p>
 <dl class="method">
 <dt id="convis.filters.Conv3d.set_weight">
-<code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>preserve_channels=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.set_weight" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>preserve_channels=False</em>, <em>flip=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.set_weight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a new weight for the convolution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -267,9 +267,19 @@ sum over all input values and all output
 values is the approximately same.</p>
 </div></blockquote>
 <p><strong>preserve_channels: bool (default: False)</strong></p>
-<blockquote class="last">
+<blockquote>
 <div><p>Whether or not to copy smaller kernels
 to all input-output channel combinations.</p>
+</div></blockquote>
+<p><strong>flip: bool (default: True)</strong></p>
+<blockquote class="last">
+<div><p>If <cite>True</cite>, the weight will be flipped, so that it corresponds 
+1:1 to patterns it matches (ie. 0,0,0 is the first frame, top left pixel)
+and the impulse response will be exactly <cite>w</cite>.
+If <cite>False</cite>, the weight will not be flipped.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
 </div></blockquote>
 </td>
 </tr>
@@ -358,6 +368,14 @@ the filter is used.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">Conv3d</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<p>Simple usage example processing a grating stimulus from <cite>convis.samples</cite>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">RF</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_gratings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
 </div>
 <p>Or as a part of a cascade model:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">LNCascade</span><span class="p">()</span>
@@ -472,6 +490,16 @@ that cuts off negative values after adding the bias.</p>
 </div>
 <div class="section" id="module-convis.filters.spiking">
 <span id="spike-generation"></span><h2>Spike Generation<a class="headerlink" href="#module-convis.filters.spiking" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="convis.filters.spiking.Poisson">
+<em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">Poisson</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#Poisson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.Poisson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poisson spiking model.</p>
+<p>Input has to be a firing rate between 0.0 and 1.0.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+</dd></dl>
+
 <dl class="class">
 <dt id="convis.filters.spiking.Izhikevich">
 <em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">Izhikevich</code><span class="sig-paren">(</span><em>output_only_spikes=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#Izhikevich"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.Izhikevich" title="Permalink to this definition">¶</a></dt>
@@ -615,6 +643,36 @@ the membrane potential <cite>v</cite> and three slow acting currents <cite>n</ci
 </div></blockquote>
 </dd></dl>
 
+<dl class="class">
+<dt id="convis.filters.spiking.IntegrativeMotionSensor">
+<em class="property">class </em><code class="descclassname">convis.filters.spiking.</code><code class="descname">IntegrativeMotionSensor</code><span class="sig-paren">(</span><em>spiking_mode='linear'</em>, <em>threshold=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters/spiking.html#IntegrativeMotionSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.spiking.IntegrativeMotionSensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A spiking integrator that will fire and readjust its threshold in ‘linear’ or ‘log’(arithmic) mode.</p>
+<p>The output of the Layer has two channels: On and Off spikes.</p>
+<p>On spikes are fired if the values surpass a positive threshold.
+Off spikes are fired if the values fall below a negative threshold (<cite>-threshold</cite> for ‘linear and <cite>1/threshold</cite> for ‘log’).</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>spiking_mode</strong> : str</p>
+<blockquote>
+<div><p>‘linear’ or ‘log’</p>
+</div></blockquote>
+<p><strong>threshold</strong> : float</p>
+<blockquote class="last">
+<div><p>The dynamic threshold in/decreases.
+In ‘linear’ mode, the threshold is increased by adding <cite>threshold</cite>.
+In ‘log’ mode, the threshold is increased by multiplying with <cite>threshold</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 </div>
 
@@ -662,7 +720,7 @@ the membrane potential <cite>v</cite> and three slow acting currents <cite>n</ci
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.3',
+            VERSION:'0.6.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

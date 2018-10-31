@@ -267,6 +267,9 @@ class Conv3d(torch.nn.Conv3d,Layer):
                 and the impulse response will be exactly `w`.
                 If `False`, the weight will not be flipped.
 
+                .. versionadded:: 0.6.4
+
+
         """
         if type(w) in [int,float]:
             #self.weight.data = variables.ones(self.weight.data.shape) * w
@@ -289,10 +292,6 @@ class Conv3d(torch.nn.Conv3d,Layer):
                     w = w * np.ones((self.out_channels, self.in_channels, 1, 1, 1))
             w = torch.Tensor(w)
             if flip:
-                #if hasattr(w,'__array__'):
-                #    # convert to numpy if possible
-                #    w = w.__array__()
-                #w = w[:,:,::-1,::-1,::-1]
                 if hasattr(w,'flip'):
                     # in newer PyTorch versions
                     w = w.flip(2,3,4)

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>convis.models &mdash; convis 0.6.3 documentation</title>
+  <title>convis.models &mdash; convis 0.6.4 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="convis 0.6.3 documentation" href="../../index.html"/>
+    <link rel="top" title="convis 0.6.4 documentation" href="../../index.html"/>
         <link rel="up" title="convis" href="../convis.html"/> 
 
   
@@ -322,7 +322,7 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Method not implemented `</span><span class="si">%s</span><span class="s1">`, please supply a function or Layer.&#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">)</span></div>
 
-<span class="k">class</span> <span class="nc">Dict</span><span class="p">(</span><span class="n">List</span><span class="p">):</span>
+<div class="viewcode-block" id="Dict"><a class="viewcode-back" href="../../docs_models.html#convis.models.Dict">[docs]</a><span class="k">class</span> <span class="nc">Dict</span><span class="p">(</span><span class="n">List</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A dictionary of Layers that registers its items as submodules</span>
 <span class="sd">    and provides tab-completable names  of unnamed Layers </span>
 <span class="sd">    with a prefix (by default &#39;layer_&#39;).</span>
@@ -363,7 +363,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="s1">&#39;layer_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">module</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span></div>
 
 <div class="viewcode-block" id="Sequential"><a class="viewcode-back" href="../../docs_models.html#convis.models.Sequential">[docs]</a><span class="k">class</span> <span class="nc">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">,</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A Model that executes Layers sequentially,</span>
@@ -471,7 +471,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">*</span><span class="n">outputs</span><span class="p">)</span></div>
         
 
-<span class="k">def</span> <span class="nf">make_sequential_parallel_model</span><span class="p">(</span><span class="n">list_of_layers</span><span class="p">):</span>
+<div class="viewcode-block" id="make_sequential_parallel_model"><a class="viewcode-back" href="../../docs_models.html#convis.models.make_sequential_parallel_model">[docs]</a><span class="k">def</span> <span class="nf">make_sequential_parallel_model</span><span class="p">(</span><span class="n">list_of_layers</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates an alternating sequential/parallel model starting with a sequential layer.</span>
 
 <span class="sd">    Example</span>
@@ -507,9 +507,9 @@
             <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_parallel_sequential_model</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">model</span></div>
 
-<span class="k">def</span> <span class="nf">make_parallel_sequential_model</span><span class="p">(</span><span class="n">list_of_layers</span><span class="p">):</span>
+<div class="viewcode-block" id="make_parallel_sequential_model"><a class="viewcode-back" href="../../docs_models.html#convis.models.make_parallel_sequential_model">[docs]</a><span class="k">def</span> <span class="nf">make_parallel_sequential_model</span><span class="p">(</span><span class="n">list_of_layers</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates an alternating sequential/parallel model starting with a parallel layer.</span>
 
 <span class="sd">    Example</span>
@@ -545,7 +545,7 @@
             <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_parallel_sequential_model</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">model</span></div>
 
 <div class="viewcode-block" id="LNCascade"><a class="viewcode-back" href="../../docs_models.html#convis.models.LNCascade">[docs]</a><span class="k">class</span> <span class="nc">LNCascade</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -661,7 +661,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
-<span class="k">class</span> <span class="nc">RF</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<div class="viewcode-block" id="RF"><a class="viewcode-back" href="../../docs_models.html#convis.models.RF">[docs]</a><span class="k">class</span> <span class="nc">RF</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A linear model with a receptive field filter.</span>
 
@@ -699,7 +699,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,:,:,:]</span> <span class="o">=</span> <span class="mf">0.0</span>  
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LN"><a class="viewcode-back" href="../../docs_models.html#convis.models.LN">[docs]</a><span class="k">class</span> <span class="nc">LN</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
@@ -1095,7 +1095,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.3',
+            VERSION:'0.6.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

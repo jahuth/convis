@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Streams convis.streams &mdash; convis 0.6.3 documentation</title>
+  <title>Streams convis.streams &mdash; convis 0.6.4 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="convis 0.6.3 documentation" href="index.html"/>
+    <link rel="top" title="convis 0.6.4 documentation" href="index.html"/>
         <link rel="up" title="The API: Convis classes and modules" href="docs.html"/>
         <link rel="next" title="Optimizers convis.optimizer" href="docs_optimizer.html"/>
         <link rel="prev" title="VirtualRetina-like Simulator" href="docs_retina.html"/> 
@@ -200,10 +200,7 @@ All others are experimental. If you plan on using any of them, you can open a  <
 <span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//docs_streams-1.py">Source code</a>, <a class="reference external" href=".//docs_streams-1.png">png</a>, <a class="reference external" href=".//docs_streams-1.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-1.pdf">pdf</a>)</p>
-<div class="figure">
-<img alt="_images/docs_streams-1.png" src="_images/docs_streams-1.png" />
-</div>
+<p>(<a class="reference external" href=".//docs_streams-1.py">Source code</a>)</p>
 <dl class="class">
 <dt id="convis.streams.InrImageStreamer">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">InrImageStreamer</code><span class="sig-paren">(</span><em>filename</em>, <em>z=False</em>, <em>slice_at=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageStreamer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageStreamer" title="Permalink to this definition">¶</a></dt>
@@ -214,6 +211,12 @@ All others are experimental. If you plan on using any of them, you can open a  <
 <p class="first admonition-title">Warning</p>
 <p class="last">This class is not currently maintained and might change without notice between releases.</p>
 </div>
+<dl class="method">
+<dt id="convis.streams.InrImageStreamer.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#InrImageStreamer.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.InrImageStreamer.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -238,8 +241,58 @@ All others are experimental. If you plan on using any of them, you can open a  <
 <dt id="convis.streams.Stream">
 <em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">Stream</code><span class="sig-paren">(</span><em>size=(50</em>, <em>50)</em>, <em>pixel_per_degree=10</em>, <em>t_zero=0.0</em>, <em>t=0.0</em>, <em>dt=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#Stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.Stream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stream Base Class</p>
-<p>Streams have to have methods to either <cite>get()</cite>
+<p>Streams have to have methods to either <cite>get(i)</cite>
 or <cite>put</cite> a frame.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>get(i)</cite> takes <cite>i</cite> frames from the stream and changes the internal state.</li>
+<li><cite>put(t)</cite> inserts a <cite>torch.Tensor</cite> or <cite>numpy.ndarray</cite> into the stream (eg. saving it into a file).</li>
+</ul>
+</div></blockquote>
+<dl class="method">
+<dt id="convis.streams.Stream.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#Stream.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.Stream.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.ProcessingStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">ProcessingStream</code><span class="sig-paren">(</span><em>input_stream</em>, <em>model</em>, <em>pre=None</em>, <em>post=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#ProcessingStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.ProcessingStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines a stream and a <cite>Layer</cite> (model or filter) into a new stream.</p>
+<p>Each slice will be processed at once (using <cite>Layer.__call__</cite>, not <cite>Layer.run</cite>), 
+so a limited number of frames should be requested at any one time.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>input_stream</strong> : <cite>convis.streams.Stream</cite></p>
+<blockquote>
+<div><p>The stream that is used as input to the model</p>
+</div></blockquote>
+<p><strong>model</strong> : <cite>convis.Layer</cite></p>
+<blockquote>
+<div><p>The model that transforms slices of the <cite>input_stream</cite> into outputs</p>
+</div></blockquote>
+<p><strong>pre</strong> : function or None</p>
+<blockquote>
+<div><p>Optional operation to be done one each slice before handing it to the model.</p>
+</div></blockquote>
+<p><strong>post</strong> : function or None</p>
+<blockquote class="last">
+<div><p>Optional operation to be done one each slice after the model has processed it.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>To recreate the neuromorphic MNIST stream one can combine the MNIST stream and a <cite>Poisson</cite> layer.
+The output of the MNIST stream can be scaled with a function passed to <cite>pre</cite>.</p>
 </dd></dl>
 
 <dl class="class">
@@ -251,6 +304,12 @@ or <cite>put</cite> a frame.</p>
 <div class="figure">
 <img alt="_images/docs_streams-2.png" src="_images/docs_streams-2.png" />
 </div>
+<dl class="method">
+<dt id="convis.streams.RandomStream.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#RandomStream.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.RandomStream.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -268,6 +327,12 @@ or <cite>put</cite> a frame.</p>
 <div class="figure">
 <img alt="_images/docs_streams-3.png" src="_images/docs_streams-3.png" />
 </div>
+<dl class="method">
+<dt id="convis.streams.SequenceStream.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#SequenceStream.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.SequenceStream.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -277,6 +342,12 @@ or <cite>put</cite> a frame.</p>
 <p class="first admonition-title">Warning</p>
 <p class="last">This class is not currently maintained and might change without notice between releases.</p>
 </div>
+<dl class="method">
+<dt id="convis.streams.RepeatingStream.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#RepeatingStream.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.RepeatingStream.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -307,6 +378,12 @@ or <cite>put</cite> a frame.</p>
 <p class="first admonition-title">Warning</p>
 <p class="last">This class is not currently maintained and might change without notice between releases.</p>
 </div>
+<dl class="method">
+<dt id="convis.streams.NumpyReader.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#NumpyReader.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.NumpyReader.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -397,6 +474,288 @@ To create stable code it is currently recommended to load input manually into nu
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="convis.streams.ImageSequence.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#ImageSequence.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.ImageSequence.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.MNISTStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">MNISTStream</code><span class="sig-paren">(</span><em>data_folder='./mnist_data'</em>, <em>rep=10</em>, <em>max_value=1.0</em>, <em>init=None</em>, <em>advance=179425529</em>, <em>include_label=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#MNISTStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.MNISTStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads MNIST data and displays random digits.</p>
+<p>The digits are chosen pseudo randomly using a starting value <cite>init</cite> and a (large) advancing value.
+If both values are supplied, the stream will return the same sequence of numbers.
+By default, <cite>init</cite> is chosen randomly and <cite>advance</cite> is set to an arbitrary (but fixed) high prime number.
+If <cite>advance</cite> shares factors with the number of samples in MNIST, not all examples will be covered!</p>
+<p>If <cite>include_label</cite> is True, the output will contain a second channel with the matching label.
+(Currently, there is no automated way to pass this along with the other channel)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The way the label is encoded might change depending on how people want to use it.
+Please <a class="reference external" href="https://github.com/jahuth/convis/labels/enhancement">submitting a github issue if you have in idea how to pass labels along with the input</a>!</p>
+</div>
+<p>The output of the stream will be frames of <cite>28 x 28</cite> pixels.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data_folder</strong> : str</p>
+<blockquote>
+<div><p>A (relative or absolute) path where the MNIST data should be downloaded to.
+If a valid download is found at that location, the existing data will be used.
+This stream uses <cite>torchvision</cite> to download and extract the data, more info about the downloader can be found <a class="reference external" href="https://pytorch.org/docs/stable/torchvision/datasets.html#mnist">here</a>.</p>
+</div></blockquote>
+<p><strong>rep</strong> : int</p>
+<blockquote>
+<div><p>Number of frames each digit should be repeated</p>
+</div></blockquote>
+<p><strong>max_value</strong> : float</p>
+<blockquote>
+<div><p>The stimuli will have normalized values between 0 and <cite>max_value</cite>.</p>
+</div></blockquote>
+<p><strong>init</strong> : int or None</p>
+<blockquote>
+<div><p>The starting point of the pseudo-random walk through the examples.
+If the value is <cite>None</cite>, it is chosen randomly with uniform probability.</p>
+</div></blockquote>
+<p><strong>advance</strong> : int</p>
+<blockquote>
+<div><p>A large number that determines the next sample.
+If this value is not touched, it will generate pseudo-random walks starting deterministically from <cite>init</cite>.</p>
+</div></blockquote>
+<p><strong>include_label</strong> : bool</p>
+<blockquote>
+<div><p>Whether to include an additional channel carrying the labels or not (default: <cite>False</cite>)</p>
+</div></blockquote>
+<p><strong>buffer</strong> : <cite>torch.Tensor</cite></p>
+<blockquote class="last">
+<div><p>the MNIST dataset</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.streams.PoissonMNISTStream" title="convis.streams.PoissonMNISTStream"><code class="xref py py-obj docutils literal"><span class="pre">convis.streams.PoissonMNISTStream</span></code></a>, <a class="reference internal" href="#convis.streams.PseudoNMNIST" title="convis.streams.PseudoNMNIST"><code class="xref py py-obj docutils literal"><span class="pre">convis.streams.PseudoNMNIST</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">from</span> <span class="nn">matplotlib.pylab</span> <span class="kn">import</span> <span class="n">plot</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">gcf</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">MNISTStream</span><span class="p">(</span><span class="s1">&#39;../data&#39;</span><span class="p">,</span><span class="n">rep</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="c1"># returning to the start</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_streams-4.py">Source code</a>, <a class="reference external" href=".//docs_streams-4.png">png</a>, <a class="reference external" href=".//docs_streams-4.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-4.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-4.png" src="_images/docs_streams-4.png" />
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>i</strong></td>
+<td>(int) index of current image.</td>
+</tr>
+<tr class="row-even"><td><strong>j</strong></td>
+<td>(int) number of repetitions already displayed (secondary index)</td>
+</tr>
+<tr class="row-odd"><td><strong>init_i</strong></td>
+<td>(int) The initial starting point of the walk.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="convis.streams.MNISTStream.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#MNISTStream.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.MNISTStream.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the random walk to the starting point (<cite>self.init_i</cite>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.streams.MNISTStream.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#MNISTStream.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.MNISTStream.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.PoissonMNISTStream">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">PoissonMNISTStream</code><span class="sig-paren">(</span><em>data_folder='./mnist_data'</em>, <em>rep=10</em>, <em>fr=0.05</em>, <em>init=None</em>, <em>advance=179425529</em>, <em>include_label=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#PoissonMNISTStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.PoissonMNISTStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads MNIST data and generates Poisson spiking for random digits.</p>
+<p>This definition of a neuromorphic version of the MNIST data set follows eg.:</p>
+<blockquote>
+<div><ul class="simple">
+<li><ol class="first upperalpha" start="16">
+<li>Diehl and M. Cook. Unsupervised learning of digit recognition using spike-timing-dependent plasticity. Frontiers in Computational Neuroscience, 9(99), 2015.</li>
+</ol>
+</li>
+<li><ol class="first upperalpha" start="4">
+<li>Querlioz, O. Bichler, P. Dollfus, and C. Gamrat. Immunity to device variations in a spiking neural network with memristive nanodevices. IEEE Transactions on Nanotechnology, 12:288-295, 2013.</li>
+</ol>
+</li>
+</ul>
+</div></blockquote>
+<p>An alternative interpretation are events that are created by saccade-like movements over the images.</p>
+<p>The digits are chosen pseudo randomly using a starting value <cite>init</cite> and a (large) advancing value.
+If both values are supplied, the stream will return the same sequence of numbers.
+By default, <cite>init</cite> is chosen randomly and <cite>advance</cite> is set to an arbitrary (but fixed) high prime number.
+If <cite>advance</cite> shares factors with the number of samples in MNIST, not all examples will be covered!</p>
+<p>If <cite>include_label</cite> is True, the output will contain a second channel with the matching label.
+(Currently, there is no automated way to pass this along with the other channel)</p>
+<p>The output of the stream will be frames of <cite>28 x 28</cite> pixels of binary coded spike trains.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data_folder</strong> : str</p>
+<blockquote>
+<div><p>A (relative or absolute) path where the MNIST data should be downloaded to.
+If a valid download is found at that location, the existing data will be used.
+This stream uses <cite>torchvision</cite> to download and extract the data, more info about the downloader can be found <a class="reference external" href="https://pytorch.org/docs/stable/torchvision/datasets.html#mnist">here</a>.</p>
+</div></blockquote>
+<p><strong>rep</strong> : int</p>
+<blockquote>
+<div><p>Number of frames each digit should be repeated</p>
+</div></blockquote>
+<p><strong>fr</strong> : float</p>
+<blockquote>
+<div><p>The firing probability at the highest possible value.</p>
+</div></blockquote>
+<p><strong>init</strong> : int or None</p>
+<blockquote>
+<div><p>The starting point of the pseudo-random walk through the examples.
+If the value is <cite>None</cite>, it is chosen randomly with uniform probability.</p>
+</div></blockquote>
+<p><strong>advance</strong> : int</p>
+<blockquote>
+<div><p>A large number that determines the next sample.
+If this value is not touched, it will generate pseudo-random walks starting deterministically from <cite>init</cite>.</p>
+</div></blockquote>
+<p><strong>include_label</strong> : bool</p>
+<blockquote>
+<div><p>Whether to include an additional channel carrying the labels or not (default: <cite>False</cite>)</p>
+</div></blockquote>
+<p><strong>buffer</strong> : <cite>torch.Tensor</cite></p>
+<blockquote class="last">
+<div><p>the MNIST dataset</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#convis.streams.MNISTStream" title="convis.streams.MNISTStream"><code class="xref py py-obj docutils literal"><span class="pre">convis.streams.MNISTStream</span></code></a>, <a class="reference internal" href="#convis.streams.PseudoNMNIST" title="convis.streams.PseudoNMNIST"><code class="xref py py-obj docutils literal"><span class="pre">convis.streams.PseudoNMNIST</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="kn">from</span> <span class="nn">matplotlib.pylab</span> <span class="kn">import</span> <span class="n">plot</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">gcf</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">PoissonMNISTStream</span><span class="p">(</span><span class="s1">&#39;../data&#39;</span><span class="p">,</span><span class="n">rep</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">fr</span><span class="o">=</span><span class="mf">0.20</span><span class="p">)</span>
+<span class="c1"># here we are using a very high firing rate for easy visualization</span>
+<span class="c1"># (20% of cells are active in each frame)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="c1"># returning to the start</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_streams-5.py">Source code</a>, <a class="reference external" href=".//docs_streams-5.png">png</a>, <a class="reference external" href=".//docs_streams-5.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-5.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-5.png" src="_images/docs_streams-5.png" />
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>i</strong></td>
+<td>(int) index of current image.</td>
+</tr>
+<tr class="row-even"><td><strong>j</strong></td>
+<td>(int) number of repetitions already displayed (secondary index)</td>
+</tr>
+<tr class="row-odd"><td><strong>init_i</strong></td>
+<td>(int) The initial starting point of the walk.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="convis.streams.PoissonMNISTStream.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#PoissonMNISTStream.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.PoissonMNISTStream.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the random walk to the starting point (<cite>self.init_i</cite>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.streams.PoissonMNISTStream.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#PoissonMNISTStream.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.PoissonMNISTStream.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.PseudoNMNIST">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">PseudoNMNIST</code><span class="sig-paren">(</span><em>mnist_data_folder='../data/'</em>, <em>threshold=5.0</em>, <em>output_size=(34</em>, <em>34)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#PseudoNMNIST"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.PseudoNMNIST" title="Permalink to this definition">¶</a></dt>
+<dd><p>A motion driven conversion of MNIST into spikes. A quick way to get spiking input.</p>
+<p>Internally, it defines a Layer that performs three predetermined “saccades” (see the source code if you want to use it as a Saccade generator in other contexts).
+It uses a <a class="reference internal" href="filters.html#convis.filters.spiking.IntegrativeMotionSensor" title="convis.filters.spiking.IntegrativeMotionSensor"><code class="xref py py-class docutils literal"><span class="pre">IntegrativeMotionSensor</span></code></a> to generate spikes from the movement.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>mnist_data_folder</strong> : str</p>
+<blockquote>
+<div><p>Where to find (or download to) the MNIST dataset. (see <a class="reference internal" href="#convis.streams.MNISTStream" title="convis.streams.MNISTStream"><code class="xref py py-class docutils literal"><span class="pre">convis.streams.MNISTStream</span></code></a>)</p>
+</div></blockquote>
+<p><strong>threshold</strong> : float</p>
+<blockquote>
+<div><p>the sensitivity of the motion detection (smaller values are more sensitive)</p>
+</div></blockquote>
+<p><strong>output_size</strong> : tuple(int,int)</p>
+<blockquote class="last">
+<div><p>size of the generated output (the data is padded with zeros)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">PseudoNMNIST</span><span class="p">()</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">200</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_streams-6.py">Source code</a>, <a class="reference external" href=".//docs_streams-6.png">png</a>, <a class="reference external" href=".//docs_streams-6.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-6.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-6.png" src="_images/docs_streams-6.png" />
+</div>
 </dd></dl>
 
 </div>
@@ -445,7 +804,7 @@ To create stable code it is currently recommended to load input manually into nu
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.3',
+            VERSION:'0.6.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
