@@ -342,12 +342,12 @@ class Conv3d(torch.nn.Conv3d,Layer):
                 int(math.ceil(k[0]))-int(math.floor((k[0])/2)))
     def exponential(self,tau=0.0,adjust_padding=False,*args,**kwargs):
         """Sets the weight to be a 1d temporal lowpass filter with time constant `tau`."""
-        self.set_weight(nf.exponential_filter_1d(tau,*args,**kwargs)[::-1].copy(),normalize=False)
+        self.set_weight(nf.exponential_filter_1d(tau,*args,**kwargs)[::-1].copy(),normalize=False,flip=False)
         if adjust_padding:
             self.adjust_padding()
     def highpass_exponential(self,tau=0.0,adjust_padding=False,*args,**kwargs):
         """Sets the weight to be a 1d temporal highpass filter with time constant `tau`."""
-        self.set_weight(nf.exponential_highpass_filter_1d(tau,*args,**kwargs)[::-1].copy(),normalize=False)
+        self.set_weight(nf.exponential_highpass_filter_1d(tau,*args,**kwargs)[::-1].copy(),normalize=False,flip=False)
         if adjust_padding:
             self.adjust_padding()
     def gaussian(self,sig,adjust_padding=False,resolution=None):
@@ -553,7 +553,7 @@ class Conv1d(nn.Conv1d):
             x = self.time_pad(x)
         return super(Conv1d, self).forward(x)
     def exponential(self,*args,**kwargs):
-        self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False)
+        self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False,flip=False)
 
 class L(Layer):
     def __init__(self,kernel_dim=(1,1,1), bias = False):
