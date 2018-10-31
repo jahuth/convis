@@ -308,6 +308,10 @@ the edge.</p>
 </div></blockquote>
 <p>To change the weight, use the method <cite>set_weight()</cite>
 which also accepts numpy arguments.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Conv3d" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-obj docutils literal"><span class="pre">torch.nn.Conv3d</span></code></a>, <a class="reference internal" href="#convis.filters.Conv1d" title="convis.filters.Conv1d"><code class="xref py py-obj docutils literal"><span class="pre">Conv1d</span></code></a>, <a class="reference internal" href="#convis.filters.Conv2d" title="convis.filters.Conv2d"><code class="xref py py-obj docutils literal"><span class="pre">Conv2d</span></code></a>, <a class="reference internal" href="filters.html#convis.filters.RF" title="convis.filters.RF"><code class="xref py py-obj docutils literal"><span class="pre">RF</span></code></a></p>
+</div>
 <dl class="method">
 <dt id="convis.filters.Conv3d.set_weight">
 <code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>preserve_channels=False</em>, <em>flip=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv3d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv3d.set_weight" title="Permalink to this definition">¶</a></dt>
@@ -423,7 +427,7 @@ the filter is used.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">Conv3d</span></code></a></p>
+<p class="last"><a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Conv3d" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-obj docutils literal"><span class="pre">torch.nn.Conv3d</span></code></a>, <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">Conv3d</span></code></a></p>
 </div>
 <p class="rubric">Examples</p>
 <p>Simple usage example processing a grating stimulus from <cite>convis.samples</cite>:</p>
@@ -446,7 +450,7 @@ the filter is used.</p>
 
 <dl class="class">
 <dt id="convis.filters.Conv2d">
-<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv2d</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv2d" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv2d</code><span class="sig-paren">(</span><em>in_channels=1</em>, <em>out_channels=1</em>, <em>kernel_size=(1</em>, <em>1)</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a 2d convolution.</p>
 <p>Filter size can be 2d (spatial filter: <cite>x,y</cite>) or 3d (<cite>channels,x,y</cite>)
 or 4d (<cite>batches,channels,x,y</cite>).</p>
@@ -459,6 +463,109 @@ input pixel and output pixel all align. For even weights, this holds for the las
 after the center (<cite>[6,6]</cite> for a <cite>10x10</cite> weight).</p>
 <p>The attribute <cite>self.autopad_mode</cite> can be set to a string that is passed to
 <a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.functional.pad" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-func docutils literal"><span class="pre">torch.nn.functional.pad()</span></code></a>. The default is <cite>‘replicate</cite>’</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Conv2d" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-obj docutils literal"><span class="pre">torch.nn.Conv2d</span></code></a>, <a class="reference internal" href="#convis.filters.Conv1d" title="convis.filters.Conv1d"><code class="xref py py-obj docutils literal"><span class="pre">Conv1d</span></code></a>, <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">Conv3d</span></code></a>, <a class="reference internal" href="filters.html#convis.filters.RF" title="convis.filters.RF"><code class="xref py py-obj docutils literal"><span class="pre">RF</span></code></a></p>
+</div>
+<dl class="method">
+<dt id="convis.filters.Conv2d.set_weight">
+<code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>flip=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv2d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv2d.set_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a new weight for the convolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>w: numpy array or PyTorch Tensor</strong></p>
+<blockquote>
+<div><p>The new kernel <cite>w</cite> should have 2,3 or 4 dimensions:
+<strong>2d:</strong> (x, y)
+<strong>3d:</strong> (out_channels, x, y)
+<strong>4d:</strong> (in_channels, out_channels, x, y)
+Missing dimensions are added at the front.</p>
+</div></blockquote>
+<p><strong>normalize: bool (default: False)</strong></p>
+<blockquote>
+<div><p>Whether or not the sum of the kernel values
+should be normalized to 1, such that the
+sum over all input values and all output 
+values is the approximately same.</p>
+</div></blockquote>
+<p><strong>flip: bool (default: True)</strong></p>
+<blockquote class="last">
+<div><p>If <cite>True</cite>, the weight will be flipped, so that it corresponds 
+1:1 to patterns it matches (ie. 0,0 is the top left pixel)
+and the impulse response will be exactly <cite>w</cite>.
+If <cite>False</cite>, the weight will not be flipped.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.filters.Conv1d">
+<em class="property">class </em><code class="descclassname">convis.filters.</code><code class="descname">Conv1d</code><span class="sig-paren">(</span><em>in_channels=1</em>, <em>out_channels=1</em>, <em>kernel_size=1</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>1d convolution with optional in-out-channels.</p>
+<p>Weights can be set with <cite>set_weight</cite> and will be automatically flipped 
+to keep the weight and the impulse response identical.</p>
+<p>The weight can be 1d (no channels/only time) or 3d (in-channels, out-channels,time).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">During the processing, all spatial dimensions will be collapsed into the batch dimension.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Conv1d" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-obj docutils literal"><span class="pre">torch.nn.Conv1d</span></code></a>, <a class="reference internal" href="#convis.filters.Conv2d" title="convis.filters.Conv2d"><code class="xref py py-obj docutils literal"><span class="pre">Conv2d</span></code></a>, <a class="reference internal" href="filters.html#convis.filters.Conv3d" title="convis.filters.Conv3d"><code class="xref py py-obj docutils literal"><span class="pre">Conv3d</span></code></a>, <a class="reference internal" href="filters.html#convis.filters.RF" title="convis.filters.RF"><code class="xref py py-obj docutils literal"><span class="pre">RF</span></code></a></p>
+</div>
+<dl class="method">
+<dt id="convis.filters.Conv1d.set_weight">
+<code class="descname">set_weight</code><span class="sig-paren">(</span><em>w</em>, <em>normalize=False</em>, <em>flip=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv1d.set_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv1d.set_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a new weight for the convolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>w: numpy array or PyTorch Tensor</strong></p>
+<blockquote>
+<div><p>The new kernel <cite>w</cite> should have 1 or 3 dimensions:
+<strong>1d:</strong> (time)
+<strong>3d:</strong> (in_channels, out_channels, time)</p>
+</div></blockquote>
+<p><strong>normalize: bool (default: False)</strong></p>
+<blockquote>
+<div><p>Whether or not the sum of the kernel values
+should be normalized to 1, such that the
+sum over all input values and all output 
+values is the approximately same.</p>
+</div></blockquote>
+<p><strong>flip: bool (default: True)</strong></p>
+<blockquote class="last">
+<div><p>If <cite>True</cite>, the weight will be flipped, so that it corresponds 
+1:1 to patterns it matches (ie. 0 is the first frame)
+and the impulse response will be exactly <cite>w</cite>.
+If <cite>False</cite>, the weight will not be flipped.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="convis.filters.Conv1d.exponential">
+<code class="descname">exponential</code><span class="sig-paren">(</span><em>tau</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/filters.html#Conv1d.exponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.filters.Conv1d.exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the weight to be an exponential filter (low-pass filter) with time constant <cite>tau</cite>.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">

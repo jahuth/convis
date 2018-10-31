@@ -135,11 +135,11 @@ def random_checker_stimulus(t=2000,x=20,y=20,checker_size=5,seed=123,
         Creates a random checker flicker of uniformly distributed values
         in a grid of `checker_size`x`checker_size` pixels.
     """
-    return (np.random.rand(t,
-                             int(x)/checker_size + 1,
-                             int(y)/checker_size + 1)
-            .repeat(checker_size,axis=1)
-            .repeat(checker_size,axis=2)[:,:x,:y])
+    return (np.random.rand(int(t),
+                             int(x/checker_size) + 1,
+                             int(y/checker_size) + 1)
+            .repeat(int(checker_size),axis=1)
+            .repeat(int(checker_size),axis=2)[:,:x,:y])
 
 def pulse(t=2000,x=20,y=20, pulse_length=100,
                             frames_per_second=None,

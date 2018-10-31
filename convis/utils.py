@@ -328,7 +328,7 @@ def plot(x,mode=None,**kwargs):
     else:
         print('x has dimensions:',shp)
 
-def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None):
+def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None,resize_small_figures=True):
     """Plots a 5d tensor as a line plot (min,max,mean and example timeseries) and a sequence of image plots.
 
 
@@ -360,6 +360,8 @@ def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None):
             x range included in the example frames
         ylim (tuple or int):
             y range included in the example frames
+        resize_small_figures (bool):
+            if True, figures that do not fit the example plots will be resized
 
         Examples
         --------
@@ -416,27 +418,38 @@ def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None):
             t = t[:,:,:,:,ylim[0]:ylim[1]]
         else:
             t = t[:,:,:,:,:ylim]
-    o_mean= np.mean(t,(0,1,3,4))
-    o_min= np.min(t,(0,1,3,4))
-    o_max= np.max(t,(0,1,3,4))
-    ax1 = plt.subplot2grid((2, n_examples), (0, 0), colspan=n_examples)
-    plt.fill_between(t_0+np.arange(len(o_min)),o_min,o_max,alpha=0.5)
-    plt.plot(t_0+np.arange(len(o_min)),o_mean)
-    line_steps = int(min(t.shape[3],t.shape[4])/min(np.sqrt(max_lines),min(t.shape[3],t.shape[4])))
-    for i in np.arange(0,t.shape[3],line_steps):
-        for j in np.arange(0,t.shape[4],line_steps):
-            plt.plot(t_0+np.arange(len(o_min)),t[0,0,:,i,j],'-',color='orange',alpha=0.2)
+    line_n = t.shape[0]*t.shape[1]
+    if resize_small_figures:
+        fig_size = plt.gcf().get_size_inches()
+        if fig_size[1] < line_n*0.8 or fig_size[0] < n_examples:
+            plt.gcf().set_size_inches(n_examples*1.5,2+line_n)
+    ax1 = plt.subplot2grid((2 + line_n, n_examples), (0, 0), colspan=n_examples)
+    t_lines = t.reshape((line_n,t.shape[2],t.shape[3],t.shape[4]))
+    for line_i in range(line_n):
+        o_mean= np.mean(t_lines[line_i,:,:,:],(1,2))
+        o_min= np.min(t_lines[line_i,:,:,:],(1,2))
+        o_max= np.max(t_lines[line_i,:,:,:],(1,2))
+        plt.fill_between(t_0+np.arange(len(o_min)),o_min,o_max,alpha=0.5)
+        plt.plot(t_0+np.arange(len(o_min)),o_mean)
+        line_steps = int(min(t.shape[3],t.shape[4])/min(np.sqrt(max_lines),min(t.shape[3],t.shape[4])))
+        for i in np.arange(0,t.shape[3],line_steps):
+            for j in np.arange(0,t.shape[4],line_steps):
+                plt.plot(t_0+np.arange(len(o_min)),t_lines[line_i,:,i,j],'-',color='orange',alpha=0.2)
     ax1.spines['right'].set_visible(False)
     ax1.spines['top'].set_visible(False)
     ax1.yaxis.set_ticks_position('left')
     ax1.xaxis.set_ticks_position('bottom')
     plt.xlim(t_0,t_end)
     plt.title('Output Tensor')
-    for i,_t in enumerate(np.linspace(0,t.shape[2]-1,n_examples)):
-        ax2 = plt.subplot2grid((2, n_examples), (1, i))
-        plt.imshow(t[0,0,int(_t),:,:],vmin=np.min(t),vmax=np.max(t))
-        plt.axis('off')
-        plt.title(str(int(t_0+_t)))
+    for line_i in range(line_n):
+        for i,_t in enumerate(np.linspace(0,t.shape[2]-1,n_examples)):
+            ax2 = plt.subplot2grid((2 + line_n, n_examples), (2+line_i, i))
+            plt.imshow(t_lines[line_i,int(_t),:,:],vmin=np.min(t),vmax=np.max(t))
+            plt.axis('off')
+            if i == 0 and line_n > 1:
+                plt.text(-0.1,0.5,'b'+str(line_i%t.shape[0])+' c'+str(line_i%t.shape[1]),
+                    ha='center',va='center',rotation=90,transform=ax2.transAxes)
+            plt.title(str(int(t_0+_t)))
     return plt.gcf()
 
 

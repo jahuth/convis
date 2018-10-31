@@ -205,6 +205,12 @@ class Conv3d(torch.nn.Conv3d,Layer):
         which also accepts numpy arguments.
 
 
+        See Also
+        --------
+        torch.nn.Conv3d
+        Conv1d
+        Conv2d
+        RF
     """
     def __init__(self,in_channels=1,out_channels=1,kernel_size=(1,1,1),bias=True,*args,**kwargs):
         self.do_adjust_padding = kwargs.get('adjust_padding',False)
@@ -426,6 +432,7 @@ class RF(Conv3d):
 
         See Also
         --------
+        torch.nn.Conv3d
         Conv3d
     """
     def __init__(self,in_channels=1,out_channels=1,kernel_size=(1,1,1),bias=True,rf_mode='corner',*args,**kwargs):
@@ -438,9 +445,6 @@ class RF(Conv3d):
     def forward(self,x):
         if self.weight.size()[3] == 1 and self.weight.size()[4] == 1:
             self.set_weight(np.ones((self.weight.size()[2],x.size()[3],x.size()[4])),normalize=True)
-        if self.do_time_pad:
-            self.time_pad.length = self.filter_length
-            x = self.time_pad(x)
         if self.rf_placement_mode is 'corner':
             if x.size()[3] < self.weight.size()[3]:
                 x = torch.nn.functional.pad(x,(0,0,0,self.weight.size()[3],0,0))
@@ -473,18 +477,52 @@ class Conv2d(nn.Conv2d, Layer):
 
     The attribute `self.autopad_mode` can be set to a string that is passed to
     :func:`torch.nn.functional.pad`. The default is `'replicate`'
+
+    See Also
+    --------
+    torch.nn.Conv2d
+    Conv1d
+    Conv3d
+    RF
     """
-    def __init__(self,*args,**kwargs):
+    def __init__(self,in_channels=1,out_channels=1,kernel_size=(1,1),*args,**kwargs):
         self.dims = 5
         self.autopad = kwargs.get('autopad',True)
         self.autopad_mode = 'replicate'
         if 'autopad' in kwargs.keys():
             del kwargs['autopad']
-        super(Conv2d, self).__init__(*args,**kwargs)
+        super(Conv2d, self).__init__(in_channels,out_channels,kernel_size,*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias = variables.Parameter(0.0)
         self.weight = variables.Parameter(torch.zeros(self.weight.data.shape))
-    def set_weight(self,w,normalize=False):
+    def set_weight(self,w,normalize=False,flip=True):
+        """
+            Sets a new weight for the convolution.
+
+            Parameters
+            ----------
+            w: numpy array or PyTorch Tensor
+                The new kernel `w` should have 2,3 or 4 dimensions:
+                **2d:** (x, y)
+                **3d:** (out_channels, x, y)
+                **4d:** (in_channels, out_channels, x, y)
+                Missing dimensions are added at the front.
+
+            normalize: bool (default: False)
+                Whether or not the sum of the kernel values
+                should be normalized to 1, such that the
+                sum over all input values and all output 
+                values is the approximately same.
+
+            flip: bool (default: True)
+                If `True`, the weight will be flipped, so that it corresponds 
+                1:1 to patterns it matches (ie. 0,0 is the top left pixel)
+                and the impulse response will be exactly `w`.
+                If `False`, the weight will not be flipped.
+
+                .. versionadded:: 0.6.4
+
+        """
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape).data * w
         else:
@@ -496,17 +534,33 @@ class Conv2d(nn.Conv2d, Layer):
                     self.in_channels = w.shape[1]
                     w_h = w.shape[2]
                     w_w = w.shape[3]
-                    self.weight.data = torch.Tensor(w)
+                    w = torch.Tensor(w)
                 elif len(w.shape) == 3:
                     w_h = w.shape[1]
                     w_w = w.shape[2]
-                    self.weight.data = torch.Tensor(w)[None]
+                    w = torch.Tensor(w)[None]
                 elif len(w.shape) == 2:
                     w_h = w.shape[0]
                     w_w = w.shape[1]
-                    self.weight.data = torch.Tensor(w)[None][None]
+                    w= torch.Tensor(w)[None][None]
                 else:
                     raise Exception('Conv2d accepts weights with 2,3 or 4 dimensions. Weight has shape '+str(w.shape)+'!')
+            if flip:
+                if hasattr(w,'flip'):
+                    # in newer PyTorch versions
+                    w = w.flip(2,3)
+                else:
+                    # fallback, see https://github.com/pytorch/pytorch/issues/229
+                    def flip(x, dim):
+                        xsize = x.size()
+                        dim = x.dim() + dim if dim < 0 else dim
+                        x = x.view(-1, *xsize[dim:])
+                        x = x.view(x.size(0), x.size(1), -1)[:, getattr(torch.arange(x.size(1)-1, 
+                                          -1, -1), ('cpu','cuda')[x.is_cuda])().long(), :]
+                        return x.view(xsize)
+                    w = flip(w,2)
+                    w = flip(w,3)
+            self.weight.data = w
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
     @property
@@ -528,32 +582,107 @@ class Conv2d(nn.Conv2d, Layer):
         self.set_weight(nf.gauss_filter_2d(sig,sig)[None,None,:,:],normalize=False)
 
 
-class Conv1d(nn.Conv1d):
-    def __init__(self,*args,**kwargs):
-        self.do_time_pad = kwargs.get('time_pad',False)
+class Conv1d(nn.Conv1d, Layer):
+    """1d convolution with optional in-out-channels.
+
+    Weights can be set with `set_weight` and will be automatically flipped 
+    to keep the weight and the impulse response identical.
+
+    The weight can be 1d (no channels/only time) or 3d (in-channels, out-channels,time).
+
+    .. note::
+        
+        During the processing, all spatial dimensions will be collapsed into the batch dimension.
+
+
+    See Also
+    --------
+    torch.nn.Conv1d
+    Conv2d
+    Conv3d
+    RF
+    """
+    def __init__(self,in_channels=1,out_channels=1,kernel_size=1,*args,**kwargs):
+        self.do_time_pad = kwargs.get('time_pad',True)
         if 'time_pad' in kwargs.keys():
             del kwargs['time_pad']
-        super(Conv1d, self).__init__(*args,**kwargs)
+        super(Conv1d, self).__init__(in_channels,out_channels,kernel_size,*args,**kwargs)
         if hasattr(self,'bias') and self.bias is not None:
             self.bias.data[0] = 0.0
         self.weight.data = torch.zeros(self.weight.data.shape)
+        self.time_pad = TimePadding(self.weight.size()[TIME_DIMENSION])
     @property
     def filter_length(self):
-        return self.weight.data.shape[0]
-    def set_weight(self,w,normalize=False):
+        return self.weight.data.shape[-1] - 1
+    def set_weight(self,w,normalize=False,flip=True):
+        """
+            Sets a new weight for the convolution.
+
+            Parameters
+            ----------
+            w: numpy array or PyTorch Tensor
+                The new kernel `w` should have 1 or 3 dimensions:
+                **1d:** (time)
+                **3d:** (in_channels, out_channels, time)
+
+            normalize: bool (default: False)
+                Whether or not the sum of the kernel values
+                should be normalized to 1, such that the
+                sum over all input values and all output 
+                values is the approximately same.
+
+            flip: bool (default: True)
+                If `True`, the weight will be flipped, so that it corresponds 
+                1:1 to patterns it matches (ie. 0 is the first frame)
+                and the impulse response will be exactly `w`.
+                If `False`, the weight will not be flipped.
+
+                .. versionadded:: 0.6.4
+
+        """
         if type(w) in [int,float]:
             self.weight.data = torch.ones(self.weight.data.shape).data * w
         else:
-            self.weight.data = torch.Tensor(w)
+            #self.weight.data = torch.Tensor(w)
+            w = torch.Tensor(w)
+            if len(w.shape) == 3:
+                self.out_channels = w.shape[0]
+                self.in_channels = w.shape[1]
+            elif len(w.shape) == 1:
+                w = w[None,None,:]
+            else:
+                raise Exception('Conv1d weights have to be 1d or 3d, not '+str(len(w.shape))+'! Please refer to the doc string.')
+            if flip:
+                if hasattr(w,'flip'):
+                    # in newer PyTorch versions
+                    w = w.flip(2)
+                else:
+                    # fallback, see https://github.com/pytorch/pytorch/issues/229
+                    def flip(x, dim):
+                        xsize = x.size()
+                        dim = x.dim() + dim if dim < 0 else dim
+                        x = x.view(-1, *xsize[dim:])
+                        x = x.view(x.size(0), x.size(1), -1)[:, getattr(torch.arange(x.size(1)-1, 
+                                          -1, -1), ('cpu','cuda')[x.is_cuda])().long(), :]
+                        return x.view(xsize)
+                    w = flip(w,2)
+            self.weight.data = w
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
     def forward(self,x):
         if self.do_time_pad:
             self.time_pad.length = self.filter_length
             x = self.time_pad(x)
-        return super(Conv1d, self).forward(x)
-    def exponential(self,*args,**kwargs):
-        self.set_weight(nf.exponential_filter_1d(*args,**kwargs),normalize=False,flip=False)
+        # we move both space dimensions into the batch dimension
+        s = list(x.size())
+        x = x.transpose(1,3).transpose(2,4).reshape((s[0]*s[3]*s[4],s[1],s[2]))
+        y = super(Conv1d, self).forward(x)
+        s_y = list(y.size())
+        return y.reshape((s[0],s[3],s[4],s[1],s_y[2])).transpose(4,2).transpose(3,1)
+    def exponential(self,tau,*args,**kwargs):
+        """Sets the weight to be an exponential filter (low-pass filter) with time constant `tau`.
+        """
+        self.set_weight(nf.exponential_filter_1d(tau,*args,**kwargs),normalize=False,flip=True)
 
 class L(Layer):
     def __init__(self,kernel_dim=(1,1,1), bias = False):

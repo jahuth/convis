@@ -1246,7 +1246,7 @@ Otherwise it will use <cite>plot_tensor</cite>.</div></blockquote>
 
 <dl class="function">
 <dt id="convis.utils.plot_tensor">
-<code class="descclassname">convis.utils.</code><code class="descname">plot_tensor</code><span class="sig-paren">(</span><em>t</em>, <em>n_examples=5</em>, <em>max_lines=16</em>, <em>tlim=None</em>, <em>xlim=None</em>, <em>ylim=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_tensor" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">convis.utils.</code><code class="descname">plot_tensor</code><span class="sig-paren">(</span><em>t</em>, <em>n_examples=5</em>, <em>max_lines=16</em>, <em>tlim=None</em>, <em>xlim=None</em>, <em>ylim=None</em>, <em>resize_small_figures=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/utils.html#plot_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.utils.plot_tensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots a 5d tensor as a line plot (min,max,mean and example timeseries) and a sequence of image plots.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
 <span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">moving_grating</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
@@ -1288,8 +1288,12 @@ will be less than <cite>max_lines</cite> lines.</p>
 <div><p>x range included in the example frames</p>
 </div></blockquote>
 <p><strong>ylim (tuple or int):</strong></p>
-<blockquote class="last">
+<blockquote>
 <div><p>y range included in the example frames</p>
+</div></blockquote>
+<p><strong>resize_small_figures (bool):</strong></p>
+<blockquote class="last">
+<div><p>if True, figures that do not fit the example plots will be resized</p>
 </div></blockquote>
 </td>
 </tr>
