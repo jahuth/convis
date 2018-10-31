@@ -1,6 +1,14 @@
 Changelog
 ==========
 
+0.6.4
+------
+
+  - fixed bug in convolution filter alignment in :class:`~convis.filters.Conv2d` and :class:`~convis.filters.Conv3d`: odd sized filters are now centered correctly
+  - fixed two bugs in :class:`~convis.filters.spiking.LeakyIntegrateAndFireNeuron` and :class:`~convis.filters.spiking.RefractoryLeakyIntegrateAndFireNeuron`:
+      + The default time step from `convis.default_resolution` was not copied to the internal variable `tau`. Now layers will use the value from the time of their creation.
+      + The input was not normalized with the step size, leading to different results when changing the resolution and leak simultaneously.
+
 0.6.3
 ------
 

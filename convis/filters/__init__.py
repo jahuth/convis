@@ -326,14 +326,15 @@ class Conv3d(torch.nn.Conv3d,Layer):
     @property
     def kernel_padding(self):
         k = np.array(self.weight.data.shape[2:])
-        return (int(math.floor((k[2])/2.0))-1,
-                int(math.ceil(k[2]))-int(math.floor((k[2])/2.0)),
-                int(math.floor((k[1])/2.0))-1,
-                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
+        return (int(math.floor((k[2])/2.0)),
+                int(math.ceil(k[2]))-int(math.floor((k[2])/2.0))-1,
+                int(math.floor((k[1])/2.0)),
+                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0))-1,
                 0,0)
     @property
     def kernel_padding_all(self):
         k = np.array(self.weight.data.shape[2:])
+        print('new code!')
         return (int(math.floor((k[2])/2.0))-1,
                 int(math.ceil(k[2]))-int(math.floor((k[2])/2.0)),
                 int(math.floor((k[1])/2.0))-1,
@@ -454,9 +455,29 @@ class RF(Conv3d):
             raise Exception('RF placements other than \'corner\' are not implemented yet!')
         return super(RF, self).forward(x)
 
-class Conv2d(nn.Conv2d):
+
+class Conv2d(nn.Conv2d, Layer):
+    """Performs a 2d convolution.
+
+    Filter size can be 2d (spatial filter: `x,y`) or 3d (`channels,x,y`)
+    or 4d (`batches,channels,x,y`).
+
+    A filter can be set by supplying a `torch.Tensor` or `np.array` to `.set_weight()` and is expanded to a 4d Tensor.
+    **Note:** The filter is flipped during the convolution with respect to the image.
+
+
+    Convolutions in convis do automatic padding in space, unless told other wise by supplying 
+    the keyword argument `autopad=False`. The input will be padded to create output of the same size.
+    Uneven weights (eg. `9x9`) will be perfectly centered, such that the center pixel of the weight, the
+    input pixel and output pixel all align. For even weights, this holds for the last pixel 
+    after the center (`[6,6]` for a `10x10` weight).
+
+    The attribute `self.autopad_mode` can be set to a string that is passed to
+    :func:`torch.nn.functional.pad`. The default is `'replicate`'
+    """
     def __init__(self,*args,**kwargs):
-        self.autopad = kwargs.get('autopad',False)
+        self.dims = 5
+        self.autopad = kwargs.get('autopad',True)
         self.autopad_mode = 'replicate'
         if 'autopad' in kwargs.keys():
             del kwargs['autopad']
@@ -477,26 +498,37 @@ class Conv2d(nn.Conv2d):
                     w_h = w.shape[2]
                     w_w = w.shape[3]
                     self.weight.data = torch.Tensor(w)
-                else:
+                elif len(w.shape) == 3:
+                    w_h = w.shape[1]
+                    w_w = w.shape[2]
+                    self.weight.data = torch.Tensor(w)[None]
+                elif len(w.shape) == 2:
                     w_h = w.shape[0]
                     w_w = w.shape[1]
-                    self.weight.data = torch.Tensor(w)[None,None]
+                    self.weight.data = torch.Tensor(w)[None][None]
+                else:
+                    raise Exception('Conv2d accepts weights with 2,3 or 4 dimensions. Weight has shape '+str(w.shape)+'!')
         if normalize:
             self.weight.data = self.weight.data / self.weight.data.sum()
     @property
     def kernel_padding(self):
         k = np.array(self.weight.data.shape[-2:])
-        return (int(math.floor((k[1])/2.0))-1,
-                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0)),
-                int(math.floor((k[0])/2.0))-1,
-                int(math.ceil(k[0]))-int(math.floor((k[0])/2.0)))
+        return (int(math.floor((k[1])/2.0)),
+                int(math.ceil(k[1]))-int(math.floor((k[1])/2.0))-1,
+                int(math.floor((k[0])/2.0)),
+                int(math.ceil(k[0]))-int(math.floor((k[0])/2.0))-1,
+                0,0)
     def forward(self,x):
         if self.autopad:
             x = torch.nn.functional.pad(x,self.kernel_padding, self.autopad_mode)
-        return super(Conv2d, self).forward(x)
+        outs = []
+        for i in range(x.size()[0]):
+            outs.append(super(Conv2d, self).forward(x[i].transpose(0,1)).transpose(0,1)[None,:,:,:,:])
+        return torch.cat(outs,dim=0)
     def gaussian(self,sig):
         self.set_weight(nf.gauss_filter_2d(sig,sig)[None,None,:,:],normalize=False)
-        
+
+
 class Conv1d(nn.Conv1d):
     def __init__(self,*args,**kwargs):
         self.do_time_pad = kwargs.get('time_pad',False)
