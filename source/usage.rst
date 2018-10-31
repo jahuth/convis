@@ -7,14 +7,84 @@ Running a model
 
 .. code-block:: python
 
-    import convis
-    retina = convis.retina.Retina()
-    retina(some_short_input)
-    retina.run(some_input,dt=100)
+    >>> import convis
+    >>> retina = convis.retina.Retina()
+    >>> retina(some_short_input)
+    >>> retina.run(some_input,dt=100)
 
 Usually PyTorch Layers are callable and will perform their forward computation when called with some input. But since Convis deals with long (potentially infinite) video sequences, a longer input can be processed in smaller chunks by calling :meth:`Layer.run(input,dt=..) <convis.base.Layer.run>` with `dt` set to the length of input that should be processed at a time. This length depends on the memory available in your system and also if you are using the model on your cpu or gpu.
 :meth:`~convis.base.Layer.run` also accepts numpy arrays as input, which will be converted into PyTorch `Tensor`s and packaged as a `Variable`.
 
+
+
+Input and Output
+~~~~~~~~~~~~~~~~~~~~~~
+
+The in- and output of `convis` models is in most cases **five-dimensional**. Why is that?
+
+The convention comes from :class:`~torch.nn.Conv3d` processing two additional dimensions for 3d convolutions: *batches* and *channels*. They are handled differently in the way they relate to the convolution weight: each *batch* is processed completely independently and adding more batches does not require a change to the weight and there are always the same number of output as input *batches*; in turn each *channel* (eg. colour) requires an appropriate `in_channel` dimension in the weight and the number of output *channels* is also determined by the dimensions of the weight (see :class:`convis.filters.Conv3d`).
+
+The dimensions of all output in `convis` is therefore: 
+
+    **[batch, channel, time, space x, space y]**
+
+and the :class:`~convis.base.Output` objects can also contain multiple output tensors of different shapes.
+
+.. code-block:: python
+
+    >>> o = retina.run(some_input,dt=100)
+    >>> print(o[0].size())
+    torch.Size([1, 1, 1000, 10, 10])
+    >>> print(o[1].size()) # the retina model has by default two outputs (On and Off cells)
+    torch.Size([1, 1, 1000, 10, 10])
+
+If an input has less dimensions, it can be broadcasted with :func:`convis.make_input` from 1d, 2d and 3d to 5d, and this function also gives the option to create CPU or GPU tensors. Also 3d inputs will be automatically broadcast to 5d by all :class:`convis.base.Layer` s.
+
+
+**How to Plot**
+
+To get an overview plot of an :class:`~convis.base.Output` object in jupyter notebooks, it is sufficient to have the output as the last line in a cell.
+This will call :func:`convis.plot_tensor` on each tensor in the :class:`~convis.base.Output`.
+Alternatively one can call :func:`convis.base.Output.plot`, which will get a line plot of the first tensor (or the n-th tensor if an argument n is supplied).
+
+
+.. code-block:: python
+
+    In [1]: o = retina.run(some_input,dt=100)
+            o
+    Out[1]: Output containing 2 Tensors.
+
+            | 1x1x1000x1x1 Tensor
+            | <line plot>
+            | <sequence of example frames>
+
+            | 1x1x1000x1x1 Tensor
+            | <line plot>
+            | <sequence of example frames>
+    
+    In [2]: o.plot(0)
+    Out[2]: <line plot>
+
+    In [3]: convis.plot(o[0])
+    Out[3]: <line plot (same as o.plot())>
+    
+    In [4]: convis.plot_tensor(o[0])
+    Out[4]: <line plot>
+            <sequence of example frames>
+
+
+Most analysis will be done on :func:`numpy.array` s on the CPU rather than :class:`torch.Tensor` s, so the output can be turned into arrays with the function :func:`convis.base.Output.array`:
+
+.. code-block:: python
+
+    >>> out = o.array(0) # using first tensor in output
+    >>> out
+    array([[[[[0,0,0,0,0,0,0,0,0]],
+            ... ]]], dtype=uint8)
+    >>> plot(out[0,0,:,5,5])     # signal of pixel 5,5 over time
+    >>> imshow(out[0,0,100,:,:]) # frame at time 100
+
+If there is more than one tensor in the :class:`~convis.base.Output` object, `o.array(1)` will give the second output, etc.
 
 Global configurations
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -238,41 +308,9 @@ One way to optimize a model is by using the :meth:`~convis.base.Layer.set_optimi
 
 A full example:
 
-.. code-block:: python
-
-    import numpy as np
-    import matplotlib.pylab as plt
-    import convis
-    import torch
-    l_goal = convis.models.LN()
-    k_goal = np.random.randn(5,5,5)
-    l_goal.conv.set_weight(k_goal)
-    plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
-    plt.matshow(l_goal.conv.weight.data.cpu().numpy().mean((0,1,2)))
-    plt.colorbar()
-    l = convis.models.LN()
-    #l.conv.set_weight(np.ones((5,5,5)),normalize=True)
-    #l.set_optimizer.LBFGS()
-    #l.cuda()
-    #l_goal.cuda()
-    #inp = 1.0*(np.random.randn(200,10,10))
-    #inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
-    #outp = l_goal(inp[None,None,:,:,:])
-    #plt.figure()
-    #plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),'--',color='red')
-    #for i in range(50):
-    #    l.optimize(inp[None,None,:,:,:],outp)
-    #    if i%10 == 2:
-    #        plt.plot(l.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1))
-    #plt.matshow(l.conv.weight.data.cpu().numpy().mean((0,1,2)))
-    #plt.colorbar()
-    #plt.figure()
-    #h = plt.hist((l.conv.weight-l_goal.conv.weight).data.cpu().numpy().flatten(),bins=15)
-
-
-
 
 .. plot::
+    :include-source:
 
     import numpy as np
     import matplotlib.pylab as plt
@@ -287,10 +325,11 @@ A full example:
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)
     l.set_optimizer.LBFGS()
-    l.cuda()
-    l_goal.cuda()
+    # optional conversion to GPU objects:
+    #l.cuda()
+    #l_goal.cuda()
     inp = 1.0*(np.random.randn(200,10,10))
-    inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
+    inp = torch.autograd.Variable(torch.Tensor(inp)) # .cuda() # optional: conversion to GPU object
     outp = l_goal(inp[None,None,:,:,:])
     plt.figure()
     plt.plot(l_goal.conv.weight.data.cpu().numpy()[0,0,:,:,:].mean(1),'--',color='red')
@@ -326,7 +365,7 @@ The normal PyTorch way to call Optimizers is to fill the gradient buffers by han
     k_goal = np.random.randn(5,5,5)
     l_goal.conv.set_weight(k_goal)
     inp = 1.0*(np.random.randn(200,10,10))
-    inp = torch.autograd.Variable(torch.Tensor(inp)).cuda()
+    inp = torch.autograd.Variable(torch.Tensor(inp))
     outp = l_goal(inp[None,None,:,:,:])
     l = convis.models.LN()
     l.conv.set_weight(np.ones((5,5,5)),normalize=True)

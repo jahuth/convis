@@ -13,7 +13,7 @@ Y_DIMENSION = 4
 __all__ = ['TimePadding','Delay','VariableDelay','Conv3d','Conv2d','Conv1d','RF','L','LN',
            'TemporalLowPassFilterRecursive','TemporalHighPassFilterRecursive','SpatialRecursiveFilter',
            'SmoothConv','NLRectify','NLSquare','NLRectifyScale','NLRectifySquare',
-           'Sum','sum']
+           'Sum','sum','Diff']
 
 class TimePadding(Layer):
     """
@@ -25,21 +25,33 @@ class TimePadding(Layer):
         removing the state first, an Exception is
         raised.
 
-        To avoid this, call `.clear_state()`. This method is recursive
-        on all `convis.Layers`, so you only have to call it on the
-        outermost `Layer`.
+        To avoid this, call :meth:`~convis.base.Layer.clear_state()`. This method is recursive
+        on all :class:`convis.base.Layer` s, so you only have to call it on the
+        outermost :class:`~convis.base.Layer`.
         If you want to store your history for one set of images,
         do some computation on other images and then return to
-        the previous one, you can use `.push_state()` and `.pop_state()`.
+        the previous one, you can use :meth:`~convis.base.Layer.push_state()` and :meth:`~convis.base.Layer.pop_state()`.
 
-    
+        Parameters
+        ----------
+        length : int
+            The number of frames that should be prepended to each slice
+        mode : str
+            The behaviour if the buffer does not contain enough frames:
+              - `'mirror'` (default) appends the time reversed input until buffer is filled enough
+              - `'full_copy'` appends the input until buffer is full enough
+              - `'first_frame'` appends copies of the first frame of the input
+              - `'mean'` fills the buffer with the mean value of the input
+              - `'ones'` fills the buffer with ones
+              - `'zeros'` fills the buffer with zeros
     """
-    def __init__(self,length=0):
+    def __init__(self,length=0,mode='mirror'):
         self.dim = 5
         self.length = length
         super(TimePadding, self).__init__()
         self.register_state('saved_inputs',[])
         self.saved_inputs = []
+        self.mode = 'first_frame'
     @property
     def available_length(self):
         return np.sum([i.size()[TIME_DIMENSION] for i in self.saved_inputs])
@@ -48,7 +60,20 @@ class TimePadding(Layer):
             if x.size()[-2:] != self.saved_inputs[-1].size()[-2:]:
                 raise Exception('input size '+str(x.size()[-2:])+' does not match state size ('+str(self.saved_inputs[-1].size()[-2:])+')! Call `.clear_state()` on your model first!')
         while self.available_length < self.length:
-            self.saved_inputs.append(x)
+            if self.mode is 'full_copy':
+                self.saved_inputs.append(x)
+            elif self.mode is 'mirror':
+                self.saved_inputs.append(variables.Variable(x.numpy()[:,:,::-1,:,:]))
+            elif self.mode is 'first_frame':
+                self.saved_inputs.append(x[:,:,:1,:,:])
+            elif self.mode is 'mean':
+                self.saved_inputs.append(torch.ones_like(x)*x.mean())
+            elif self.mode is 'ones':
+                self.saved_inputs.append(torch.ones_like(x))
+            elif self.mode is 'zeros':
+                self.saved_inputs.append(torch.zeros_like(x))
+            else:
+                raise Exception("TimePadding argument `mode`='%s' not recognized!."%(self.mode,))
         if self._use_cuda:
             x_pad = torch.cat([i.cuda().detach() for i in self.saved_inputs] + [x.cuda()], dim=TIME_DIMENSION)
         else:
@@ -203,7 +228,7 @@ class Conv3d(torch.nn.Conv3d,Layer):
             self.bias = variables.Parameter(np.zeros(self.bias.data.shape),
                             doc="""The bias of the convolution""")
         self.time_pad = TimePadding(self.weight.size()[TIME_DIMENSION])
-    def set_weight(self,w,normalize=False,preserve_channels=False):
+    def set_weight(self,w,normalize=False,preserve_channels=False,flip=True):
         """
             Sets a new weight for the convolution.
 
@@ -236,6 +261,12 @@ class Conv3d(torch.nn.Conv3d,Layer):
                 Whether or not to copy smaller kernels
                 to all input-output channel combinations.
 
+            flip: bool (default: True)
+                If `True`, the weight will be flipped, so that it corresponds 
+                1:1 to patterns it matches (ie. 0,0,0 is the first frame, top left pixel)
+                and the impulse response will be exactly `w`.
+                If `False`, the weight will not be flipped.
+
         """
         if type(w) in [int,float]:
             #self.weight.data = variables.ones(self.weight.data.shape) * w
@@ -245,6 +276,9 @@ class Conv3d(torch.nn.Conv3d,Layer):
                 self.out_channels = w.shape[0]
                 self.in_channels = w.shape[1]
             else:
+                if hasattr(w,'__array__'):
+                    # convert to numpy if possible
+                    w = w.__array__()
                 if len(w.shape) == 1:
                     w = w[None,None,:,None,None]
                 elif len(w.shape) == 2:
@@ -253,7 +287,28 @@ class Conv3d(torch.nn.Conv3d,Layer):
                     w = w[None,None,:,:,:]
                 if preserve_channels is True:
                     w = w * np.ones((self.out_channels, self.in_channels, 1, 1, 1))
-            self.weight.data = torch.Tensor(w)
+            w = torch.Tensor(w)
+            if flip:
+                #if hasattr(w,'__array__'):
+                #    # convert to numpy if possible
+                #    w = w.__array__()
+                #w = w[:,:,::-1,::-1,::-1]
+                if hasattr(w,'flip'):
+                    # in newer PyTorch versions
+                    w = w.flip(2,3,4)
+                else:
+                    # fallback, see https://github.com/pytorch/pytorch/issues/229
+                    def flip(x, dim):
+                        xsize = x.size()
+                        dim = x.dim() + dim if dim < 0 else dim
+                        x = x.view(-1, *xsize[dim:])
+                        x = x.view(x.size(0), x.size(1), -1)[:, getattr(torch.arange(x.size(1)-1, 
+                                          -1, -1), ('cpu','cuda')[x.is_cuda])().long(), :]
+                        return x.view(xsize)
+                    w = flip(w,2)
+                    w = flip(w,3)
+                    w = flip(w,4)
+            self.weight.data = w
             if self._use_cuda:
                 self.weight.data = self.weight.data.cuda()
             self.kernel_size = self.weight.data.shape[2:]
@@ -352,6 +407,8 @@ class RF(Conv3d):
 
         Examples
         --------
+
+        Simple usage example processing a grating stimulus from `convis.samples`::
 
             >>> m = convis.filters.RF()
             >>> inp = convis.samples.moving_gratings()
@@ -797,6 +854,38 @@ class Sum(Layer):
         super(Sum, self).__init__()
     def forward(self, *args):
         return sum(args,dim=self.dim)
+
+
+class Diff(Layer):
+    """Takes the difference between two consecutive frames.
+
+
+    Example
+    -------
+
+    .. plot::
+        :include-source:
+    
+        import convis
+        d = Diff()
+        inp = convis.samples.moving_grating()
+        o = d.run(inp,dt=200)
+        o.plot()
+
+
+    """
+    def __init__(self):
+        self.dim = 5
+        super(DVS2,self).__init__()
+        self.register_state('last_frame',None)
+    def forward(self,inp):
+        if self.last_frame is not None:
+            first_frame = inp[:,:,:1,:,:] - self.last_frame
+        else:
+            first_frame = torch.zeros((inp.size()[0],inp.size()[1],1,inp.size()[3],inp.size()[4]))
+        self.last_frame = inp[:,:,-1:,:,:]
+        return torch.cat([first_frame, inp[:,:,1:,:,:] - inp[:,:,:-1,:,:]],dim=2)
+
 
 from . import simple
 from . import retina

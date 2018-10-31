@@ -868,7 +868,12 @@ def describe_layer_with_html(layer, max_depth = 3,wrap_in_html=False):
                 if hasattr(val,'get'):
                         v = val.get()
                         if hasattr(v,'size'):
-                            sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in v.size()]))+'</i>'
+                            if type(v.size) is int:
+                                sub_string += ' <i style="font-size: 80%;">'+str(v.size)+'</i>'
+                            elif type(v.size) in [list, tuple]:
+                                sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in v.size]))+'</i>'
+                            else:
+                                sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in v.size()]))+'</i>'
                         else:
                             sub_string += ' <i style="font-size: 80%;">'+str(v)+'</i>'
                 sub_string += ')</i>'

@@ -1119,6 +1119,7 @@ class Layer(torch.nn.Module):
         self.push_state()
         self.clear_state()
         inp = np.zeros(shp)
+        o = self.run(inp,dt=dt) # initialize with zeros
         inp[0,int(shp[1]/2),int(shp[2]/2)] = 1.0
         o = self.run(inp,dt=dt)
         plot_5d_time(o[0])
@@ -1149,6 +1150,7 @@ class Layer(torch.nn.Module):
         self.push_state()
         self.clear_state()
         inp = np.zeros(shp)
+        o = self.run(inp,dt=dt) # initialize with zeros
         inp[0,int(shp[1]/2),int(shp[2]/2)] = 1.0
         o = self.run(inp,dt=dt)
         plot_5d_matshow(o[0])

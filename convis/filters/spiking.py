@@ -3,6 +3,20 @@ from .. import variables
 from ..base import Layer
 import torch
 
+
+class Poisson(Layer):
+    """Poisson spiking model.
+
+    Input has to be a firing rate between 0.0 and 1.0.
+    """
+    def __init__(self,**kwargs):
+        super(Poisson, self).__init__()
+        self.dims = 5
+    def forward(self, I_in):
+        return variables.Variable(torch.rand(*I_in.size()).float()) <= I_in.float()
+
+
+
 _izhikevich_parameters = {
     'Tonic spiking':
         [0.02,0.2,-65.0,6.0,14.0],
@@ -439,3 +453,61 @@ class HogkinHuxley(Layer):
                 self.v_h = self.v_h + dt*dh
             all_spikes.append(self.v[None,:,:])
         return torch.cat(all_spikes,dim=0)[None,None,:,:,:]
+
+
+class IntegrativeMotionSensor(Layer):
+    """A spiking integrator that will fire and readjust its threshold in 'linear' or 'log'(arithmic) mode.
+    
+    The output of the Layer has two channels: On and Off spikes.
+    
+    On spikes are fired if the values surpass a positive threshold.
+    Off spikes are fired if the values fall below a negative threshold (`-threshold` for 'linear and `1/threshold` for 'log').
+    
+    Parameters
+    ----------
+    spiking_mode : str
+        'linear' or 'log'
+    threshold : float
+        The dynamic threshold in/decreases.
+        In 'linear' mode, the threshold is increased by adding `threshold`.
+        In 'log' mode, the threshold is increased by multiplying with `threshold`.
+        
+    """
+    def __init__(self,spiking_mode='linear',threshold=1.0):
+        self.dim = 5
+        super(IntegrativeMotionSensor,self).__init__()
+        self.register_state('last_frame',None)
+        self.threshold = threshold
+        self.spiking_mode = spiking_mode
+    def forward(self,inp):
+        if self.last_frame is not None:
+            frame = self.last_frame
+        else:
+            if self.spiking_mode is 'linear':
+                frame = torch.zeros((inp.size()[0],inp.size()[1],1,inp.size()[3],inp.size()[4]))
+            elif self.spiking_mode is 'log':
+                frame = 0.5*torch.ones((inp.size()[0],inp.size()[1],1,inp.size()[3],inp.size()[4]))
+            else:
+                raise Exception('`spiking_mode` %s not recognized.'%(self.spiking_mode))
+        spikes_on = []
+        spikes_off = []
+        for i in range(inp.size()[2]):
+            if self.spiking_mode is 'linear':
+                frame += inp[:,:,i,:,:]
+                spikes_on.append(frame > self.threshold)
+                spikes_off.append(frame < -self.threshold)
+                frame.masked_scatter_(spikes_on[-1], frame-self.threshold)
+                frame.masked_scatter_(spikes_off[-1], frame+self.threshold)
+            elif self.spiking_mode is 'log':
+                spikes_on.append(inp[:,:,i,:,:]/frame > 1.0*self.threshold)
+                spikes_off.append(inp[:,:,i,:,:]/frame < 1.0/self.threshold)
+                if self.threshold <= 1.0:
+                    raise Exception("`threshold` has to be larger than 1 for logarithmic `spiking_mode`!")
+                frame.masked_scatter_(spikes_on[-1], frame*self.threshold)
+                frame.masked_scatter_(spikes_off[-1], frame/self.threshold)
+            else:
+                raise Exception('`spiking_mode` %s not recognized.'%(self.spiking_mode))
+        self.last_frame = frame
+        spikes_on = torch.cat(spikes_on,dim=2)
+        spikes_off = torch.cat(spikes_off,dim=2)
+        return (torch.cat([spikes_on,spikes_off],dim=1)).float()

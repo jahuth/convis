@@ -5,7 +5,7 @@
 Models in `convis.models`
 --------------------------
 
-.. automodule:: convis.modules
+.. automodule:: convis.models
    :members:
 
 

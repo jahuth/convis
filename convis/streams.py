@@ -98,6 +98,7 @@ class InrImageStreamer(object):
         else:
             raise Exception("Not Implemented. So far only 8 byte floats are supported")
     def get(self,i=1):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         return np.array([self._read_one_image() for ii in range(i)])
     def __iter__(self):
         def f():
@@ -284,8 +285,12 @@ class Stream(object):
     """
         Stream Base Class
 
-        Streams have to have methods to either `get()`
+        Streams have to have methods to either `get(i)`
         or `put` a frame.
+
+         - `get(i)` takes `i` frames from the stream and changes the internal state.
+         - `put(t)` inserts a `torch.Tensor` or `numpy.ndarray` into the stream (eg. saving it into a file).
+
     """
     def __init__(self, size=(50,50), pixel_per_degree=10, t_zero = 0.0, t=0.0, dt=0.001):
         self.size = list(size)
@@ -302,6 +307,7 @@ class Stream(object):
     def available(self,l=1):
         return True
     def get(self,i):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         self.t += i * self.dt
         return np.zeros([i]+self.size)
     def put(self,s):
@@ -326,6 +332,50 @@ class Stream(object):
     @property
     def buffered(self):
         return 0
+
+class ProcessingStream(Stream):
+    """Combines a stream and a `Layer` (model or filter) into a new stream.
+    
+    Each slice will be processed at once (using `Layer.__call__`, not `Layer.run`), 
+    so a limited number of frames should be requested at any one time.
+
+    Parameters
+    ----------
+    input_stream : `convis.streams.Stream`
+        The stream that is used as input to the model
+    model : `convis.Layer`
+        The model that transforms slices of the `input_stream` into outputs
+    pre : function or None
+        Optional operation to be done one each slice before handing it to the model.
+    post : function or None
+        Optional operation to be done one each slice after the model has processed it.
+
+    Examples
+    --------
+
+    To recreate the neuromorphic MNIST stream one can combine the MNIST stream and a `Poisson` layer.
+    The output of the MNIST stream can be scaled with a function passed to `pre`.
+
+    .. codeblock::
+
+        import convis
+        stream = convis.streams.MNISTStream('../data',rep=10)
+        model = convis.filters.spiking.Poisson()
+        stream2 = convis.streams.ProcessingStream(stream,model,pre=lambda x: 0.1*x)
+
+
+    """
+    def __init__(self, input_stream, model, pre = None, post = None):
+        self.input_stream = input_stream
+        self.model = model
+        self.pre = pre
+        if self.pre is None:
+            self.pre = lambda x: x
+        self.post = post
+        if self.post is None:
+            self.post = lambda x: x
+    def get(self,i):
+        return self.post(self.model(self.pre(self.input_stream.get(i))))
 
 class RandomStream(Stream):
     """creates a stream of random frames.
@@ -353,6 +403,7 @@ class RandomStream(Stream):
     def get_image(self):
         return self.mean + self.level * np.random.rand(*(self.size))
     def get(self,i):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         return self.mean + self.level * np.random.rand(*([i]+self.size))
     def put(self,s):
         raise Exception("Not implemented for read only stream.")
@@ -402,6 +453,7 @@ class SequenceStream(Stream):
         except:
             return np.zeros(self.sequence.shape[1:])
     def get(self,i):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         self.i += i
         return self.sequence[int(self.i-i):self.i]
     def put(self,s):
@@ -441,6 +493,7 @@ class RepeatingStream(Stream):
         except:
             return np.zeros(self.sequence.shape[1:])
     def get(self,i):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         self.i += i
         if len(self.sequence) < self.i:
             pre_index = int(self.i-i)
@@ -729,6 +782,7 @@ try:
             self.dset = self.file[data_set_name]
             self.i = 0
         def get(self,i=1):
+            """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
             d = self.dset[self.i:self.i+i]
             self.i += i
             return d
@@ -792,6 +846,7 @@ class NumpyReader(Stream):
                 self.size = self.sequence.shape[3:]
         self.i = 0
     def get(self,i=1):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         d = self.sequence[self.i:self.i+i,:,:]
         self.i += i
         return d
@@ -860,6 +915,7 @@ class VideoReader(Stream):
     def get_image(self):
         return self.last_image
     def get(self,i):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         self.i += i
         frames = np.asarray([self.get_one_frame() for f in range(i)])
         self.last_image = frames[-1]
@@ -1075,6 +1131,7 @@ class ImageSequence(Stream):
     def get_image(self):
         return self.last_image
     def get(self,i):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
         if self.i + i > len(self):
             raise Exception('ImageSequence is at its end.'+str(self.i)+'+'+str(i)+' >= '+str(len(self)))
         frames = np.asarray([self.get_one_frame() for f in range(i)])
@@ -1082,3 +1139,312 @@ class ImageSequence(Stream):
             return np.moveaxis(frames,3,0)[None,:,:,:,:]
         else:
             return frames
+
+
+class MNISTStream(Stream):
+    """Downloads MNIST data and displays random digits.
+    
+        The digits are chosen pseudo randomly using a starting value `init` and a (large) advancing value.
+        If both values are supplied, the stream will return the same sequence of numbers.
+        By default, `init` is chosen randomly and `advance` is set to an arbitrary (but fixed) high prime number.
+        If `advance` shares factors with the number of samples in MNIST, not all examples will be covered!
+    
+        If `include_label` is True, the output will contain a second channel with the matching label.
+        (Currently, there is no automated way to pass this along with the other channel)
+
+        .. note::
+
+            The way the label is encoded might change depending on how people want to use it.
+            Please `submitting a github issue if you have in idea how to pass labels along with the input <https://github.com/jahuth/convis/labels/enhancement>`_!
+
+        The output of the stream will be frames of `28 x 28` pixels.
+
+        Parameters
+        ----------
+        data_folder : str
+            A (relative or absolute) path where the MNIST data should be downloaded to.
+            If a valid download is found at that location, the existing data will be used.
+            This stream uses `torchvision` to download and extract the data, more info about the downloader can be found `here <https://pytorch.org/docs/stable/torchvision/datasets.html#mnist>`_.
+        rep : int
+            Number of frames each digit should be repeated
+        max_value : float
+            The stimuli will have normalized values between 0 and `max_value`.
+        init : int or None
+            The starting point of the pseudo-random walk through the examples.
+            If the value is `None`, it is chosen randomly with uniform probability.
+        advance : int
+            A large number that determines the next sample.
+            If this value is not touched, it will generate pseudo-random walks starting deterministically from `init`.
+        include_label : bool
+            Whether to include an additional channel carrying the labels or not (default: `False`)
+        buffer : `torch.Tensor`
+            the MNIST dataset
+
+        Attributes
+        ----------
+        i : int
+            index of current image.
+        j : int
+            number of repetitions already displayed (secondary index)
+        init_i  : int
+            The initial starting point of the walk.
+
+
+        Examples
+        --------
+
+        .. plot::
+            :include-source:
+
+            import convis
+            from matplotlib.pylab import plot, xlim, gcf
+            stream = convis.streams.MNISTStream('../data',rep=20)
+            convis.plot(stream.get(500))
+            gcf().show()
+            convis.plot(stream.get(500))
+            gcf().show()
+            stream.reset() # returning to the start
+            convis.plot(stream.get(500))
+            gcf().show()
+
+        See Also
+        --------
+
+        convis.streams.PoissonMNISTStream
+        convis.streams.PseudoNMNIST
+
+    """
+    def __init__(self,data_folder='./mnist_data',rep = 10,max_value=1.0,
+                 init=None,advance=179425529,include_label=False):
+        import torch
+        try:
+            from torchvision import datasets, transforms
+        except:
+            raise Exception("The package 'torchvision' needs to be installed to use the MNIST dataset.")
+        if init is None:
+            from numpy.random import randint
+            init = randint(10**10)
+        self.include_label = include_label
+        self.init_i = init
+        self.max_value = max_value
+        self.rep = rep
+        self.advance = advance
+        training_data = datasets.MNIST(data_folder, train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ]))
+        self.buffer = torch.load(data_folder+'/processed/test.pt')
+        self.reset()
+    def reset(self):
+        """Return the random walk to the starting point (`self.init_i`)."""
+        self.i = self.init_i%len(self.buffer[1])
+        self.j = 0
+    def get(self,i=1):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
+        a = []
+        b = []
+        if self.j > 0:
+            a.append(self.max_value*(self.buffer[0][self.i].float()/255.0)[None,None,None,:,:].repeat(1,1,self.j,1,1))
+            b.append(self.buffer[1][self.i].float().repeat(self.j,28,28)[None,None,:])
+        while i > self.j:
+            self.j += self.rep
+            self.i = (self.i+self.advance)%len(self.buffer[1])
+            a.append(self.max_value*(self.buffer[0][self.i].float()/255.0)[None,None,None,:,:].repeat(1,1,self.rep,1,1))
+            b.append(self.buffer[1][self.i].float().repeat(self.rep,28,28)[None,None,:])
+        a = np.concatenate(a,axis=2)
+        b = np.concatenate(b,axis=2)
+        self.j = (self.j-i)%self.rep
+        if self.include_label:
+            return np.concatenate([a,b],axis=0)[:,:,:i,:,:]
+        return a[:,:,:i,:,:]
+
+
+class PoissonMNISTStream(Stream):
+    """Downloads MNIST data and generates Poisson spiking for random digits.
+    
+        This definition of a neuromorphic version of the MNIST data set follows eg.:
+
+          - P. Diehl and M. Cook. Unsupervised learning of digit recognition using spike-timing-dependent plasticity. Frontiers in Computational Neuroscience, 9(99), 2015.
+          - D. Querlioz, O. Bichler, P. Dollfus, and C. Gamrat. Immunity to device variations in a spiking neural network with memristive nanodevices. IEEE Transactions on Nanotechnology, 12:288-295, 2013.
+
+        An alternative interpretation are events that are created by saccade-like movements over the images.
+
+        The digits are chosen pseudo randomly using a starting value `init` and a (large) advancing value.
+        If both values are supplied, the stream will return the same sequence of numbers.
+        By default, `init` is chosen randomly and `advance` is set to an arbitrary (but fixed) high prime number.
+        If `advance` shares factors with the number of samples in MNIST, not all examples will be covered!
+    
+        If `include_label` is True, the output will contain a second channel with the matching label.
+        (Currently, there is no automated way to pass this along with the other channel)
+
+
+        The output of the stream will be frames of `28 x 28` pixels of binary coded spike trains.
+
+        Parameters
+        ----------
+        data_folder : str
+            A (relative or absolute) path where the MNIST data should be downloaded to.
+            If a valid download is found at that location, the existing data will be used.
+            This stream uses `torchvision` to download and extract the data, more info about the downloader can be found `here <https://pytorch.org/docs/stable/torchvision/datasets.html#mnist>`_.
+        rep : int
+            Number of frames each digit should be repeated
+        fr : float
+            The firing probability at the highest possible value.
+        init : int or None
+            The starting point of the pseudo-random walk through the examples.
+            If the value is `None`, it is chosen randomly with uniform probability.
+        advance : int
+            A large number that determines the next sample.
+            If this value is not touched, it will generate pseudo-random walks starting deterministically from `init`.
+        include_label : bool
+            Whether to include an additional channel carrying the labels or not (default: `False`)
+        buffer : `torch.Tensor`
+            the MNIST dataset
+
+        Attributes
+        ----------
+        i : int
+            index of current image.
+        j : int
+            number of repetitions already displayed (secondary index)
+        init_i  : int
+            The initial starting point of the walk.
+
+        Examples
+        --------
+
+        .. plot::
+            :include-source:
+
+            import convis
+            from matplotlib.pylab import plot, xlim, gcf
+            stream = convis.streams.NMNISTStream('../data',rep=20,fr=0.20) 
+            # here we are using a very high firing rate for easy visualization
+            # (20% of cells are active in each frame)
+            convis.plot(stream.get(500))
+            gcf().show()
+            convis.plot(stream.get(500))
+            gcf().show()
+            stream.reset() # returning to the start
+            convis.plot(stream.get(500))
+            gcf().show()
+
+        See Also
+        --------
+
+        convis.streams.MNISTStream
+        convis.streams.PseudoNMNIST
+
+    """
+    def __init__(self,data_folder='./mnist_data',rep = 10,fr=0.05,
+                 init=None,advance=179425529,include_label=False):
+        import torch
+        from .filters.spiking import Poisson
+        try:
+            from torchvision import datasets, transforms
+        except:
+            raise Exception("The package 'torchvision' needs to be installed to use the MNIST dataset.")
+        if init is None:
+            from numpy.random import randint
+            init = randint(10**10)
+        self.include_label = include_label
+        self.init_i = init
+        self.fr = fr
+        self.rep = rep
+        self.advance = advance
+        training_data = datasets.MNIST(data_folder, train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ]))
+        self.buffer = torch.load(data_folder+'/processed/test.pt')
+        self.reset()
+        self.poisson = Poisson()
+    def reset(self):
+        """Return the random walk to the starting point (`self.init_i`)."""
+        self.i = self.init_i%len(self.buffer[1])
+        self.j = 0
+    def get(self,i=1):
+        """outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)"""
+        a = []
+        b = []
+        if self.j > 0:
+            a.append(self.poisson(self.fr*(self.buffer[0][self.i].float()/255.0)[None,:,:].repeat(self.j,1,1)))
+            b.append(self.buffer[1][self.i].float().repeat(self.j,28,28)[None,None,:])
+        while i > self.j:
+            self.j += self.rep
+            self.i = (self.i+self.advance)%len(self.buffer[1])
+            a.append(self.poisson(self.fr*(self.buffer[0][self.i].float()/255.0)[None,:,:].repeat(self.rep,1,1)))
+            b.append(self.buffer[1][self.i].float().repeat(self.rep,28,28)[None,None,:])
+        a = np.concatenate(a,axis=2)
+        b = np.concatenate(b,axis=2)
+        self.j = (self.j-i)%self.rep
+        if self.include_label:
+            return np.concatenate([a,b],axis=0)[:,:,:i,:,:]
+        return a[:,:,:i,:,:]
+
+class PseudoNMNIST(ProcessingStream):
+    """A motion driven conversion of MNIST into spikes. A quick way to get spiking input.
+    
+    Internally, it defines a Layer that performs three predetermined "saccades" (see the source code if you want to use it as a Saccade generator in other contexts).
+    It uses a :class:`~convis.filters.spiking.IntegrativeMotionSensor` to generate spikes from the movement.
+
+    Parameters
+    ----------
+    mnist_data_folder : str
+        Where to find (or download to) the MNIST dataset. (see :class:`convis.streams.MNISTStream`)
+    threshold : float
+        the sensitivity of the motion detection (smaller values are more sensitive)
+    output_size : tuple(int,int)
+        size of the generated output (the data is padded with zeros)
+
+    Examples
+    ---------
+
+
+    .. plot::
+        :include-source:
+
+        import convis
+        n = convis.streams.NMNIST()
+        convis.plot(n.get(200)) 
+
+    """
+    def __init__(self,mnist_data_folder='../data/',threshold=5.0,output_size=(34,34)):
+        from . import base, filters
+        class ThreeSaccadeGenerator(base.Layer):
+            """A private Layer class that performs three predefined saccades"""
+            def __init__(self,output_size=(28,28),padding_mode='constant'):
+                self.dim = 5
+                super(ThreeSaccadeGenerator,self).__init__()
+                self.padding_mode = padding_mode
+                self.output_size = output_size
+                self.next_saccade_in = 0
+                self.saccade_frequency_mean = 100.0
+                self.saccade_frequency_sd = 0.0
+                self.saccade_distance_mean = 5.0
+                self.saccade_distance_sd = 0.0
+                self.register_state('pos',np.array([28,28]))
+                self.t = 0
+                self.path = np.concatenate([[np.linspace(0.0,1.0,100),np.linspace(0.0,1.0,100)],
+                             [np.linspace(1.0,0.0,100),np.linspace(1.0,0.0,100)],
+                             [np.linspace(0.0,0.0,100),np.linspace(1.0,0.0,100)]],axis=1)
+            def forward(self,inp):
+                import torch
+                max_x, max_y = min(inp.size()[3],self.output_size[0]),min(inp.size()[4],self.output_size[1])
+                padding = (max_x,2*max_x,max_y,2*max_y,0,0)
+                inp_padded = torch.nn.functional.pad(inp,padding,self.padding_mode, 0)
+                inps = []
+                for t in range(inp.size()[2]):
+                    self.pos = 0.75*inp.size()[3]*self.path[:,self.t%(self.path.shape[1])]
+                    self.t += 1
+                    x = int((int(self.pos[0])%(inp.size()[3]+max_x))+0.75*max_x)
+                    y = int((int(self.pos[1])%(inp.size()[4]+max_y))+0.75*max_y)
+                    inps.append(inp_padded[:,:,t:(t+1),x:(x+self.output_size[0]),y:(y+self.output_size[0])])
+                return torch.cat(inps,dim=2)
+            
+        super(PseudoNMNIST,self).__init__(MNISTStream(mnist_data_folder,rep=300), 
+                                    model = filters.spiking.IntegrativeMotionSensor('linear',threshold), 
+                                    pre = ThreeSaccadeGenerator(output_size=output_size))
+
