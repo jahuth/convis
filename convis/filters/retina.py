@@ -589,7 +589,7 @@ class Bipolar(Layer):
         self.a_0 = Variable(1.0)
         self.a_1 = -(-self.steps/self.tau).exp()
         self.b_0 =  1.0 - self.a_1
-        self.conv2d = Conv2d(1,1,(9,9),autopad=True)
+        self.conv2d = Conv2d(1,1,(1,1,9,9),autopad=True)
         self.conv2d.gaussian(0.1)
         #self.conv2d.set_weight(1.0)
         self.register_state('preceding_V_bip', None)
@@ -647,7 +647,7 @@ class Bipolar(Layer):
             inhibition = (lambda_amp*(preceding_V_bip.unsqueeze(0).unsqueeze(0))**2.0 * self.b_0 
                                          - preceding_inhibition * self.a_1) / self.a_0
             # smoothing with mean padding
-            inhibition = (self.conv2d(inhibition - inhibition.mean()) + inhibition.mean())[0,0,:,:]
+            inhibition = (self.conv2d(inhibition[None,:,:,:,:] - inhibition.mean()) + inhibition.mean())[0,0,0,:,:]
             # next step and output
             preceding_V_bip, preceding_attenuationMap, preceding_inhibition = V_bip, attenuation_map, inhibition
             y[:,:,i,:,:] = V_bip
