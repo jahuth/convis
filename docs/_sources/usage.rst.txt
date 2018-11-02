@@ -41,7 +41,8 @@ and the :class:`~convis.base.Output` objects can also contain multiple output te
 If an input has less dimensions, it can be broadcasted with :func:`convis.make_input` from 1d, 2d and 3d to 5d, and this function also gives the option to create CPU or GPU tensors. Also 3d inputs will be automatically broadcast to 5d by all :class:`convis.base.Layer` s.
 
 
-**How to Plot**
+How to Plot
+~~~~~~~~~~~~~~~~~~~~~~
 
 To get an overview plot of an :class:`~convis.base.Output` object in jupyter notebooks, it is sufficient to have the output as the last line in a cell.
 This will call :func:`convis.plot_tensor` on each tensor in the :class:`~convis.base.Output`.
@@ -85,6 +86,39 @@ Most analysis will be done on :func:`numpy.array` s on the CPU rather than :clas
     >>> imshow(out[0,0,100,:,:]) # frame at time 100
 
 If there is more than one tensor in the :class:`~convis.base.Output` object, `o.array(1)` will give the second output, etc.
+
+
+Animating Plots
+~~~~~~~~~~~~~~~~~~~~~~
+
+Another way to plot 5d tensors if you are using `jupyter notebooks <http://jupyter.org/>`_ is to produce an animation.
+Convis offers two animation functions (plain and scrolling) with two outputs each (html5 video and html/javascript animation):
+
+.. code-block:: python
+
+    >>> convis.animate_to_html(o.array(),skip=5,scrolling_plot=True,window_length=500) # html and scrolling
+    <HTML+javascript animated plot>
+    >>> convis.animate_to_video(o.array(),skip=5,scrolling_plot=False) # video and plain
+    <HTML5 embedded video>
+
+The output can also be produced manually from the :func:`~convis.variable_describe.animate` 
+and :func:`~convis.variable_describe.animate_double_plot` functions, which each return 
+a :class:`matplotlib.animation.FuncAnimation`: 
+
+.. code-block:: python
+
+    >>> from IPython.display import HTML
+    >>> HTML(convis.variable_describe.animate(o.array(),skip=10).to_html5_video())
+    <HTML5 embedded video>
+    >>> HTML(convis.variable_describe.animate_double_plot(o.array(),skip=10,window_length=500).to_jshtml())
+    <HTML+javascript animated plot>
+
+Or you can save the animation (see :func:`matplotlib.animation.FuncAnimation.save`): 
+
+.. code-block:: python
+
+    >>> convis.variable_describe.animate(o.array(),skip=10).save('mymovie.mp4')
+    >>> convis.variable_describe.animate_double_plot(o.array(),skip=10,window_length=500).save('mymovie.mp4')
 
 Global configurations
 ~~~~~~~~~~~~~~~~~~~~~~

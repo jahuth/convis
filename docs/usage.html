@@ -96,6 +96,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-model">Running a model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#input-and-output">Input and Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-plot">How to Plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#animating-plots">Animating Plots</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#global-configurations">Global configurations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-the-p-parameter-list">Configuring a Model: the <cite>.p.</cite> parameter list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuring-a-model-exporting-and-importing-all-parameters">Configuring a Model: exporting and importing all parameters</a></li>
@@ -214,7 +216,9 @@
 </pre></div>
 </div>
 <p>If an input has less dimensions, it can be broadcasted with <code class="xref py py-func docutils literal"><span class="pre">convis.make_input()</span></code> from 1d, 2d and 3d to 5d, and this function also gives the option to create CPU or GPU tensors. Also 3d inputs will be automatically broadcast to 5d by all <a class="reference internal" href="docs.html#convis.base.Layer" title="convis.base.Layer"><code class="xref py py-class docutils literal"><span class="pre">convis.base.Layer</span></code></a> s.</p>
-<p><strong>How to Plot</strong></p>
+</div>
+<div class="section" id="how-to-plot">
+<h3>How to Plot<a class="headerlink" href="#how-to-plot" title="Permalink to this headline">¶</a></h3>
 <p>To get an overview plot of an <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object in jupyter notebooks, it is sufficient to have the output as the last line in a cell.
 This will call <code class="xref py py-func docutils literal"><span class="pre">convis.plot_tensor()</span></code> on each tensor in the <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a>.
 Alternatively one can call <a class="reference internal" href="docs.html#convis.base.Output.plot" title="convis.base.Output.plot"><code class="xref py py-func docutils literal"><span class="pre">convis.base.Output.plot()</span></code></a>, which will get a line plot of the first tensor (or the n-th tensor if an argument n is supplied).</p>
@@ -251,6 +255,32 @@ Alternatively one can call <a class="reference internal" href="docs.html#convis.
 </pre></div>
 </div>
 <p>If there is more than one tensor in the <a class="reference internal" href="docs.html#convis.base.Output" title="convis.base.Output"><code class="xref py py-class docutils literal"><span class="pre">Output</span></code></a> object, <cite>o.array(1)</cite> will give the second output, etc.</p>
+</div>
+<div class="section" id="animating-plots">
+<h3>Animating Plots<a class="headerlink" href="#animating-plots" title="Permalink to this headline">¶</a></h3>
+<p>Another way to plot 5d tensors if you are using <a class="reference external" href="http://jupyter.org/">jupyter notebooks</a> is to produce an animation.
+Convis offers two animation functions (plain and scrolling) with two outputs each (html5 video and html/javascript animation):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">animate_to_html</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(),</span><span class="n">skip</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">scrolling_plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span> <span class="c1"># html and scrolling</span>
+<span class="go">&lt;HTML+javascript animated plot&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">animate_to_video</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(),</span><span class="n">skip</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">scrolling_plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="c1"># video and plain</span>
+<span class="go">&lt;HTML5 embedded video&gt;</span>
+</pre></div>
+</div>
+<p>The output can also be produced manually from the <a class="reference internal" href="docs.html#convis.variable_describe.animate" title="convis.variable_describe.animate"><code class="xref py py-func docutils literal"><span class="pre">animate()</span></code></a>
+and <a class="reference internal" href="docs.html#convis.variable_describe.animate_double_plot" title="convis.variable_describe.animate_double_plot"><code class="xref py py-func docutils literal"><span class="pre">animate_double_plot()</span></code></a> functions, which each return
+a <a class="reference external" href="https://matplotlib.org/3.0.0/api/_as_gen/matplotlib.animation.FuncAnimation.html#matplotlib.animation.FuncAnimation" title="(in Matplotlib v3.0.0)"><code class="xref py py-class docutils literal"><span class="pre">matplotlib.animation.FuncAnimation</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HTML</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(),</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to_html5_video</span><span class="p">())</span>
+<span class="go">&lt;HTML5 embedded video&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HTML</span><span class="p">(</span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate_double_plot</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(),</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span><span class="o">.</span><span class="n">to_jshtml</span><span class="p">())</span>
+<span class="go">&lt;HTML+javascript animated plot&gt;</span>
+</pre></div>
+</div>
+<p>Or you can save the animation (see <code class="xref py py-func docutils literal"><span class="pre">matplotlib.animation.FuncAnimation.save()</span></code>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(),</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;mymovie.mp4&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convis</span><span class="o">.</span><span class="n">variable_describe</span><span class="o">.</span><span class="n">animate_double_plot</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">array</span><span class="p">(),</span><span class="n">skip</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">window_length</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;mymovie.mp4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="global-configurations">
 <h3>Global configurations<a class="headerlink" href="#global-configurations" title="Permalink to this headline">¶</a></h3>

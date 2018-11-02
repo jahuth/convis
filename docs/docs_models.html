@@ -201,7 +201,7 @@
 <dl class="class">
 <dt id="convis.models.List">
 <em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">List</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#List"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.List" title="Permalink to this definition">¶</a></dt>
-<dd><p>A sequential list of Layers that registers its items as submodules and provides tab-completable names with a prefix (by default ‘<a href="#id2"><span class="problematic" id="id3">layer_</span></a>’).</p>
+<dd><p>A sequential list of Layers that registers its items as submodules and provides tab-completable names with a prefix (by default ‘<a href="#id4"><span class="problematic" id="id5">layer_</span></a>’).</p>
 <p>The list provides a forward function that sequentially
 applies each module in the list.</p>
 <div class="admonition seealso">
@@ -254,7 +254,7 @@ applies each module in the list.</p>
 <em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">Dict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#Dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.models.Dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dictionary of Layers that registers its items as submodules
 and provides tab-completable names  of unnamed Layers 
-with a prefix (by default ‘<a href="#id4"><span class="problematic" id="id5">layer_</span></a>’).</p>
+with a prefix (by default ‘<a href="#id6"><span class="problematic" id="id7">layer_</span></a>’).</p>
 <p>The dict provides a forward function that sequentially
 applies each module in the list <em>in insertion order</em>.</p>
 <p class="rubric">Examples</p>
@@ -278,7 +278,7 @@ passing the output of one as the input of the next.</p>
 <p>This class inherits from <a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Sequential" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-class docutils literal"><span class="pre">torch.nn.Sequential</span></code></a> and offers
 the same mechanism for enumerating the provided Layers.
 The <a class="reference internal" href="#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">List</span></code></a> class will give modules names starting
-with ‘<a href="#id6"><span class="problematic" id="id7">layer_</span></a>’ to make them tab-completable and offers the
+with ‘<a href="#id8"><span class="problematic" id="id9">layer_</span></a>’ to make them tab-completable and offers the
 a similar forward function to compute layers sequentially.</p>
 <p>Using <a class="reference internal" href="#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">List</span></code></a> is recommended over <a class="reference internal" href="#convis.models.Sequential" title="convis.models.Sequential"><code class="xref py py-class docutils literal"><span class="pre">Sequential</span></code></a>.</p>
 <div class="admonition seealso">
@@ -626,6 +626,14 @@ Journal of Computational Neuroscience, 26(2), 219-49. <a class="reference extern
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//docs_models-1.py">Source code</a>)</p>
+<div class="figure" id="id2">
+<img alt="_images/docs_models-1_00.png" src="_images/docs_models-1_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//docs_models-1_00.png">png</a>, <a class="reference external" href=".//docs_models-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//docs_models-1_00.pdf">pdf</a>)</span></p>
+</div>
+<div class="figure" id="id3">
+<img alt="_images/docs_models-1_01.png" src="_images/docs_models-1_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//docs_models-1_01.png">png</a>, <a class="reference external" href=".//docs_models-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//docs_models-1_01.pdf">pdf</a>)</span></p>
+</div>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -722,7 +730,7 @@ passing the output of one as the input of the next.</p>
 <p>This class inherits from <a class="reference external" href="https://pytorch.org/docs/0.3.0/nn.html#torch.nn.Sequential" title="(in PyTorch vmaster (0.3.0.post4 ))"><code class="xref py py-class docutils literal"><span class="pre">torch.nn.Sequential</span></code></a> and offers
 the same mechanism for enumerating the provided Layers.
 The <a class="reference internal" href="#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">List</span></code></a> class will give modules names starting
-with ‘<a href="#id8"><span class="problematic" id="id9">layer_</span></a>’ to make them tab-completable and offers the
+with ‘<a href="#id10"><span class="problematic" id="id11">layer_</span></a>’ to make them tab-completable and offers the
 a similar forward function to compute layers sequentially.</p>
 <p>Using <a class="reference internal" href="#convis.models.List" title="convis.models.List"><code class="xref py py-class docutils literal"><span class="pre">List</span></code></a> is recommended over <a class="reference internal" href="#convis.models.Sequential" title="convis.models.Sequential"><code class="xref py py-class docutils literal"><span class="pre">Sequential</span></code></a>.</p>
 <div class="admonition seealso">
@@ -734,7 +742,7 @@ a similar forward function to compute layers sequentially.</p>
 <dl class="class">
 <dt>
 <em class="property">class </em><code class="descclassname">convis.models.</code><code class="descname">List</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/models.html#List"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>A sequential list of Layers that registers its items as submodules and provides tab-completable names with a prefix (by default ‘<a href="#id10"><span class="problematic" id="id11">layer_</span></a>’).</p>
+<dd><p>A sequential list of Layers that registers its items as submodules and provides tab-completable names with a prefix (by default ‘<a href="#id12"><span class="problematic" id="id13">layer_</span></a>’).</p>
 <p>The list provides a forward function that sequentially
 applies each module in the list.</p>
 <div class="admonition seealso">

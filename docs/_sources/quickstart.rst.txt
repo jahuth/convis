@@ -44,8 +44,8 @@ Generating Spikes
         plt.matshow(some_input[3,:,:])
         plt.show()
         spk = convis.filters.spiking.LeakyIntegrateAndFireNeuron()
-        spk.p.g_L = 1.0
-        o = spk.run(20.0*some_input,dt=100)
+        spk.p.g_L = 10.0
+        o = spk.run(some_input,dt=100)
         plt.figure()
         o.plot(mode='lines')
         plt.show()

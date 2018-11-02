@@ -45,7 +45,7 @@ from . import kernels
 from . import layers
 
 from .base import Layer, prepare_input, Output, Runner
-from .variable_describe import help, describe, describe_text, describe_dict, describe_html, animate, animate_to_video
+from .variable_describe import help, describe, describe_text, describe_dict, describe_html, animate, animate_to_video, animate_to_html, animate_double_plot
 from .variables import Parameter
 from .utils import plot, plot_5d_matshow, plot_5d_time, plot_tensor
 

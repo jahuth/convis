@@ -209,8 +209,8 @@
 </div>
 <p>(<a class="reference external" href=".//quickstart-1.py">Source code</a>)</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">spk</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">spiking</span><span class="o">.</span><span class="n">LeakyIntegrateAndFireNeuron</span><span class="p">()</span>
-<span class="n">spk</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">g_L</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="n">o</span> <span class="o">=</span> <span class="n">spk</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mf">20.0</span><span class="o">*</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">spk</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">g_L</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">spk</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">some_input</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">o</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
