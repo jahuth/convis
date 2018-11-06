@@ -1,8 +1,6 @@
 import convis
 from matplotlib.pylab import plot, xlim, gcf
-stream = convis.streams.PoissonMNISTStream('../data',rep=20,fr=0.20) 
-# here we are using a very high firing rate for easy visualization
-# (20% of cells are active in each frame)
+stream = convis.streams.MNISTStream('../data',rep=20)
 convis.plot(stream.get(500))
 gcf().show()
 convis.plot(stream.get(500))

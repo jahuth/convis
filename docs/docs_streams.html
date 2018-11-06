@@ -296,6 +296,12 @@ so a limited number of frames should be requested at any one time.</p>
 <p class="rubric">Examples</p>
 <p>To recreate the neuromorphic MNIST stream one can combine the MNIST stream and a <cite>Poisson</cite> layer.
 The output of the MNIST stream can be scaled with a function passed to <cite>pre</cite>.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">MNISTStream</span><span class="p">(</span><span class="s1">&#39;../data&#39;</span><span class="p">,</span><span class="n">rep</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">spiking</span><span class="o">.</span><span class="n">Poisson</span><span class="p">()</span>
+<span class="n">stream2</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">ProcessingStream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -326,6 +332,17 @@ The output of the MNIST stream can be scaled with a function passed to <cite>pre
 </div>
 </div></blockquote>
 <p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">))</span>
+<span class="n">x</span><span class="p">[:,</span><span class="mi">10</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">x</span><span class="p">[:,</span><span class="mi">20</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">x</span><span class="p">[:,</span><span class="mi">30</span><span class="p">,:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">x</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">12.0</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))[:,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">12.0</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="bp">None</span><span class="p">,:,</span><span class="bp">None</span><span class="p">]</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">SequenceStream</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>(<a class="reference external" href=".//docs_streams-3.py">Source code</a>, <a class="reference external" href=".//docs_streams-3.png">png</a>, <a class="reference external" href=".//docs_streams-3.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-3.pdf">pdf</a>)</p>
 <div class="figure">
 <img alt="_images/docs_streams-3.png" src="_images/docs_streams-3.png" />
@@ -387,6 +404,133 @@ The output of the MNIST stream can be scaled with a function passed to <cite>pre
 <dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.VideoReader">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">VideoReader</code><span class="sig-paren">(</span><em>filename=0</em>, <em>size=(50</em>, <em>50)</em>, <em>offset=None</em>, <em>dt=0.041666666666666664</em>, <em>mode='mean'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#VideoReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.VideoReader" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>filename</cite> can be either a device number or the path to a video file.
+The file will be opened as such: <cite>cv2.VideoCapture(filename)</cite></p>
+<p>If only one camera is connected, it can be selected with <cite>0</cite>.
+If more than one camera is connected,</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename (int or str):</strong></p>
+<blockquote>
+<div><p>a string containing the url/path to a file or a number signifying a camera</p>
+</div></blockquote>
+<p><strong>size (tuple of int, int):</strong></p>
+<blockquote>
+<div><p>The size of the frames cut from the video</p>
+</div></blockquote>
+<p><strong>offset (None or tuple of int, int):</strong></p>
+<blockquote>
+<div><p>The offset of the part cut from the video</p>
+</div></blockquote>
+<p><strong>dt (float):</strong></p>
+<blockquote>
+<div><p>(does nothing right now)</p>
+</div></blockquote>
+<p><strong>mode (str):</strong></p>
+<blockquote class="last">
+<div><p>color mode: ‘mean’, ‘r’, ‘g’, ‘b’ or ‘rgb’
+Default is taking the mean over all color channels
+‘rgb’ will give a 5d output (does not work with all Output Streams)</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">vid_in</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoReader</span><span class="p">(</span><span class="s1">&#39;/home/jacob/convis/input.avi&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rgb&#39;</span><span class="p">)</span>
+<span class="n">convis</span><span class="o">.</span><span class="n">plot_tensor</span><span class="p">(</span><span class="n">vid_in</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">5000</span><span class="p">))</span> <span class="c1"># shows three channels</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//docs_streams-4.py">Source code</a>, <a class="reference external" href=".//docs_streams-4.png">png</a>, <a class="reference external" href=".//docs_streams-4.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-4.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/docs_streams-4.png" src="_images/docs_streams-4.png" />
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">vid_in</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoReader</span><span class="p">(</span><span class="s1">&#39;some_video.mp4&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+<span class="n">retina</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Retina</span><span class="p">()</span>
+<span class="n">o</span> <span class="o">=</span> <span class="n">retina</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">vid_in</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">max_t</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span> <span class="c1"># run for 2000 frames</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="convis.streams.VideoReader.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#VideoReader.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.VideoReader.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>outputs the next slice of length <cite>i</cite> in the stream (see <a class="reference internal" href="#convis.streams.Stream" title="convis.streams.Stream"><code class="xref py py-meth docutils literal"><span class="pre">convis.streams.Stream()</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="convis.streams.VideoWriter">
+<em class="property">class </em><code class="descclassname">convis.streams.</code><code class="descname">VideoWriter</code><span class="sig-paren">(</span><em>filename='output.avi'</em>, <em>size=(50</em>, <em>50)</em>, <em>codec='XVID'</em>, <em>isColor=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/convis/streams.html#VideoWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#convis.streams.VideoWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes data to a video</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This class is not currently maintained and might change without notice between releases.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename (str):</strong></p>
+<blockquote>
+<div><p>Video file where output should be written to (extension determines format)</p>
+</div></blockquote>
+<p><strong>size ((int,int) tuple):</strong></p>
+<blockquote>
+<div><p>the size of the output</p>
+</div></blockquote>
+<p><strong>codec (str):</strong></p>
+<blockquote>
+<div><p>possible codecs: ‘DIVX’, ‘XVID’, ‘MJPG’, ‘X264’, ‘WMV1’, ‘WMV2’
+(see also: <a href="#id2"><span class="problematic" id="id3">`http://www.fourcc.org/codecs.php`_</span></a> )
+default: ‘XVID’</p>
+</div></blockquote>
+<p><strong>isColor (bool):</strong></p>
+<blockquote class="last">
+<div><p>whether the video is written in color or grey scale
+If color input is written to the file when isColor is False, the mean over all channels will be taken
+If the input is bw and isColor is True, the color channels will be duplicated (resulting in a bw image).</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.6.4.</span></p>
+</div>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="#convis.streams.VideoReader" title="convis.streams.VideoReader"><code class="xref py py-class docutils literal"><span class="pre">VideoReader</span></code></a> and <a class="reference internal" href="#convis.streams.VideoWriter" title="convis.streams.VideoWriter"><code class="xref py py-class docutils literal"><span class="pre">VideoWriter</span></code></a> work together in color and black/white:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">vid_in</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoReader</span><span class="p">(</span><span class="n">some_video</span><span class="o">.</span><span class="n">mp4</span><span class="s1">&#39;,size=(200,200),mode=&#39;</span><span class="n">rgb</span><span class="s1">&#39;)</span>
+<span class="n">vid_out</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoWriter</span><span class="p">(</span><span class="s1">&#39;test.mp4&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span><span class="n">codec</span><span class="o">=</span><span class="s1">&#39;X264&#39;</span><span class="p">)</span>
+<span class="n">vid_out</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">vid_in</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span> <span class="c1"># copy 1000 color frames</span>
+<span class="n">vid_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">vid_in</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">convis</span>
+<span class="n">vid_in</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoReader</span><span class="p">(</span><span class="s1">&#39;some_video.mp4&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+<span class="n">vid_out</span> <span class="o">=</span> <span class="n">convis</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">VideoWriter</span><span class="p">(</span><span class="s1">&#39;test.mp4&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span><span class="n">isColor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">vid_out</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">vid_in</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span> <span class="c1"># copy 1000 black-and-white frames</span>
+<span class="n">vid_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">vid_in</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -561,9 +705,9 @@ If this value is not touched, it will generate pseudo-random walks starting dete
 <span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//docs_streams-4.py">Source code</a>, <a class="reference external" href=".//docs_streams-4.png">png</a>, <a class="reference external" href=".//docs_streams-4.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-4.pdf">pdf</a>)</p>
+<p>(<a class="reference external" href=".//docs_streams-5.py">Source code</a>, <a class="reference external" href=".//docs_streams-5.png">png</a>, <a class="reference external" href=".//docs_streams-5.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-5.pdf">pdf</a>)</p>
 <div class="figure">
-<img alt="_images/docs_streams-4.png" src="_images/docs_streams-4.png" />
+<img alt="_images/docs_streams-5.png" src="_images/docs_streams-5.png" />
 </div>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
@@ -684,9 +828,9 @@ If this value is not touched, it will generate pseudo-random walks starting dete
 <span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//docs_streams-5.py">Source code</a>, <a class="reference external" href=".//docs_streams-5.png">png</a>, <a class="reference external" href=".//docs_streams-5.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-5.pdf">pdf</a>)</p>
+<p>(<a class="reference external" href=".//docs_streams-6.py">Source code</a>, <a class="reference external" href=".//docs_streams-6.png">png</a>, <a class="reference external" href=".//docs_streams-6.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-6.pdf">pdf</a>)</p>
 <div class="figure">
-<img alt="_images/docs_streams-5.png" src="_images/docs_streams-5.png" />
+<img alt="_images/docs_streams-6.png" src="_images/docs_streams-6.png" />
 </div>
 <p class="rubric">Attributes</p>
 <table border="1" class="docutils">
@@ -755,9 +899,9 @@ It uses a <a class="reference internal" href="filters.html#convis.filters.spikin
 <span class="n">convis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">200</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//docs_streams-6.py">Source code</a>, <a class="reference external" href=".//docs_streams-6.png">png</a>, <a class="reference external" href=".//docs_streams-6.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-6.pdf">pdf</a>)</p>
+<p>(<a class="reference external" href=".//docs_streams-7.py">Source code</a>, <a class="reference external" href=".//docs_streams-7.png">png</a>, <a class="reference external" href=".//docs_streams-7.hires.png">hires.png</a>, <a class="reference external" href=".//docs_streams-7.pdf">pdf</a>)</p>
 <div class="figure">
-<img alt="_images/docs_streams-6.png" src="_images/docs_streams-6.png" />
+<img alt="_images/docs_streams-7.png" src="_images/docs_streams-7.png" />
 </div>
 </dd></dl>
 

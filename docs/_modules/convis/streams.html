@@ -533,7 +533,7 @@
 <span class="sd">    To recreate the neuromorphic MNIST stream one can combine the MNIST stream and a `Poisson` layer.</span>
 <span class="sd">    The output of the MNIST stream can be scaled with a function passed to `pre`.</span>
 
-<span class="sd">    .. codeblock::</span>
+<span class="sd">    .. code::</span>
 
 <span class="sd">        import convis</span>
 <span class="sd">        stream = convis.streams.MNISTStream(&#39;../data&#39;,rep=10)</span>
@@ -596,6 +596,7 @@
 <span class="sd">    --------</span>
 
 <span class="sd">        .. plot::</span>
+<span class="sd">            :include-source:</span>
 
 <span class="sd">            import convis</span>
 <span class="sd">            x = np.ones((200,50,50))</span>
@@ -1034,22 +1035,57 @@
     <span class="k">pass</span>
 
 
-<span class="k">class</span> <span class="nc">VideoReader</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">24.0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            `filename` can be either a device number or the path to a video file.</span>
-<span class="sd">            The file will be opened as such: `cv2.VideoCapture(filename)`</span>
+<div class="viewcode-block" id="VideoReader"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.VideoReader">[docs]</a><span class="k">class</span> <span class="nc">VideoReader</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `filename` can be either a device number or the path to a video file.</span>
+<span class="sd">    The file will be opened as such: `cv2.VideoCapture(filename)`</span>
 
-<span class="sd">            If only one camera is connected, it can be selected with `0`.</span>
-<span class="sd">            If more than one camera is connected, </span>
+<span class="sd">    If only one camera is connected, it can be selected with `0`.</span>
+<span class="sd">    If more than one camera is connected, </span>
 
-<span class="sd">            .. warning::</span>
+<span class="sd">    .. warning::</span>
 
-<span class="sd">                This class is not currently maintained and might change without notice between releases.</span>
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
 
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename (int or str):</span>
+<span class="sd">        a string containing the url/path to a file or a number signifying a camera</span>
+<span class="sd">    size (tuple of int, int):</span>
+<span class="sd">        The size of the frames cut from the video</span>
+<span class="sd">    offset (None or tuple of int, int):</span>
+<span class="sd">        The offset of the part cut from the video</span>
+<span class="sd">    dt (float):</span>
+<span class="sd">        (does nothing right now)</span>
+<span class="sd">    mode (str):</span>
+<span class="sd">        color mode: &#39;mean&#39;, &#39;r&#39;, &#39;g&#39;, &#39;b&#39; or &#39;rgb&#39;</span>
+<span class="sd">        Default is taking the mean over all color channels</span>
+<span class="sd">        &#39;rgb&#39; will give a 5d output (does not work with all Output Streams)</span>
+<span class="sd">        </span>
+<span class="sd">        .. versionadded:: 0.6.4</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    .. plot::</span>
+<span class="sd">        :include-source:</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        vid_in = convis.streams.VideoReader(&#39;/home/jacob/convis/input.avi&#39;,size=(200,200),mode=&#39;rgb&#39;)</span>
+<span class="sd">        convis.plot_tensor(vid_in.get(5000)) # shows three channels</span>
+
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        vid_in = convis.streams.VideoReader(&#39;some_video.mp4&#39;,size=(200,200),mode=&#39;mean&#39;)</span>
+<span class="sd">        retina = convis.models.Retina()</span>
+<span class="sd">        o = retina.run(vid_in, dt=200, max_t=2000) # run for 2000 frames</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">24.0</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>        
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">cv2</span>
         <span class="k">except</span><span class="p">:</span>
@@ -1058,7 +1094,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cv2_module</span> <span class="o">=</span> <span class="n">cv2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span><span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1067,8 +1103,8 @@
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_one_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">ret</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">ret</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)),</span>
@@ -1085,32 +1121,80 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
                                     <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="mi">2</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-                                <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
-        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;rgb&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                    <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]:(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;&#39;mode&#39; of VideoReader not recognized! Valid choices: mean, r, g, b, rgb&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;rgb&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">3</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="VideoReader.get"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.VideoReader.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;outputs the next slice of length `i` in the stream (see :meth:`convis.streams.Stream`)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="n">i</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_one_frame</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">frames</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="c1"># moving color dimension to channels and outputting 5d</span>
+            <span class="n">frames</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="kc">None</span><span class="p">,:,:,:,:]</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)[</span><span class="kc">None</span><span class="p">,:,:,:,:,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">frames</span></div>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
 
 
-<span class="k">class</span> <span class="nc">VideoWriter</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;output.avi&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">codec</span><span class="o">=</span><span class="s1">&#39;XVID&#39;</span><span class="p">,</span> <span class="n">isColor</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            possible `codec`s: &#39;DIVX&#39;, &#39;XVID&#39;, &#39;MJPG&#39;, &#39;X264&#39;, &#39;WMV1&#39;, &#39;WMV2&#39;</span>
+<div class="viewcode-block" id="VideoWriter"><a class="viewcode-back" href="../../docs_streams.html#convis.streams.VideoWriter">[docs]</a><span class="k">class</span> <span class="nc">VideoWriter</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Writes data to a video</span>
 
-<span class="sd">        .. warning::</span>
+<span class="sd">    .. warning::</span>
 
-<span class="sd">            This class is not currently maintained and might change without notice between releases.</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        This class is not currently maintained and might change without notice between releases.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename (str):</span>
+<span class="sd">        Video file where output should be written to (extension determines format)</span>
+<span class="sd">    size ((int,int) tuple):</span>
+<span class="sd">        the size of the output</span>
+<span class="sd">    codec (str):</span>
+<span class="sd">        possible codecs: &#39;DIVX&#39;, &#39;XVID&#39;, &#39;MJPG&#39;, &#39;X264&#39;, &#39;WMV1&#39;, &#39;WMV2&#39;</span>
+<span class="sd">        (see also: `http://www.fourcc.org/codecs.php`_ )</span>
+<span class="sd">        default: &#39;XVID&#39;</span>
+<span class="sd">    isColor (bool):</span>
+<span class="sd">        whether the video is written in color or grey scale</span>
+<span class="sd">        If color input is written to the file when isColor is False, the mean over all channels will be taken</span>
+<span class="sd">        If the input is bw and isColor is True, the color channels will be duplicated (resulting in a bw image).</span>
+
+<span class="sd">        .. versionadded:: 0.6.4</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    :class:`VideoReader` and :class:`VideoWriter` work together in color and black/white:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        vid_in = convis.streams.VideoReader(some_video.mp4&#39;,size=(200,200),mode=&#39;rgb&#39;)</span>
+<span class="sd">        vid_out = convis.streams.VideoWriter(&#39;test.mp4&#39;,size=(200,200),codec=&#39;X264&#39;)</span>
+<span class="sd">        vid_out.put(vid_in.get(1000)) # copy 1000 color frames</span>
+<span class="sd">        vid_out.close()</span>
+<span class="sd">        vid_in.close()</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        import convis</span>
+<span class="sd">        vid_in = convis.streams.VideoReader(&#39;some_video.mp4&#39;,size=(200,200),mode=&#39;mean&#39;)</span>
+<span class="sd">        vid_out = convis.streams.VideoWriter(&#39;test.mp4&#39;,size=(200,200),isColor=False)</span>
+<span class="sd">        vid_out.put(vid_in.get(1000)) # copy 1000 black-and-white frames</span>
+<span class="sd">        vid_out.close()</span>
+<span class="sd">        vid_in.close()</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;output.avi&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">codec</span><span class="o">=</span><span class="s1">&#39;XVID&#39;</span><span class="p">,</span> <span class="n">isColor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">cv2</span>
         <span class="k">except</span><span class="p">:</span>
@@ -1119,12 +1203,21 @@
         <span class="n">fourcc</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter_fourcc</span><span class="p">(</span><span class="o">*</span><span class="n">codec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">fourcc</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">frameSize</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">isColor</span><span class="o">=</span><span class="n">isColor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isColor</span> <span class="o">=</span> <span class="n">isColor</span>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="c1"># concatenate batches and swap channels to the last dimension</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,:,:,:,</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isColor</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isColor</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:,:,:,</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="n">frame</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">frame</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">_OrderedDict</span>
 

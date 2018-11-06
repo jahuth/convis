@@ -359,7 +359,7 @@ class ProcessingStream(Stream):
     To recreate the neuromorphic MNIST stream one can combine the MNIST stream and a `Poisson` layer.
     The output of the MNIST stream can be scaled with a function passed to `pre`.
 
-    .. codeblock::
+    .. code::
 
         import convis
         stream = convis.streams.MNISTStream('../data',rep=10)
@@ -422,6 +422,7 @@ class SequenceStream(Stream):
     --------
 
         .. plot::
+            :include-source:
 
             import convis
             x = np.ones((200,50,50))
@@ -861,21 +862,56 @@ class NumpyWriter(Stream):
 
 
 class VideoReader(Stream):
-    def __init__(self,filename=0,size=(50,50),offset=None,dt=1.0/24.0):
-        """
-            `filename` can be either a device number or the path to a video file.
-            The file will be opened as such: `cv2.VideoCapture(filename)`
+    """
+    `filename` can be either a device number or the path to a video file.
+    The file will be opened as such: `cv2.VideoCapture(filename)`
 
-            If only one camera is connected, it can be selected with `0`.
-            If more than one camera is connected, 
+    If only one camera is connected, it can be selected with `0`.
+    If more than one camera is connected, 
 
-            .. warning::
+    .. warning::
 
-                This class is not currently maintained and might change without notice between releases.
+        This class is not currently maintained and might change without notice between releases.
 
 
-        """
+    Parameters
+    ----------
+    filename (int or str):
+        a string containing the url/path to a file or a number signifying a camera
+    size (tuple of int, int):
+        The size of the frames cut from the video
+    offset (None or tuple of int, int):
+        The offset of the part cut from the video
+    dt (float):
+        (does nothing right now)
+    mode (str):
+        color mode: 'mean', 'r', 'g', 'b' or 'rgb'
+        Default is taking the mean over all color channels
+        'rgb' will give a 5d output (does not work with all Output Streams)
         
+        .. versionadded:: 0.6.4
+
+
+    Examples
+    --------
+    
+    .. plot::
+        :include-source:
+
+        import convis
+        vid_in = convis.streams.VideoReader('/home/jacob/convis/input.avi',size=(200,200),mode='rgb')
+        convis.plot_tensor(vid_in.get(5000)) # shows three channels
+
+
+    .. code::
+
+        import convis
+        vid_in = convis.streams.VideoReader('some_video.mp4',size=(200,200),mode='mean')
+        retina = convis.models.Retina()
+        o = retina.run(vid_in, dt=200, max_t=2000) # run for 2000 frames
+
+    """
+    def __init__(self,filename=0,size=(50,50),offset=None,dt=1.0/24.0,mode='mean'):        
         try:
             import cv2
         except:
@@ -884,7 +920,7 @@ class VideoReader(Stream):
         self.cv2_module = cv2
         self.size =size
         self.offset = offset
-        self.mode = 'mean'
+        self.mode = mode
         self.cap = cv2.VideoCapture(filename)
         self.dt = dt
         self.i = 0
@@ -893,8 +929,8 @@ class VideoReader(Stream):
     def __len__(self):
         return len(self.sequence)
     def get_one_frame(self):
-        try:
-            ret, frame = self.cap.read()
+        ret, frame = self.cap.read()
+        if ret:
             offset = self.offset
             if self.offset is None:
                 offset = (int(np.floor((frame.shape[0]-self.size[0])/2.0)),
@@ -911,9 +947,13 @@ class VideoReader(Stream):
             if self.mode == 'b':
                 return frame[offset[0]:(offset[0]+self.size[0]),
                                     offset[1]:(offset[1]+self.size[1]),2]
-            return frame[offset[0]:(offset[0]+self.size[0]),
-                                offset[1]:(offset[1]+self.size[1])]
-        except:
+            if self.mode == 'rgb':
+                return frame[offset[0]:(offset[0]+self.size[0]),
+                                    offset[1]:(offset[1]+self.size[1])]
+            raise Exception("'mode' of VideoReader not recognized! Valid choices: mean, r, g, b, rgb")
+        else:
+            if self.mode == 'rgb':
+                return np.zeros((self.size[0],self.size[1],3))
             return np.zeros(self.size)
     def get_image(self):
         return self.last_image
@@ -922,21 +962,65 @@ class VideoReader(Stream):
         self.i += i
         frames = np.asarray([self.get_one_frame() for f in range(i)])
         self.last_image = frames[-1]
+        if len(frames.shape) == 4:
+            # moving color dimension to channels and outputting 5d
+            frames = frames[None,:,:,:,:].swapaxes(0,4)[None,:,:,:,:,0]
+            self.last_image = frames[0,:,-1].mean(0)
         return frames
     def close(self):
         self.cap.release()
 
 
 class VideoWriter(Stream):
-    def __init__(self,filename='output.avi',size=(50,50),codec='XVID', isColor=False):
-        """
-            possible `codec`s: 'DIVX', 'XVID', 'MJPG', 'X264', 'WMV1', 'WMV2'
+    """Writes data to a video
 
-        .. warning::
+    .. warning::
 
-            This class is not currently maintained and might change without notice between releases.
-        
-        """
+        This class is not currently maintained and might change without notice between releases.
+
+
+    Parameters
+    ----------
+    filename (str):
+        Video file where output should be written to (extension determines format)
+    size ((int,int) tuple):
+        the size of the output
+    codec (str):
+        possible codecs: 'DIVX', 'XVID', 'MJPG', 'X264', 'WMV1', 'WMV2'
+        (see also: `http://www.fourcc.org/codecs.php`_ )
+        default: 'XVID'
+    isColor (bool):
+        whether the video is written in color or grey scale
+        If color input is written to the file when isColor is False, the mean over all channels will be taken
+        If the input is bw and isColor is True, the color channels will be duplicated (resulting in a bw image).
+
+        .. versionadded:: 0.6.4
+
+    Examples
+    --------
+    
+    :class:`VideoReader` and :class:`VideoWriter` work together in color and black/white:
+    
+    .. code::
+
+        import convis
+        vid_in = convis.streams.VideoReader(some_video.mp4',size=(200,200),mode='rgb')
+        vid_out = convis.streams.VideoWriter('test.mp4',size=(200,200),codec='X264')
+        vid_out.put(vid_in.get(1000)) # copy 1000 color frames
+        vid_out.close()
+        vid_in.close()
+
+    .. code::
+
+        import convis
+        vid_in = convis.streams.VideoReader('some_video.mp4',size=(200,200),mode='mean')
+        vid_out = convis.streams.VideoWriter('test.mp4',size=(200,200),isColor=False)
+        vid_out.put(vid_in.get(1000)) # copy 1000 black-and-white frames
+        vid_out.close()
+        vid_in.close()
+    
+    """
+    def __init__(self,filename='output.avi',size=(50,50),codec='XVID', isColor=True):
         try:
             import cv2
         except:
@@ -945,7 +1029,16 @@ class VideoWriter(Stream):
         fourcc = cv2.VideoWriter_fourcc(*codec)
         self.out = cv2.VideoWriter()
         self.out.open(filename,fourcc, fps=20.0, frameSize=size, isColor=isColor)
+        self.isColor = isColor
     def put(self,s):
+        if len(s.shape) == 5:
+            # concatenate batches and swap channels to the last dimension
+            s = np.concatenate(s,axis=1)[:,:,:,:,None].swapaxes(0,4)[0]
+            if not self.isColor:
+                s = s.mean(-1)
+        else:
+            if self.isColor:
+                s = s[:,:,:,None].repeat(3,axis=-1)
         for frame in s:
             self.last_image = frame
             self.out.write(np.uint8(frame))
