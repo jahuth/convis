@@ -11,7 +11,7 @@ def conv(a,b,padding_things_equal=[1,3,4],padding_things_tail=[1],*args,**kwargs
 
 
 """
-                                                                             
+
 Filters for convolutions
 ------------------------
 
@@ -35,8 +35,8 @@ def exponential_filter_1d(tau = 0.01, n=0, normalize=True, resolution=None,ampli
             length += 1
         if even is True and length%2 == 1:
             length += 1
-        t = np.linspace(1.0,length,length)
-        kernel =  np.exp(-np.linspace(0.4,length-0.6,length)/float(tau_in_steps))
+        t = np.linspace(1.0,length,int(length))
+        kernel =  np.exp(-np.linspace(0.4,length-0.6,int(length))/float(tau_in_steps))
         if normalize:
             kernel *=  a
     else:
@@ -149,7 +149,7 @@ def fake_filter_shape(*actual_filters):
     return shapes
 
 """
-                                                                             
+
 Filters for recursive algorithms
 --------------------------------
 
@@ -158,7 +158,7 @@ Filters for recursive algorithms
 
 
 def ab_filter_exp(tau,step = 0.001):
-    """ create an Exp filter and return arrays for the coefficients 
+    """ create an Exp filter and return arrays for the coefficients
 
     TODO: describe how to use a and b
 
@@ -222,7 +222,7 @@ def concatenate_time(a,b):
 
 def deriche_coefficients(density):
     """
-       Creates deriche coefficients for a given map of filter density 
+       Creates deriche coefficients for a given map of filter density
     """
     alpha = 1.695 * density
     ema = np.exp(-alpha)
@@ -237,7 +237,7 @@ def deriche_coefficients(density):
 
 def sum_kernels(kernels):
     """
-        Sums numeric kernels and extends their size 
+        Sums numeric kernels and extends their size
     """
     max_shape = np.max([k.shape for k in kernels],axis=0)
     new_k = np.zeros(max_shape)
