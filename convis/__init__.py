@@ -5,7 +5,7 @@ except ImportError:
     print('Please download the torch package from https://pytorch.org')
     raise
 
-__version__ = '0.6.4'
+__version__ = '0.6.4.1'
 default_grad_enabled = True
 
 

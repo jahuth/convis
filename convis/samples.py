@@ -39,12 +39,83 @@ def gabor_kernel(phi=2.0,size=16,resolution=2.0,f=10.0, phase=0.0, sigma_x=1, si
 
 ##############################################################################
 #
+#  Spatial Masks
+#
+
+def mask_square(x=20,y=20,width=1,center_on_pixel=True):
+    """
+        Creates a mask to multiply stimuli with.
+        The mask is a square of `width` pixels
+        centered in the frame.
+        If `center_on_pixel` is `True` and the
+        stimulus dimension is even, the center
+        will be offset to align with a pixel.
+        This prevents the square to be larger
+        than intended for even sized frames.
+    """
+    valsx = np.linspace(-x/2,x/2+(1 if x%2 == 0 and center_on_pixel else 0),x)
+    valsy = np.linspace(-y/2,y/2+(1 if y%2 == 0 and center_on_pixel else 0),y)
+    xgrid, ygrid = np.meshgrid(abs(valsx),abs(valsy))
+    return ((xgrid < width)  * (ygrid < width))[None,:,:]
+
+def sigmoid(x):
+    return 1.0/(1.0 + np.exp(-x))
+
+def mask_circle(x=20,y=20,radius=1,smooth=True,sharpness=5.0,center_on_pixel=True):
+    """
+        Creates a mask to multiply stimuli with.
+        The mask is a circle of `radius` pixels
+        centered in the frame.
+        If `center_on_pixel` is `True` and the
+        stimulus dimension is even, the center
+        will be offset to align with a pixel.
+        This prevents the square to be larger
+        than intended for even sized frames.
+    """
+    valsx = np.linspace(-x/2,x/2+(1 if x%2 == 0 and center_on_pixel else 0),x)
+    valsy = np.linspace(-y/2,y/2+(1 if y%2 == 0 and center_on_pixel else 0),y)
+    xgrid, ygrid = np.meshgrid(abs(valsx),abs(valsy))
+    if smooth:
+        return sigmoid(sharpness*(radius - np.sqrt((xgrid**2 + ygrid**2))))[None,:,:]
+    else:
+        return (radius) > np.sqrt((xgrid**2 + ygrid**2))[None,:,:]
+
+##############################################################################
+#
 #  Sample Inputs
 #
 
 def sparse_input(t=2000,x=20,y=20,p=0.01,
                             frames_per_second=None,
                             pixel_per_degree=None):
+    """
+        Creates a stimulus of random pixels or spikes.
+        Sparsity is controlled by `p`, which gives the
+        probability that a pixel is 1. It can be a
+        single number, a list or array of the same length
+        as the stimulus or an array the same shape as
+        the created stimulus.
+
+        Parameters
+        ----------
+        t: int
+            temporal length of the stimulus
+        x: int
+            width of the stimulus
+        y: int
+            height of the stimulus
+        p: float or list of floats or numpy array
+            Probability for each pixel to be 1.
+            If it is a list or an array, each frame
+            or even each pixel in each frame
+            will have a different firing.
+        frames_per_second: float
+            Parameter for temporal resolution.
+            Has no effect for this stimulus.
+        pixel_per_degree: float
+            Parameter for spatial resolution.
+            Has no effect for this stimulus.
+    """
     if hasattr(p,'shape') or type(p) is list:
         the_input = np.zeros((len(p),x,y))
         for i in range(len(p)):
@@ -76,6 +147,12 @@ def moving_grating(t=2000,x=20,y=20,vt=1.0/200.0,vx=3.0,vy=2.0,p=0.01,
             x speed of gratings
         vy: float
             y speed of gratings
+        frames_per_second: float
+            Parameter for temporal resolution.
+            Has no effect for this stimulus.
+        pixel_per_degree: float
+            Parameter for spatial resolution.
+            Has no effect for this stimulus.
     """
     T,X,Y = np.meshgrid(np.linspace(0.0,t,t),np.linspace(-1.0,1.0,x),np.linspace(-1.0,1.0,y), indexing='ij')
     return np.sin(vt*T+vx*X+vy*Y) 
@@ -109,6 +186,12 @@ def moving_bar(t=2000,x=20,y=20,
             width of the bar in pixel
         bar_v: float
             speed of the bar
+        frames_per_second: float
+            Parameter for temporal resolution.
+            Has no effect for this stimulus.
+        pixel_per_degree: float
+            Parameter for spatial resolution.
+            Has no effect for this stimulus.
         sharp: bool
             whether the output is binary or smoothed
         temporal_smoothing: float

@@ -862,14 +862,15 @@ def describe_layer_with_html(layer, max_depth = 3,wrap_in_html=False):
                 sub_string += '<div style="'+line_style+'">'+str(name)+' <i>(<b>'+title+':</b> '+str(val.__class__.__name__)
                 if hasattr(val,'size'):
                     if len(val.size()) == 1 and val.size()[0] == 1:
-                        sub_string += ' <i style="font-size: 80%;">scalar value</i>'
+                        sub_string += ' <i style="font-size: 80%;">scalar value '+str(np.array(val)[0])+'</i>'
                     else:
                         sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in val.size()]))+'</i>'
                 if hasattr(val,'get'):
                         v = val.get()
                         if hasattr(v,'size'):
                             if type(v.size) is int:
-                                sub_string += ' <i style="font-size: 80%;">'+str(v.size)+'</i>'
+                                if str(v.size) != "1":
+                                    sub_string += ' <i style="font-size: 80%;">'+str(v.size)+' elements</i>'
                             elif type(v.size) in [list, tuple]:
                                 sub_string += ' <i style="font-size: 80%;">'+str(' x '.join([str(int(i)) for i in v.size]))+'</i>'
                             else:

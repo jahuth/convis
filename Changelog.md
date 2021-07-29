@@ -4,8 +4,21 @@ Changelog
 See also the more complete changelog [in the documentation](https://jahuth.github.io/convis/changelog.html).
 
 
-Version 0.6.4 (release pending) and current github version
+Version 0.6.4.1 (pip release pending) and current github version
 -----------------------------------------------------------
+
+  - fixed default parameters that were not present in some of the OPL filters. Now all filters use the same default configuration as is provided by `convis.retina_virtualretina.default_config()`.
+  - removed redundant setting of parameters - all parameters can be set to their current value using `Layer.init_all_parameters()` to update filters and dependent parameters.
+  - fixed a convolution alignment bug in the `SeperatableOPLFilter`
+  - fixed a convolution alignment bug in the `FullConvolutionOPLFilter`
+  - OPL filter variants are now all providing similar outputs for the same parameters
+  - changed `convis.describe` to display the value of a scalar instead of its dimensions (which are always 1)
+  - added a `title` argument for `convis.plot`
+  - added two masks in `convis.samples` that can be used to mask a temporal stimulus e.g. to a center pixel: `convis.samples.mask_square` and  `convis.samples.mask_circle`
+  - added 'adaptation-sigma__deg' parameter for `BipolarLayer`
+
+Version 0.6.4 (previous) github version (not released for pip)
+----------------------------------------------------------------
 
   - fixed bug in convolution filter alignment in `Conv2d` and `Conv3d`: odd sized filters are now centered correctly
   - fixed two bugs in `LeakyIntegrateAndFireNeuron` and `RefractoryLeakyIntegrateAndFireNeuron`:

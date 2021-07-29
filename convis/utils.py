@@ -328,7 +328,10 @@ def plot(x,mode=None,**kwargs):
     else:
         print('x has dimensions:',shp)
 
-def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None,resize_small_figures=True):
+def plot_tensor(t,n_examples=5,max_lines=16,
+                        tlim=None,xlim=None,ylim=None,
+                        resize_small_figures=True,
+                        title='Output Tensor'):
     """Plots a 5d tensor as a line plot (min,max,mean and example timeseries) and a sequence of image plots.
 
 
@@ -362,7 +365,8 @@ def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None,resize
             y range included in the example frames
         resize_small_figures (bool):
             if True, figures that do not fit the example plots will be resized
-
+        title (str):
+            Title of main plot. Default: 'Output Tensor'
         Examples
         --------
 
@@ -440,7 +444,7 @@ def plot_tensor(t,n_examples=5,max_lines=16,tlim=None,xlim=None,ylim=None,resize
     ax1.yaxis.set_ticks_position('left')
     ax1.xaxis.set_ticks_position('bottom')
     plt.xlim(t_0,t_end)
-    plt.title('Output Tensor')
+    plt.title(title)
     for line_i in range(line_n):
         for i,_t in enumerate(np.linspace(0,t.shape[2]-1,n_examples)):
             ax2 = plt.subplot2grid((2 + line_n, n_examples), (2+line_i, i))

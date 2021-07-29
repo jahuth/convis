@@ -482,6 +482,9 @@ class CallbackParameter(object):
         self.func = func
         self.call = call
         self.name = name
+    def init(self):
+        """Sets the variable to the saved value and sets any associated parameters."""
+        self.set(self.value)
     def set(self,v):
         self.value = self.func(v)
         if self.call is not None:
@@ -512,6 +515,22 @@ class VirtualParameter(object):
             b.set(2) # the function is reevaluated again
             plot(v.get()[0,:,0,0,0])
         
+        To avoid having to redundantly specify the same
+        value to have a variable update any parameters
+        that depend on it, the `VirtualParameter.init_var` method sets the
+        variable to its current value.
+
+        To have a layer initialize its parameters, the function `convis.base.Layer.init_all_parameters`
+        will do so.
+
+        Example::
+
+            a = VirtualParameter(float,value=0.1)
+            b = VirtualParameter(int,value=0)
+            v = VirtualParameter(convis2.numerical_filters.exponential_filter_5d).set_callback_arguments(tau=a,n=b)
+            a.init_var() # to avoid having to redundantly specify the same value to have a variable
+                         # update any parameters that depend on it, the init_var method
+                         # sets the variable to its current value.
     """
     _is_convis_variable = True
     data = FakeTensor()
@@ -547,6 +566,10 @@ class VirtualParameter(object):
         return self
     def set_variable(v):
         self.var = v
+    def init_var(self):
+        """Sets the variable to the saved value and sets any associated parameters."""
+        if self.value is not None:
+            self.set(self.value)
     def set(self,v):
         if self.func is not None:
             ret = self.func(v)

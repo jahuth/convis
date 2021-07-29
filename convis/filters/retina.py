@@ -82,9 +82,7 @@ class SeperatableOPLFilter(Layer):
         self.dims = 5
         self.center_G = Conv3d(1, 1, (1,10,10), time_pad=False, autopad=False)
         self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
-        self.sigma_center.set(0.05)
-        self.center_E = Conv3d(1, 1, (5,1,1), time_pad=False, autopad=False)
-        self.center_E.weight.data[0,0,-5,0,0] = 1.0
+        self.center_E = Conv3d(1, 1, (5,1,1), time_pad=True, autopad=False)
         self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec')
         self.n_center = variables.VirtualParameter(int,value=0,retina_config_key='center-n__uint')
         self.f_exp_center = variables.VirtualParameter(
@@ -105,27 +103,26 @@ class SeperatableOPLFilter(Layer):
                 relative_weight=self.undershoot_relative_weight_center,
                 resolution=_get_default_resolution())
         self.f_undershoot.update()
-        self.surround_G = Conv3d(1, 1, (1,19,19),padding=(0,9,9), autopad=False)
-        self.surround_G.set_weight(1.0)
-        self.surround_G.gaussian(0.15)
+        self.surround_G = Conv3d(1, 1, (1,19,19), adjust_padding=False, time_pad=False, autopad=False)
         self.sigma_surround = variables.VirtualParameter(
                                     self.surround_G.gaussian,
-                                    value=0.05,
+                                    value=0.15,
                                     retina_config_key='surround-sigma__deg'
                                 ).set_callback_arguments(
                                     resolution=_get_default_resolution()
                                 )
-        self.sigma_surround.set(0.05)
-        self.surround_E = Conv3d(1, 1, (19,1,1),padding=(9,0,0), time_pad=False, autopad=False)
+        self.surround_E = Conv3d(1, 1, (19,1,1),padding=(0,0,0), time_pad=True, autopad=False)
         if hasattr(self.surround_E,'bias') and self.surround_E.bias is not None:
             self.surround_E.bias.data[0] = 0.0
         self.tau_surround = variables.VirtualParameter(self.surround_E.exponential,value=0.004,retina_config_key='surround-tau__sec').set_callback_arguments(even=True,adjust_padding=False,resolution=_get_default_resolution())
-        self.tau_surround.set(0.004)
         self.input_state = State(np.zeros((1,1,1,1,1)))
-        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
+        self.relative_weight = Parameter(1.0,retina_config_key='opl-relative-weight')
+        self.init_all_parameters()
     @property
     def filter_length(self):
-        return int(self.center_E.weight.data.shape[TIME_DIMENSION] + self.center_undershoot.weight.data.shape[TIME_DIMENSION] - 2)
+        return int(#self.center_E.weight.data.shape[TIME_DIMENSION] +
+         self.center_undershoot.weight.data.shape[TIME_DIMENSION] - 1)
+        #
     @property
     def filter_width(self):
         return self.center_G.weight.data.shape[-2] - 1
@@ -134,36 +131,36 @@ class SeperatableOPLFilter(Layer):
         return self.center_G.weight.data.shape[-1] - 1
     @property
     def filter_padding_2d(self):
-        return (self.filter_width/2,
+        return (int(self.filter_width/2),
                 int(self.filter_width - self.filter_width/2),
                 int(self.filter_height/2),
                 int(self.filter_height - self.filter_height/2),
                 0,0)
     def forward(self, x):
-        if not (self.input_state.data.shape[TIME_DIMENSION] == 2*self.filter_length and
+        if not (self.input_state.data.shape[TIME_DIMENSION] == 1*self.filter_length and
             self.input_state.data.shape[3] == x.data.shape[3] and
             self.input_state.data.shape[4] == x.data.shape[4]):
-            self.input_state = State(np.zeros((x.data.shape[0],x.data.shape[1],2*self.filter_length,x.data.shape[3],x.data.shape[4])))
-            x_init = x[:,:,:2*self.filter_length,:,:]
+            self.input_state = State(np.zeros((x.data.shape[0],x.data.shape[1],1*self.filter_length,x.data.shape[3],x.data.shape[4])))
+            x_init = x[:,:,:1*self.filter_length,:,:]
             self.input_state[:,:,(-x_init.data.shape[2]):,:,:] = x_init
-            #torch.zeros((1,1,self.filter_length,x.data.shape[3],x.data.shape[4]))
         if self._use_cuda:
             self.input_state = self.input_state.cuda()
-            x_pad = torch.cat([self.input_state.cuda(), x.cuda()], dim=TIME_DIMENSION)
+            x_pad = torch.cat([self.input_state, x.cuda(), self.input_state], dim=TIME_DIMENSION)
         else:
             self.input_state = self.input_state.cpu()
             #print self.input_state, x
-            x_pad = torch.cat([self.input_state.cpu(), x.cpu()], dim=TIME_DIMENSION)
+            x_pad = torch.cat([self.input_state, x.cpu(), self.input_state], dim=TIME_DIMENSION)
         y = self.center_G(nn.functional.pad(x_pad,self.filter_padding_2d,'replicate'))
         y = self.center_E(y)
         y = self.center_undershoot(y)
-        s = self.surround_G(y)
-        s = self.surround_E(nn.functional.pad(y,((0,0,0,0,len(self.surround_E),0)),'replicate'))
-
+        s = self.surround_G(nn.functional.pad(y,self.surround_G.kernel_padding,'replicate'))
+        s = self.surround_E(nn.functional.pad(s,((0,0,0,0,len(self.surround_E),0)),'replicate'))
+        self.center_signal = y#[:,:,1*self.filter_length:,:,:]
+        self.surround_signal = s[:,:,-y.data.shape[TIME_DIMENSION]:,:,:]#[:,:,-y.data.shape[TIME_DIMENSION]:,:,:][:,:,1*self.filter_length:,:,:]
         y = y - self.relative_weight * s[:,:,-y.data.shape[TIME_DIMENSION]:,:,:]
         self.input_state = x_pad[:,:,-(2*self.filter_length):,:,:]
         #return y[:,:,(self.filter_length/2):-(self.filter_length/2),:,:]
-        return y[:,:,self.filter_length:,:,:]
+        return y[:,:,:-self.filter_length,:,:]#[:,:,1*self.filter_length:,:,:]
 
 class HalfRecursiveOPLFilter(Layer):
     """
@@ -222,8 +219,6 @@ class HalfRecursiveOPLFilter(Layer):
         super(HalfRecursiveOPLFilter, self).__init__()
         self.dims = 5
         self.center_G = Conv3d(1, 1, (1,10,10), time_pad=False, autopad=False)
-        self.center_G.set_weight(1.0)
-        self.center_G.gaussian(0.05)
         self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,retina_config_key='center-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
         self.center_E = TemporalLowPassFilterRecursive()
         self.tau_center = variables.VirtualParameter(float,value=0.01,retina_config_key='center-tau__sec',var=self.center_E.tau)
@@ -240,15 +235,13 @@ class HalfRecursiveOPLFilter(Layer):
             retina_config_key='undershoot.relative-weight',
             var=self.center_undershoot.k)
         self.surround_G = Conv3d(1, 1, (1,19,19), adjust_padding=False, time_pad=False, autopad=False)
-        self.surround_G.set_weight(1.0)
-        self.surround_G.gaussian(0.15)
-        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.05,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
-        self.sigma_surround.set(0.05)
+        self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.15,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
         self.surround_E = TemporalLowPassFilterRecursive()
         self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec',var=self.surround_E.tau)
         self.input_state = State(np.zeros((1,1,1,1,1)))
-        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
+        self.relative_weight = Parameter(1.0,retina_config_key='opl-relative-weight')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
+        self.init_all_parameters()
     def clear(self):
         self.center_E.clear()
         self.center_undershoot.clear()
@@ -337,7 +330,6 @@ class RecursiveOPLFilter(Layer):
         super(RecursiveOPLFilter, self).__init__()
         self.dims = 5
         self.center_G = SpatialRecursiveFilter()
-        self.center_G.gaussian(0.05)
         self.sigma_center = variables.VirtualParameter(self.center_G.gaussian,value=0.05,
             retina_config_key='center-sigma__deg',
             doc='Size of the center receptive field (calls self.center_G.gaussian)').set_callback_arguments(resolution=_get_default_resolution())
@@ -362,20 +354,19 @@ class RecursiveOPLFilter(Layer):
             var=self.center_undershoot.k,
             doc='relative weight of the high pass filter (sets self.center_undershoot.k)')
         self.surround_G = SpatialRecursiveFilter()
-        self.surround_G.gaussian(0.15)
         self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.15,
             retina_config_key='surround-sigma__deg',
             doc='Size of the surround receptive field (calls self.surround_G.gaussian)').set_callback_arguments(resolution=_get_default_resolution())
-        self.sigma_surround.set(0.15)
         self.surround_E = TemporalLowPassFilterRecursive()
         self.tau_surround = variables.VirtualParameter(float,value=0.004,
             retina_config_key='surround-tau__sec',var=self.surround_E.tau,
             doc='Time constant of the surround receptive field (sets self.surround_E.tau)')
         self.input_state = State(np.zeros((1,1,1,1,1)))
-        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight',
+        self.relative_weight = Parameter(1.0,retina_config_key='opl-relative-weight',
             doc='relative weight between center and surround')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification',
             doc='Linear amplification of the output')
+        self.init_all_parameters()
     def clear(self):
         self.center_E.clear()
         self.center_undershoot.clear()
@@ -413,7 +404,7 @@ class FullConvolutionOPLFilter(Layer):
         SeperatableOPLFilter
 
     """
-    def __init__(self,shp=(100,10,10)):
+    def __init__(self,shp=(100,11,11)):
         super(FullConvolutionOPLFilter, self).__init__()
         self.dims = 5
         self.conv = Conv3d(1, 1, shp, time_pad=True, autopad=True)
@@ -432,7 +423,7 @@ class FullConvolutionOPLFilter(Layer):
             retina_config_key='undershoot.relative-weight')
         self.sigma_surround = variables.VirtualParameter(float,value=0.15,retina_config_key='surround-sigma__deg')
         self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec')
-        self.relative_weight = Parameter(0.5,retina_config_key='opl-relative-weight')
+        self.relative_weight = Parameter(1.0,retina_config_key='opl-relative-weight')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
         self._callback = variables.VirtualParameter(
                             self.create_kernel
@@ -473,7 +464,7 @@ class FullConvolutionOPLFilter(Layer):
         inp = np.zeros(shp)
         inp[0,0,0,int(shp[3]/2),int(shp[4]/2)] = 1.0
         w = tmp_opl.run(inp,dt=100)[0]
-        self.conv.set_weight(base._array(w[0,0])[::-1,::-1,::-1].copy())
+        self.conv.set_weight(base._array(w[0,0]).copy())
         return w
     def forward(self, x):
         return self.conv(x)
@@ -590,11 +581,12 @@ class Bipolar(Layer):
         self.a_1 = -(-self.steps/self.tau).exp()
         self.b_0 =  1.0 - self.a_1
         self.conv2d = Conv2d(1,1,(1,1,9,9),autopad=True)
-        self.conv2d.gaussian(0.1)
-        #self.conv2d.set_weight(1.0)
+        ####self.conv2d.gaussian(0.1)
+        self.adaptation_sigma = variables.VirtualParameter(self.conv2d.gaussian,value=0.2,retina_config_key='adaptation-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
         self.register_state('preceding_V_bip', None)
         self.register_state('preceding_attenuationMap', None)
         self.register_state('preceding_inhibition', None)
+        self.init_all_parameters()
     def init_states(self,input_shapes):
         self.preceding_V_bip = variables.zeros((input_shapes[3],input_shapes[4]))
         self.preceding_attenuationMap = variables.ones((input_shapes[3],input_shapes[4]))
@@ -766,10 +758,12 @@ class GanglionInput(Layer):
         self.sigma_surround = variables.VirtualParameter(
             self.spatial_pooling.gaussian,
             value=0.0,
-            retina_config_key='sigma-pool__deg').set_callback_arguments(
+            retina_config_key='sigma-pool__deg',
+            doc='''This optional spatial pooling variable plays an important role in the nonĺinear activation of complex, e.g. Magnocellular cells.''').set_callback_arguments(
                 adjust_padding=True,
                 resolution=_get_default_resolution())
-        self.sigma_surround.set(0.0)
+        ####self.sigma_surround.set(0.0)
+        self.init_all_parameters()
     @property
     def filter_length(self):
         return self.transient.weight.data.shape[TIME_DIMENSION] - 1 

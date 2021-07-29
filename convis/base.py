@@ -646,6 +646,10 @@ class Layer(torch.nn.Module):
         """
         return variables.create_Ox_from_torch_iterator_dicts(self.state(),
             doc='Current state of the model (tab-completable)')
+    def init_all_parameters(self):
+        for var in self._variables:
+            if hasattr(var,'init_var'):
+                var.init_var()
     def _apply(self, fn):
         for module in self.children():
             module._apply(fn)
