@@ -541,9 +541,9 @@ def describe_html(v,wrap_in_html=True,**kwargs):
             if has_convis_attribute(v,k):
                 d[k] = get_convis_attribute(v,k)
         name = d.get('name','') # optional: None handling
-        if not type(name) is str or name is '':
+        if not type(name) is str or name == '':
             name= d.get('_name','')
-        if not type(name) is str or name is '':
+        if not type(name) is str or name == '':
             name= repr(v)
         if type(v) is torch.nn.parameter.Parameter:
             name = 'torch.nn.Parameter'
@@ -698,7 +698,7 @@ def describe_html(v,wrap_in_html=True,**kwargs):
         if has_convis_attribute(v,k):
             d[k] = get_convis_attribute(v,k)
     name = d.get('name','') # optional: None handling
-    if not type(name) is str or name is '':
+    if not type(name) is str or name == '':
         name= repr(v)
     if has_convis_attribute(v,'html_name'):
         name+=' '+str(get_convis_attribute(v,'html_name'))
@@ -912,7 +912,7 @@ def describe_layer_with_html(layer, max_depth = 3,wrap_in_html=False):
         if len(list(model.named_children())) > 0:
             #sub_string += '<div style="font-weight: bold;">Module</div>'
             for mod_name,mod in list(model.named_children()):
-                if mod_name is '':
+                if mod_name == '':
                     continue
                 bg = '#eae2e5' if depth%2==0 else '#faf2f5'
                 sub_string += '<div style="margin:1px; padding:2px; background-color: '+bg+'; color: #444; margin-left:10px;"><div>'

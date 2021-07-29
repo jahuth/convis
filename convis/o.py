@@ -138,15 +138,15 @@ class O(object):
             return str(self.__dict__.get('_doc','')) + '<br/>' +  'Choices: '+(', '.join(self.__iterkeys__()))
         return repr(self)
     def __len__(self):
-        return len([k for k in self.__dict__.keys() if not k.startswith('_') or k is '_self'])
+        return len([k for k in self.__dict__.keys() if not k.startswith('_') or k == '_self'])
     def __iter__(self):
-        return iter([v for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self'])
+        return iter([v for (k,v) in self.__dict__.items() if not k.startswith('_') or k == '_self'])
     def _keys(self):
-        return [k for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self']
+        return [k for (k,v) in self.__dict__.items() if not k.startswith('_') or k == '_self']
     def __iterkeys__(self):
-        return iter([k for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self'])
+        return iter([k for (k,v) in self.__dict__.items() if not k.startswith('_') or k == '_self'])
     def __iteritems__(self):
-        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_') or k is '_self']) 
+        return iter([(k,v) for (k,v) in self.__dict__.items() if not k.startswith('_') or k == '_self']) 
     def __setattr__(self, name, value):
         if name.startswith('_'):
             object.__setattr__(self, name, value)

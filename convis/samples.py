@@ -348,9 +348,9 @@ class SampleGenerator(models.LN):
         if type(kernel) is str:
             if kernel in ['random', 'randn']:
                 self.kernel = np.random.randn(*kernel_size)
-            elif kernel is 'rand':
+            elif kernel == 'rand':
                 self.kernel = np.random.rand(*kernel_size)
-            elif kernel is 'sparse':
+            elif kernel == 'sparse':
                 self.kernel = 1.0*(np.random.rand(*kernel_size)<p)
             else:
                 raise Exception('`kernel` parameter not recognized!')
@@ -390,9 +390,9 @@ class SampleGenerator(models.LN):
         """
         if input in ['random', 'randn']:
             x = np.random.randn(*size)
-        elif input is 'rand':
+        elif input == 'rand':
             x = np.random.rand(*size)
-        elif input is 'sparse':
+        elif input == 'sparse':
             x = 1.0*(np.random.rand(*size) < p)
         else:
             x = input

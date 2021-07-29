@@ -490,22 +490,22 @@ class IntegrativeMotionSensor(Layer):
         if self.last_frame is not None:
             frame = self.last_frame
         else:
-            if self.spiking_mode is 'linear':
+            if self.spiking_mode == 'linear':
                 frame = torch.zeros((inp.size()[0],inp.size()[1],1,inp.size()[3],inp.size()[4]))
-            elif self.spiking_mode is 'log':
+            elif self.spiking_mode == 'log':
                 frame = 0.5*torch.ones((inp.size()[0],inp.size()[1],1,inp.size()[3],inp.size()[4]))
             else:
                 raise Exception('`spiking_mode` %s not recognized.'%(self.spiking_mode))
         spikes_on = []
         spikes_off = []
         for i in range(inp.size()[2]):
-            if self.spiking_mode is 'linear':
+            if self.spiking_mode == 'linear':
                 frame += inp[:,:,i,:,:]
                 spikes_on.append(frame > self.threshold)
                 spikes_off.append(frame < -self.threshold)
                 frame.masked_scatter_(spikes_on[-1], frame-self.threshold)
                 frame.masked_scatter_(spikes_off[-1], frame+self.threshold)
-            elif self.spiking_mode is 'log':
+            elif self.spiking_mode == 'log':
                 spikes_on.append(inp[:,:,i,:,:]/frame > 1.0*self.threshold)
                 spikes_off.append(inp[:,:,i,:,:]/frame < 1.0/self.threshold)
                 if self.threshold <= 1.0:

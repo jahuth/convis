@@ -60,17 +60,17 @@ class TimePadding(Layer):
             if x.size()[-2:] != self.saved_inputs[-1].size()[-2:]:
                 raise Exception('input size '+str(x.size()[-2:])+' does not match state size ('+str(self.saved_inputs[-1].size()[-2:])+')! Call `.clear_state()` on your model first!')
         while self.available_length < self.length:
-            if self.mode is 'full_copy':
+            if self.mode == 'full_copy':
                 self.saved_inputs.append(x)
-            elif self.mode is 'mirror':
+            elif self.mode == 'mirror':
                 self.saved_inputs.append(variables.Variable(x.numpy()[:,:,::-1,:,:]))
-            elif self.mode is 'first_frame':
+            elif self.mode == 'first_frame':
                 self.saved_inputs.append(x[:,:,:1,:,:])
-            elif self.mode is 'mean':
+            elif self.mode == 'mean':
                 self.saved_inputs.append(torch.ones_like(x)*x.mean())
-            elif self.mode is 'ones':
+            elif self.mode == 'ones':
                 self.saved_inputs.append(torch.ones_like(x))
-            elif self.mode is 'zeros':
+            elif self.mode == 'zeros':
                 self.saved_inputs.append(torch.zeros_like(x))
             else:
                 raise Exception("TimePadding argument `mode`='%s' not recognized!."%(self.mode,))
@@ -445,7 +445,7 @@ class RF(Conv3d):
     def forward(self,x):
         if self.weight.size()[3] == 1 and self.weight.size()[4] == 1:
             self.set_weight(np.ones((self.weight.size()[2],x.size()[3],x.size()[4])),normalize=True)
-        if self.rf_placement_mode is 'corner':
+        if self.rf_placement_mode == 'corner':
             if x.size()[3] < self.weight.size()[3]:
                 x = torch.nn.functional.pad(x,(0,0,0,self.weight.size()[3],0,0))
             if x.size()[4] < self.weight.size()[4]:

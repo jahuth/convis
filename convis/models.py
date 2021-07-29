@@ -130,7 +130,7 @@ class List(Layer):
         elif self.mode == 'parallel':
             outputs = []
             for key,module in self._modules.items():
-                if key is not 'sum':
+                if key != 'sum':
                     outputs.append(module(input))
             if self.sum == 'sum':
                 return filters.sum(*outputs, dim=0)
@@ -278,7 +278,7 @@ class Parallel(Layer):
     def forward(self, input):
         outputs = []
         for key,module in self._modules.items():
-            if key is not 'sum':
+            if key != 'sum':
                 outputs.append(module(input))
         if self.sum == 'sum':
             return filters.sum(*outputs, dim=0)

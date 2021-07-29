@@ -956,7 +956,7 @@ class Layer(torch.nn.Module):
         --------
         load_parameters
         """
-        if filetype is 'npz':
+        if filetype == 'npz':
             np.savez(filename, **self.get_parameters())
         else:
             raise Exception('Parameters can only be saved as npz at the moment.')
@@ -989,7 +989,7 @@ class Layer(torch.nn.Module):
         --------
         save_parameters
         """
-        if filetype is 'npz':
+        if filetype == 'npz':
             parameter_dict = np.load(filename)
             self.set_parameters(parameter_dict,warn=warn)
         else:
