@@ -56,31 +56,37 @@ class TimePadding(Layer):
     def available_length(self):
         return np.sum([i.size()[TIME_DIMENSION] for i in self.saved_inputs])
     def forward(self, x):
+        if self.length == 0:
+            return x
         if len(self.saved_inputs) > 0:
             if x.size()[-2:] != self.saved_inputs[-1].size()[-2:]:
                 raise Exception('input size '+str(x.size()[-2:])+' does not match state size ('+str(self.saved_inputs[-1].size()[-2:])+')! Call `.clear_state()` on your model first!')
+        if x.shape[2] > self.length:
+            x_offset = x.shape[2] - self.length
+        else:
+            x_offset = 0
         while self.available_length < self.length:
             if self.mode == 'full_copy':
-                self.saved_inputs.append(x)
+                self.saved_inputs.append(x[:,:,x_offset:,:,:])
             elif self.mode == 'mirror':
-                self.saved_inputs.append(variables.Variable(x.numpy()[:,:,::-1,:,:]))
+                self.saved_inputs.append(variables.Variable(x.numpy()[:,:,::-1,:,:])[:,:,x_offset:,:,:])
             elif self.mode == 'first_frame':
                 self.saved_inputs.append(x[:,:,:1,:,:])
             elif self.mode == 'mean':
-                self.saved_inputs.append(torch.ones_like(x)*x.mean())
+                self.saved_inputs.append(torch.ones_like(x[:,:,x_offset:,:,:])*x.mean())
             elif self.mode == 'ones':
-                self.saved_inputs.append(torch.ones_like(x))
+                self.saved_inputs.append(torch.ones_like(x[:,:,x_offset:,:,:]))
             elif self.mode == 'zeros':
-                self.saved_inputs.append(torch.zeros_like(x))
+                self.saved_inputs.append(torch.zeros_like(x[:,:,x_offset:,:,:]))
             else:
                 raise Exception("TimePadding argument `mode`='%s' not recognized!."%(self.mode,))
         if self._use_cuda:
             x_pad = torch.cat([i.cuda().detach() for i in self.saved_inputs] + [x.cuda()], dim=TIME_DIMENSION)
         else:
             x_pad = torch.cat([i.cpu().detach() for i in self.saved_inputs] +[x.cpu()], dim=TIME_DIMENSION)
-        while self.available_length > self.length + x.size(TIME_DIMENSION):
+        while self.available_length > self.length - x.shape[2] and len(self.saved_inputs) > 0:
             self.saved_inputs.pop(0)
-        self.saved_inputs.append(x)
+        self.saved_inputs.append(x[:,:,x_offset:,:,:])
         return x_pad[:,:,-(self.length + x.size(TIME_DIMENSION)):,:,:]
 
 class Delay(Layer):
