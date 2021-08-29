@@ -479,7 +479,7 @@ class Layer(torch.nn.Module):
         self._state = OrderedDict()
         self._default_state = OrderedDict()
         super(Layer, self).__init__()
-        self._variables = []
+        self._variables = {}
         self._named_variables= {}
         self._debug = False
         self._use_cuda = False
@@ -646,15 +646,32 @@ class Layer(torch.nn.Module):
         """
         return variables.create_Ox_from_torch_iterator_dicts(self.state(),
             doc='Current state of the model (tab-completable)')
+    def detach_state(self):
+        """
+            Cuts the Autograd tree for all State variables. Backpropagation will still be possible,
+            but stop at these variables. This will allow pytorch to free up memory that would 
+            otherwise be used for gradient calculation.
+            
+            For very long computations, this function can be invoked regularly every few hundred
+            time steps, as gradients through recurrent neural networks tend to vanish in any case.
+        """
+        model_state = self.get_state()
+        detached_model_state = {}
+        for k,s in model_state.items():
+            detached_model_state[k] = s
+            if hasattr(s,'requires_grad'):
+                if s.requires_grad:
+                    detached_model_state[k] = s.detach()
+        self.set_state(detached_model_state)
     def init_all_parameters(self):
-        for var in self._variables:
+        for var in self._variables.values():
             if hasattr(var,'init_var'):
                 var.init_var()
     def _apply(self, fn):
         for module in self.children():
             module._apply(fn)
 
-        for var in self._variables:
+        for var in self._variables.values():
             if var is not None:
                 # Variables stored in modules are graph leaves, and we don't
                 # want to create copy nodes, so we have to unpack the data.
@@ -682,12 +699,17 @@ class Layer(torch.nn.Module):
     def __setattr__(self, name, value):
         if name.startswith('_'):
             super(Layer, self).__setattr__(name, value)
-        if name in self._state.keys():
+        if name in self._state.keys() or type(value) == State:
             self._state[name] = value
+            try:
+                setattr(value,'state_path',self.__class__.__name__+'.'+name)
+            except:
+                pass
+            return
         if is_variable(value):
             if type(value) == Parameter or type(value) == VirtualParameter:
                 self._parameters[name] = value
-            self._variables.append(value)
+            self._variables[name] = value
             self._named_variables[name] = value
             self.__dict__[name] = value
             value._name = name
@@ -706,7 +728,7 @@ class Layer(torch.nn.Module):
         """
         def f(a):
             if hasattr(a,'_variables'):
-                for v in a._variables:
+                for v in a._variables.values():
                     if hasattr(v,'retina_config_key'):
                         if v.retina_config_key.startswith('--'):
                             continue

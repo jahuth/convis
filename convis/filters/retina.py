@@ -238,7 +238,6 @@ class HalfRecursiveOPLFilter(Layer):
         self.sigma_surround = variables.VirtualParameter(self.surround_G.gaussian,value=0.15,retina_config_key='surround-sigma__deg').set_callback_arguments(resolution=_get_default_resolution())
         self.surround_E = TemporalLowPassFilterRecursive()
         self.tau_surround = variables.VirtualParameter(float,value=0.004,retina_config_key='surround-tau__sec',var=self.surround_E.tau)
-        self.input_state = State(np.zeros((1,1,1,1,1)))
         self.relative_weight = Parameter(1.0,retina_config_key='opl-relative-weight')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification')
         self.init_all_parameters()
@@ -361,7 +360,6 @@ class RecursiveOPLFilter(Layer):
         self.tau_surround = variables.VirtualParameter(float,value=0.004,
             retina_config_key='surround-tau__sec',var=self.surround_E.tau,
             doc='Time constant of the surround receptive field (sets self.surround_E.tau)')
-        self.input_state = State(np.zeros((1,1,1,1,1)))
         self.relative_weight = Parameter(1.0,retina_config_key='opl-relative-weight',
             doc='relative weight between center and surround')
         self.lambda_opl = Parameter(1.0,retina_config_key='opl-amplification',
@@ -520,7 +518,10 @@ class OPL(Layer):
         return self.opl_filter(x)
  
 class Bipolar(Layer):
-    """
+    r"""
+    The Bipolar Layer provides local contrast gain control.
+    
+    
     Example Configuration::
 
         'contrast-gain-control': {
@@ -532,20 +533,23 @@ class Bipolar(Layer):
             'adaptation-feedback-amplification__Hz': 0 # `ampFeedback` in virtual retina
         },
 
+
     Attributes
     ----------
-        opl-amplification__Hz : 50
-            for linear OPL: ampOPL = relative_ampOPL / fatherRetina->input_luminosity_range ;
-            `ampInputCurrent` in virtual retina
-        bipolar-inert-leaks__Hz: 50
-            `gLeak` in virtual retina
-        adaptation-sigma__deg: 0.2
-            `sigmaSurround` in virtual retina
-        adaptation-tau__sec: 0.005
-            `tauSurround` in virtual retina
-        adaptation-feedback-amplification__Hz: 0
-            `ampFeedback` in virtual retina
-
+    
+    opl-amplification__Hz : 50
+        for linear OPL: ampOPL = relative_ampOPL / fatherRetina->input_luminosity_range ;
+        `ampInputCurrent` in virtual retina
+    bipolar-inert-leaks__Hz: 50
+        `gLeak` in virtual retina
+    adaptation-sigma__deg: 0.2
+        `sigmaSurround` in virtual retina
+    adaptation-tau__sec: 0.005
+        `tauSurround` in virtual retina
+    adaptation-feedback-amplification__Hz: 0
+        `ampFeedback` in virtual retina
+    
+        
     See Also
     --------
 
@@ -816,23 +820,29 @@ class GanglionSpiking(Layer):
     """
     def __init__(self,**kwargs):
         super(GanglionSpiking, self).__init__()
+        requires_grad = False # For now, the spiking layer is non-differentiable
         self.dims = 5
         # parameters
         self.refr_mu = Parameter(0.003,
                             retina_config_key='refr-mean__sec',
-                            doc='The mean of the distribution of random refractory times (in seconds).')
+                            doc='The mean of the distribution of random refractory times (in seconds).',
+                            requires_grad=requires_grad)
         self.refr_sigma = Parameter(0.001,
                             retina_config_key='refr-stdev__sec',
-                            doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`')
+                            doc='The standard deviation of the refractory time that is randomly drawn around `refr_mu`',
+                            requires_grad=requires_grad)
         self.noise_sigma = Parameter(0.1,
                             retina_config_key='sigma-V',
-                            doc='Amount of noise added to the membrane potential.')
+                            doc='Amount of noise added to the membrane potential.',
+                            requires_grad=requires_grad)
         self.g_L = Parameter(50.0,
                             retina_config_key='g-leak__Hz',
-                            doc='Leak current (in Hz or dimensionless firing rate).')
+                            doc='Leak current (in Hz or dimensionless firing rate).',
+                            requires_grad=requires_grad)
         self.tau = Parameter(0.001,
                             retina_config_key='--should be inherited',
-                            doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.')
+                            doc = 'Length of timesteps (ie. the steps_to_seconds(1.0) of the model.',
+                            requires_grad=requires_grad)
         self.register_state('V',None)
         self.register_state('zeros',None)
         self.register_state('refr',None)
@@ -840,6 +850,7 @@ class GanglionSpiking(Layer):
     def init_states(self,input_shape):
         self.zeros = variables.zeros((input_shape[3],input_shape[4]))
         self.V = 0.5+0.2*variables.rand((input_shape[3],input_shape[4])) # membrane potential
+        self.V.requires_grad_(False)
         if self._use_cuda:
             self.refr = 1000.0*(self.refr_mu + self.refr_sigma *
                                 variables.randn((input_shape[3],input_shape[4])).cuda())
@@ -864,13 +875,14 @@ class GanglionSpiking(Layer):
             self.zeros = self.zeros.cpu()
             self.noise_prev = self.noise_prev.cpu()
         all_spikes = []
-        for t, I in enumerate(I_gang.squeeze(0).squeeze(0)):
+        for t, I in enumerate(I_gang.detach().squeeze(0).squeeze(0)):
             #print I.data.shape, self.V.data.shape,torch.randn(I.data.shape).shape
             if self._use_cuda:
                 noise = variables.randn(I.data.shape).cuda()
             else:
                 noise = variables.randn(I.data.shape).cpu()
-            V = self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau
+            V = (self.V + (I - self.g_L * self.V + self.noise_sigma*noise*torch.sqrt(self.g_L/self.tau))*self.tau)
+            
             # canonical form: 
             #
             # V = V + (E_L - V + R*I)*dt/tau 

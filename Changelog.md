@@ -4,8 +4,19 @@ Changelog
 See also the more complete changelog [in the documentation](https://jahuth.github.io/convis/changelog.html).
 
 
-Version 0.6.4.1 (pip release pending) and current github version
+Version 0.6.4.2 (pip release pending) and current github version
 -----------------------------------------------------------
+
+  - added tools to find memory leaks: `convis.utils.torch_mem_info()` and `convis.utils.torch_mem_plot_multiple_infos()`
+  - changed `Layer._variables` to be a dictionary, not a list (previously, new variables would be appended each time they were set)
+  - State variables are now automatically registered to Layers when set
+  - `State` variables are no longer added to `Layer._variables`
+  - smaller tweaks to retina Layers to prevent orphan variables
+  - added `Layer.detach_state()` function which will detach all `State` variables from the Autograd tree
+
+
+Version 0.6.4.1 (pip release pending) 
+---------------------------------------
 
   - fixed default parameters that were not present in some of the OPL filters. Now all filters use the same default configuration as is provided by `convis.retina_virtualretina.default_config()`.
   - removed redundant setting of parameters - all parameters can be set to their current value using `Layer.init_all_parameters()` to update filters and dependent parameters.

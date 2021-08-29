@@ -568,3 +568,80 @@ def mean_as_float(a):
     except:
         pass
     return float(a)
+
+_torch_mem_log = []
+
+def torch_mem_info(max_rows=100,append_to_internal_log=True):
+    """Returns a table with Tensor objects found by the Python garbage collector.
+    Objects are counted with respect to specific attributes and the number of found
+    similar objects can give hints about memory leaks in recurrent neural networks.
+    Found similar objects are not necessarily from the same place in the code!
+    
+    If `append_to_internal_log` is True, the result will be kept in a log which can be plotted via torch_mem_plot_multiple_infos() (default is True).
+    Requires pandas to be installed.
+    """
+    import torch
+    import gc
+    import pandas as pd
+    from collections import Counter
+    objs = Counter()
+    for obj in gc.get_objects():
+        try:
+            if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):                
+                num_refs = len(gc.get_referrers(obj))
+                #print({ 'type': type(obj), 'size': obj.size(), "gpu": obj.is_cuda, "requires_grad": obj.requires_grad, 'referers': num_refs })
+                objs[(getattr(obj,'state_path') if getattr(obj,'state_path',None) is not None else (getattr(obj,'name','') if getattr(obj,'name',None) is not None else ''),
+                      str(type(obj)),
+                      str(obj.size()),
+                      "gpu" if obj.is_cuda else "cpu",
+                      "requires_grad" if obj.requires_grad else "detached",
+                      num_refs
+                         )] += 1
+        except:
+            pass
+    #for (row,count) in (objs.most_common(20)):
+    #    print(count,*row)
+    #import pd
+    mc = objs.most_common(max_rows)
+    df = pd.DataFrame([(*row,count) for (row,count) in mc],index=[row for (row,count) in mc],columns=['name','type','size','gpu/cpu','requires_grad','num_referers','Count'])
+    _torch_mem_log.append(df)
+    return df
+
+def torch_mem_plot_multiple_infos(dfs=None,limit=None,fig_size=(18.5, 10.5)):
+    """ This function can plot the output of torch_mem_info() from different time points.
+    
+    Example::
+    
+        import convis
+        t1 = convis.utils.torch_mem_info()
+        # some operation
+        t2 = convis.utils.torch_mem_info()
+        convis.utils.torch_mem_plot_multiple_infos([t1,t2],limit=10) # only shows 10 most frequent objects
+    
+    If `dfs` is not given, an internal log is used of each time convis.utils.torch_mem_info()
+    was called without setting `append_to_internal_log` to False.
+
+    Example::
+    
+        import convis
+        convis.utils.torch_mem_info()
+        # some operation
+        convis.utils.torch_mem_info()
+        convis.utils.torch_mem_plot_multiple_infos(None)
+    
+    Requires pandas to be installed.
+    """
+    import pandas as pd
+    import matplotlib.pylab as plt
+    if dfs is None:
+        dfs = _torch_mem_log
+    d = pd.concat([d["Count"] for d in dfs],axis=1,keys=range(len(dfs))).transpose()
+    d.fillna(0,inplace=True)
+    #pd.DataFrame([t1["Count"],t2["Count"]],index=range(1,3)).plot()
+    d.sort_values(by=list(range(len(dfs)))[::-1],axis='columns',inplace=True,ascending=False,na_position='last')
+    if limit is not None:
+        d = d[d.keys()[:(limit+1)]]
+    d.plot(style='.-')
+    plt.gcf().set_size_inches(*fig_size)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left') # make legend appear outside
+    return d.transpose()
